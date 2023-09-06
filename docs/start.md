@@ -46,8 +46,10 @@ your_function(2, 3)
 ```python
 def your_function():
     let x: Int = 42
-    let y: F64 = 17.0
-
+    # 早期的mojo类型说明是通过简写F64来表示，目前修改为 Float64 let y: F64 = 17.0
+    ley y: Float64 = 17.0
+	
+    # 早期的mojo类型说明是通过简写F32来表示，目前修改为 Float32 let z: Float32
     let z: F32
     if x != 0:
         z = 1.0
@@ -55,7 +57,8 @@ def your_function():
         z = foo()
     print(z)
 
-def foo() -> F32:
+# 函数的返回值类型不能写成F32，已修改为Float32
+def foo() -> Float32:
     return 3.14
 
 your_function()
@@ -113,12 +116,14 @@ struct Complex:
     var re: F32
     var im: F32
 
-    fn __init__(inout self, x: F32):
+    # 类型改为Float32
+    fn __init__(inout self, x: Float32):
         """Construct a complex number given a real number."""
         self.re = x
         self.im = 0.0
-
-    fn __init__(inout self, r: F32, i: F32):
+	
+    # 类型改为Float32
+    fn __init__(inout self, r: Float32, i: Float32):
         """Construct a complex number given its real and imaginary components."""
         self.re = r
         self.im = i
