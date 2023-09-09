@@ -21,6 +21,7 @@ export default defineConfig({
         text: '文档目录',
         items: [
           { text: '简介', link: '/docs/about' },
+          { text: '安装SDK', link: '/docs/install' },
           { text: '快速开始', link: '/docs/start' },
           { text: '进阶操作', link: '/docs/pro' },
           { text: '加入群聊', link: '/docs/chat' },
