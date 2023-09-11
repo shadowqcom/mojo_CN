@@ -1,4 +1,4 @@
 .idea
 /node_modules
 /dist
-.vitepress/dist
+/.vitepress/dist
