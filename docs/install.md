@@ -5,6 +5,20 @@
 Mojo 尚不适用于 Windows，您可以在 Linux 容器或远程系统中安装，
 或者使用windows中的linux子系统，参考linux安装方式进行安装。   
 原生windows支持即将到来。
+[VScode下载地址](https://vscode.cdn.azure.cn/stable/8b617bd08fd9e3fc94d14adb8d358b56e3f72314/VSCodeUserSetup-x64-1.82.0.exe)
+```shell
+# windows子系统ubuntu20.04安装
+curl https://get.modular.com | MODULAR_AUTH=mut_1ab442b0938f435388ecc1851d9b6286  sh -
+modular install mojo
+
+# 配置环境变量
+echo 'export MODULAR_HOME="$HOME/.modular"' >> ~/.bashrc
+echo 'export PATH="$MODULAR_HOME/pkg/packages.modular.com_mojo/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# 在ubuntu子系统终端打开vscode
+code .
+```
 
 ## Linux
 系统要求：
