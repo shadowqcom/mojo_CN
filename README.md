@@ -9,4 +9,4 @@
 
 - [安装文档](./docs/install.md)
 
-
+- [加入群聊](https://www.mojofire.cn/docs/chat.html)
