@@ -85,4 +85,6 @@ modular install mojo
 
 ## 虚拟机镜像
 群友 [法然] 提供的虚拟机镜像
-[ubuntu22-server虚拟机镜像](https://disk.knloop.com/%F0%9F%94%A5%20Mojo/ubuntu22-server%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F%20-%20by%20%E6%B3%95%E7%84%B6)
+[ubuntu22-server虚拟机镜像](https://disk.knloop.com/%F0%9F%94%A5%20Mojo/ubuntu22-server%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F%20-%20by%20%E6%B3%95%E7%84%B6)   
+用户root 密码 mojo  
+用户mojo 密码 mojo
