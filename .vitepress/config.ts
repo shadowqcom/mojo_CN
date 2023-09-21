@@ -7,6 +7,7 @@ export default defineConfig({
   description: "AI编程语言Mojo中文网，AI开发人员的新语言，Mojo 结合了 Python 的可用性和 C 的性能，",
   head:[
     ['link', {rel: 'icon', href: '/favicon.ico'}],
+    ['script', {src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9179261695088632', crossorigin:'anonymous'}]
   ],
 
   themeConfig: {
@@ -25,6 +26,7 @@ export default defineConfig({
           { text: '快速开始', link: '/docs/start' },
           { text: '进阶操作', link: '/docs/pro' },
           { text: '加入群聊', link: '/docs/chat' },
+          { text: '赞助我们', link: '/docs/sponsor'},
         ]
       }
     ],
