@@ -13,8 +13,8 @@ hero:
       text: 加入群聊
       link: /docs/chat
   image:
-    src: /img/fire.png
-    alt: fire
+    src: /img/mojofire.png
+    alt: mojo
 
 features:
   - icon: 🎉
