@@ -26,6 +26,5 @@
 二群：925241368         [点击加入](https://qm.qq.com/q/IgJFnFPDGy)
 <div id="qq">
 <img height="200" width="200" src="/img/qq.png"/>   
-
 <img height="200" width="200" src="/img/qq2.png"/>
 </div>
