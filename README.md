@@ -17,6 +17,7 @@
 ### Wechat
 <div id="wechat">
 <img height="200" width="200" src="/img/wechat.png"/>
+<img height="200" width="200" src="/img/Telegram.png"/>
 </div>
 
 ### QQ
