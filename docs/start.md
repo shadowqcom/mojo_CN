@@ -47,7 +47,7 @@ your_function(2, 3)
 def your_function():
     let x: Int = 42
     # 早期的mojo类型说明是通过简写F64来表示，目前修改为 Float64 let y: F64 = 17.0
-    ley y: Float64 = 17.0
+    let y: Float64 = 17.0
 	
     # 早期的mojo类型说明是通过简写F32来表示，目前修改为 Float32 let z: Float32
     let z: F32
