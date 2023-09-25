@@ -14,7 +14,7 @@
 ⚡欢迎各位开发者加群 ~~摸鱼~~ 交流。
 
 
-### Wechat
+### Wechat                   Telegram  [点击加入](https://t.me/Mojo_CN)
 <div id="wechat">
 <img height="200" width="200" src="/img/wechat.png"/>
 <img height="200" width="200" src="/img/Telegram.png"/>
@@ -27,9 +27,4 @@
 <img height="200" width="200" src="/img/qq.png"/>   
 
 <img height="200" width="200" src="/img/qq2.png"/>
-</div>
-
-### Telegram  [点击加入](https://t.me/Mojo_CN)
-<div id="Telegram">
-<img height="200" width="200" src="/img/Telegram.png"/>
 </div>
