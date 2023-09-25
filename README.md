@@ -14,7 +14,7 @@
 ⚡欢迎各位开发者加群 ~~摸鱼~~ 交流。
 
 
-### Wechat   &   Telegram  [点击加入](https://t.me/Mojo_CN)
+### Wechat  [扫码加入](https://work.weixin.qq.com/gm/4e39cff97d040f38a32a08fb5c725467)   &   Telegram  [点击加入](https://t.me/Mojo_CN)
 <div id="wechat">
 <img height="200" width="200" src="/img/wechat.png"/>
 <img height="200" width="200" src="/img/Telegram.png"/>
