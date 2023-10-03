@@ -221,9 +221,9 @@ mine.dump()
 
 有关结构和其他特殊方法（也称为“dunder”方法）的更多详细信息，请参阅[编程手册](https://mojofire.cn/docs/Programming_manual.html)。`__init__()`
 
-## 蟒蛇集成
+## Python集成
 
-虽然Mojo仍在进行中，还不是Python的完整超集，但我们已经构建了一种按原样导入Python模块的机制，因此您可以立即利用现有的Python代码。在引擎盖下，这种机制使用CPython解释器来运行Python代码，因此它可以与当今的所有Python模块无缝协作。
+尽管 Mojo 仍在开发中，并且还不是 Python 的完整超集，但我们已经构建了一种按原样导入 Python 模块的机制，因此您可以立即利用现有的 Python 代码。在底层，该机制使用 CPython 解释器来运行 Python 代码，因此它可以与当今的所有 Python 模块无缝协作。
 
 例如，以下是导入和使用 NumPy 的方法（您必须安装 Python）：`numpy`
 
@@ -241,16 +241,6 @@ print(ar.shape)
 (3, 5)
 ```
 
-**注意：**Mojo还不是Python的一个功能完备的超集。因此，您不能总是复制Python代码并在Mojo中运行它。
+**注意：**Mojo还不是Python的一个功能完备的超集。因此，您不能直接复制Python代码并在Mojo中运行它。
 
-**谨慎：**当您安装 Mojo 时，安装程序会在您的系统中搜索要与 Mojo 一起使用的 Python 版本，并将路径添加到配置文件中。如果您更改Python版本或切换虚拟环境，Mojo将查看错误的Python库，这可能会导致导入Python包时出现错误等问题。当前的解决方案是使用环境变量覆盖Mojo的Python库路径。有关如何查找和设置此路径的说明，请参阅[此相关问题](https://github.com/modularml/mojo/issues/551)。`modular.cfg``An error occurred in Python``MOJO_PYTHON_LIBRARY`
-
-## 后续步骤
-
-我们希望此页面涵盖了足够的基础知识，以帮助您入门。它故意简短，所以如果你想更详细地了解这里涉及的任何主题，请查看[编程手册](https://mojofire.cn/docs/Programming_manual.html)。
-
-- 如果要将代码打包为库，请阅读有关[Mojo模块和包](https://docs.modular.com/mojo/manual/get-started/packages.html)的信息。
-- 如果您想探索一些 Mojo 代码，请查看我们在 [GitHub 上的代码示例](https://github.com/modularml/mojo/tree/main/examples#mojo-code-examples)。
-- 要查看所有可用的Mojo API，请查看[Mojo标准库参考](https://docs.modular.com/mojo/lib.html)。
-
-**注意：**Mojo SDK仍处于早期开发阶段。有些事情仍然很粗糙，但您可以期待语言和工具的不断变化和改进。请参阅[已知](https://docs.modular.com/mojo/roadmap.html#mojo-sdk-known-issues)问题并在 [GitHub 上报告任何其他问题](https://github.com/modularml/mojo/issues/new/choose)。
+**警告：**当您安装 Mojo 时，安装程序会在您的系统中搜索要与 Mojo 一起使用的 Python 版本，并将路径添加到配置文件中。如果您更改Python版本或切换虚拟环境，Mojo将查看错误的Python库，这可能会导致导入Python包时出现错误等问题。当前的解决方案是使用环境变量覆盖Mojo的Python库路径。有关如何查找和设置此路径的说明，请参阅[此相关问题](https://github.com/modularml/mojo/issues/551)。`modular.cfg``An error occurred in Python``MOJO_PYTHON_LIBRARY`
