@@ -46,11 +46,31 @@ export default defineConfig({
         text: '文档目录',
         items: [
           { text: '关于我们', link: '/docs/about' },
-          { text: '快速开始', link: '/docs/start' },
+          {text: '快速开始',
+          collapsed: true,
+          items: [
+            { text: '安装SDK', link: '/docs/get-started/install' },
+            { text: 'hello world', link: '/docs/get-started/hello_world' },
+            { text: 'Mojo语法基础', link: '/docs/get-started/Mojo_language_basics' },
+            { text: '模块和包', link: '/docs/get-started/modules_and_packages' }
+            ]
+          },
           { text: '编程手册', link: '/docs/Programming_manual' },
           { text: 'Mojo笔记本', link: '/docs/Mojo_notebooks' },
           { text: 'Mojo图书馆', link: '/docs/Mojo_library' },
-          { text: 'Mojo CLI', link: '/docs/Mojo_CLI' },
+          {text: 'Mojo CLI',
+          collapsed: true,
+          items: [
+            { text: 'mojo', link: '/docs/Mojo-CLI/Mojo_ClI' },
+            { text: 'mojo build', link: '/docs/Mojo-CLI/Mojo_ClI' },
+            { text: 'mojo demangle', link: '/docs/Mojo-CLI/Mojo_ClI' },
+            { text: 'mojo doc', link: '/docs/Mojo-CLI/Mojo_ClI' },
+            { text: 'mojo format', link: '/docs/Mojo-CLI/Mojo_ClI' },
+            { text: 'mojo package', link: '/docs/Mojo-CLI/Mojo_ClI' },
+            { text: 'mojo repl', link: '/docs/Mojo-CLI/Mojo_ClI' },
+            { text: 'mojo run', link: '/docs/Mojo-CLI/Mojo_ClI' }
+            ]
+          },
           { text: '加入群聊', link: '/docs/chat' },
           { text: '赞助我们', link: '/docs/sponsor'},
         ]
