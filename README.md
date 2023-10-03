@@ -17,14 +17,14 @@
 
 ### Wechat     &    Telegram  [点击加入](https://t.me/Mojo_CN)
 <div id="wechat">
-<img height="200" width="200" src="public/img/wechat.png"/>
-<img height="200" width="200" src="public/img/Telegram.png"/>
+<img height="200" width="200" src="/public/img/wechat.png"/>
+<img height="200" width="200" src="/public/img/Telegram.png"/>
 </div>
 
 ### QQ
 一群：777214484         [点击加入](https://qm.qq.com/q/nn0pFzgIRG)   
 二群：925241368         [点击加入](https://qm.qq.com/q/IgJFnFPDGy)
 <div id="qq">
-<img height="200" width="200" src="public/img/qq.png"/>   
-<img height="200" width="200" src="public/img/qq2.png"/>
+<img height="200" width="200" src="/public/img/qq.png"/>   
+<img height="200" width="200" src="/public/img/qq2.png"/>
 </div>

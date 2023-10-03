@@ -30,6 +30,9 @@ export default defineConfig({
   ],
 
   themeConfig: {
+    search: {
+      provider: 'local'
+    },
     logo: '/img/mojofire.png',
     nav: [
       { text: '首页', link: '/' },
