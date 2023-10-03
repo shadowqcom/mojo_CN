@@ -28,3 +28,8 @@
 <img height="200" width="200" src="/public/img/qq.png"/>   
 <img height="200" width="200" src="/public/img/qq2.png"/>
 </div>
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=shadowqcom/mojo_CN&type=Date)](https://star-history.com/#shadowqcom/mojo_CN&Date)
