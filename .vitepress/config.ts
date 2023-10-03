@@ -61,14 +61,14 @@ export default defineConfig({
           {text: 'Mojo CLI',
           collapsed: true,
           items: [
-            { text: 'mojo', link: '/docs/Mojo-CLI/Mojo_ClI' },
-            { text: 'mojo build', link: '/docs/Mojo-CLI/Mojo_ClI' },
-            { text: 'mojo demangle', link: '/docs/Mojo-CLI/Mojo_ClI' },
-            { text: 'mojo doc', link: '/docs/Mojo-CLI/Mojo_ClI' },
-            { text: 'mojo format', link: '/docs/Mojo-CLI/Mojo_ClI' },
-            { text: 'mojo package', link: '/docs/Mojo-CLI/Mojo_ClI' },
-            { text: 'mojo repl', link: '/docs/Mojo-CLI/Mojo_ClI' },
-            { text: 'mojo run', link: '/docs/Mojo-CLI/Mojo_ClI' }
+            { text: 'mojo', link: '/docs/Mojo-CLI/Mojo_CLI' },
+            { text: 'mojo build', link: '/docs/Mojo-CLI/Mojo_CLI' },
+            { text: 'mojo demangle', link: '/docs/Mojo-CLI/Mojo_CLI' },
+            { text: 'mojo doc', link: '/docs/Mojo-CLI/Mojo_CLI' },
+            { text: 'mojo format', link: '/docs/Mojo-CLI/Mojo_CLI' },
+            { text: 'mojo package', link: '/docs/Mojo-CLI/Mojo_CLI' },
+            { text: 'mojo repl', link: '/docs/Mojo-CLI/Mojo_CLI' },
+            { text: 'mojo run', link: '/docs/Mojo-CLI/Mojo_CLI' }
             ]
           },
           { text: '加入群聊', link: '/docs/chat' },
