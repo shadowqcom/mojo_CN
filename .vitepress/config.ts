@@ -56,8 +56,8 @@ export default defineConfig({
             ]
           },
           { text: '编程手册', link: '/docs/Programming_manual' },
-          { text: 'Mojo笔记本', link: '/docs/Mojo_notebooks' },
-          { text: 'Mojo图书馆', link: '/docs/Mojo_library' },
+          { text: 'Mojo特性', link: '/docs/Mojo_notebooks' },
+          { text: 'Mojo模块', link: '/docs/Mojo_library' },
           {text: 'Mojo CLI',
           collapsed: true,
           items: [
