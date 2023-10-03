@@ -28,4 +28,16 @@ features:
   - icon: ⚡
     title: 与 Python 的差异
     details: 系统编程能力：例如 Mojo 支持 let 和声明 var；并行处理能力：Mojo 利用 MLIR 实现向量、线程和 AI 硬件单元的并行处理。
+
+  - icon: 🔥
+    title: 用.🔥作为文件后缀
+    details: mojo代码文件除了可以用.mojo作为后缀，还可以用.🔥 ，没错就是Emoji表情。
+
+  - icon: 📦
+    title: 用.📦作为包的后缀
+    details: 同样的，Mojo的包文件可以用.mojopkg作为后缀，也可以使用.📦 。
+
+  - icon: 🧑‍💻
+    title: 中文社区建设中
+    details: Mojo中文网正在开发建设中文社区，目前群用户累计1500+ 。
 ---

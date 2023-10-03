@@ -83,7 +83,7 @@ export default defineConfig({
 
     footer: {
       message: 'Mojo中文网',
-      copyright: 'Copyright &copy; 2023 Mojofire. All Rights Reserved. 影象限 版权所有'
+      copyright: 'Copyright &copy; 2023 MojoCN. All Rights Reserved. 影象限 版权所有'
     }
   }
 })

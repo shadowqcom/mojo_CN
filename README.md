@@ -1,13 +1,13 @@
 # mojo_CN
 
 
-[mojo中文网](https://mojofire.cn) [mojofire.cn](https://mojofire.cn) 源文件
+[mojo中文网](https://mojocn.org) [mojofire.cn](https://mojocn.org) 源文件
 
 
 
-- [安装文档](https://www.mojofire.cn/docs/install.html)
+- [安装文档](https://mojocn.org/docs/install.html)
 
-- [快速开始](https://www.mojofire.cn/docs/start.html)
+- [快速开始](https://mojocn.org/docs/start.html)
 
 
 
