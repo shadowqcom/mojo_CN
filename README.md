@@ -1,7 +1,7 @@
 # mojo_CN
 
 
-[mojo中文网](https://mojocn.org) [mojofire.cn](https://mojocn.org) 源文件
+[mojo中文网](https://mojocn.org) [mojocn.org](https://mojocn.org) 源文件
 
 
 
