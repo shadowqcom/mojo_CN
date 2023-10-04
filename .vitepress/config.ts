@@ -16,7 +16,7 @@ export default defineConfig({
     //谷歌统计分析
     [
       'script', 
-      { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-W1TZBYS8G8' }
+      { async: '', src: 'https://www.googletagmanager.com/gtag/js?id=G-7BDPKHVLRK' }
     ],
     [
       'script',
@@ -25,7 +25,7 @@ export default defineConfig({
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
     
-      gtag('config', 'G-W1TZBYS8G8');`
+      gtag('config', 'G-7BDPKHVLRK');`
     ]
   ],
 
@@ -87,4 +87,3 @@ export default defineConfig({
     }
   }
 })
-
