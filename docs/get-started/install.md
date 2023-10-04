@@ -88,3 +88,27 @@ modular install mojo
 [ubuntu22-server虚拟机镜像](https://disk.knloop.com/%F0%9F%94%A5%20Mojo/ubuntu22-server%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%95%9C%E5%83%8F%20-%20by%20%E6%B3%95%E7%84%B6)   
 用户root 密码 mojo  
 用户mojo 密码 mojo
+
+## 更新Mojo
+
+Mojo 是一项正在进行的工作，我们将定期发布 Mojo 语言和 SDK 工具的更新。有关每个版本的信息，请参阅 [Mojo 更改日志](https://docs.modular.com/mojo/changelog.html)。
+
+要检查您当前的 Mojo 版本，请使用以下选项：`--version`
+
+```
+mojo --version
+```
+
+要更新到最新的Mojo版本，请使用以下命令：`modular update`
+
+```
+modular update mojo
+```
+
+我们还可能发布该工具的更新，该工具作为 Debian 软件包安装（目前仅适用于 Linux），因此您可以像这样更新它：`modular`
+
+```
+sudo apt update
+
+sudo apt install modular
+```
