@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 
 export default defineConfig({
+  lastUpdated: true,
   lang: 'zh_CN',
   title: "Mojo中文网",
   description: "AI编程语言Mojo中文网，AI开发人员的新语言，Mojo 结合了 Python 的可用性和 C 的性能，",

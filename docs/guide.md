@@ -21,10 +21,10 @@
 ![申请布道师](/img/guide/tobeguide.png){height="200" width="200"}
 
 2、[点击这里](https://work.weixin.qq.com/u/vc70bfe1f6ba005557) 或扫描下方二维码添加mojo小助手 沟通议题选题和排期相关问题。
-![申请布道师](/img/mojo小助手.png){height="200" width="200"}
+![申请布道师](/img/mojoHelper.png){height="200" width="200"}
 
 
 ## 布道师名单：
 
 ### MG0000001  @Stark
-![Stark](/img/guide/Stark.png){width="300"}
+![Stark](/img/guide/Stark.jpg){width="300"}
