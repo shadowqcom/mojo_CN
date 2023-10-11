@@ -59,6 +59,30 @@ curl https://get.modular.com | \
 modular install mojo
 ```
 
+## 使用Conda安装
+1、如果你还没有安装conda [点击这里](https://docs.conda.io/projects/miniconda/en/latest/#quick-command-line-install)下载  
+2、创建conda环境  
+```sh
+conda env create -f environment.yaml
+conda activate mojo-plotter
+```
+3、自动设置 Mojo 环境 
+Macos/Linux
+```sh
+mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+export MOJO_PYTHON_LIBRARY="$(find $CONDA_PREFIX/lib -iname 'libpython*.[s,d]*' | sort -r | head -n 1)"
+echo "export MOJO_PYTHON_LIBRARY=\"$MOJO_PYTHON_LIBRARY\"" > $CONDA_PREFIX/etc/conda/activate.d/export-mojo.sh
+
+mkdir -p $CONDA_PREFIX/etc/conda/deactivate.d
+echo "unset MOJO_PYTHON_LIBRARY" > $CONDA_PREFIX/etc/conda/deactivate.d/unset-mojo.sh
+```
+4、用法
+只需激活环境并运行程序： 
+```SH
+conda activate mojo-plotter
+mojo main.mojo
+```  
+
 
 ## 手动安装
 支持Ubuntu 20.04及以上版本
@@ -91,7 +115,7 @@ modular install mojo
 
 ## 更新Mojo
 
-Mojo 是一项正在进行的工作，我们将定期发布 Mojo 语言和 SDK 工具的更新。有关每个版本的信息，请参阅 [Mojo 更改日志](https://docs.modular.com/mojo/changelog.html)。
+Mojo 是一项正在进行的工作，我们将定期发布 Mojo 语言和 SDK 工具的更新。有关每个版本的信息，请参阅 [Mojo 更新日志](https://docs.modular.com/mojo/changelog.html)。
 
 要检查您当前的 Mojo 版本，请使用以下选项：`--version`
 
