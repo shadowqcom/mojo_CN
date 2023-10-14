@@ -19,7 +19,7 @@
 #会议号：395-6646-5366
 
 [第二期哔哩哔哩回放视频](https://www.bilibili.com/video/BV1zh4y1q7Ec/)  
-[第二期抖音视频](https://v.douyin.com/idyPTSPb/)
+[第二期抖音回放视频](https://v.douyin.com/idyPTSPb/)
 
 
 ## 第一期
@@ -32,4 +32,4 @@
   
 
 [第一期哔哩哔哩回放视频](https://www.bilibili.com/video/BV1wK4y1w7ru/)  
-[第一期抖音视频](https://v.douyin.com/idyD58vQ/)
+[第一期抖音回放视频](https://v.douyin.com/idyD58vQ/)
