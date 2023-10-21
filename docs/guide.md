@@ -27,4 +27,7 @@
 ## 布道师名单：
 
 ### MG0000001  @Stark
-![Stark](/img/guide/Stark.jpg){width="300"}
+![Stark](/img/guide/MG0000001.jpg){width="300"}  
+
+### MG0000002  @曙光磁铁
+![曙光磁铁](/img/guide/MG0000002.jpg){width="300"}
