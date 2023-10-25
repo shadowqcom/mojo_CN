@@ -1,7 +1,8 @@
 ---
 layout: home
-
+title: "Mojo官网  Mojo社区"
 hero:
+  title: "Mojo官网"
   name: "Mojo"
   text: "AI开发人员的新语言"
   tagline: Mojo 结合了 Python 的可用性和 C/C++ 的性能，Mojo被设计为Python的超集。
