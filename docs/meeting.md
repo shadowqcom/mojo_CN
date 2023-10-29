@@ -6,8 +6,9 @@
 会议时间：2023/10/28 20:00-21:00
 
 会议链接：https://work.weixin.qq.com/webapp/tm/G1yUSpn98rb  
-#会议号：577-497-037
+#会议号：577-497-037  
 
+[第四期哔哩哔哩回放视频](https://www.bilibili.com/video/BV1Le41197cf)  
 
 ![meeting4](/img/mojodevelopermeeting4.png){width="400"}
 
