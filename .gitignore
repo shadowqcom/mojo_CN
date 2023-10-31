@@ -3,3 +3,5 @@
 */dist
 *.txt
 /倒计时
+.vitepress/dist
+.vitepress/cache
