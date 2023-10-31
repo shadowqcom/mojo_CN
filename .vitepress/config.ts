@@ -63,6 +63,7 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: 'mojo build', link: '/docs/Mojo-CLI/CLI_Build' },
+            { text: 'mojo debug', link: '/docs/Mojo-CLI/CLI_Debug' },
             { text: 'mojo demangle', link: '/docs/Mojo-CLI/CLI_Demangle' },
             { text: 'mojo doc', link: '/docs/Mojo-CLI/CLI_Doc' },
             { text: 'mojo format', link: '/docs/Mojo-CLI/CLI_Format' },
