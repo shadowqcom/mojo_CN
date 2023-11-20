@@ -1,13 +1,9 @@
 # mojo_CN
 
 
-[mojo中文网](https://mojocn.org) [mojocn.org](https://mojocn.org) 源文件
+- [文档](https://mojocn.org/docs/install.html)
 
-
-
-- [安装文档](https://mojocn.org/docs/install.html)
-
-- [快速开始](https://mojocn.org/docs/start.html)
+- [社区](https://dev.mojocn.org/)
 
 
 

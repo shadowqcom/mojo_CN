@@ -37,6 +37,7 @@ export default defineConfig({
     logo: '/img/mojofire.png',
     nav: [
       { text: '首页', link: '/' },
+      { text: '开发者社区', link: 'https://dev.mojocn.org/' },
       { text: '快速开始', link: '/docs/start' },
       { text: '布道师计划', link: '/docs/guide' },
       { text: '关于我们', link: '/docs/about' }
@@ -75,6 +76,7 @@ export default defineConfig({
           { text: '加入群聊', link: '/docs/chat' },
           { text: '赞助我们', link: '/docs/sponsor'},
           { text: '布道师计划', link: '/docs/guide'},
+          { text: '开发者社区', link: 'https://dev.mojocn.org/'},
         ]
       }
     ],

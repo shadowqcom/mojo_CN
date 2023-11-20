@@ -8,11 +8,14 @@ hero:
   tagline: Mojo 结合了 Python 的可用性和 C/C++ 的性能，Mojo被设计为Python的超集。
   actions:
     - theme: brand
-      text: 开始使用
-      link: /docs/start
+      text: 开发者社区
+      link: https://dev.mojocn.org
     - theme: alt
       text: 加入群聊
       link: /docs/chat
+    - theme: alt
+      text: 开始使用
+      link: /docs/start
   image:
     src: /img/mojofire.png
     alt: mojo
@@ -39,6 +42,6 @@ features:
     details: 同样的，Mojo的包文件可以用.mojopkg作为后缀，也可以使用.📦 。
 
   - icon: 🧑‍💻
-    title: 中文社区建设中
-    details: Mojo中文网正在开发建设中文社区，目前群用户累计1500+ 。
+    title: Mojo开发者社区
+    details: Mojo中文网目前群用户累计1500+ 为了更加多元化提供交流渠道，已经建立Mojo开发者社区。
 ---
