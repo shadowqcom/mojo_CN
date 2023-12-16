@@ -43,5 +43,5 @@ features:
 
   - icon: 🧑‍💻
     title: Mojo开发者社区
-    details: Mojo中文网目前群用户累计1500+ 为了更加多元化提供交流渠道，已经建立Mojo开发者社区。
+    details: Mojo中文网目前为了提供更加多元化交流渠道，已经建立Mojo开发者社区。
 ---

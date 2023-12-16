@@ -5,9 +5,9 @@
 
 ## 2、[hello world](/docs/get-started/hello_world)
 
-## 3、[Mojo语法基础](/docs/get-started/Mojo_language_basics)
+## 3、[Mojo语法基础](/docs/Mojo_language_basics)
 
-## 4、[模块和包](/docs/get-started/modules_and_packages)
+## 4、[模块和包](/docs/modules_and_packages)
 
 
 ## 5、Mojo简介

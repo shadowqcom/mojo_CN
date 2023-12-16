@@ -1,11 +1,11 @@
-# 安装SDK
+# 安装Mojo
 
 
 ## Windows
 Mojo 尚不适用于 Windows，您可以在 Linux 容器或远程系统中安装，
 或者使用windows中的linux子系统，参考linux安装方式进行安装。   
 原生windows支持即将到来。
-[VScode下载地址](https://vscode.cdn.azure.cn/stable/8b617bd08fd9e3fc94d14adb8d358b56e3f72314/VSCodeUserSetup-x64-1.82.0.exe)
+[VScode官网下载](https://code.visualstudio.com/)
 ```shell
 # windows子系统ubuntu20.04安装
 curl https://get.modular.com | MODULAR_AUTH=mut_1ab442b0938f435388ecc1851d9b6286  sh -
@@ -44,6 +44,13 @@ modular install mojo
 
 
 ## Mac
+系统要求：
+
+> - Apple silicon (M1 or M2 processor)
+> - macOS Monterey (12) or later
+> - Python 3.8 - 3.11
+> - Command-line tools for Xcode, or Xcode
+
 1、创建 GitHub 代码示例的分支。[GitHub code examples.](https://github.com/modularml/mojo/tree/main/examples)   
 2、安装 VS Code、Mojo 扩展和 GitHub Codespaces 扩展。   
 3、在 VS Code 中，按 Cmd+Shift+P 并选择 Codespaces：创建新 Codespace。 然后选择您分叉的“mojo”存储库，并选择具有 32 GB RAM 的实例类型。   
@@ -131,8 +138,16 @@ modular update mojo
 
 我们还可能发布该工具的更新，该工具作为 Debian 软件包安装（目前仅适用于 Linux），因此您可以像这样更新它：`modular`
 
+Linux :
 ```
 sudo apt update
 
 sudo apt install modular
+```
+
+Mac:
+```
+brew update
+
+brew upgrade modular
 ```
