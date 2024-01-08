@@ -29,3 +29,7 @@
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=shadowqcom/mojo_CN&type=Date)](https://star-history.com/#shadowqcom/mojo_CN&Date)
+
+
+## Stargazers over time
+[![Stargazers over time](https://starchart.cc/shadowqcom/mojo_CN.svg?variant=adaptive)](https://starchart.cc/shadowqcom/mojo_CN)
