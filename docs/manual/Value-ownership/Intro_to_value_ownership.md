@@ -70,5 +70,5 @@ productivity and strong memory safety. It only requires that you learn some new
 syntax and a few rules about how to share access to memory within your program.
 
 But before we explain the rules and syntax for Mojo's value ownership model,
-you first need to understand [value
-semantics](/mojo/manual/values/value-semantics.html).
+you first need to understand value
+semantics.

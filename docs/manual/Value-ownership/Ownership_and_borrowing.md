@@ -7,8 +7,8 @@ error, or a "leaked memory" error, any one of which can be catastrophic.
 
 Mojo helps avoid these errors by ensuring there is only one variable that owns
 each value at a time, while still allowing you to share references with other
-functions. When the lifetime of the owner ends, Mojo [destroys the
-value](/mojo/manual/lifecycle/death.html).
+functions. When the lifetime of the owner ends, Mojo destroys the
+value.
 
 On this page, we'll explain the rules that govern this ownership model and how
 to specify different argument conventions that define how values are shared into
@@ -22,8 +22,8 @@ a function is a unique value or a reference, and whether it's mutable or
 immutable, has a series of consequences that define the readability,
 performance, and safety of the language.
 
-In Mojo, we want to provide full [value
-semantics](/mojo/manual/values/value-semantics.html) by default, which provides
+In Mojo, we want to provide full value
+semantics by default, which provides
 consistent and predictable behavior. But as a systems programming language, we
 also need to offer full control over memory optimizations, which generally
 requires reference semantics. The trick is to introduce reference semantics in
@@ -53,7 +53,7 @@ For example, this function has one argument that's a mutable
 reference and one that's immutable:
 
 
-```mojo
+```python
 fn add(inout x: Int, borrowed y: Int):
     x += y
 
@@ -68,12 +68,12 @@ You've probably already seen some function arguments that don't declare a
 convention. That's because every argument has a default convention, depending
 on whether the function is declared with `fn` or `def`:
 
-- All values passed into a Mojo [`def`
-  function](/mojo/manual/functions.html#def-functions) are `owned`,
+- All values passed into a Mojo `def`
+  function are `owned`,
   by default. 
 
-- All values passed into a Mojo [`fn`
-  function](/mojo/manual/functions.html#fn-functions) are `borrowed`,
+- All values passed into a Mojo `fn`
+  function are `borrowed`,
   by default.
 
 In the following sections, we'll explain each of these argument conventions in
@@ -101,8 +101,8 @@ Because Mojo does not allow a mutable reference to overlap with another mutable
 or immutable reference, it provides a predictable programming model about which
 references are and aren't valid (an invalid reference is one who's lifetime has
 ended, perhaps because the value ownership was transferred). Importantly, this
-logic allows Mojo to immediately [destroy
-values](/mojo/manual/lifecycle/death.html) when their lifetime ends.
+logic allows Mojo to immediately destroy
+values when their lifetime ends.
 
 ## Immutable arguments (`borrowed`)
 
@@ -116,14 +116,14 @@ as when the type is expensive to copy (or not copyable at all) and you just
 need to read it. For example:
 
 
-```mojo
+```python
 from tensor import Tensor, TensorShape
 
 def print_shape(borrowed tensor: Tensor[DType.float32]):
     shape = tensor.shape()
     print(shape.__str__())
 
-var tensor = Tensor[DType.float32](256, 256)
+var tensor = TensorDType.float32
 print_shape(tensor)
 ```
 
@@ -171,7 +171,7 @@ function.
 For example, this `mutate()` function updates the original `x` value:
 
 
-```mojo
+```python
 def mutate(inout y: Int):
     y += 1
 
@@ -186,7 +186,7 @@ print(x)
 That behaves like an optimized shorthand for this:
 
 
-```mojo
+```python
 def mutate_copy(y: Int) -> Int:
     y += 1
     return y
@@ -207,22 +207,22 @@ For example, if you try to take a `borrowed` value and pass it to another
 function as `inout`, you'll get a compiler error because Mojo can't form a
 mutable reference from an immutable reference.
 
-:::note
+
 
 Notice that we don't call this argument passing "by reference."
 Although the `inout` convention is conceptually the same, we don't call it
 by-reference passing because the implementation may actually pass values using
 pointers.
 
-:::
 
-:::note
 
-You cannot define [default
-values](/mojo/manual/functions.html#optional-arguments) for `inout`
+
+
+You cannot define default
+values for `inout`
 arguments.
 
-:::
+
 
 ## Transfer arguments (`owned` and `^`)
 
@@ -235,8 +235,8 @@ lifetime of that variable.
 
 Technically, the `owned` keyword does not guarantee that the received value is
 a mutable reference to _the original value_—it guarantees only that the function
-gets unique ownership of this particular value (enforcing [value
-semantics](/mojo/manual/values/value-semantics.html)). This happens in one of
+gets unique ownership of this particular value (enforcing value
+semantics). This happens in one of
 two ways:
 
 - The caller passes the argument with the `^` transfer operator, which ends the
@@ -256,7 +256,7 @@ because—although `take_text()` uses the `owned` convention—the caller does n
 include the transfer operator:
 
 
-```mojo
+```python
 fn take_text(owned text: String):
     text += "!"
     print(text)
@@ -277,7 +277,7 @@ However, if you add the `^` transfer operator when calling `take_text()`, the
 compiler complains about `print(message)`, because at that point, the `message`
 variable is no longer initialized. That is, this version does not compile:
 
-```mojo
+```python
 fn my_function():
     var message: String = "Hello"
     take_text(message^)  
@@ -290,7 +290,7 @@ not use the `message` variable after you end its lifetime with the `^` transfer
 operator. So here is the corrected code:
 
 
-```mojo
+```python
 
 fn my_function():
     var message: String = "Hello"
@@ -302,13 +302,13 @@ my_function()
     Hello!
     
 
-:::note
+
 
 Value lifetimes are not fully implemented for top-level code in
 Mojo's REPL, so the transfer operator currently works as intended only when
 used inside a function.
 
-:::
+
 
 ### Transfer implementation details
 
@@ -318,8 +318,8 @@ operation"—these are not strictly the same thing.
 There are multiple ways that Mojo can transfer ownership of a value without
 making a copy:
 
-- If a type implements the [move
-  constructor](/mojo/manual/lifecycle/life.html#consuming-move-constructor),
+- If a type implements the move
+  constructor,
   `__moveinit__()`, Mojo may invoke this method _if_ a value of that type is
   transferred into a function as an `owned` argument, _and_ the original value's
   lifetime ends at the same point (with or without use of the `^` transfer
@@ -334,13 +334,13 @@ operator, the value type must be copyable (via `__copyinit__()`).
 ## Comparing `def` and `fn` argument conventions
 
 As mentioned in the section about
-[functions](/mojo/manual/functions.html), the `def` and `fn` functions
+functions, the `def` and `fn` functions
 are interchangeable, as far as a caller is concerned, and they can both
 accomplish the same things. It's only the inside that differs, and Mojo's `def`
 function is essentially just sugaring for the `fn` function:
 
 - A `def` argument without a type annotation defaults to
-  [`object`](/mojo/stdlib/builtin/object#object) type (whereas as `fn`
+  `object` type (whereas as `fn`
   requires all types be explicitly declared).
 
 - A `def` argument without a convention keyword (`borrowed`, `inout`, or
@@ -349,7 +349,7 @@ function is essentially just sugaring for the `fn` function:
 For example, these two functions have the exact same behavior:
 
 
-```mojo
+```python
 def example(borrowed a: Int, inout b: Int, c):
     pass
 
@@ -361,7 +361,7 @@ Or, instead of specifying `owned` for the `c` argument, you can get the same
 effect by manually making a copy when you need it:
 
 
-```mojo
+```python
 fn example(a: Int, inout b: Int, c_in: object):
     var c = c_in
     pass

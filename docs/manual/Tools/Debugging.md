@@ -3,12 +3,12 @@ debugger with Mojo programs. (The Mojo extension also supports debugging C, C++,
 and Objective-C.)
 
 For complete coverage of VS Code's debugging features, see
-[Debugging in Visual Studio Code](https://code.visualstudio.com/docs/editor/debugging).
+Debugging in Visual Studio Code.
 
 This page describes the features available through the Mojo extension, as well
 as current limitations of the Mojo debugger.
 
-The Mojo SDK includes the [LLDB debugger](https://lldb.llvm.org/) and a Mojo
+The Mojo SDK includes the LLDB debugger and a Mojo
 LLDB plugin. Together these provide the low-level debugging interface for the
 Mojo extension. You can also use `mojo debug` to start a command-line debugging
 session using LLDB.
@@ -21,15 +21,15 @@ To start debugging, you'll need to have a Mojo project to debug. There are
 a number of examples ranging from simple to complex in the [Mojo repo on
 GitHub](https://github.com/modularml/mojo).
 
-:::note **VS Code veteran?**
+ **VS Code veteran?**
 
 If you're already familiar with debugging in VS Code, the
 material in this section will mostly be review. You might want to skip ahead to
-[Mojo launch configurations](#mojo-launch-configurations-launch-configurations)
-or see [Using the debugger](#using-the-debugger) for notes on the features
+Mojo launch configurations
+or see Using the debugger for notes on the features
 supported in the Mojo debugger. 
 
-:::
+
 
 ### Quick run or debug
 
@@ -37,14 +37,11 @@ If your active editor tab contains a Mojo file with an `fn main()` entry point,
 one of the quickest ways to run or debug it is using the **Run or Debug** button
 in the Editor toolbar.
 
-![](images/quick-run-or-debug-button.png)
-
 To start debugging the current file:
 
 - Open the **Run or Debug** dropdown menu and choose **Debug Mojo File** or
 **Debug Mojo File in Dedicated Terminal**.
 
-  ![](images/quick-run-or-debug-menu.png)
 
 The two debug configurations differ in how they handle input and output:
 
@@ -68,8 +65,6 @@ configurations](#edit-launch-configurations).
 After you choose one of the debug configurations, the button updates to show
 the debug symbol. Click the button to re-run the previous configuration.
 
-![](images/quick-run-or-debug-button-debug.png).
-
 
 ### Run and Debug view
 
@@ -77,25 +72,21 @@ The **Run and Debug** view includes a button to launch debug sessions and a
 menu to select debug configurations. It also has areas to display current
 variables, watch expressions, the current call stack, and breakpoints.
 
-![](images/run-and-debug-view.png)
 
 To open **Run and Debug** view, click the **Run and Debug** icon in the
 **Activity Bar** (on the left side of the VS Code window) or press
 <kbd>Control+Shift+D</kbd> 
 (<kbd>Command+Shift+D</kbd> on macOS).
 
-![](images/run-and-debug-icon.png)
 
 If you haven't created any launch configurations in the current project,
 VS Code shows the **Run start view**.
 
-![](images/run-start-view.png)
 
 If you've already launched a debug session or created a `launch.json` file to
 define launch configurations, you'll see the **Launch configurations** menu,
 which lets you choose configurations and start debug sessions:
 
-![](images/launch-configuration-menu.png)
 
 ### Other ways to start a debug session
 
@@ -130,7 +121,7 @@ Press F5 to start a debug session using the current debug configuration.
 If you don't have any existing debug configurations available to select, and
 your active editor contains a Mojo file with an `fn main()` entry point,
 pressing F5 will launch and debug the current file using the **Debug Mojo
-File** action described in [Quick run or debug](#quick-run-or-debug).
+File** action described in Quick run or debug.
 
 ## Edit launch configurations
 
@@ -140,13 +131,10 @@ To edit launch configurations:
 Debug** icon in the **Activity Bar** (on the left side of the VS Code window)
 or press <kbd>Control+Shift+D</kbd> (<kbd>Command+Shift+D</kbd> on macOS).
 
-   ![](images/run-and-debug-icon.png)
-  
 1. Create or open the `launch.json` file:
     1. If you see the **Run start view**, click **create a launch.json file**.
     1. If you already have launch configurations set up, click the gear icon
     next to the **Launch configurations** menu.
-       ![](images/launch-configuration-menu.png)
 1. Select **Mojo** from the list of debuggers.
 
 VS Code opens the new `launch.json` file in an editor tab, with templates for
@@ -159,7 +147,7 @@ The Mojo debugger provides the following launch configuration templates:
 
 * Debug current Mojo file. Launches and debugs the Mojo file in the active
 editor tab. Effectively the same as the **Debug Mojo File** action described in
-[Quick run or debug](#quick-run-or-debug), but with more configuration options.
+Quick run or debug, but with more configuration options.
 
 * Debug Mojo file. Like the previous entry, except that it identifies a
 specific file to launch and debug, no matter what file is displayed in the
@@ -212,8 +200,6 @@ no way to specify compilation options.
 When a debug session is running, use the debug toolbar to pause, continue, and
 step through the program.
 
-![](images/debug-toolbar.png)
-
 The buttons on the toolbar are:
 
 - **Continue/Pause**: If the program is stopped, resume the normal execution of the
@@ -246,8 +232,8 @@ The debugger currently has the following limitations:
 
 The Mojo debugger supports setting [standard 
 breakpoints](https://code.visualstudio.com/docs/editor/debugging#_breakpoints),
-[logpoints](https://code.visualstudio.com/docs/editor/debugging#_logpoints), and
-[triggered breakpoints](https://code.visualstudio.com/docs/editor/debugging#_triggered-breakpoints), 
+logpoints, and
+triggered breakpoints, 
 as described in the VS Code documentation.
 
 When debugging Mojo code, the debugger doesn't support function breakpoints,
@@ -297,8 +283,8 @@ and `ListLiteral`.
 In the future, we intend to provide a way for arbitrary data structures to
 support subscript notation in the **Debug Console**.
 
-:::note 
+ 
 
 The **Debug Console** only accepts input when the program is paused.
 
-:::
+

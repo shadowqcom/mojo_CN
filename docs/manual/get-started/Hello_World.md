@@ -4,17 +4,17 @@ Before you start, make sure the `MODULAR_HOME` and `PATH` environment variables
 are set, as described in the install procedure, so you can run the `mojo`
 command:
 
-```text
+```python
 mojo --version
 ```
 
-If you have other issues during install, check our [known
-issues](/mojo/roadmap.html#mojo-sdk-known-issues).
+If you have other issues during install, check our known
+issues.
 
 ## 1. Run code in the REPL
 
 First, let's use the Mojo
-[REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop),
+REPL,
 which allows you to write and run Mojo code in a command prompt:
 
 1. To start a REPL session, type `mojo` in your terminal and press
@@ -25,7 +25,7 @@ which allows you to write and run Mojo code in a command prompt:
 
 That's it! For example:
 
-```text
+```python
 $ mojo
 Welcome to Mojo! 🔥
 
@@ -49,11 +49,11 @@ a `.mojo` source file.
 ## 2. Run a Mojo file
 
 Now let's write the code in a Mojo source file and run it with the
-[`mojo`](/mojo/cli/) command:
+`mojo` command:
 
 1. Create a file named `hello.mojo` (or `hello.🔥`) and add the following code:
 
-   ```mojo
+   ```python
    fn main():
        print("Hello, world!")
    ```
@@ -68,19 +68,19 @@ Now let's write the code in a Mojo source file and run it with the
 
     It should immediately print the message:
 
-    ```text
+    ```python
     Hello, world!
     ```
 
 If this didn't work for you, double-check your code looks exactly like the code
-in step 1, and make sure you correctly [installed
-Mojo](/mojo/manual/get-started/#install-mojo).
+in step 1, and make sure you correctly installed
+Mojo.
 
 ## 3. Build an executable binary
 
 Finally, let's build and run that same code as an executable:
 
-1. Create an executable file with the [`build`](/mojo/cli/build.html) command:
+1. Create an executable file with the `build` command:
 
     ```sh
     mojo build hello.mojo
@@ -101,10 +101,10 @@ libraries it needs to run.
 ## Next steps
 
 - If you're new to Mojo, we suggest you continue to the next section about
-  [language basics](/mojo/manual/basics.html).
+  language basics.
 
-- If you want to experiment with some code, clone [the Mojo
-repo](https://github.com/modularml/mojo/) to try our code examples:
+- If you want to experiment with some code, clone the Mojo
+repo to try our code examples:
 
   ```sh
   git clone https://github.com/modularml/mojo.git
@@ -114,5 +114,5 @@ repo](https://github.com/modularml/mojo/) to try our code examples:
   notebooks](https://github.com/modularml/mojo/tree/main/examples/notebooks#readme)
   that teach advanced Mojo features.
 
-- To see all the available Mojo APIs, check out the [Mojo standard library
-  reference](/mojo/lib.html).
+- To see all the available Mojo APIs, check out the Mojo standard library
+  reference.

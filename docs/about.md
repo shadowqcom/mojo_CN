@@ -9,6 +9,7 @@ Mojo中文网是由 [影象限] 发起的开源文档项目，旨在拥抱学习
 
 -  [企业及政务OA系统建设与二次开发](https://www.landray.com.cn/)
 
--  [knloop](https://work.weixin.qq.com/gm/4420b8d78049d04e6a9d1a672f76174d)知识循环 笔记学习工具 （beta）
+<!-- -  [knloop](https://work.weixin.qq.com/gm/4420b8d78049d04e6a9d1a672f76174d)知识循环 笔记学习工具 （beta） -->
+-  [knloop](https://knloop.com/) 知识循环 笔记学习工具 （beta）
 -  Mojo中文网
 -  [Mojo开发者交流会](/docs/meeting.html)

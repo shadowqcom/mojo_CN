@@ -15,11 +15,11 @@ doesn't need to change.
 ## Import a Python module
 
 To import a Python module in Mojo, just call 
-[`Python.import_module()`](/mojo/stdlib/python/python.html#import_module) 
+`Python.import_module()` 
 with the module name:
 
 
-```mojo
+```python
 from python import Python
 
 fn use_array() raises:
@@ -32,7 +32,7 @@ fn use_array() raises:
 ```
 
 
-```mojo
+```python
 use_array()
 ```
 
@@ -60,16 +60,16 @@ A few things to note:
   the function signature. You'll also see this when calling Python functions
   that may raise exceptions. (Raising exceptions is much more common in Python
   code than in the Mojo standard library, which 
-  [limits their use for performance reasons](/mojo/roadmap.html#the-standard-library-has-limited-exceptions-use).)
+  limits their use for performance reasons.)
 
-:::note
+
 
 Mojo loads the Python interpreter and Python modules at runtime, so
 wherever you run a Mojo program, it must be able to access a compatible Python
 interpreter, and to locate any imported Python modules. For more information,
-see [Python environment](#python-environment).
+see Python environment.
 
-:::
+
 
 ### Import a local Python module
 
@@ -101,10 +101,10 @@ fn main() raises:
 ```
 
 Both absolute and relative paths work with 
-[`add_to_path()`](/mojo/stdlib/python/python.html#add_to_path). For example, you
+`add_to_path()`. For example, you
 can import from the local directory like this:
 
-```mojo
+```python
 Python.add_to_path(".")
 ```
 
@@ -123,7 +123,7 @@ framework code calls *out* to your application code.
 This pattern doesn't work because you can't pass Mojo callbacks to a Python 
 module.
 
-For example, consider the popular [Tkinter package](https://docs.python.org/3/library/tkinter.html). 
+For example, consider the popular Tkinter package. 
 The typical usage for Tkinter is something like this:
 
 - You create a main, or "root" window for the application.
@@ -141,7 +141,7 @@ First we create a Python module that defines a Tkinter interface, with a window
 and single button:
 
 
-```mojo
+```python
 %%python
 import tkinter as tk
 
@@ -172,7 +172,7 @@ class App:
 We can call this module from Mojo like this:
 
 
-```mojo
+```python
 from python import Python
 
 fn button_clicked():
@@ -207,7 +207,7 @@ If you run into problems after installing Mojo, see the following sections.
 ### Installation issues
 
 When the installer runs, it tries to locate the CPython shared library using the 
-[find_libpython](https://pypi.org/project/find-libpython/) module.
+find_libpython module.
 
 This may fail if one of the following is true:
 
@@ -220,13 +220,13 @@ This may fail if one of the following is true:
 
 If one of these things is the case, you'll need to install a compatible version
 of Python that includes shared libraries. Try following the instructions in 
-[Set up a Python environment with Conda](#set-up-a-python-environment-with-conda)
+Set up a Python environment with Conda
 to install a virtual environment. 
 
 ### Set up a Python environment with Conda
 
 Using a Python virtual environment like 
-[Conda](https://docs.conda.io/en/latest/) is one way to avoid problems with 
+Conda is one way to avoid problems with 
 your Python installation. This provides a consistent Python environment with a
 known version of Python and all of the Python packages you want to use with
 Mojo.
@@ -234,7 +234,7 @@ Mojo.
 To set up a virtual environment with Conda:
 
 1. Install Conda by following the 
-   [Quick command-line install instructions](https://docs.conda.io/projects/miniconda/en/latest/#quick-command-line-install).
+   Quick command-line install instructions.
 
    Make sure to initialize Conda for the shell or shells you use, for example:
 
@@ -277,5 +277,5 @@ conda install numpy
 ```
 
 For more information on using Conda with Mojo, see 
-[Using Mojo with Python](https://www.modular.com/blog/using-mojo-with-python) on
+Using Mojo with Python on
 the Modular Blog.

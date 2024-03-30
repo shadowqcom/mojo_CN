@@ -12,7 +12,7 @@ Today we support lists, tuples, integers, floats, booleans, and strings.
 For example, given this Python function that prints Python types:
 
 
-```mojo
+```python
 %%python
 def type_printer(value):
     print(type(value))
@@ -24,7 +24,7 @@ in the note below.)
 You can pass this Python function Mojo types with no problem:
 
 
-```mojo
+```python
 type_printer(4)
 type_printer(3.14)
 type_printer(("Mojo", True))
@@ -35,24 +35,24 @@ type_printer(("Mojo", True))
     <class 'tuple'>
     
 
-:::note
+
 
 This is a simplified code example written as a set of Jupyter
 notebook cells. The first cell includes the `%%python` directive so it's
 interpreted as Python. The second cell includes top-level Mojo code. You'd need
 to adjust this code to run it elsewhere.
 
-:::
+
 
 ## Python types in Mojo
 
 You can also use Python objects from Mojo. For example, Mojo doesn't have a
 standard dictionary type yet, but you can work with Python dictionaries in Mojo. 
 To create a Python dictionary, use the 
-[`dict()`](/mojo/stdlib/python/python.html#dict) method:
+`dict()` method:
 
 
-```mojo
+```python
 from python import Python
 
 fn use_dict() raises:
@@ -65,7 +65,7 @@ fn use_dict() raises:
 ### Mojo wrapper objects
 
 When you use Python objects in your Mojo code, Mojo adds the 
-[`PythonObject`](/mojo/stdlib/python/object.html#pythonobject) wrapper around
+`PythonObject` wrapper around
 the Python object. This object exposes a number of common double underscore
 methods (dunder methods) like `__getitem__()` and `__getattr__()`, passing them
 through to the underlying Python object. 
@@ -74,7 +74,7 @@ You can explicitly create a wrapped Python object by initializing a
 `PythonObject` with a Mojo literal:
 
 
-```mojo
+```python
 from python.object import PythonObject
 
 var py_list: PythonObject = [1, 2, 3, 4]
@@ -85,7 +85,7 @@ Python. You can use Python's `[]` operators to access an item in a list, and use
 dot-notation to access attributes and call methods. For example:
 
 
-```mojo
+```python
 var n = py_list[2]
 py_list.append(5)
 ```
@@ -93,11 +93,11 @@ py_list.append(5)
 
 If you want to construct a Python type that doesn't have a literal Mojo 
 equivalent, you can also use the 
-[`Python.evaluate()`](/mojo/stdlib/python/python.html#evaluate) method. For
+`Python.evaluate()` method. For
 example, to create a Python `set`:
 
 
-```mojo
+```python
 fn use_py_set() raises:
     var py_set = Python.evaluate('set([2, 3, 5, 7, 11])')
     var num_items = len(py_set)
@@ -113,26 +113,26 @@ Some Mojo APIs handle `PythonObject` just fine, but sometimes you'll need to
 explicitly convert a Python value into a native Mojo value. 
 
 Currently `PythonObject` conforms to the 
-[`Intable`](/mojo/stdlib/builtin/int.html#intable) and 
-[`Stringable`](/mojo/stdlib/builtin/str.html#stringable) traits, which means you
+`Intable` and 
+`Stringable` traits, which means you
 can  convert Python values to Mojo `Int` and `String` types using the built-in 
-[`int()`](/mojo/stdlib/builtin/int.html#int-1) and
-[`str()`](/mojo/stdlib/builtin/str.html#str) functions, and print Python values
-using the built-in [`print()`](/mojo/stdlib/builtin/io.html#print) function.
+`int()` and
+`str()` functions, and print Python values
+using the built-in `print()` function.
   
 `PythonObject` also provides the
-[`__bool__()`](/mojo/stdlib/python/object.html#bool__) and 
-[`to_float64()`](/mojo/stdlib/python/object.html#to_float64) methods for 
+`__bool__()` and 
+`to_float64()` methods for 
 converting to boolean and floating point values, respectively.
 
-```mojo
+```python
 var i: Int = int(py_int)
 var s: String = str(py_string)
 var b: Bool = py_bool.__bool__()
 var f: Float64 = py_float.to_float64()
 ```
 
-:::note
+
 
 We mentioned that Python types get wrapped in `PythonObject` wrapper. 
 There is currently one exception to this: Python dictionaries have their own
@@ -140,7 +140,7 @@ specialized Mojo wrapper type, `Dictionary`. Despite the name, it's not a true
 dictionary type, just another kind of wrapper. Most of the time this is
 just an implementation detail, but you may notice that the types are different.
 
-:::
+
 
 ### Comparing Python types in Mojo
 
@@ -148,14 +148,14 @@ In conditionals, Python objects act like you'd expect them to: Python values
 like `False` and `None` evaluate as false in Mojo, too.
 
 If you need to know the type of the underlying Python object, you can use the 
-[`Python.type()`](/mojo/stdlib/python/python.html#type) method, which is 
+`Python.type()` method, which is 
 equivalent to the Python `type()` builtin. You can compare the identity of two
 Python objects using the
-[`Python.is_type()`](/mojo/stdlib/python/python.html#is_type) method (which is
+`Python.is_type()` method (which is
 equivalent to the Python `is` operator):
 
 
-```mojo
+```python
 fn python_types() raises:
     from python import Python
     from python.object import PythonObject
@@ -176,5 +176,5 @@ it doesn't compare _types_, but object identity.
 ## Further reading
 
 For more information, see 
-[Using Mojo with Python](https://www.modular.com/blog/using-mojo-with-python) on 
+Using Mojo with Python on 
 the Modular Blog.

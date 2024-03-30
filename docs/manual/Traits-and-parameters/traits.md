@@ -1,13 +1,3 @@
----
-title: Traits
-description: Define shared behavior for types.
-css: /static/styles/page-navigation.css
-website:
-  open-graph:
-    image: /static/images/mojo-social-card.png
-  twitter-card:
-    image: /static/images/mojo-social-card.png
----
 A _trait_ is a set of requirements that a type must implement. You can think of
 it as a contract: a type that _conforms_ to a trait guarantees that it 
 implements all of the features of the trait.
@@ -22,7 +12,7 @@ In dynamically-typed languages like Python, you don't need to explicitly declare
 that two classes are similar. This is easiest to show by example:
 
 
-```mojo
+```python
 %%python
 class Duck:
     def quack(self):
@@ -49,14 +39,14 @@ methods to call at runtime. So `make_it_quack_python()` doesn't care what types
 you're passing it, only the fact that they implement the `quack()` method.
 
 In a statically-typed environment, this approach doesn't work:
-[`fn` functions](/mojo/manual/functions.html#fn-functions) require you to
+`fn` functions require you to
 specify the type of each argument. If you wanted to write this example in Mojo 
 _without_ traits, you'd need to write a function overload for each input type.
 All of the examples from here on are in Mojo, so we'll just call the function
 `make_it_quack()` going forward.
 
 
-```mojo
+```python
 @value
 struct Duck:
     fn quack(self):
@@ -97,7 +87,7 @@ rather than individual types. As an example, let's update the `make_it_quack()`
 example using traits. The first step is defining a trait:
 
 
-```mojo
+```python
 trait Quackable:
     fn quack(self):
         ...
@@ -108,13 +98,13 @@ keyword. Right now, a trait can only contain method signatures, and cannot
 include method implementations. Each method signature must be followed by
 three dots (`...`) to indicate that the method is unimplemented.
 
-:::note TODO
+ TODO
 
 In the future, we plan to support defining fields and default method
 implementations inside a trait. Right now, though, a trait can only declare
 method signatures.
 
-:::
+
 
 Next we create some structs that conform to the `Quackable` trait. To indicate
 that a struct conforms to a trait, include the trait name in parenthesis after
@@ -123,7 +113,7 @@ the struct name. You can also include multiple traits, separated by commas.
 syntax.)
 
 
-```mojo
+```python
 @value
 struct Duck(Quackable):
     fn quack(self):
@@ -142,13 +132,13 @@ implement everything required by the trait or the code won't compile.
 Finally, you can define a function that takes a `Quackable` like this:
 
 
-```mojo
-fn make_it_quack[T: Quackable](maybe_a_duck: T):
+```python
+fn make_it_quackT: Quackable:
     maybe_a_duck.quack()
 ```
 
 This syntax may look a little unfamiliar if you haven't dealt with Mojo
-[parameters](/mojo/manual/parameters/index.html) before. What this signature
+parameters before. What this signature
 means is that `maybe_a_duck` is an argument of type `T`, where `T` is a type
 that must conform to the `Quackable` trait. TODO: This syntax is a little 
 verbose, and we hope to make it more ergonomic in a future release.
@@ -156,7 +146,7 @@ verbose, and we hope to make it more ergonomic in a future release.
 Using the method is simple enough:
 
 
-```mojo
+```python
 make_it_quack(Duck())
 make_it_quack(StealthCow())
 ```
@@ -181,7 +171,7 @@ methods.
 
 
 
-```mojo
+```python
 trait HasStaticMethod:
     @staticmethod
     fn do_stuff(): ...
@@ -197,7 +187,7 @@ all of the methods required for a trait, it's treated as conforming to the
 trait, even if it doesn't explicitly include the trait in its declaration:
 
 
-```mojo
+```python
 struct RubberDucky:
     fn quack(self):
         print("Squeak!")
@@ -224,7 +214,7 @@ Traits can inherit from other traits. A trait that inherits from another trait
 includes all of the requirements declared by the parent trait. For example:
 
 
-```mojo
+```python
 trait Animal:
     fn make_sound(self):
         ...
@@ -245,7 +235,7 @@ parenthesis. For example, you could define a `NamedAnimal` trait that combines t
 requirements of the `Animal` trait and a new `Named` trait:
 
 
-```mojo
+```python
 trait Named:
     fn get_name(self) -> String:
         ...
@@ -257,20 +247,20 @@ trait NamedAnimal(Animal, Named):
 ## Traits and lifecycle methods
 
 Traits can specify required 
-[lifecycle methods](/mojo/manual/lifecycle/#lifecycles-and-lifetimes), including
+lifecycle methods, including
 constructors, copy constructors and move constructors.
 
 For example, the following code creates a `MassProducible` trait. A 
 `MassProducible` type has a default (no-argument) constructor and can be moved.
-It uses the built-in [`Movable`](/mojo/stdlib/builtin/value.html#movable) trait,
-which requires the type to have a [move 
-constructor](/mojo/manual/lifecycle/life.html#move-constructor).
+It uses the built-in `Movable` trait,
+which requires the type to have a move 
+constructor.
 
 The `factory[]()` function returns a newly-constructed instance of a 
 `MassProducible` type.
 
 
-```mojo
+```python
 trait DefaultConstructible:
     fn __init__(inout self): ...
 
@@ -292,7 +282,7 @@ struct Thing(MassProducible):
 var thing = factory[Thing]()
 ```
 
-Note that [`@register_passable("trivial")`](/mojo/manual/decorators/register-passable.html#register_passabletrivial) 
+Note that `@register_passable("trivial")` 
 types have restrictions on their lifecycle methods: they can't define copy or
 move constructors, because they don't require any custom logic.
 
@@ -309,32 +299,32 @@ The Mojo standard library currently includes a few traits. They're implemented
 by a number of standard library types, and you can also implement these on your
 own types:
 
-  - [`AnyType`](/mojo/stdlib/builtin/anytype.html#anytype)
-  - [`Boolable`](/mojo/stdlib/builtin/bool#boolable)
-  - [`CollectionElement`](/mojo/stdlib/builtin/value#collectionelement)
-  - [`Copyable`](/mojo/stdlib/builtin/value.html#copyable)
-  - [`Intable`](/mojo/stdlib/builtin/int.html#intable)
-  - [`KeyElement`](/mojo/stdlib/collections/dict#keyelement)
-  - [`Movable`](/mojo/stdlib/builtin/value.html#movable)
-  - [`PathLike`](/mojo/stdlib/os/pathlike#pathlike)
-  - [`Sized`](/mojo/stdlib/builtin/len.html#sized)
-  - [`Stringable`](/mojo/stdlib/builtin/str.html#stringable)
+  - `AnyType`
+  - `Boolable`
+  - `CollectionElement`
+  - `Copyable`
+  - `Intable`
+  - `KeyElement`
+  - `Movable`
+  - `PathLike`
+  - `Sized`
+  - `Stringable`
 
 The API reference docs linked above include usage examples for each trait. The
 following sections discuss a few of these traits.
 
 ### The `Sized` trait
 
-The [`Sized`](/mojo/stdlib/builtin/len.html#sized) trait identifies types that
+The `Sized` trait identifies types that
 have a measurable length, like strings and arrays. 
 
 Specifically, `Sized` requires a type to implement the `__len__()` method. 
-This trait is used by the built-in [`len()`](/mojo/stdlib/builtin/len.html#len) 
+This trait is used by the built-in `len()` 
 function. For example, if you're writing a custom list type, you could 
 implement this trait so your type works with `len()`:
 
 
-```mojo
+```python
 struct MyList(Sized):
     var size: Int
     # ...
@@ -353,16 +343,16 @@ print(len(MyList()))
 
 ### The `Intable` and `Stringable` traits
 
-The [`Intable`](/mojo/stdlib/builtin/int.html#intable) and 
-[`Stringable`](/mojo/stdlib/builtin/str.html#stringable) traits identify types
+The `Intable` and 
+`Stringable` traits identify types
 that can be implicitly converted to `Int` and `String`, respectively. 
 
 Any type that conforms to `Stringable` works with the built-in
-[`print()`](/mojo/stdlib/builtin/io.html#print) and 
-[`str()`](/mojo/stdlib/builtin/str.html#str) functions:
+`print()` and 
+`str()` functions:
 
 
-```mojo
+```python
 @value
 struct Pet(Stringable):
     var name: String
@@ -379,8 +369,8 @@ print(spot)
     
 
 Similarly, an `Intable` type works with the built-in 
-[`int`](/mojo/stdlib/builtin/int.html#int-1) function. You can find an example
-in the [`Intable` API reference](/mojo/stdlib/builtin/int.html#intable).
+`int` function. You can find an example
+in the `Intable` API reference.
 
 
 
@@ -389,11 +379,11 @@ in the [`Intable` API reference](/mojo/stdlib/builtin/int.html#intable).
 When building a generic container type, one challenge is knowing how to dispose
 of the contained items when the container is destroyed. Any type that 
 dynamically allocates memory needs to supply a 
-[destructor](/mojo/manual/lifecycle/death.html#destructor) (`__del__()` method)
+destructor (`__del__()` method)
 that must be called to free the allocated memory. But not all types have a 
 destructor, and your Mojo code has no way to determine which is which.
 
-The [`AnyType`](/mojo/stdlib/builtin/anytype#anytype) trait solves this
+The `AnyType` trait solves this
 issue: every trait implicitly inherits from `AnyType`, and all structs conform
 to `AnyType`, which guarantees that the type has a destructor. For types that 
 don't have one, Mojo adds a no-op destructor. This means you can call the 
@@ -412,15 +402,15 @@ items to a container. But in a statically-typed environment the compiler needs
 to be able to identify the types at compile time. For example, if the container
 needs to copy a value, the compiler needs to verify that the type can be copied.
 
-The [`List`](/mojo/stdlib/collections/list.html) type is an example of a
+The `List` type is an example of a
 generic container. A single `List` can only hold a single type of data.
 For example, you can create a list of integer values like this:
 
 
-```mojo
+```python
 from collections import List
 
-var list = List[Int](1, 2, 3)
+var list = ListInt
 for i in range(len(list)):
     print(list[i], sep=" ", end="")
 ```
@@ -431,9 +421,9 @@ You can use traits to define requirements for elements that are stored in a
 container. For example, `List` requires elements that can be moved and
 copied. To store a struct in a `List`, the struct needs to conform to
 the `CollectionElement` trait, which requires a 
-[copy constructor](/mojo/manual/lifecycle/life.html#copy-constructor) and a 
-[move constructor](/mojo/manual/lifecycle/life.html#move-constructor).
+copy constructor and a 
+move constructor.
 
 Building generic containers is an advanced topic. For an introduction, see the
 section on 
-[parameterized structs](/mojo/manual/parameters/#parameterized-structs).
+parameterized structs.

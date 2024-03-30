@@ -13,8 +13,8 @@ memory-safe data structure for high-level data types used in programs. For
 example, all the data types in Mojo's standard library (such as `Int`,
 `Bool`, `String`, and `Tuple`) are defined as structs.
 
-If you understand how [functions](/mojo/manual/functions.html) and
-[variables](/mojo/manual/variables.html) work in Mojo, you probably
+If you understand how functions and
+variables work in Mojo, you probably
 noticed that Mojo is designed to provide dynamic programming features in a
 `def` function while enforcing stronger code safety in `fn` functions. When it
 comes to structs, Mojo leans toward the safe side: You can still choose whether
@@ -26,7 +26,7 @@ declared with `var`.
 You can define a simple struct called `MyPair` with two fields like this:
 
 
-```mojo
+```python
 struct MyPair:
     var first: Int
     var second: Int
@@ -36,7 +36,7 @@ However, you can't instantiate this struct because it has no constructor
 method. So here it is with a constructor to initialize the two fields:
 
 
-```mojo
+```python
 struct MyPair:
     var first: Int
     var second: Int
@@ -47,31 +47,31 @@ struct MyPair:
 ```
 
 Notice that the first argument in the `__init__()` method is `inout self`. For
-now, ignore `inout` (it's an [argument
-convention](/mojo/manual/values/ownership.html#argument-conventions) that
+now, ignore `inout` (it's an argument
+convention that
 declares `self` is a mutable reference); all you need to know right now is that
 `self` must be the first argument. It references the current struct instance
 (it allows code in the method to refer to "itself"). *When you call the
 constructor, you never pass a value for `self`—Mojo passes it in 
 automatically.*
 
-The `__init__()` method is one of many [special methods](#special-methods)
+The `__init__()` method is one of many special methods
 (also known as "dunder methods" because they have *d*ouble *under*scores) with
 pre-determined names.
 
-:::note
+
 
 You can't assign values when you declare fields. You must initialize
 all of the struct's fields in the constructor. (If you try to leave a field
 uninitialized, the code won't compile.)
 
-:::
+
 
 Once you have a constructor, you can create an instance of `MyPair` and set the
 fields:
 
 
-```mojo
+```python
 var mine = MyPair(2,4)
 print(mine.first)
 ```
@@ -85,7 +85,7 @@ In addition to special methods like `__init__()`, you can add any other method
 you want to your struct. For example:
 
 
-```mojo
+```python
 struct MyPair:
     var first: Int
     var second: Int
@@ -99,7 +99,7 @@ struct MyPair:
 ```
 
 
-```mojo
+```python
 var mine = MyPair(6, 8)
 print(mine.get_sum())
 ```
@@ -115,13 +115,13 @@ instance that is always passed as the first argument.
 Methods that take the implicit `self` argument are called _instance methods_ 
 because they act on an instance of the struct. 
 
-:::note
+
 
 The `self` argument in a struct method is the only argument in an
 `fn` function that does not require a type. You can include it if you want, but
 you can elide it because Mojo already knows its type (`MyPair` in this case).
 
-:::
+
 
 ### Static methods
 
@@ -134,7 +134,7 @@ To declare a static method, use the `@staticmethod` decorator and don't include
 a `self` argument:
 
 
-```mojo
+```python
 struct Logger:
 
     fn __init__(inout self):
@@ -150,7 +150,7 @@ You can invoke a static method by calling it on the type (in this case,
 shown below:
 
 
-```mojo
+```python
 Logger.log_info("Static method called.")
 var l = Logger()
 l.log_info("Static method called from instance.")
@@ -179,7 +179,7 @@ methods at runtime). Structs allow you to trade flexibility for performance
 while being safe and easy to use.
 
 - Mojo structs do not support inheritance ("sub-classing"), but a struct can
-  implement [traits](/mojo/manual/traits.html).
+  implement traits.
 
 - Python classes support class attributes—values that are shared by all
   instances of the class, equivalent to class variables or static data members
@@ -234,7 +234,7 @@ and they usually accomplish one of two types of tasks:
 - Operator overloading: A lot of special methods are designed to overload
   operators such as `<` (less-than), `+` (add), and `|` (or) so they work
   appropriately with each type. For example, look at the methods listed for Mojo's
-  [`Int` type](/mojo/stdlib/builtin/int#int). One such method is `__lt__()`, which
+  `Int` type. One such method is `__lt__()`, which
   Mojo calls to perform a less-than comparison between two integers (for example,
   `num1 < num2`).
 
@@ -245,7 +245,7 @@ and they usually accomplish one of two types of tasks:
   move a value.
 
 You can learn all about the lifecycle special methods in the section about
-[Value lifecycle](/mojo/manual/lifecycle/). However, most structs are simple
+Value lifecycle. However, most structs are simple
 aggregations of other types, so unless your type requires custom behaviors when
 an instance is created, copied, moved, or destroyed, you can synthesize the
 essential lifecycle methods you need (and save yourself some time) by adding
@@ -253,7 +253,7 @@ the `@value` decorator.
 
 ### `@value` decorator
 
-When you add the [`@value` decorator](/mojo/manual/decorators/value.html) to a
+When you add the `@value` decorator to a
 struct, Mojo will synthesize the essential lifecycle methods so your object
 provides full value semantics. Specifically, it generates the `__init__()`,
 `__copyinit__()`, and `__moveinit__()` methods, which allow you to construct,
@@ -263,7 +263,7 @@ compatible with Mojo's ownership model.
 For example:
 
 
-```mojo
+```python
 @value
 struct MyPet:
     var name: String
@@ -275,7 +275,7 @@ constructor, or a copy constructor, and it will synthesize these for you as if
 you had written:
 
 
-```mojo
+```python
 struct MyPet:
     var name: String
     var age: Int
@@ -297,7 +297,7 @@ Without the copy and move constructors, the following code would not work
 because Mojo would not know how to copy an instance of `MyPet`:
 
 
-```mojo
+```python
 var dog = MyPet("Charlie", 5)
 var poodle = dog
 print(poodle.name)
@@ -313,6 +313,6 @@ version of each method.
 In addition to the `inout` argument convention you already saw with
 `__init__()`, this code also introduces `owned`, which is another argument
 convention that ensures the argument has unique ownership of the value.
-For more detail, see the section about [value
-ownership](/mojo/manual/values/ownership.html).
+For more detail, see the section about value
+ownership.
 

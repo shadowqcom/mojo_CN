@@ -1,4 +1,4 @@
-在这个阶段，你应该已经设置好了[Mojo SDK](/mojo/manual/get-started/)并运行了["Hello world"](/mojo/manual/get-started/hello-world.html)。现在让我们来讨论一下如何编写Mojo代码。
+在这个阶段，你应该已经设置好了Mojo SDK并运行了"Hello world"。现在让我们来讨论一下如何编写Mojo代码。
 
 你可能已经知道Mojo是作为Python的超集而设计的。所以如果你熟悉Python，那么很多Mojo代码看起来会很熟悉。然而，Mojo首先是为高性能系统编程而设计的，具有强类型检查、内存安全、下一代编译器技术等特性。因此，Mojo也与C++和Rust等语言有很多共同之处。
 
@@ -8,7 +8,7 @@
 
 让我们开始吧！🔥
 
-Mojo是一种年轻的语言，仍然有许多[缺失的功能](/mojo/roadmap.html)。因此，Mojo目前**不适合**初学者。即使是这个基础部分，也假设了一些编程经验。然而，在整个Mojo手册中，我们尽量不假设熟悉任何特定语言。
+Mojo是一种年轻的语言，仍然有许多缺失的功能。因此，Mojo目前**不适合**初学者。即使是这个基础部分，也假设了一些编程经验。然而，在整个Mojo手册中，我们尽量不假设熟悉任何特定语言。
 
 
 ## 函数
@@ -40,13 +40,13 @@ def main():
    print("Hello, world!")
 ```
 
-:::note
+
 
 在REPL中编写代码或在Jupyter笔记本中编写代码时，不需要`main()`函数。
 
-:::
 
-有关更多详细信息，请参阅关于[函数](/mojo/manual/functions.html)的页面。
+
+有关更多详细信息，请参阅关于函数的页面。
 
 ### 值所有权和参数可变性
 
@@ -66,7 +66,7 @@ fn bar(x: borrowed String):
     # 不能修改x
 ```
 
-有关更多详细信息，请参阅关于[值所有权和参数可变性](/mojo/manual/functions.html#值所有权和参数可变性)的页面。
+有关更多详细信息，请参阅关于值所有权和参数可变性的页面。
 
 ### 默认参数和可变参数
 
@@ -100,7 +100,7 @@ Hi, Bob!
 Hello!
 ```
 
-有关更多详细信息，请参阅关于[默认参数和可变参数](/mojo/manual/functions.html#默认参数和可变参数)的页面。
+有关更多详细信息，请参阅关于默认参数和可变参数的页面。
 
 ### Lambda函数
 
@@ -119,4 +119,4 @@ result = add(5, 3)
 print(result)  # 输出: 8
 ```
 
-有关更多详细信息，请参阅关于[Lambda函数](/mojo/manual/functions.html#lambda函数)的页面。
+有关更多详细信息，请参阅关于Lambda函数的页面。

@@ -23,7 +23,7 @@ The `def` function provides the same dynamism and flexibility as a Python
 `def` function. For example, this function works the same in Python and Mojo:
 
 
-```mojo
+```python
 def greet(name):
     greeting = "Hello, " + name + "!"
     return greeting
@@ -34,7 +34,7 @@ type. You can also declare variables with `var`, with or without explicit
 typing.
 
 
-```mojo
+```python
 def greet(name: String) -> String:
     var greeting = "Hello, " + name + "!"
     return greeting
@@ -52,12 +52,12 @@ Here's everything to know about `def`:
 
 - Return types don't need to be declared and also default to `object`.
 
-- Arguments are mutable (usually passed by value, using the `owned` [argument
-  convention](/mojo/manual/values/ownership.html#argument-conventions)).
+- Arguments are mutable (usually passed by value, using the `owned` argument
+  convention).
 
   If an argument is an `object` type, it's received as a reference, following
-  [object reference
-  semantics](/mojo/manual/values/value-semantics.html#python-style-reference-semantics).
+  object reference
+  semantics.
   
   If an argument is any other declared type, it's received as a value (using
   the `owned` argument
@@ -79,15 +79,15 @@ types.) This is great for compatibility with Python and all of the flexibility
 that it provides with dynamic types. However, this lack of type enforcement can
 lead to runtime errors when a function receives or returns an unexpected type.
 
-For compatibility with Python, `object` values are passed using [object
+For compatibility with Python, `object` values are passed using object
 reference
-semantics](/mojo/manual/values/value-semantics.html#python-style-reference-semantics).
-As such, the `object` type is not compatible with the [argument
-conventions](/mojo/manual/values/ownership.html#argument-conventions) that
+semantics.
+As such, the `object` type is not compatible with the argument
+conventions that
 enforce value semantics. So, be careful if using `object` values alongside other
 strongly-typed values—their behavior might be inconsistent because `object` is 
-the only type in the standard library that does not conform to [full value
-semantics](/mojo/manual/values/value-semantics.html#full-value-semantics).
+the only type in the standard library that does not conform to full value
+semantics.
 
 ## `fn` functions
 
@@ -97,7 +97,7 @@ that you don't accidentally mutate received arguments. For example, here's the
 same function from above using `fn`:
 
 
-```mojo
+```python
 fn greet(name: String) -> String:
     var greeting = "Hello, " + name + "!"
     return greeting
@@ -111,7 +111,7 @@ function is more strict on the inside.
 Here's everything to know about `fn`:
 
 - Arguments must specify a type (except for the
-  `self` argument in [struct methods](/mojo/manual/structs.html)).
+  `self` argument in struct methods).
 
 - Return values must specify a type, unless the function doesn't return a value.
   
@@ -119,18 +119,18 @@ Here's everything to know about `fn`:
   value).
 
 - By default, arguments are received as an immutable reference (values are
-  read-only, using the `borrowed` [argument
-  convention](/mojo/manual/values/ownership.html#argument-conventions)).
+  read-only, using the `borrowed` argument
+  convention).
   
   This prevents accidental mutations, and permits the use of non-copyable types
   as arguments.
   
   If you want a local copy, you can simply assign the value to a local
   variable. Or, you can get a mutable reference to the value by declaring the
-  `inout` [argument
-  convention](/mojo/manual/values/ownership.html#argument-conventions)).
+  `inout` argument
+  convention).
 
-- [Variables](/mojo/manual/variables.html) must be declared using the `var`
+- Variables must be declared using the `var`
   keyword.
 
 - If the function raises an exception, it must be explicitly declared with the
@@ -147,7 +147,7 @@ An optional argument is one that includes a default value, such as the `exp`
 argument here:
 
 
-```mojo
+```python
 fn pow(base: Int, exp: Int = 2) -> Int:
     return base ** exp
 
@@ -158,7 +158,7 @@ fn use_defaults():
 ```
 
 However, you cannot define a default value for an argument that's declared as
-[`inout`](/mojo/manual/values/ownership.html#mutable-arguments-inout).
+`inout`.
 
 ## Keyword arguments
 
@@ -167,7 +167,7 @@ are specified using the format <code><var>argument_name</var> =
 <var>argument_value</var></code>. You can pass keyword arguments in any order:
 
 
-```mojo
+```python
 fn pow(base: Int, exp: Int = 2) -> Int:
     return base ** exp
 
@@ -184,7 +184,7 @@ define a function that takes a variadic argument, use the variadic argument
 syntax <code>*<var>argument_name</var></code>:
 
 
-```mojo
+```python
 fn sum(*values: Int) -> Int:
   var sum: Int = 0
   for value in values:
@@ -199,7 +199,7 @@ You can define zero or more arguments before the variadic argument. When calling
 the function, any remaining positional arguments are assigned to the variadic
 argument, so any arguments declared **after** the variadic argument can only be
 specified by keyword (see 
-[Positional-only and keyword-only arguments](#positional-only-and-keyword-only-arguments)).
+Positional-only and keyword-only arguments).
 
 Currently variadic arguments must be a single type—all `Int`, or all `String`,
 for example. A few standard library APIs, such as
@@ -227,7 +227,7 @@ dereference the reference and retrieve the value:
 
 
 
-```mojo
+```python
 fn make_worldly(inout *strs: String):
     # Requires extra [] to dereference the reference for now.
     for i in strs:
@@ -239,7 +239,7 @@ fn make_worldly(inout *strs: String):
 Alternately, subscripting into a `VariadicListMem` returns the argument value,
 and doesn't require any dereferencing:
 
-  ```mojo
+  ```python
   fn make_worldly(inout *strs: String):
       # This "just works" as you'd expect!
       for i in range(len(strs)):
@@ -264,7 +264,7 @@ keyword arguments allow the user to pass an arbitrary number of keyword
 arguments. To define a function that takes a variadic keyword argument, use the
 variadic keyword argument syntax <code>**<var>kw_argument_name</var></code>:
 
-  ```mojo
+  ```python
   fn print_nicely(**kwargs: Int) raises:
     for key in kwargs.keys():
         print(key[], "=", kwargs[key[]])
@@ -287,7 +287,7 @@ variadic keyword argument syntax <code>**<var>kw_argument_name</var></code>:
     convention, and
     can't be declared otherwise:
 
-    ```mojo
+    ```python
     # Not supported yet.
     fn borrowed_var_kwargs(borrowed **kwargs: Int): ...
     ```
@@ -300,7 +300,7 @@ variadic keyword argument syntax <code>**<var>kw_argument_name</var></code>:
   - Functions with variadic keyword arguments can't have default values for
     keyword-only arguments. For example:
 
-    ```mojo
+    ```python
     # Not allowed yet, because `b` is keyword-only with a default.
     fn not_yet(*, b: Int = 9, **kwargs: Int): ...
 
@@ -310,14 +310,14 @@ variadic keyword argument syntax <code>**<var>kw_argument_name</var></code>:
 
   - Dictionary unpacking is not supported yet:
 
-    ```mojo
+    ```python
     fn takes_dict(d: Dict[String, Int]):
       print_nicely(**d)  # Not supported yet.
     ```
 
   - Variadic keyword _parameters_ are not supported yet:
 
-    ```mojo
+    ```python
     # Not supported yet.
     fn var_kwparams[**kwparams: Int](): ...
     ```
@@ -333,7 +333,7 @@ argument list. Any arguments before the `/` are positional-only: they can't be
 passed as keyword arguments. For example:
 
 
-```mojo
+```python
 fn min(a: Int, b: Int, /) -> Int:
     return a if a < b else b
 ```
@@ -359,14 +359,14 @@ only be specified by keyword. If a function accepts variadic arguments, any
 arguments defined _after_ the variadic arguments are treated as keyword-only.
 For example:
 
-```mojo
+```python
 fn sort(*values: Float64, ascending: Bool = True): ...
 ```
 
 In this example, the user can pass any number of `Float64` values, optionally
 followed by the keyword `ascending` argument:
 
-```mojo
+```python
 var a = sort(1.1, 6.5, 4.3, ascending=False)
 ```
 
@@ -374,7 +374,7 @@ If the function doesn't accept variadic arguments, you can add a single star
 (`*`) to the argument list to separate the keyword-only arguments:
 
 
-```mojo
+```python
 fn kw_only_args(a1: Int, a2: Int, *, double: Bool) -> Int:
     var product = a1 * a2
     if double:
@@ -407,7 +407,7 @@ For example, here's an overloaded `add()` function that can accept either
 `Int` or `String` types:
 
 
-```mojo
+```python
 fn add(x: Int, y: Int) -> Int:
     return x + y
 
@@ -429,13 +429,13 @@ that the call is ambiguous (if it can’t figure out which one to pick).
 If the compiler can't figure out which function to use, you can resolve the
 ambiguity by explicitly casting your value to a supported argument type. For
 example, in the following code, we want to call the overloaded `foo()`
-function, but both implementations accept an argument that supports [implicit
-conversion](/mojo/manual/variables.html#implicit-type-conversion) from
+function, but both implementations accept an argument that supports implicit
+conversion from
 `StringLiteral`. So, the call to `foo(string)` is ambiguous and creates a
 compiler error. We can fix it by casting the value to the type we really want:
 
 
-```mojo
+```python
 @value
 struct MyString:
     fn __init__(inout self, string: StringLiteral):
@@ -466,7 +466,7 @@ or more `def` versions that don't specify all argument types, as a fallback.
 :::note
 
 Although we haven't discussed
-[parameters](/mojo/manual/parameters/) yet (they're
+parameters yet (they're
 different from function arguments, and used for compile-time metaprogramming),
 you can also overload functions based on parameter types.
 

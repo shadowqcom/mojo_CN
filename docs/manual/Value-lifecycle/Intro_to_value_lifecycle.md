@@ -1,28 +1,28 @@
 So far, we've explained how Mojo allows you to build high-performance code that
-is memory safe _without_ manually managing memory, using Mojo's [ownership
-model](/mojo/manual/values/ownership.html). However, Mojo is designed for
-[systems programming](https://en.wikipedia.org/wiki/Systems_programming), which
+is memory safe _without_ manually managing memory, using Mojo's ownership
+model. However, Mojo is designed for
+systems programming, which
 often requires manual memory management for custom data types. So, Mojo lets
 you do that as you see fit. To be clear, Mojo has no reference counter and no
 garbage collector.
 
 Mojo also has no built-in data types with special privileges. All data types
-in the standard library (such as [`Bool`](/mojo/stdlib/builtin/bool.html#bool),
-[`Int`](/mojo/stdlib/builtin/int.html#int), and
-[`String`](/mojo/stdlib/builtin/string.html#string)) are implemented as
-[structs](/mojo/manual/structs.html). You can actually write your own
+in the standard library (such as `Bool`,
+`Int`, and
+`String`) are implemented as
+structs. You can actually write your own
 replacements for these types by using low-level primitives provided by
-[MLIR dialects](/mojo/notebooks/BoolMLIR.html).
+MLIR dialects.
 
 What's great about the Mojo language is that it provides you these low-level
 tools for systems programming, but within a framework that helps you build
 things that are safe and easy to use from higher-level programs. That is, you
 can get under the hood and write all the "unsafe" code you want, but as long as
-you do so in accordance with Mojo's [value
-semantics](/mojo/manual/values/value-semantics), the programmer instantiating
+you do so in accordance with Mojo's value
+semantics, the programmer instantiating
 your type/object doesn't need to think about memory management at all, and the
-behavior will be safe and predictable, thanks to [value
-ownership](/mojo/manual/values/ownership.html).
+behavior will be safe and predictable, thanks to value
+ownership.
 
 In summary, it's the responsibility of the type author to manage the memory and
 resources for each value type, by implementing specific lifecycle methods, such
@@ -38,8 +38,8 @@ ownership.
 
 First, let's clarify some terminology:
 
-- The "lifecycle" of a value is defined by various [dunder
-methods](/mojo/manual/structs.html#special-methods) in a struct.
+- The "lifecycle" of a value is defined by various dunder
+methods in a struct.
 Each lifecycle event is handled by a different method,
 such as the constructor (`__init__()`), the destructor (`__del__()`), the copy
 constructor (`__copyinit__()`), and the move constructor (`__moveinit__()`).
@@ -59,9 +59,9 @@ possible” (ASAP) destruction policy that runs after every sub-expression.
 
 As you might imagine, keeping track of a value's lifetime can be difficult if a
 value is shared across functions many times during the life of a program.
-However, Mojo makes this predictable partly through its [value
-semantics](/mojo/manual/values/value-semantics.html) and [value
-ownership](/mojo/manual/values/ownership.html) (both prerequisite readings for
+However, Mojo makes this predictable partly through its value
+semantics and value
+ownership (both prerequisite readings for
 the following sections). The final piece of the puzzle for lifetime management
 is the value lifecycle: every value (defined in a struct) needs to implement
 key lifecycle methods that define how a value is created and destroyed.

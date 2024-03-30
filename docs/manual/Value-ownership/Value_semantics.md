@@ -5,8 +5,8 @@ value semantics, reference semantics, or a bit of both. That said, Mojo is
 designed with argument behaviors that default to value semantics, and it
 provides tight controls for reference semantics that avoid memory errors.
 
-The controls over reference semantics are provided by the [value ownership
-model](/mojo/manual/values/ownership.html), but before we get into the syntax
+The controls over reference semantics are provided by the value ownership
+model, but before we get into the syntax
 and rules for that, it's important that you understand the principles of value
 semantics. Generally, it means that each variable has unique access to a value,
 and any code outside the scope of that variable cannot modify its value.
@@ -18,7 +18,7 @@ a copy of the value. This is also known as "pass by value." For example,
 consider this code:
 
 
-```mojo
+```python
 x = 1
 y = x
 y += 1
@@ -43,7 +43,7 @@ allowed to reference it and mutate it.
 Here's another example with a function:
 
 
-```mojo
+```python
 def add_one(y: Int):
     y += 1
     print(y)
@@ -78,18 +78,18 @@ which maintains the expected mutability behavior from Python. Except—contrary
 to Python—the function has true ownership of the value, usually because it's a
 copy.
 
-For example, even though the Mojo [`Tensor`](/mojo/stdlib/tensor/tensor.html)
+For example, even though the Mojo `Tensor`
 type allocates values on the heap, when you pass an instance to a `def`
 function, it creates a unique copy of all values. Thus, if we modify the
 argument in the function, the original value is unchanged:
 
 
-```mojo
+```python
 def update_tensor(t: Tensor[DType.uint8]):
     t[1] = 3
     print(t)
 
-t = Tensor[DType.uint8](2)
+t = TensorDType.uint8
 t[0] = 1
 t[1] = 2
 update_tensor(t)
@@ -105,8 +105,8 @@ Python shares a reference to the original object.
 
 ### Value semantics in `def` vs `fn`
 
-The arguments above are mutable because a [`def`
-function](/mojo/manual/functions.html#def-functions) gets ownership for
+The arguments above are mutable because a `def`
+function gets ownership for
 its arguments by default (usually as a copy). Whereas, `fn` functions instead
 receive arguments as immutable references, by default. This is a memory
 optimization to avoid making unnecessary copies.
@@ -116,7 +116,7 @@ case, the `y` argument is immutable by default, so if the function wants to
 modify the value in the local scope, it needs to make a local copy:
 
 
-```mojo
+```python
 fn add_two(y: Int):
     # y += 2 # This will cause a compiler error because `y` is immutable
     # We can instead make an explicit copy:
@@ -155,26 +155,26 @@ The way we do that in Mojo is, instead of enforcing that every variable have
 "exclusive access" to a value, we ensure that every value has an "exclusive
 owner," and destroy each value when the lifetime of its owner ends. 
 
-On the next page about [value
-ownership](/mojo/manual/values/ownership), you'll learn how to modify
+On the next page about value
+ownership, you'll learn how to modify
 the default argument conventions, and safely use reference semantics so every
 value has only one owner at a time.
 
 ## Python-style reference semantics
 
-:::note
+
 
 If you will always use strict type declarations, you
 can skip this section because it only applies to Mojo code using `def`
 functions without type declarations (or values declared as
-[`object`](/mojo/stdlib/builtin/object.html#object)).
+`object`).
 
-:::
+
 
 As we said at the top of this page, Mojo doesn't enforce value semantics or
 reference semantics. It's up to each type author to decide how an instance of
-their type should be created, copied, and moved (see [Value
-lifecycle](/mojo/manual/lifecycle/)). Thus, in order to provide compatibility
+their type should be created, copied, and moved (see Value
+lifecycle). Thus, in order to provide compatibility
 with Python, Mojo's `object` type is designed to support Python's style of
 argument passing for functions, which is different from the other types in
 Mojo.
@@ -192,7 +192,7 @@ the change is visible to the original object outside the function.
 For example, here's a Python function that receives a list and modifies it:
 
 
-```mojo
+```python
 %%python
 def modify_list(l):
     l.append(3)
@@ -214,7 +214,7 @@ However, if the Python function instead _assigns_ a value to `l`, it does not
 affect the original value:
 
 
-```mojo
+```python
 %%python
 def change_list(l):
     l = [3, 4]
@@ -236,7 +236,7 @@ new object to the argument name.
 ### Pass by object reference in Mojo
 
 Although we haven't finished implementing the
-[`object`](/mojo/stdlib/builtin/object.html#object) type to represent any Mojo
+`object` type to represent any Mojo
 type, our intention is to do so, and enable "pass by object reference" as
 described above for all dynamic types in a `def` function.
 
@@ -246,10 +246,10 @@ by simply writing your Mojo code like Python:
 1. Use `def` function declarations.
 2. Don't declare argument types.
 
-:::note TODO
+ TODO
 
 Mojo is not a complete superset of Python yet, and there is a lot to
 do in this department before Mojo supports all of Python's types and behaviors.
 As such, this is a topic that also still needs a lot of documentation.
 
-:::
+

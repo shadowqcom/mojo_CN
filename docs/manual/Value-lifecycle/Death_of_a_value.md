@@ -13,7 +13,7 @@ For example, notice when the `__del__()` destructor is called for each instance
 of `MyPet`:
 
 
-```mojo
+```python
 @value
 struct MyPet:
     var name: String
@@ -67,7 +67,7 @@ something else.
 
 The `String` value is a little more complicated. Mojo strings are mutable. The
 `String` object has an internal buffer—a
-[`List`](/mojo/stdlib/collections/list.html#list) field,
+`List` field,
 which holds the characters that make up the string. A `List` stores
 its contents in dynamically allocated memory on the heap, so the string can
 grow or shrink. The string itself doesn't have any special destructor logic,
@@ -132,7 +132,7 @@ need to implement the destructor.
 For example, consider this simple struct:
 
 
-```mojo
+```python
 struct MyPet:
     var name: String
     var age: Int
@@ -147,10 +147,10 @@ simple collection of other types (`String` and `Int`), and it doesn't dynamicall
 allocate memory. 
 
 Whereas, the following struct must define the `__del__()` method to free the
-memory allocated for its [`Pointer`](/mojo/stdlib/memory/unsafe.html#pointer):
+memory allocated for its `Pointer`:
 
 
-```mojo
+```python
 struct HeapArray:
     var data: Pointer[Int]
     var size: Int
@@ -183,7 +183,7 @@ stored values in turn to the `_` "discard" pattern. Assigning a value to the
 value, so it can be destroyed immediately.
 
 
-```mojo
+```python
 struct HeapArray:
     var data: Pointer[Int]
     var size: Int
@@ -195,7 +195,7 @@ struct HeapArray:
 ```
 
 
-:::note
+
 
 You can't just call the destructor explicitly. Because `__del__()`
 takes `self` as an `owned` value, and owned arguments are copied by default,
@@ -203,12 +203,12 @@ takes `self` as an `owned` value, and owned arguments are copied by default,
 destroys a value, however, it passes in the original value as `self`, not a
 copy.
 
-:::
+
 
 If `self.data` was an instance of `AnyPointer`, you'd need to use slightly
 different code:
 
-```mojo
+```python
 fn __del__(owned self):
         for i in range(self.size):
             _ = (self.data + i).take_value()
@@ -222,7 +222,7 @@ behaviors. For example, Mojo still destroys all the fields in `MyPet` even
 if you implement `__del__()` to do nothing:
 
 
-```mojo
+```python
 struct MyPet:
     var name: String
     var age: Int
@@ -250,7 +250,7 @@ destroys each field independently with its ASAP destruction policy.
 For example, consider this code that changes the value of a field:
 
 
-```mojo
+```python
 @value
 struct MyPet:
     var name: String
@@ -272,7 +272,7 @@ that it will be overwritten below. You can also see this behavior when using the
 transfer operator:
 
 
-```mojo
+```python
 fn consume(owned arg: String):
     pass
 
@@ -319,7 +319,7 @@ these methods, but it might help you better understand field lifetimes.
 Just to recap, the move constructor and destructor method signatures
 look like this:
 
-```mojo
+```python
 struct TwoStrings:
     fn __moveinit__(inout self, owned existing: Self):
         # Initializes a new `self` by consuming the contents of `existing`
@@ -327,7 +327,7 @@ struct TwoStrings:
         # Destroys all resources in `self`
 ```
 
-:::note
+
 
 There are two kinds of "self" here: capitalized `Self` is an alias
 for the current type name (used as a type specifier for the `existing`
@@ -335,13 +335,13 @@ argument), whereas lowercase `self` is the argument name for the
 implicitly-passed reference to the current instance (also called "this" in
 other languages, and also implicitly a `Self` type).
 
-:::
+
 
 Both of these methods face an interesting but obscure problem: they both must
 dismantle the `existing`/`self` value that's `owned`. That is, `__moveinit__()`
 implicitly destroys sub-elements of `existing` in order to transfer ownership
-to a new instance (read more about the [move
-constructor](/mojo/manual/lifecycle/life.html#move-constructor)),
+to a new instance (read more about the move
+constructor),
 while `__del__()` implements the deletion logic for its `self`. As such, they
 both need to own and transform elements of the `owned` value, and they
 definitely don’t want the original `owned` value's destructor to also run—that
@@ -358,7 +358,7 @@ destructor, we can still pass ownership of a field value to another function,
 and there's no infinite loop to destroy `self`):
 
 
-```mojo
+```python
 fn consume(owned str: String):
     print('Consumed', str)
 
@@ -408,7 +408,7 @@ You can force Mojo to keep a value alive up to a certain point by assigning the
 value to the `_` discard pattern at the point where it's okay to destroy it.
 For example:
 
-```mojo
+```python
 fn __del__(owned self):
     self.dump() # Self is still whole here
 
@@ -427,7 +427,7 @@ statement](https://docs.python.org/3/reference/compound_stmts.html#the-with-stat
 That is, for any value defined at the entrance to a `with` statement, Mojo will
 keep that value alive until the end of the `with` statement. For example:
 
-```mojo
+```python
 with open("my_file.txt", "r") as file:
     print(file.read())
 

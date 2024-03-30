@@ -4,8 +4,6 @@ Code](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vsco
 to provide a first-class developer experience with features like code
 completion, quick fixes, and hover help for Mojo APIs.
 
-![](./images/mojo-vscode.png)
-
 ### System requirements
 
 To use the Mojo SDK, you need a system that meets these specifications:
@@ -31,7 +29,7 @@ Support for Windows will be added in a future release.
 
 ### Install Mojo
 
-1. Open a terminal and install the [`modular`](/cli/) command line tool:
+1. Open a terminal and install the `modular` command line tool:
 
     ```sh
     curl -s https://get.modular.com | sh -
@@ -50,7 +48,7 @@ Support for Windows will be added in a future release.
     ```
 
 4. Set environment variables so you can access the
-   [`mojo`](/mojo/cli/) CLI:
+   `mojo` CLI:
 
     <Tabs>
       <TabItem value="bash" label="Bash">
@@ -80,16 +78,16 @@ Support for Windows will be added in a future release.
       </TabItem>
     </Tabs>
 
-Next, get started with **[Hello, world!](hello-world.html)**
+Next, get started with **Hello, world!**
 
-If you have issues during install, check our [known
-issues](/mojo/roadmap.html#mojo-sdk-known-issues).
+If you have issues during install, check our known
+issues.
 
 ### Update Mojo
 
 Mojo is a work in progress and we will release regular updates to the
 Mojo language and SDK tools. For information about each release, see the
-[Mojo changelog](/mojo/changelog.html).
+Mojo changelog.
 
 To check your current Mojo version, use the `--version` option:
 
@@ -131,7 +129,7 @@ brew upgrade modular
 ## Develop in the Mojo Playground
 
 Instead of downloading the Mojo SDK, you can also experiment with Mojo in our
-online [Playground](/mojo/playground).
+online Playground.
 
 
 ### What to expect
@@ -163,4 +161,4 @@ code for yourself.
   library.
 
 - For a general list of things that don't work yet in Mojo or have pain-points,
-  see the [Mojo roadmap and sharp edges](/mojo/roadmap.html).
+  see the Mojo roadmap and sharp edges.
