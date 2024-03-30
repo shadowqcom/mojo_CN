@@ -1,67 +1,118 @@
-# hello world
+## Before you start
 
-在开始之前 请确定您已经安装Mojo 并且按照以下方式配置了环境变量：
-```sh
-echo 'export MODULAR_HOME="$HOME/.modular"' >> ~/.bashrc
+Before you start, make sure the `MODULAR_HOME` and `PATH` environment variables
+are set, as described in the install procedure, so you can run the `mojo`
+command:
 
-echo 'export PATH="$MODULAR_HOME/pkg/packages.modular.com_mojo/bin:$PATH"' >> ~/.bashrc
-
-source ~/.bashrc
+```text
+mojo --version
 ```
 
-## 在 REPL 中运行代码
-首先，让我们尝试在 Mojo REPL 中运行一些代码，它允许您直接在命令提示符中编写和运行 Mojo 代码：
+If you have other issues during install, check our [known
+issues](/mojo/roadmap.html#mojo-sdk-known-issues).
 
-1、要启动 REPL 会话，请在终端中输入 mojo 并按 Enter。
+## 1. Run code in the REPL
 
-2、然后输入 print("Hello, world!") 并按 Enter 两次（需要一个空行来指示表达式的结束）。
+First, let's use the Mojo
+[REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop),
+which allows you to write and run Mojo code in a command prompt:
 
-像这样：
-```sh
+1. To start a REPL session, type `mojo` in your terminal and press
+   <kbd>Enter</kbd>.
+
+2. Then type `print("Hello, world!")` and press <kbd>Enter</kbd> twice
+(a blank line is required to indicate the end of an expression).
+
+That's it! For example:
+
+```text
 $ mojo
 Welcome to Mojo! 🔥
 
 Expressions are delimited by a blank line.
-Type `:quit` to exit the REPL and `:mojo help` for further assistance.
+Type `:quit` to exit the REPL and `:mojo help repl` for further assistance.
 
 1> print("Hello, world!")
 2.
 Hello, world!
 ```
 
-您可以在 REPL 中编写任意数量的代码。 您可以按 Enter 键开始新行并继续编写代码，当您希望 Mojo 评估代码时，请按 Enter 两次。 如果有需要打印的内容，Mojo 会打印它，然后将提示返回给您。
+You can write as much code as you want in the REPL. You can press
+<kbd>Enter</kbd> to start a new line and continue writing code, and when you
+want Mojo to evaluate the code, press <kbd>Enter</kbd> twice. If there's
+something to print, Mojo prints it and then returns the prompt to you.
 
-REPL 主要用于短期实验，因为代码不会保存。 所以当你想编写一个真正的程序时，你需要将代码编写在.mojo源文件中。
+The REPL is primarily useful for short experiments because the code isn't
+saved. So when you want to write a real program, you need to write the code in
+a `.mojo` source file.
 
-## 构建并运行 Mojo 源文件
-现在让我们用源文件打印“Hello, world”。 Mojo 源文件使用 .mojo 或 .🔥 文件扩展名进行标识。
-您可以通过将 Mojo 文件传递给 mojo 命令来快速执行该文件，也可以使用 mojo build 命令构建已编译的可执行文件。 让我们两者都尝试一下。
+## 2. Run a Mojo file
 
-### 运行mojo文件
-编写Mojo代码并执行：
-1、创建一个名为 hello.mojo （或 hello.🔥）的文件并添加以下代码：
-```sh
-fn main():
-   print("Hello, world!")
-```
-这就是您所需要的。 保存文件并返回到您的终端。
+Now let's write the code in a Mojo source file and run it with the
+[`mojo`](/mojo/cli/) command:
 
-2、使用 mojo 命令运行它：
-```sh
-mojo hello.mojo
+1. Create a file named `hello.mojo` (or `hello.🔥`) and add the following code:
 
-Hello, world!
-```
+   ```mojo
+   fn main():
+       print("Hello, world!")
+   ```
 
-### 构建可执行二进制文件
-构建并运行可执行文件：
-1、使用 build 命令创建独立的可执行文件：
-```sh
-mojo build hello.mojo
-```
-创建与 .mojo 文件同名的可执行文件，但您可以使用 -o 选项更改它。
-2、运行可执行文件：
-```sh
-./hello
-```
-该可执行文件与 C 或 C++ 可执行文件一样在您的系统上运行。
+   That's all you need. Save the file and return to your terminal.
+
+2. Now run it with the `mojo` command:
+
+    ```sh
+    mojo hello.mojo
+    ```
+
+    It should immediately print the message:
+
+    ```text
+    Hello, world!
+    ```
+
+If this didn't work for you, double-check your code looks exactly like the code
+in step 1, and make sure you correctly [installed
+Mojo](/mojo/manual/get-started/#install-mojo).
+
+## 3. Build an executable binary
+
+Finally, let's build and run that same code as an executable:
+
+1. Create an executable file with the [`build`](/mojo/cli/build.html) command:
+
+    ```sh
+    mojo build hello.mojo
+    ```
+
+    The executable file uses the same name as the `.mojo` file, but
+    you can change that with the `-o` option.
+
+2. Then run the executable:
+
+    ```sh
+    ./hello
+    ```
+
+This creates a statically compiled binary file, so it contains all the code and
+libraries it needs to run.
+
+## Next steps
+
+- If you're new to Mojo, we suggest you continue to the next section about
+  [language basics](/mojo/manual/basics.html).
+
+- If you want to experiment with some code, clone [the Mojo
+repo](https://github.com/modularml/mojo/) to try our code examples:
+
+  ```sh
+  git clone https://github.com/modularml/mojo.git
+  ```
+
+  In addition to several `.mojo` examples, the repo includes [Jupyter
+  notebooks](https://github.com/modularml/mojo/tree/main/examples/notebooks#readme)
+  that teach advanced Mojo features.
+
+- To see all the available Mojo APIs, check out the [Mojo standard library
+  reference](/mojo/lib.html).

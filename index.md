@@ -14,8 +14,8 @@ hero:
       text: 加入群聊
       link: /docs/chat
     - theme: alt
-      text: 开始使用
-      link: /docs/start
+      text: 阅读文档
+      link: /docs/index
   image:
     src: /img/mojofire.png
     alt: mojo
