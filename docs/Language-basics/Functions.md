@@ -1,4 +1,4 @@
-As mentioned in [Language basics](/mojo/manual/basics), Mojo supports two
+As mentioned in Language basics, Mojo supports two
 types of functions: `def` and `fn` functions. You can use either declaration
 with any function, including the `main()` function, but they have different
 default behaviors, as described on this page.
@@ -12,7 +12,7 @@ write code in the manner that's best for your project.
 
 :::note
 
-Functions declared inside a [`struct`](/mojo/manual/structs.html) are called
+Functions declared inside a struct are called
 "methods," but they have all the same qualities as "functions" described here.
 
 :::
@@ -60,16 +60,16 @@ Here's everything to know about `def`:
   semantics](/mojo/manual/values/value-semantics.html#python-style-reference-semantics).
   
   If an argument is any other declared type, it's received as a value (using
-  the `owned` [argument
-  convention](/mojo/manual/values/ownership.html#argument-conventions)).
+  the `owned` argument
+  convention.
 
-- [Variables](/mojo/manual/variables.html) don't need to be declared using 
+- Variables don't need to be declared using 
   `var`.
 
 ### The `object` type
 
 If you don't declare the type for an argument or return value in a `def`, it
-becomes an [`object`](/mojo/stdlib/builtin/object.html#object), which is unlike
+becomes an object, which is unlike
 any other type in the standard library.
 
 The `object` type allows for dynamic typing because it can actually represent
@@ -203,7 +203,7 @@ specified by keyword (see
 
 Currently variadic arguments must be a single type—all `Int`, or all `String`,
 for example. A few standard library APIs, such as
-[`print()`](/mojo/stdlib/builtin/io.html#print), support mixed-type, or
+`print()`, support mixed-type, or
 heterogeneous, variadic arguments, but this currently requires working with
 undocumented MLIR APIs. We plan to support heterogeneous variadic arguments in
 Mojo in the future.
@@ -214,14 +214,14 @@ on whether the arguments are register-passable types (such as `Int`) or
 memory-only types (such as `String`).
 
 Register-passable types, such as `Int`, are available as a 
-[`VariadicList`](/mojo/stdlib/builtin/builtin_list.html#variadiclist) type. As
+`VariadicList` type. As
 shown in the previous example, you can iterate over the values using a `for..in`
 loop.
 
 Memory-only types, such as `String`, are available as a 
-[`VariadicListMem`](/mojo/stdlib/builtin/builtin_list.html#variadiclistmem).
+`VariadicListMem`.
 Iterating over this list directly with a `for..in` loop currently produces a
-[`Reference`](/mojo/stdlib/memory/unsafe#reference) for each value instead
+`Reference for each value instead
 of the value itself. You must add an empty subscript operator `[]` to
 dereference the reference and retrieve the value:
 
@@ -248,11 +248,11 @@ and doesn't require any dereferencing:
 
 :::note Variadic parameters
 
-Mojo [parameters](/mojo/manual/parameters/) are distinct from arguments
+Mojo parameters are distinct from arguments
 (parameters are used for compile-time metaprogramming). However, most rules
 that apply to argument lists also apply to parameter lists. Variadic parameters
 are supported, but with some limitations—for details see 
-[variadic parameters](/mojo/manual/parameters/#variadic-parameters).
+variadic parameters.
 
 :::
 
@@ -277,14 +277,14 @@ variadic keyword argument syntax <code>**<var>kw_argument_name</var></code>:
 
   In this example, the argument name `kwargs` is a placeholder that accepts any
   number of keyword arguments. Inside the body of the function, you can access
-  the arguments as a [`Dict`](/mojo/stdlib/collections/dict) of keywords and
+  the arguments as a `Dict`of keywords and
   argument values.
   
   There are currently a few limitations:
 
   - Variadic keyword arguments are always implicitly treated as if they
-    were declared with the `owned` [argument 
-    convention](/mojo/manual/values/ownership.html#argument-conventions), and
+    were declared with the `owned` argument 
+    convention, and
     can't be declared otherwise:
 
     ```mojo
