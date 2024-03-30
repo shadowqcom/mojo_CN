@@ -9,16 +9,16 @@ hero:
   actions:
     - theme: brand
       text: 阅读文档
-      link: /docs/manual/index
+      link: /mojo/manual/index
     - theme: alt
       text: 开发者社区
       link: https://dev.mojocn.org
     - theme: alt
       text: 加入群聊
-      link: /docs/chat
+      link: /mojo/chat
     - theme: alt
       text: 赞助我们
-      link: /docs/sponsor
+      link: /mojo/sponsor
 
   image:
     src: /img/mojofire.png

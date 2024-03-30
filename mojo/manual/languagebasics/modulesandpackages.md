@@ -1,3 +1,5 @@
+# Modules and packages
+
 Mojo provides a packaging system that allows you to organize and compile code
 libraries into importable files. This page introduces the necessary concepts
 about how to organize your code into modules and packages (which is a lot

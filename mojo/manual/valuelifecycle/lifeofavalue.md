@@ -1,3 +1,4 @@
+# Life of a value
 The life of a value in Mojo begins when a variable is initialized and continues
 up until the value is last used, at which point Mojo destroys it. This page
 describes how every value in Mojo is created, copied, and moved. (The next

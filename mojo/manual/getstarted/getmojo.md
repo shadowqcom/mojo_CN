@@ -1,10 +1,10 @@
-## Get the Mojo SDK
+# Get the Mojo SDK
 We've also published a [Mojo extension for Visual Studio
 Code](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)
 to provide a first-class developer experience with features like code
 completion, quick fixes, and hover help for Mojo APIs.
 
-### System requirements
+## System requirements
 
 To use the Mojo SDK, you need a system that meets these specifications:
 
@@ -27,7 +27,7 @@ Mac:
 
 Support for Windows will be added in a future release.
 
-### Install Mojo
+## Install Mojo
 
 1. Open a terminal and install the `modular` command line tool:
 

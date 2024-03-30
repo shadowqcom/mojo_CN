@@ -1,3 +1,4 @@
+# Structs
 A Mojo struct is a data structure that allows you to encapsulate fields and
 methods that operate on an abstraction, such as a data type or an object.
 **Fields** are variables that hold data relevant to the struct, and **methods**

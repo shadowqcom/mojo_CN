@@ -1,7 +1,7 @@
 # mojo_CN
 
 
-- [文档](https://mojocn.org/docs/install.html)
+- [文档](https://mojocn.org/mojo/index.html)
 
 - [社区](https://dev.mojocn.org/)
 

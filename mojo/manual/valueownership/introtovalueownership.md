@@ -1,3 +1,4 @@
+# Intro to value ownership
 A program is nothing without data, and all modern programming languages store
 data in one of two places: the call stack and the heap (also sometimes in CPU
 registers, but we won't get into that here). However, each language reads and

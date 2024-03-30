@@ -38,67 +38,67 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '开发者社区', link: 'https://dev.mojocn.org/' },
-      { text: '快速开始', link: '/docs/index' },
-      { text: '布道师计划', link: '/docs/guide' },
-      { text: '关于我们', link: '/docs/about' }
+      { text: '快速开始', link: '/mojo/index' },
+      { text: '布道师计划', link: '/mojo/guide' },
+      { text: '关于我们', link: '/mojo/about' }
     ],
 
     sidebar: [
       {
         text: '手册',
         items: [
-          {text: '介绍', link: '/docs/manual/index'},
+          {text: '介绍', link: '/mojo/manual/index'},
           {text: '开始使用',
           collapsed: true,
           items: [
-            { text: '安装Mojo', link: '/docs/manual/get-started/Get_Mojo' },
-            { text: 'Hello, world!', link: '/docs/manual/get-started/Hello_world' },
+            { text: '安装Mojo', link: '/mojo/manual/getstarted/getmojo' },
+            { text: 'Hello, world!', link: '/mojo/manual/getstarted/helloworld' },
             ]
           },
           {text: '语言基础知识',
           collapsed: true,
           items: [
-            { text: 'Introduction to Mojo', link: '/docs/manual/Language-basics/Introduction_to_Mojo' },
-            { text: 'Functions', link: '/docs/manual/Language-basics/Functions' },
-            { text: 'Variables', link: '/docs/manual/Language-basics/Variables' },
-            { text: 'Structs', link: '/docs/manual/Language-basics/Structs' },
-            { text: 'Modules and packages', link: '/docs/manual/Language-basics/Modules_and_packages' },
+            { text: 'Introduction to Mojo', link: '/mojo/manual/languagebasics/introductiontomojo' },
+            { text: 'Functions', link: '/mojo/manual/languagebasics/functions' },
+            { text: 'Variables', link: '/mojo/manual/languagebasics/variables' },
+            { text: 'Structs', link: '/mojo/manual/languagebasics/structs' },
+            { text: 'Modules and packages', link: '/mojo/manual/languagebasics/modulesandpackages' },
             ]
           },
           {text: '所有权',
           collapsed: true,
           items: [
-            { text: 'Intro to value ownership', link: '/docs/manual/Value-ownership/Intro_to_value_ownership' },
-            { text: 'Value semantics', link: '/docs/manual/Value-ownership/Value_semantics' },
-            { text: 'Ownership and borrowing', link: '/docs/manual/Value-ownership/Ownership_and_borrowing' },
+            { text: 'Intro to value ownership', link: '/mojo/manual/valueownership/introtovalueownership' },
+            { text: 'Value semantics', link: '/mojo/manual/valueownership/valuesemantics' },
+            { text: 'Ownership and borrowing', link: '/mojo/manual/valueownership/ownershipandborrowing' },
             ]
           },
           {text: '生命周期',
           collapsed: true,
           items: [
-            { text: 'Intro to value lifecycle', link: '/docs/manual/Value-lifecycle/Intro_to_value_lifecycle' },
-            { text: 'Life of a value', link: '/docs/manual/Value-lifecycle/Life_of_a_value' },
-            { text: 'Death of a value', link: '/docs/manual/Value-lifecycle/Death_of_a_value' },
+            { text: 'Intro to value lifecycle', link: '/mojo/manual/valuelifecycle/introtovaluelifecycle' },
+            { text: 'Life of a value', link: '/mojo/manual/valuelifecycle/lifeofavalue' },
+            { text: 'Death of a value', link: '/mojo/manual/valuelifecycle/deathofavalue' },
             ]
           },
           {text: '特征和参数',
           collapsed: true,
           items: [
-            { text: 'Traits', link: '/docs/manual/Traits-and-parameters/Traits' },
-            { text: 'Parameterization_compile_time_metaprogramming', link: '/docs/manual/Traits-and-parameters/Parameterization_compile_time_metaprogramming' },
+            { text: 'Traits', link: '/mojo/manual/traitsandparameters/traits' },
+            { text: 'Parameterization_compile_time_metaprogramming', link: '/mojo/manual/traitsandparameters/parameterizationcompiletimemetaprogramming' },
             ]
           },
           {text: 'Python',
           collapsed: true,
           items: [
-            { text: 'Python integration', link: '/docs/manual/Python/Python_integration' },
-            { text: 'Python types', link: '/docs/manual/Python/Python_types' },
+            { text: 'Python integration', link: '/mojo/manual/python/Pythonintegration' },
+            { text: 'Python types', link: '/mojo/manual/python/pythontypes' },
             ]
           },
           {text: '工具',
           collapsed: true,
           items: [
-            { text: 'Debugging', link: '/docs/manual/Tools/Debugging' },
+            { text: 'Debugging', link: '/mojo/manual/tools/debugging' },
             ]
           },
         ],
@@ -112,10 +112,10 @@ export default defineConfig({
             { text: 'algorithm',
               collapsed: true,
               items: [
-              { text: 'functional', link: '/docs/lib/algorithm/functional' },
-              { text: 'reduction', link: '/docs/lib/algorithm/reduction' },
-              { text: 'sort', link: '/docs/lib/algorithm/sort' },
-              { text: 'swap', link: '/docs/lib/algorithm/swap' },
+              { text: 'functional', link: '' },
+              { text: 'reduction', link: '' },
+              { text: 'sort', link: '' },
+              { text: 'swap', link: '' },
               ],
             },
             { text: 'autotune', link: '' },
@@ -180,10 +180,10 @@ export default defineConfig({
       {
         text: 'Mojo中文网',
         items: [
-          { text: '关于我们', link: '/docs/about' },
-          { text: '加入群聊', link: '/docs/chat' },
-          { text: '赞助我们', link: '/docs/sponsor'},
-          { text: '布道师计划', link: '/docs/guide'},
+          { text: '关于我们', link: '/mojo/about' },
+          { text: '加入群聊', link: '/mojo/chat' },
+          { text: '赞助我们', link: '/mojo/sponsor'},
+          { text: '布道师计划', link: '/mojo/guide'},
           { text: '开发者社区', link: 'https://dev.mojocn.org/'},
         ],
       }

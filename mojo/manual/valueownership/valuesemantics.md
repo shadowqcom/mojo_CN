@@ -1,3 +1,4 @@
+# Value semantics
 Mojo doesn't enforce value semantics or reference semantics. It supports them
 both and allows each type to define how it is created, copied, and moved (if at
 all). So, if you're building your own type, you can implement it to support

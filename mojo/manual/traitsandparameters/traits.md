@@ -1,3 +1,4 @@
+# Traits
 A _trait_ is a set of requirements that a type must implement. You can think of
 it as a contract: a type that _conforms_ to a trait guarantees that it 
 implements all of the features of the trait.

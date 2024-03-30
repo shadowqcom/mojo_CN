@@ -1,3 +1,4 @@
+# Death of a value
 As soon as a value/object is no longer used, Mojo destroys it. Mojo does _not_
 wait until the end of a code block—or even until the end of an expression—to
 destroy an unused value. It destroys values using an “as soon as possible”

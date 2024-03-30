@@ -1,3 +1,4 @@
+# Intro to value lifecycle
 So far, we've explained how Mojo allows you to build high-performance code that
 is memory safe _without_ manually managing memory, using Mojo's ownership
 model. However, Mojo is designed for

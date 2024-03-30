@@ -1,3 +1,4 @@
+# Debugging
 The Mojo extension for Visual Studio Code enables you to use VS Code's built-in
 debugger with Mojo programs. (The Mojo extension also supports debugging C, C++,
 and Objective-C.)

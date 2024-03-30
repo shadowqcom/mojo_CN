@@ -1,3 +1,4 @@
+# functions
 As mentioned in Language basics, Mojo supports two
 types of functions: `def` and `fn` functions. You can use either declaration
 with any function, including the `main()` function, but they have different
