@@ -38,7 +38,7 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '开发者社区', link: 'https://dev.mojocn.org/' },
-      { text: '快速开始', link: '/mojo/index' },
+      { text: '快速开始', link: '/mojo/manual/index' },
       { text: '布道师计划', link: '/mojo/guide' },
       { text: '关于我们', link: '/mojo/about' }
     ],
