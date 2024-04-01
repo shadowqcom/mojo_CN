@@ -18,14 +18,14 @@ Mojo函数可以使用`fn`或`def`进行声明。
 
 例如，这个`def`函数不需要声明参数类型或返回类型：
 
-```python
+```mojo
 def greet(name):
     return "Hello, " + name + "!"
 ```
 
 而将相同的内容作为`fn`函数需要您指定参数类型和返回类型，如下所示：
 
-```python
+```mojo
 fn greet2(name: String) -> String:
     return "Hello, " + name + "!"
 ```
@@ -34,7 +34,7 @@ fn greet2(name: String) -> String:
 
 目前，Mojo不支持在`.mojo`（或`.🔥`）文件中使用顶级代码，因此每个程序都必须包含一个名为`main()`的函数作为入口点。您可以使用`def`或`fn`进行声明：
 
-```python
+```mojo
 def main():
    print("Hello, world!")
 ```
@@ -55,7 +55,7 @@ def main():
 
 您可以使用`var`关键字声明变量。或者，如果您的代码位于`def`函数中，则可以省略`var`（在`fn`函数中，必须包含`var`关键字）。
 
-例如```python
+例如```mojo
 def do_math(x):
     var y = x + x
     y = y * y
@@ -64,7 +64,7 @@ def do_math(x):
 
 可选地，您还可以像这样声明变量类型：
 
-```python
+```mojo
 def add_one(x):
     var y: Int = 1
     print(x + y)
@@ -82,7 +82,7 @@ Mojo中的`struct`类似于Python中的`class`：它们都支持方法、字段�
 
 例如，这是一个基本的结构体：
 
-```python
+```mojo
 struct MyPair:
     var first: Int
     var second: Int
@@ -97,7 +97,7 @@ struct MyPair:
 
 这是如何使用它的示例：
 
-```python
+```mojo
 fn use_mypair():
     var mine = MyPair(2, 4)
     mine.dump()
@@ -115,14 +115,14 @@ fn use_mypair():
 
 例如，以下是如何创建一个特性（注意函数没有实现）：
 
-```python
+```mojo
 trait SomeTrait:
     fn required_method(self, x: Int): ...
 ```
 
 以下是如何使用它的示例：
 
-```python
+```mojo
 struct MyStruct:
     fn required_method(self, x: Int):
         print("Required method implementation")

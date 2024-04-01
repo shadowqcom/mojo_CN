@@ -4,7 +4,7 @@
 
 在开始之前，请确保设置了`MODULAR_HOME`和`PATH`环境变量，如安装过程所述，以便您可以运行`mojo`命令：
 
-```python
+```mojo
 mojo --version
 ```
 
@@ -20,7 +20,7 @@ mojo --version
 
 就是这样！例如：
 
-```python
+```mojo
 $ mojo
 欢迎使用Mojo！🔥
 
@@ -42,7 +42,7 @@ REPL主要用于短期实验，因为代码不会被保存。因此，当您想�
 
 1. 创建一个名为`hello.mojo`（或`hello.🔥`）的文件，并添加以下代码：
 
-   ```python
+   ```mojo
    fn main():
        print("Hello, world!")
    ```
@@ -57,7 +57,7 @@ REPL主要用于短期实验，因为代码不会被保存。因此，当您想�
 
     它应该立即打印出消息：
 
-    ```python
+    ```mojo
     Hello, world!
     ```
 

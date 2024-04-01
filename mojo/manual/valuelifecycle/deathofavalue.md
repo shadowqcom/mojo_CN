@@ -5,7 +5,7 @@ Mojo使用静态编译器分析来找到值最后使用的点。然后，Mojo立
 
 例如，注意每个`MyPet`实例的`__del__()`析构函数的调用：
 
-```python
+```mojo
 @value
 struct MyPet:
     var name: String
@@ -69,7 +69,7 @@ pets()
 
 例如，考虑以下更改字段值的代码：
 
-```python
+```mojo
 @value
 struct MyPet:
     var name: String
@@ -87,7 +87,7 @@ fn use_two_strings():
 
 在第一次 `print()` 之后，`pet.name` 字段被销毁，因为Mojo知道它将在下面被覆盖。当使用传输操作符时，您也可以看到这种行为：
 
-```python
+```mojo
 fn consume(owned arg: String):
     pass
 
@@ -119,7 +119,7 @@ Mojo在这里的策略非常强大且明确：字段可以临时传递，但是�
 
 简要回顾一下，移动构造函数和析构函数的方法签名如下：
 
-```python
+```mojo
 struct TwoStrings:
     fn __moveinit__(inout self, owned existing: Self):
         # 通过消耗 `existing` 的内容初始化新的 `self`
@@ -135,7 +135,7 @@ struct TwoStrings:
 
 以下是使用 `__moveinit__()` 的示例：
 
-```python
+```mojo
 @value
 struct MyPet:
     var name: String
@@ -154,7 +154,7 @@ fn moveinit_example(existing: MyPet):
 
 在析构函数中也有相同的问题和解决方案。当调用析构函数时，我们必须将所有字段设置为未初始化状态，以便它们的生命周期随着当前实例的生命周期结束。同样，我们可以使用 `__moveinit__()` 函数来实现这一点：
 
-```python
+```mojo
 @value
 struct MyPet:
     var name: String

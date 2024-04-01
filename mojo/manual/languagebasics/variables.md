@@ -8,7 +8,7 @@ Mojo曾经支持使用`let`关键字来声明不可变变量。为了简化语�
 
 在`def`函数或REPL环境中，您可以使用变量的名称和值创建一个变量。例如：
 
-```python
+```mojo
 name = "Sam"
 ```
 
@@ -20,7 +20,7 @@ name = "Sam"
 
 您可以使用`var`关键字声明一个变量。例如：
 
-```python
+```mojo
 var name = "Sam"
 var user_id: Int
 ```
@@ -29,7 +29,7 @@ var user_id: Int
 
 由于声明的变量具有强类型，除非这些类型可以隐式转换，否则不能将变量赋值为不同类型的值。例如，以下代码将无法编译通过：
 
-```python
+```mojo
 var user_id: Int = "Sam"
 ```
 
@@ -37,7 +37,7 @@ var user_id: Int = "Sam"
 
 最后，使用`var`有助于防止由拼写错误引起的运行时错误。例如，如果您拼写了一个未声明的变量的名称，Mojo将简单地使用拼写错误的名称实例化一个新变量。但是，当所有可变变量必须首先用`var`声明（这是在`fn`函数内部的情况），那么像下面这样的拼写错误将被编译器捕捉到：
 
-```python
+```mojo
 var name = "Sam"
 # 以后的某个位置...
 nane = "Sammy"  # 在`fn`函数中不允许这样做
@@ -53,7 +53,7 @@ nane = "Sammy"  # 在`fn`函数中不允许这样做
 
 要为变量指定类型，请在冒号后面加上类型名称：
 
-```python
+```mojo
 var name: String = "Sam"
 ```
 
@@ -63,7 +63,7 @@ var name: String = "Sam"
 
 如果一个类型具有只有一个参数的构造函数，您可以以两种方式进行初始化：
 
-```python
+```mojo
 var name1: String = "Sam"
 var name2 = String("Sam")
 ```
@@ -80,7 +80,7 @@ Mojo以前支持使用`let`关键字来声明不可变的变量。为了简化�
 
 在`def`函数或REPL环境中，您可以仅通过名称和值创建一个变量。例如：
 
-```python
+```mojo
 name = "Sam"
 ```
 
@@ -92,7 +92,7 @@ name = "Sam"
 
 您可以使用`var`关键字声明一个变量。例如：
 
-```python
+```mojo
 var name = "Sam"
 var user_id: Int
 ```
@@ -101,7 +101,7 @@ var user_id: Int
 
 由于声明的变量是强类型的，除非这些类型可以隐式转换，否则不能将变量赋予不同类型的值。例如，下面的代码将无法编译通过：
 
-```python
+```mojo
 var user_id: Int = "Sam"
 ```
 
@@ -109,7 +109,7 @@ var user_id: Int = "Sam"
 
 最后，使用`var`有助于防止由于拼写错误导致的运行时错误。例如，如果您拼写了一个未声明的变量的名称，Mojo将简单地使用拼写错误的名称实例化一个新变量。但是，当所有可变的变量必须首先使用`var`声明（这是在`fn`函数内部的情况），那么像下面这样的拼写错误将被编译器捕获：
 
-```python
+```mojo
 var name = "Sam"
 # 某个地方以后...
 nane = "Sammy"  # 这在`fn`函数中是不允许的
@@ -125,7 +125,7 @@ nane = "Sammy"  # 这在`fn`函数中是不允许的
 
 要为一个变量指定类型，请在冒号后面加上类型名称：
 
-```python
+```mojo
 var name: String = "Sam"
 ```
 
@@ -135,7 +135,7 @@ var name: String = "Sam"
 
 如果一个类型具有一个只有一个参数的构造函数，您可以使用两种方式进行初始化：
 
-```python
+```mojo
 var name1: String = "Sam"
 var name2 = String("Sam")
 ```

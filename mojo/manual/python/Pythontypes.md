@@ -7,7 +7,7 @@ Mojo原始类型会隐式转换为Python对象。目前，我们支持列表、�
 
 例如，给定以下打印Python类型的Python函数：
 
-```python
+```mojo
 %%python
 def type_printer(value):
     print(type(value))
@@ -17,7 +17,7 @@ def type_printer(value):
 
 您可以毫无问题地将Mojo类型传递给这个Python函数：
 
-```python
+```mojo
 type_printer(4)
 type_printer(3.14)
 type_printer(("Mojo", True))
@@ -33,7 +33,7 @@ type_printer(("Mojo", True))
 
 您也可以在Mojo中使用Python对象。例如，Mojo还没有标准的字典类型，但是您可以在Mojo中使用Python字典。要创建Python字典，请使用`dict()`方法：
 
-```python
+```mojo
 from python import Python
 
 fn use_dict() raises:
@@ -49,7 +49,7 @@ fn use_dict() raises:
 
 您可以通过使用Mojo文字初始化`PythonObject`来显式创建一个包装的Python对象：
 
-```python
+```mojo
 from python.object import PythonObject
 
 var py_list: PythonObject = [1, 2, 3, 4]
@@ -57,14 +57,14 @@ var py_list: PythonObject = [1, 2, 3, 4]
 
 大多数情况下，您可以像在Python中一样处理包装对象。您可以使用Python的`[]`运算符访问列表中的项，并使用点表示法访问属性和调用方法。例如：
 
-```python
+```mojo
 var n = py_list[2]
 py_list.append(5)
 ```
 
 如果您想构造一个在Mojo中没有字面等效的Python类型，您还可以使用`Python.evaluate()`方法。例如，要创建一个Python `set`：
 
-```python
+```mojo
 fn use_py_set() raises:
     var py_set = Python.evaluate('set([2, 3, 5, 7, 11])')
     var num_items = len(py_set)
@@ -80,7 +80,7 @@ fn use_py_set() raises:
 
 `PythonObject`还提供了`__bool__()`和`to_float64()`方法，用于分别转换为布尔值和浮点数值。
 
-```python
+```mojo
 var i: Int = int(py_int)
 var s: String = str(py_string)
 varbool = py_bool.__bool__()
@@ -95,7 +95,7 @@ var f: Float64 = py_float.to_float64()
 
 如果您需要知道底层Python对象的类型，可以使用`Python.type()`方法，它相当于Python的内置`type()`函数。您可以使用`Python.is_type()`方法（相当于Python的`is`运算符）比较两个Python对象的标识：
 
-```python
+```mojo
 fn python_types() raises:
     from python import Python
     from python.object import PythonObject

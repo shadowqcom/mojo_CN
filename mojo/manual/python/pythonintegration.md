@@ -8,7 +8,7 @@
 ## 导入Python模块
 在Mojo中导入Python模块，只需使用模块名称调用`Python.import_module()`函数：
 
-```python
+```mojo
 from python import Python
 
 fn use_array() raises:
@@ -20,7 +20,7 @@ fn use_array() raises:
     print(array)
 ```
 
-```python
+```mojo
 use_array()
 ```
 
@@ -41,7 +41,7 @@ Mojo在运行时加载Python解释器和Python模块，因此无论在何处运�
 
 例如，假设您有一个名为`mypython.py`的Python文件：
 
-```python
+```mojo
 import numpy as np
 
 def gen_random_values(size, base):
@@ -51,7 +51,7 @@ def gen_random_values(size, base):
 ```
 
 以下是如何导入并在Mojo文件中使用它：
-```python
+```mojo
 from python import Python
 
 fn main() raises:
@@ -63,7 +63,7 @@ fn main() raises:
 ```
 
 使用`add_to_path()`函数，绝对路径和相对路径都可以导入模块。例如，您可以这样从本地目录导入：
-```python
+```mojo
 Python.add_to_path(".")
 ```
 
@@ -84,7 +84,7 @@ Python.add_to_path(".")
 
 首先，我们创建一个定义了Tkinter接口的Python模块，其中包含一个窗口和一个按钮：
 
-```python
+```mojo
 import tkinter as tk
 
 class App:
@@ -113,7 +113,7 @@ class App:
 
 我们可以这样从Mojo调用该模块：
 
-```python
+```mojo
 from python import Python
 
 fn button_clicked():

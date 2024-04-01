@@ -16,7 +16,7 @@
 
 `def`函数提供了与Python的`def`函数相同的动态性和灵活性。例如，这个函数在Python和Mojo中的工作方式相同：
 
-```python
+```mojo
 def greet(name):
     greeting = "Hello, " + name + "!"
     return greeting
@@ -24,7 +24,7 @@ def greet(name):
 
 在Mojo中，您还可以选择指定参数类型和返回类型。您还可以使用`var`声明变量，可以带有或不带有显式类型声明。
 
-```python
+```mojo
 def greet(name: String) -> String:
     var greeting = "Hello, " + name + "!"
     return greeting
@@ -60,7 +60,7 @@ def greet(name: String) -> String:
 
 `fn`函数提供了严格的类型检查和额外的内存安全性。它基本上强制您在`def`中编写的可选内容，并确保您不会意外地改变接收到的参数。例如，这是使用`fn`的相同函数：
 
-```python
+```mojo
 fn greet(name: String) -> String:
     var greeting = "Hello, " + name + "!"
     return greeting
@@ -92,7 +92,7 @@ fn greet(name: String) -> String:
 
 可选参数是包括默认值的参数，例如这里的`exp`参数：
 
-```python
+```mojo
 fn pow(base: Int, exp: Int = 2) -> Int:
     return base ** exp
 
@@ -108,7 +108,7 @@ fn use_defaults():
 
 在调用函数时，您还可以使用关键字参数。关键字参数使用格式`argument_name = argument_value`来指定。您可以以任何顺序传递关键字参数：
 
-```python
+```mojo
 fn pow(base: Int, exp: Int = 2) -> Int:
     return base ** exp
 

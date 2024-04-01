@@ -117,7 +117,7 @@ from mypack.mymodule import MyPair
 
 例如，再次假设您有这些文件：
 
-```python
+```mojo
 main.mojo
 mypackage/
     __init__.mojo

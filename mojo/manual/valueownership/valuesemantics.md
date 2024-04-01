@@ -7,7 +7,7 @@ Mojo不强制使用值语义或引用语义。它同时支持这两种语义并�
 
 在最基本的情况下，共享值语义类型意味着创建值的副本。这也被称为“按值传递”。例如，考虑以下代码：
 
-```python
+```mojo
 x = 1
 y = x
 y += 1
@@ -25,7 +25,7 @@ print(y)
 
 下面是另一个带有函数的示例：
 
-```python
+```mojo
 def add_one(y: Int):
     y += 1
     print(y)
@@ -48,7 +48,7 @@ print(x)
 
 例如，即使Mojo的`Tensor`类型在堆上分配值，当你将一个实例传递给`def`函数时，它会创建所有值的唯一副本。因此，如果我们在函数中修改该参数，原始值不会改变：
 
-```python
+```mojo
 def update_tensor(t: Tensor[DType.uint8]):
     t[1] = 3
     print(t)
@@ -71,7 +71,7 @@ print(t)
 
 例如，让我们创建另一个使用`fn`声明的函数。在这种情况下，默认情况下，`y`参数是不可变的，因此如果函数想要修改本地作用域中的值，它需要进行一个本地副本：
 
-```python
+```mojo
 fn add_two(y: Int):
     # y += 2 # 这会导致编译错误，因为`y`是不可变的
     # 我们可以创建一个显式副本：
@@ -112,7 +112,7 @@ Python的参数传递约定称为“按对象引用传递”。这意味着当�
 例如，这是一个接收列表并对其进行修改的Python函数：
 
 
-```python
+```mojo
 %%python
 def modify_list(l):
     l.append(3)
@@ -132,7 +132,7 @@ print("orig:", ar)
 然而，如果Python函数将一个值分配给`l`，它不会影响原始值：
 
 
-```python
+```mojo
 %%python
 def change_list(l):
     l = [3, 4]

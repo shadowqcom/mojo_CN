@@ -5,7 +5,7 @@ Mojo中的所有数据类型（包括标准库中的基本类型如`Bool`、`Int
 
 Mojo结构体不会得到任何默认的生命周期方法，如构造函数、拷贝构造函数或移动构造函数。这意味着你可以创建一个没有构造函数的结构体，但是不能实例化它，它只能作为静态方法的一种命名空间。例如：
 
-```python
+```mojo
 struct NoInstances:
     var state: Int
 
@@ -18,7 +18,7 @@ struct NoInstances:
 
 因此，你唯一能做的就是调用静态方法：
 
-```python
+```mojo
 NoInstances.print_hello()
 ```
 
@@ -26,7 +26,7 @@ NoInstances.print_hello()
 
 要创建Mojo类型的实例，需要`__init__()`构造函数方法。构造函数的主要责任是初始化所有字段。例如：
 
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -38,7 +38,7 @@ struct MyPet:
 
 现在我们可以创建一个实例：
 
-```python
+```mojo
 var mine = MyPet("Loki", 4)
 ```
 
@@ -56,7 +56,7 @@ Mojo不需要析构函数来销毁对象。只要结构体中的所有字段都�
 
 例如，以下是如何从重载构造函数委托工作的示例：
 
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -82,7 +82,7 @@ struct MyPet:
 
 复制构造函数的命名约定是`__copy__()`。例如，以下是如何为`MyPet`结构体实现复制构造函数的示例：
 
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -97,7 +97,7 @@ struct MyPet:
 
 现在我们可以使用复制构造函数创建一个新的`MyPet`实例，其字段与现有实例相同：
 
-```python
+```mojo
 var mine = MyPet("Loki", 4)
 var yours = mine.__copy__()
 ```
@@ -112,7 +112,7 @@ var yours = mine.__copy__()
 
 移动构造函数的命名约定是`__move__()`。例如，以下是如何为`MyPet`结构体实现移动构造函数的示例：
 
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -129,7 +129,7 @@ struct MyPet:
 
 现在我们可以使用移动构造函数创建一个新的`MyPet`实例，并将参数实例的字段设置为默认值：
 
-```python
+```mojo
 var mine = MyPet("Loki", 4)
 var yours = mine.__move__()
 ```
@@ -149,14 +149,14 @@ Mojo中的值的生命周期由构造函数、复制构造函数和移动构造�
 
 例如，上面的`MyPet`类型没有复制构造函数，因此以下代码无法编译通过：
 
-```python
+```mojo
 var mine = MyPet("Loki", 4)
 var yours = mine  # 这需要一个副本，但是MyPet没有复制构造函数
 ```
 
 为了使其工作，我们需要添加复制构造函数，如下所示：
 
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -176,7 +176,7 @@ struct MyPet:
 
 现在这段代码可以正常工作来进行复制了：
 
-```python
+```mojo
 var mine = MyPet("Loki", 4)
 var yours = mine
 ```
@@ -185,7 +185,7 @@ var yours = mine
 
 然而，Mojo编译器不强制执行这一点，所以类型的作者有责任使用值语义实现`__copyinit__()`。例如，下面是一个在复制构造函数中执行深复制的新的`HeapArray`类型：
 
-```python
+```mojo
 struct HeapArray:
     var data: Pointer[Int]
     var size: Int
@@ -237,14 +237,14 @@ struct HeapArray:
 
 例如，上面的`MyPet`类型没有复制构造函数，因此以下代码无法编译通过：
 
-```python
+```mojo
 var mine = MyPet("Loki", 4)
 var yours = mine  # This requires a copy, but MyPet has no copy constructor
 ```
 
 为了使其工作，我们需要添加复制构造函数，如下所示：
 
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -264,7 +264,7 @@ struct MyPet:
 
 现在这段代码可以正常工作来进行复制了：
 
-```python
+```mojo
 var mine = MyPet("Loki", 4)
 var yours = mine
 ```
@@ -273,7 +273,7 @@ var yours = mine
 
 然而，Mojo编译器不强制执行这一点，所以类型的作者有责任使用值语义实现`__copyinit__()`。例如，下面是一个在复制构造函数中执行深复制的新的`HeapArray`类型：
 
-```python
+```mojo
 struct HeapArray:
     var data: Pointer[Int]
     var size: Int
@@ -321,7 +321,7 @@ struct HeapArray:
 
 因此，当我们复制`HeapArray`的实例时，每个副本在堆上都有自己的值，因此对一个值的更改不会影响其他值，如下所示：
 
-```python
+```mojo
 fn copies():
     var a = HeapArray(2, 1)
     var b = a    # 调用复制构造函数
@@ -351,7 +351,7 @@ fn copies():
 
 以下是如何向`HeapArray`示例添加移动构造函数的示例：
 
-```python
+```mojo
 struct HeapArray:
     var data: Pointer[Int]
     var size: Int
@@ -393,7 +393,7 @@ struct HeapArray:
 
 以下是如何调用`HeapArray`的移动构造函数的示例：
 
-```python
+```mojo
 fn moves():
     var a = HeapArray(3, 1)
 
@@ -418,7 +418,7 @@ fn moves():
 
 例如，考虑一个简单的结构体：
 
-```python
+```mojo
 @value
 struct MyPet:
     var name: String
@@ -427,7 +427,7 @@ struct MyPet:
 
 Mojo看到`@value`装饰器并注意到您没有一个逐成员初始化器（一个具有每个字段参数的构造函数）、一个复制构造函数或一个移动构造函数，所以它会为您合成它们。结果就像您实际编写了这个：
 
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -447,7 +447,7 @@ struct MyPet:
 
 Mojo仅在每个生命周期方法不存在时合成它，因此您可以使用`@value`并仍然定义自己的版本来覆盖默认行为。例如，通常使用默认的逐成员和移动构造函数，但创建一个自定义的复制构造函数是相当常见的。另一种常见模式是使用`@value`创建一个逐成员构造函数，并添加接受不同参数集的重载。例如，如果要创建一个没有指定年龄的`MyPet`结构体，可以添加一个重载的构造函数：
 
-```python
+```mojo
 @value
 struct MyPet:
     var name: String
@@ -472,7 +472,7 @@ struct MyPet:
 
 例如，考虑一个简单的结构体：
 
-```python
+```mojo
 @value
 struct MyPet:
     var name: String
@@ -481,7 +481,7 @@ struct MyPet:
 
 Mojo看到`@value`装饰器并注意到你没有成员逐一初始化器（一个为每个字段都有参数的构造函数）、复制构造函数或移动构造函数，所以它会为你合成它们。结果就好像你实际上写了这个：
 
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -501,7 +501,7 @@ struct MyPet:
 
 Mojo只在每个生命周期方法不存在时合成它，所以你可以使用`@value`并仍然定义自己的版本来覆盖默认行为。例如，通常使用默认的成员逐一和移动构造函数，但创建一个自定义的复制构造函数是相当常见的。另一个常见的模式是使用`@value`创建一个成员逐一构造函数，并添加接受不同参数集的重载。例如，如果你想创建一个没有指定年龄的`MyPet`结构体，你可以添加一个重载的构造函数：
 
-```python
+```mojo
 @value
 struct MyPet:
     var name: String
@@ -528,7 +528,7 @@ struct MyPet:
 
 你会在标准库中看到像`Int`这样的类型上使用这个装饰器：
 
-```python
+```mojo
 @register_passable("trivial")
 struct Int:
     var value: __mlir_type.index

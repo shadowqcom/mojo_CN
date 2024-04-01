@@ -11,7 +11,7 @@ Mojo结构体是一种数据结构，允许您封装字段和在抽象上操作�
 
 您可以像这样定义一个简单的结构体`MyPair`，具有两个字段：
 
-```python
+```mojo
 struct MyPair:
     var first: Int
     var second: Int
@@ -19,7 +19,7 @@ struct MyPair:
 
 但是，您不能实例化此结构体，因为它没有构造函数方法。因此，下面是带有构造函数以初始化两个字段的定义：
 
-```python
+```mojo
 struct MyPair:
     var first: Int
     var second: Int
@@ -37,7 +37,7 @@ struct MyPair:
 
 一旦有了构造函数，您就可以创建`MyPair`的实例并设置字段：
 
-```python
+```mojo
 var mine = MyPair(2,4)
 print(mine.first)
 ```
@@ -50,7 +50,7 @@ print(mine.first)
 
 除了像`__init__()`这样的特殊方法之外，您可以向结构体添加任何其他方法。例如：
 
-```python
+```mojo
 struct MyPair:
     var first: Int
     var second: Int
@@ -63,7 +63,7 @@ struct MyPair:
         return self.first + self.second
 ```
 
-```python
+```mojo
 var mine = MyPair(6, 8)
 print(mine.get_sum())
 ```
@@ -84,7 +84,7 @@ print(mine.get_sum())
 
 要声明静态方法，请使用`@staticmethod`装饰器，并且不要包含`self`参数：
 
-```python
+```mojo
 struct Logger:
 
     fn __init__(inout self):
@@ -97,7 +97,7 @@ struct Logger:
 
 您可以通过在类型（在本例中为`Logger`）上调用它来调用静态方法。也可以在类型的实例上调用它。下面两种形式都展示了：
 
-```python
+```mojo
 Logger.log_info("Static method called.")
 var l = Logger()
 l.log_info("Static method called from instance.")
@@ -153,14 +153,14 @@ Mojo 支持一长串特殊方法；太多了，无法在这里讨论，但它们
 当您将@value装饰器添加到结构体时，Mojo 将合成基本的生命周期方法，以便您的对象提供完整的值语义。具体来说，它生成__init__()、 __copyinit__()和__moveinit__()方法，允许您以值语义且与 Mojo 所有权模型兼容的方式构造、复制和移动结构类型。
 
 例如：
-```python
+```mojo
 @value
 struct MyPet:
     var name: String
     var age: Int
 ```
 Mojo 会注意到您没有成员初始化器、移动构造函数或复制构造函数，它会为您合成这些，就像您编写的一样：
-```python
+```mojo
 struct MyPet:
     var name: String
     var age: Int
@@ -178,12 +178,12 @@ struct MyPet:
         self.age = existing.age
 ```
 如果没有复制和移动构造函数，以下代码将无法工作，因为 Mojo 不知道如何复制 的实例MyPet：
-```python
+```mojo
 var dog = MyPet("Charlie", 5)
 var poodle = dog
 print(poodle.name)
 ```
-```python
+```mojo
 Charlie
 ```
 
