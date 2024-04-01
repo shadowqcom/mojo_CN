@@ -27,7 +27,16 @@ export default defineConfig({
       gtag('js', new Date());
     
       gtag('config', 'G-7BDPKHVLRK');`
-    ]
+    ],
+    
+    //微软统计分析
+    ['script', { type: 'text/javascript' }, `
+      (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "lpo3k0x6fh");
+    `]
   ],
 
   themeConfig: {
@@ -192,10 +201,10 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/shadowqcom/mojo_CN' }
     ],
-
+    
     footer: {
       message: 'Mojo中文网',
-      copyright: 'Copyright &copy; 2024 MojoCN. All Rights Reserved. 影象限 版权所有'
+      copyright: `Copyright &copy; ${new Date().getFullYear()} MojoCN. All Rights Reserved. 影象限 版权所有`
     }
   }
 })
