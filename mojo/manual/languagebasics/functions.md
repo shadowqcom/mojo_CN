@@ -1,28 +1,20 @@
-# functions
-As mentioned in Language basics, Mojo supports two
-types of functions: `def` and `fn` functions. You can use either declaration
-with any function, including the `main()` function, but they have different
-default behaviors, as described on this page.
+# 函数
 
-We believe both `def` and `fn` have good use cases and don't consider either to
-be better than the other. Deciding which to use is a matter personal taste as
-to which style best fits a given task.
+正如在语言基础中提到的，Mojo支持两种类型的函数：`def`和`fn`函数。您可以在任何函数中使用这两种声明方式，包括`main()`函数，但它们具有不同的默认行为，如本页面所述。
 
-We believe Mojo's flexibility in this regard is a superpower that allows you to
-write code in the manner that's best for your project.
+我们认为`def`和`fn`都有很好的用例，并且不认为其中任何一种比另一种更好。选择使用哪种方式取决于个人口味，以及哪种风格最适合给定的任务。
+
+我们相信Mojo在这方面的灵活性是一种超能力，它允许您以最适合项目的方式编写代码。
 
 :::note
 
-Functions declared inside a struct are called
-"methods," but they have all the same qualities as "functions" described here.
+在结构体内声明的函数称为“方法”，但它们具有与此处描述的“函数”完全相同的特性。
 
 :::
 
-## `def` functions
+## `def`函数
 
-The `def` function provides the same dynamism and flexibility as a Python
-`def` function. For example, this function works the same in Python and Mojo:
-
+`def`函数提供了与Python的`def`函数相同的动态性和灵活性。例如，这个函数在Python和Mojo中的工作方式相同：
 
 ```python
 def greet(name):
@@ -30,10 +22,7 @@ def greet(name):
     return greeting
 ```
 
-In Mojo, you also have the option to specify the argument type and the return
-type. You can also declare variables with `var`, with or without explicit
-typing.
-
+在Mojo中，您还可以选择指定参数类型和返回类型。您还可以使用`var`声明变量，可以带有或不带有显式类型声明。
 
 ```python
 def greet(name: String) -> String:
@@ -41,62 +30,35 @@ def greet(name: String) -> String:
     return greeting
 ```
 
-This way, the compiler ensures that `name` is a string, and the return type is a
-string.
+这样，编译器确保`name`是一个字符串，并且返回类型也是一个字符串。
 
-Here's everything to know about `def`:
+关于`def`函数的所有内容如下：
 
-- Arguments don't require a declared type.
+- 参数不需要声明类型。
 
-  Undeclared arguments are actually passed as an `object`, which allows the
-  function to receive any type (Mojo infers the type at runtime).
+  未声明的参数实际上以`object`的形式传递，这允许函数接收任何类型（Mojo在运行时推断类型）。
 
-- Return types don't need to be declared and also default to `object`.
+- 返回类型不需要声明，也默认为`object`。
 
-- Arguments are mutable (usually passed by value, using the `owned` argument
-  convention).
+- 参数是可变的（通常通过按值传递使用`owned`参数约定）。
 
-  If an argument is an `object` type, it's received as a reference, following
-  object reference
-  semantics.
-  
-  If an argument is any other declared type, it's received as a value (using
-  the `owned` argument
-  convention.
+  如果参数是`object`类型，则以引用的方式接收，遵循对象引用语义。
 
-- Variables don't need to be declared using 
-  `var`.
+  如果参数是任何其他声明的类型，则以值的方式接收（使用`owned`参数约定）。
 
-### The `object` type
+- 变量不需要使用`var`进行声明。
 
-If you don't declare the type for an argument or return value in a `def`, it
-becomes an object, which is unlike
-any other type in the standard library.
+### `object`类型
 
-The `object` type allows for dynamic typing because it can actually represent
-any type in the Mojo standard library, and the actual type is inferred at
-runtime. (Actually, there's still more to do before it can represent all Mojo
-types.) This is great for compatibility with Python and all of the flexibility
-that it provides with dynamic types. However, this lack of type enforcement can
-lead to runtime errors when a function receives or returns an unexpected type.
+如果您在`def`函数中不声明参数或返回值的类型，则它将成为一个`object`，这与标准库中的任何其他类型都不同。
 
-For compatibility with Python, `object` values are passed using object
-reference
-semantics.
-As such, the `object` type is not compatible with the argument
-conventions that
-enforce value semantics. So, be careful if using `object` values alongside other
-strongly-typed values—their behavior might be inconsistent because `object` is 
-the only type in the standard library that does not conform to full value
-semantics.
+`object`类型允许动态类型，因为它实际上可以表示Mojo标准库中的任何类型，并且实际类型在运行时推断出来（实际上，在它能表示所有Mojo类型之前还有更多的工作要做）。这对于与Python的兼容性非常有用，并且可以提供动态类型所提供的所有灵活性。然而，这种类型缺乏类型强制执行，当函数接收或返回意外类型时会导致运行时错误。
 
-## `fn` functions
+为了与Python兼容，使用对象引用语义来传递`object`值。因此，`object`类型与强制执行值语义的参数约定不兼容。因此，如果在其他强类型值旁边使用`object`值，则它们的行为可能不一致，因为`object`是标准库中唯一不符合完全值语义的类型。
 
-The `fn` function provides strict type checking and additional memory safety.
-It basically forces you to write the optional things in `def`, and it ensures
-that you don't accidentally mutate received arguments. For example, here's the
-same function from above using `fn`:
+## `fn`函数
 
+`fn`函数提供了严格的类型检查和额外的内存安全性。它基本上强制您在`def`中编写的可选内容，并确保您不会意外地改变接收到的参数。例如，这是使用`fn`的相同函数：
 
 ```python
 fn greet(name: String) -> String:
@@ -104,371 +66,57 @@ fn greet(name: String) -> String:
     return greeting
 ```
 
-As far as a function caller is concerned, `def` and `fn` functions are
-interchangeable. That is, there's nothing a `def` can do that an `fn` can't
-(and vice versa). The difference is that, compared to a `def` function, an `fn`
-function is more strict on the inside.
+对于函数调用者来说，`def`函数和`fn`函数是可以互换的。也就是说，`def`函数可以做的任何事情`fn`函数也能做（反之亦然）。区别在于，与`def`函数相比，`fn`函数在内部更加严格。
 
-Here's everything to know about `fn`:
+关于`fn`函数的所有内容如下：
 
-- Arguments must specify a type (except for the
-  `self` argument in struct methods).
+- 参数必须指定类型（结构体方法中的`self`参数除外）。
 
-- Return values must specify a type, unless the function doesn't return a value.
-  
-  If you don't specify a return type, it defaults to `None` (meaning no return
-  value).
+- 返回值必须指定类型，除非函数不返回值。
 
-- By default, arguments are received as an immutable reference (values are
-  read-only, using the `borrowed` argument
-  convention).
-  
-  This prevents accidental mutations, and permits the use of non-copyable types
-  as arguments.
-  
-  If you want a local copy, you can simply assign the value to a local
-  variable. Or, you can get a mutable reference to the value by declaring the
-  `inout` argument
-  convention).
+  如果不指定返回类型，默认为`None`（表示没有返回值）。
 
-- Variables must be declared using the `var`
-  keyword.
+- 默认情况下，参数以不可变引用的方式接收（值是只读的，使用`borrowed`参数约定）。
 
-- If the function raises an exception, it must be explicitly declared with the
-  `raises` keyword. (A `def` function does not need to declare exceptions.)
+  这可以防止意外的更改，并允许使用不可复制的类型作为参数。
 
-By enforcing these type checks, using the `fn` function helps avoid a variety
-of runtime errors. It also improves performance compared to the dynamic typing
-in a `def` function, because there's no overhead processing required to figure
-out what data types to use at runtime—the types are fixed at compile time.
+  如果您想要一个局部副本，可以将值赋给一个局部变量。或者，您可以通过声明`inout`参数约定来获取对值的可变引用。
 
-## Optional arguments
+- 必须使用`var`关键字声明变量。
 
-An optional argument is one that includes a default value, such as the `exp`
-argument here:
+- 如果函数引发异常，必须使用`raises`关键字显式声明异常（`def`函数不需要声明异常）。
 
+通过强制执行这些类型检查，使用`fn`函数有助于避免各种运行时错误。与`def`函数中的动态类型相比，它还改善了性能，因为在运行时不需要处理来确定使用什么数据类型所需的开销 - 类型在编译时固定。
+
+## 可选参数
+
+可选参数是包括默认值的参数，例如这里的`exp`参数：
 
 ```python
 fn pow(base: Int, exp: Int = 2) -> Int:
     return base ** exp
 
 fn use_defaults():
-    # Uses the default value for `exp`
+    # 使用`exp`的默认值
     var z = pow(3)
     print(z)
 ```
 
-However, you cannot define a default value for an argument that's declared as
-`inout`.
+但是，您不能为声明为`inout`的参数定义默认值。
 
-## Keyword arguments
+## 关键字参数
 
-You can also use keyword arguments when calling a function. Keyword arguments
-are specified using the format <code><var>argument_name</var> =
-<var>argument_value</var></code>. You can pass keyword arguments in any order:
-
+在调用函数时，您还可以使用关键字参数。关键字参数使用格式`argument_name = argument_value`来指定。您可以以任何顺序传递关键字参数：
 
 ```python
 fn pow(base: Int, exp: Int = 2) -> Int:
     return base ** exp
 
-fn use_keywords():
-    # Uses keyword argument names (with order reversed)
-    var z = pow(exp=3, base=2)
-    print(z)
+fn main():
+    var result = pow(base = 5, exp = 3)
+    print(result)
 ```
 
-## Variadic arguments
+这样可以更加清晰地表达参数的意图，并且不需要记住参数的顺序。
 
-Variadic arguments let a function accept a variable number of arguments. To
-define a function that takes a variadic argument, use the variadic argument
-syntax <code>*<var>argument_name</var></code>:
-
-
-```python
-fn sum(*values: Int) -> Int:
-  var sum: Int = 0
-  for value in values:
-    sum = sum+value
-  return sum
-```
-
-The variadic argument `values` here is a placeholder that accepts any number of 
-passed positional arguments.
-
-You can define zero or more arguments before the variadic argument. When calling
-the function, any remaining positional arguments are assigned to the variadic
-argument, so any arguments declared **after** the variadic argument can only be
-specified by keyword (see 
-Positional-only and keyword-only arguments).
-
-Currently variadic arguments must be a single type—all `Int`, or all `String`,
-for example. A few standard library APIs, such as
-`print()`, support mixed-type, or
-heterogeneous, variadic arguments, but this currently requires working with
-undocumented MLIR APIs. We plan to support heterogeneous variadic arguments in
-Mojo in the future.
-
-Inside the function body, the variadic argument is available an iterable list
-for ease of use. But there are some differences in handling the list depending
-on whether the arguments are register-passable types (such as `Int`) or
-memory-only types (such as `String`).
-
-Register-passable types, such as `Int`, are available as a 
-`VariadicList` type. As
-shown in the previous example, you can iterate over the values using a `for..in`
-loop.
-
-Memory-only types, such as `String`, are available as a 
-`VariadicListMem`.
-Iterating over this list directly with a `for..in` loop currently produces a
-`Reference for each value instead
-of the value itself. You must add an empty subscript operator `[]` to
-dereference the reference and retrieve the value:
-
-
-
-```python
-fn make_worldly(inout *strs: String):
-    # Requires extra [] to dereference the reference for now.
-    for i in strs:
-        i[] += " world"
-
-```
-
-
-Alternately, subscripting into a `VariadicListMem` returns the argument value,
-and doesn't require any dereferencing:
-
-  ```python
-  fn make_worldly(inout *strs: String):
-      # This "just works" as you'd expect!
-      for i in range(len(strs)):
-          strs[i] += " world"
-  ```
-
-:::note Variadic parameters
-
-Mojo parameters are distinct from arguments
-(parameters are used for compile-time metaprogramming). However, most rules
-that apply to argument lists also apply to parameter lists. Variadic parameters
-are supported, but with some limitations—for details see 
-variadic parameters.
-
-:::
-
-
-### Variadic keyword arguments
-
-Mojo functions also support variadic keyword arguments (`**kwargs`). Variadic
-keyword arguments allow the user to pass an arbitrary number of keyword
-arguments. To define a function that takes a variadic keyword argument, use the
-variadic keyword argument syntax <code>**<var>kw_argument_name</var></code>:
-
-  ```python
-  fn print_nicely(**kwargs: Int) raises:
-    for key in kwargs.keys():
-        print(key[], "=", kwargs[key[]])
-
-   # prints:
-   # `a = 7`
-   # `y = 8`
-  print_nicely(a=7, y=8)
-  ```
-
-  In this example, the argument name `kwargs` is a placeholder that accepts any
-  number of keyword arguments. Inside the body of the function, you can access
-  the arguments as a `Dict`of keywords and
-  argument values.
-  
-  There are currently a few limitations:
-
-  - Variadic keyword arguments are always implicitly treated as if they
-    were declared with the `owned` argument 
-    convention, and
-    can't be declared otherwise:
-
-    ```python
-    # Not supported yet.
-    fn borrowed_var_kwargs(borrowed **kwargs: Int): ...
-    ```
-
-  - All the variadic keyword arguments must have the same type, and this
-    determines the type of the argument dictionary. For example, if the argument
-    is `**kwargs: Float64` then the argument dictionary will be a 
-    `Dict[String, Float64]`.
-
-  - Functions with variadic keyword arguments can't have default values for
-    keyword-only arguments. For example:
-
-    ```python
-    # Not allowed yet, because `b` is keyword-only with a default.
-    fn not_yet(*, b: Int = 9, **kwargs: Int): ...
-
-    # Okay, because `c` is positional-or-keyword, so it can have a default.
-    fn still_works(c: Int = 5, **kwargs: Int): ...
-    ```
-
-  - Dictionary unpacking is not supported yet:
-
-    ```python
-    fn takes_dict(d: Dict[String, Int]):
-      print_nicely(**d)  # Not supported yet.
-    ```
-
-  - Variadic keyword _parameters_ are not supported yet:
-
-    ```python
-    # Not supported yet.
-    fn var_kwparams[**kwparams: Int](): ...
-    ```
-
-## Positional-only and keyword-only arguments
-
-When defining a function, you can restrict some arguments so that they can only
-be passed as positional arguments, or they can only be passed as keyword 
-arguments.
-
-To define positional-only arguments, add a slash character (`/`) to the
-argument list. Any arguments before the `/` are positional-only: they can't be
-passed as keyword arguments. For example:
-
-
-```python
-fn min(a: Int, b: Int, /) -> Int:
-    return a if a < b else b
-```
-
-This `min()` function can be called with `min(1, 2)` but can't be called using
-keywords, like `min(a=1, b=2)`.
-
-There are several reasons you might want to write a function with
-positional-only arguments:
-
-- The argument names aren't meaningful for the the caller.
-- You want the freedom to change the argument names later on without breaking
-  backward compatibility.
-
-For example, in the `min()` function, the argument names don't add any real
-information, and there's no reason to specify arguments by keyword. 
-
-For more information on positional-only arguments, see [PEP 570 – Python
-Positional-Only Parameters](https://peps.python.org/pep-0570/).
-
-Keyword-only arguments are the inverse of positional-only arguments: they can
-only be specified by keyword. If a function accepts variadic arguments, any 
-arguments defined _after_ the variadic arguments are treated as keyword-only.
-For example:
-
-```python
-fn sort(*values: Float64, ascending: Bool = True): ...
-```
-
-In this example, the user can pass any number of `Float64` values, optionally
-followed by the keyword `ascending` argument:
-
-```python
-var a = sort(1.1, 6.5, 4.3, ascending=False)
-```
-
-If the function doesn't accept variadic arguments, you can add a single star
-(`*`) to the argument list to separate the keyword-only arguments:
-
-
-```python
-fn kw_only_args(a1: Int, a2: Int, *, double: Bool) -> Int:
-    var product = a1 * a2
-    if double:
-        return product * 2
-    else:
-        return product
-```
-
-Keyword-only arguments often have default values, but this is not required. If a
-keyword-only argument doesn't have a default value, it is a _required 
-keyword-only argument_. It must be specified, and it must be specified by 
-keyword.
-
-For more information on keyword-only arguments, see [PEP 3102 – Keyword-Only
-Arguments](https://peps.python.org/pep-3102/).
-
-## Overloaded functions
-
-If a `def` function does not specify argument types, then it can accept any
-data type and decide how to handle each type internally. This is nice when you
-want expressive APIs that just work by accepting arbitrary inputs, so there's
-usually no need to write function overloads for a `def` function.
-
-On the other hand, all `fn` functions must specify argument types, so if you
-want a function to work with different data types, you need to implement
-separate versions of the function that each specify different argument types.
-This is called "overloading" a function.
-
-For example, here's an overloaded `add()` function that can accept either
-`Int` or `String` types:
-
-
-```python
-fn add(x: Int, y: Int) -> Int:
-    return x + y
-
-fn add(x: String, y: String) -> String:
-    return x + y
-```
-
-If you pass anything other than `Int` or `String` to the `add()` function,
-you'll get a compiler error. That is, unless `Int` or `String` can implicitly
-cast the type into their own type. For example, `String` includes an overloaded
-version of its constructor (`__init__()`) that accepts a `StringLiteral` value.
-Thus, you can also pass a `StringLiteral` to a function that expects a `String`.
-
-When resolving an overloaded function call, the Mojo compiler tries each
-candidate function and uses the one that works (if only one version works), or
-it picks the closest match (if it can determine a close match), or it reports
-that the call is ambiguous (if it can’t figure out which one to pick).
-
-If the compiler can't figure out which function to use, you can resolve the
-ambiguity by explicitly casting your value to a supported argument type. For
-example, in the following code, we want to call the overloaded `foo()`
-function, but both implementations accept an argument that supports implicit
-conversion from
-`StringLiteral`. So, the call to `foo(string)` is ambiguous and creates a
-compiler error. We can fix it by casting the value to the type we really want:
-
-
-```python
-@value
-struct MyString:
-    fn __init__(inout self, string: StringLiteral):
-        pass
-
-fn foo(name: String):
-    print("String")
-
-fn foo(name: MyString):
-    print("MyString")
-
-fn call_foo():
-    var string = "Hello"
-    # foo(string) # This call is ambiguous because two `foo` functions match it
-    foo(MyString(string))
-```
-
-
-
-When resolving an overloaded function, Mojo does not consider the return type
-or other contextual information at the call site—only the argument types affect
-which function is selected.
-
-Overloading also works with combinations of both `fn` and `def` functions.
-For example, you could define multiple `fn` function overloads and then one
-or more `def` versions that don't specify all argument types, as a fallback.
-
-:::note
-
-Although we haven't discussed
-parameters yet (they're
-different from function arguments, and used for compile-time metaprogramming),
-you can also overload functions based on parameter types.
-
-:::
+以上是关于函数的全部内容。

@@ -1,119 +1,96 @@
 # Helllo,world!
-## Before you start
 
-Before you start, make sure the `MODULAR_HOME` and `PATH` environment variables
-are set, as described in the install procedure, so you can run the `mojo`
-command:
+## 开始之前
+
+在开始之前，请确保设置了`MODULAR_HOME`和`PATH`环境变量，如安装过程所述，以便您可以运行`mojo`命令：
 
 ```python
 mojo --version
 ```
 
-If you have other issues during install, check our known
-issues.
+如果在安装过程中遇到其他问题，请查看我们的已知问题。
 
-## 1. Run code in the REPL
+## 1. 在REPL中运行代码
 
-First, let's use the Mojo
-REPL,
-which allows you to write and run Mojo code in a command prompt:
+首先，让我们使用Mojo REPL（交互式解释器），它允许您在命令提示符中编写和运行Mojo代码：
 
-1. To start a REPL session, type `mojo` in your terminal and press
-   <kbd>Enter</kbd>.
+1. 要启动REPL会话，请在终端中输入`mojo`并按下<kbd>Enter</kbd>键。
 
-2. Then type `print("Hello, world!")` and press <kbd>Enter</kbd> twice
-(a blank line is required to indicate the end of an expression).
+2. 然后输入`print("Hello, world!")`并按下<kbd>Enter</kbd>键两次（需要一个空行来表示表达式的结束）。
 
-That's it! For example:
+就是这样！例如：
 
 ```python
 $ mojo
-Welcome to Mojo! 🔥
+欢迎使用Mojo！🔥
 
-Expressions are delimited by a blank line.
-Type `:quit` to exit the REPL and `:mojo help repl` for further assistance.
+表达式以空行为分隔。
+输入`:quit`退出REPL，输入`:mojo help repl`获取更多帮助。
 
 1> print("Hello, world!")
 2.
 Hello, world!
 ```
 
-You can write as much code as you want in the REPL. You can press
-<kbd>Enter</kbd> to start a new line and continue writing code, and when you
-want Mojo to evaluate the code, press <kbd>Enter</kbd> twice. If there's
-something to print, Mojo prints it and then returns the prompt to you.
+您可以在REPL中编写任意数量的代码。按<kbd>Enter</kbd>键开始新的一行并继续编写代码，当您想要Mojo评估代码时，按下<kbd>Enter</kbd>键两次。如果有要打印的内容，Mojo会打印它，然后将提示返回给您。
 
-The REPL is primarily useful for short experiments because the code isn't
-saved. So when you want to write a real program, you need to write the code in
-a `.mojo` source file.
+REPL主要用于短期实验，因为代码不会被保存。因此，当您想要编写一个真正的程序时，需要将代码编写到一个`.mojo`源文件中。
 
-## 2. Run a Mojo file
+## 2. 运行Mojo文件
 
-Now let's write the code in a Mojo source file and run it with the
-`mojo` command:
+现在让我们将代码编写到一个Mojo源文件中，并使用`mojo`命令运行它：
 
-1. Create a file named `hello.mojo` (or `hello.🔥`) and add the following code:
+1. 创建一个名为`hello.mojo`（或`hello.🔥`）的文件，并添加以下代码：
 
    ```python
    fn main():
        print("Hello, world!")
    ```
 
-   That's all you need. Save the file and return to your terminal.
+   这就是您所需要的全部内容。保存文件并返回到您的终端。
 
-2. Now run it with the `mojo` command:
+2. 现在使用`mojo`命令运行它：
 
     ```sh
     mojo hello.mojo
     ```
 
-    It should immediately print the message:
+    它应该立即打印出消息：
 
     ```python
     Hello, world!
     ```
 
-If this didn't work for you, double-check your code looks exactly like the code
-in step 1, and make sure you correctly installed
-Mojo.
+如果这对您不起作用，请仔细检查您的代码是否与步骤1中的代码完全相同，并确保您正确安装了Mojo。
 
-## 3. Build an executable binary
+## 3. 构建可执行二进制文件
 
-Finally, let's build and run that same code as an executable:
+最后，让我们将相同的代码构建为可执行文件并运行它：
 
-1. Create an executable file with the `build` command:
+1. 使用`build`命令创建一个可执行文件：
 
     ```sh
     mojo build hello.mojo
     ```
 
-    The executable file uses the same name as the `.mojo` file, but
-    you can change that with the `-o` option.
+    可执行文件的名称与`.mojo`文件相同，但您可以使用`-o`选项进行更改。
 
-2. Then run the executable:
+2. 然后运行可执行文件：
 
     ```sh
     ./hello
     ```
 
-This creates a statically compiled binary file, so it contains all the code and
-libraries it needs to run.
+这将创建一个静态编译的二进制文件，因此它包含运行所需的所有代码和库。
 
-## Next steps
+## 下一步
 
-- If you're new to Mojo, we suggest you continue to the next section about
-  language basics.
+- 如果您是Mojo的新手，建议您继续阅读关于语言基础的下一节。
 
-- If you want to experiment with some code, clone the Mojo
-repo to try our code examples:
+- 如果您想尝试一些代码实验，请克隆Mojo仓库并尝试我们的代码示例：
 
   ```sh
   git clone https://github.com/modularml/mojo.git
   ```
 
-  In addition to several `.mojo` examples, the repo includes [Jupyter
-  notebooks](https://github.com/modularml/mojo/tree/main/examples/notebooks#readme)
-  that teach advanced Mojo features.
-
-- To see all the available Mojo APIs, check out the Mojo standard library
-  reference.
+- 要查看所有可用的Mojo API，请查阅Mojo标准库参考。

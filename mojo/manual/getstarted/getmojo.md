@@ -1,59 +1,54 @@
-# Get the Mojo SDK
-We've also published a [Mojo extension for Visual Studio
-Code](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)
-to provide a first-class developer experience with features like code
-completion, quick fixes, and hover help for Mojo APIs.
+# 获取Mojo SDK
+我们还发布了一个[适用于Visual Studio Code的Mojo扩展](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)，以提供一流的开发者体验，包括代码补全、快速修复和Mojo API的悬停帮助等功能。
 
-## System requirements
+## 系统要求
 
-To use the Mojo SDK, you need a system that meets these specifications:
+要使用Mojo SDK，您需要满足以下规格的系统：
 
-Linux:
+Linux：
 
 - Ubuntu 20.04/22.04 LTS
-- x86-64 CPU (with [SSE4.2 or
-newer](https://www.intel.com/content/www/us/en/support/articles/000057621/processors.html))
-  or AWS Graviton2/3 CPU
-- Minimum 8 GiB RAM
+- x86-64 CPU（带有[SSE4.2或更新版本](https://www.intel.com/content/www/us/en/support/articles/000057621/processors.html)）
+  或 AWS Graviton2/3 CPU
+- 最低8 GiB RAM
 - Python 3.8 - 3.11
-- g++ or clang++ C++ compiler
+- g++ 或 clang++ C++ 编译器
 
-Mac:
+Mac：
 
-- Apple silicon (M1 or M2 processor)
-- macOS Monterey (12) or later
+- 苹果芯片（M1或M2处理器）
+- macOS Monterey (12) 或更高版本
 - Python 3.8 - 3.11
-- Command-line tools for Xcode, or Xcode
+- Xcode 的命令行工具，或者 Xcode
 
-Support for Windows will be added in a future release.
+Windows 支持将在将来的版本中添加。
 
-## Install Mojo
+## 安装Mojo
 
-1. Open a terminal and install the `modular` command line tool:
+1. 打开终端并安装`modular`命令行工具：
 
     ```sh
     curl -s https://get.modular.com | sh -
     ```
 
-2. Then sign in to your Modular account with this command:
+2. 然后使用以下命令登录到您的Modular帐户：
 
     ```sh
     modular auth
     ```
 
-3. Now you can install the Mojo SDK:
+3. 现在您可以安装Mojo SDK：
 
     ```sh
     modular install mojo
     ```
 
-4. Set environment variables so you can access the
-   `mojo` CLI:
+4. 设置环境变量以便访问`mojo`命令行界面：
 
     <Tabs>
       <TabItem value="bash" label="Bash">
 
-      If you're using Bash, run this command:
+      如果您使用的是Bash，请运行以下命令：
 
       ```sh
       MOJO_PATH=$(modular config mojo.path) \
@@ -66,7 +61,7 @@ Support for Windows will be added in a future release.
       </TabItem>
       <TabItem value="zsh" label="ZSH">
 
-      If you're using ZSH, run this command:
+      如果您使用的是ZSH，请运行以下命令：
 
       ```sh
       MOJO_PATH=$(modular config mojo.path) \
@@ -78,35 +73,31 @@ Support for Windows will be added in a future release.
       </TabItem>
     </Tabs>
 
-Next, get started with **Hello, world!**
+接下来，开始使用**Hello, world!**
 
-If you have issues during install, check our known
-issues.
+如果在安装过程中遇到问题，请查看我们的已知问题。
 
-### Update Mojo
+### 更新Mojo
 
-Mojo is a work in progress and we will release regular updates to the
-Mojo language and SDK tools. For information about each release, see the
-Mojo changelog.
+Mojo仍在不断发展，我们将定期发布Mojo语言和SDK工具的更新。有关每个版本的信息，请参阅Mojo更改日志。
 
-To check your current Mojo version, use the `--version` option:
+要检查您当前的Mojo版本，请使用`--version`选项：
 
 ```sh
 mojo --version
 ```
 
-To update to the latest Mojo version, use the `modular update` command:
+要升级到最新的Mojo版本，请使用`modular update`命令：
 
 ```sh
 modular update mojo
 ```
 
-### Update the Modular CLI
+### 更新Modular CLI
 
-We may also release updates to the `modular` tool. Run the following
-commands to update the CLI on your system.
+我们也可能发布`modular`工具的更新。运行以下命令在您的系统上更新CLI。
 
-Linux:
+Linux：
 
 ```sh
 sudo apt update
@@ -116,7 +107,7 @@ sudo apt update
 sudo apt install modular
 ```
 
-Mac:
+Mac：
 
 ```sh
 brew update
@@ -126,39 +117,26 @@ brew update
 brew upgrade modular
 ```
 
-## Develop in the Mojo Playground
+## 在Mojo Playground中进行开发
 
-Instead of downloading the Mojo SDK, you can also experiment with Mojo in our
-online Playground.
+除了下载Mojo SDK，您还可以在我们的在线Playground中尝试Mojo。
 
+### 预期效果
 
-### What to expect
+Mojo Playground是一个简单的在线编辑器，您可以在其中测试Mojo代码。
 
-The Mojo Playground is a simple online editor where you can test out Mojo
-code for yourself.
+- 我们提供了一些代码示例，以展示Mojo的基础知识和功能。
 
-- We've included a handful of code examples to show you Mojo basics and
-  demonstrate its capabilities.
+- 这是一个在线沙盒，不适用于基准测试。
 
-- This is an online sandbox and not useful for benchmarking.
+- 您可以下载您的代码或将其共享为gist，但在Playground本身中没有保存代码的机制。在切换代码示例时，任何更改都将丢失（以及在服务器刷新或更新时）。如果您想保存某些内容，请将其保存到本地！
 
-- You can download your code or share it as a gist, but there's no mechanism
-  for saving code in the Playground itself. Any changes will be lost when you
-  switch code examples (as well as in the event of a server refresh or update).
-  If you come up with something you want to save—save it locally!
+- Playground环境不包含任何Python包。将来，我们打算在Playground中提供一些常见的Python包供导入使用。
 
-- The Playground environment doesn't include any Python packages. In the future
-  we intend to make some common Python packages available to import in the
-  Playground.
+- 可能会存在一些错误。请在[开发者社区中反馈问题](https://dev.mojocn.org/)。
 
-- There might be some bugs. Please [report issues and feedback on
-  GitHub](https://github.com/modularml/mojo/issues/new/choose).
+### 注意事项
 
-### Caveats
+- Mojo环境无法访问网络，您无法安装任何Mojo或Python包。您只能访问Mojo和Mojo标准库。
 
-- The Mojo environment does not have network access, and you cannot install any
-  Mojo or Python packages. You only have access to Mojo and the Mojo standard
-  library.
-
-- For a general list of things that don't work yet in Mojo or have pain-points,
-  see the Mojo roadmap and sharp edges.
+- 有关Mojo尚不支持或存在问题的常见列表，请参阅Mojo路线图和注意事项。

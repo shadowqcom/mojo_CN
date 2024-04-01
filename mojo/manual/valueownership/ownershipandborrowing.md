@@ -1,58 +1,25 @@
-# Ownership and borrowing
-A challenge you might face when using some programming languages is that you
-must manually allocate and deallocate memory. When multiple parts of the
-program need access to the same memory, it becomes difficult to keep track of
-who "owns" a value and determine when is the right time to deallocate it. If
-you make a mistake, it can result in a "use-after-free" error, a "double free"
-error, or a "leaked memory" error, any one of which can be catastrophic.
+# 所有权和借用
+在使用某些编程语言时，你可能会面临一个挑战，即必须手动分配和释放内存。当程序的多个部分需要访问同一块内存时，很难追踪哪个值"拥有"它，并确定何时释放它。如果犯了一个错误，可能会导致"use-after-free"错误、"double free"错误或"leaked memory"错误，其中任何一个都可能是灾难性的。
 
-Mojo helps avoid these errors by ensuring there is only one variable that owns
-each value at a time, while still allowing you to share references with other
-functions. When the lifetime of the owner ends, Mojo destroys the
-value.
+Mojo通过确保每个值在同一时间只有一个变量拥有来避免这些错误，同时允许您与其他函数共享引用。当所有者的生命周期结束时，Mojo会销毁该值。
 
-On this page, we'll explain the rules that govern this ownership model and how
-to specify different argument conventions that define how values are shared into
-functions.
+在本页中，我们将解释规定这种所有权模型的规则，以及如何指定定义值如何共享到函数中的不同参数约定。
 
-## Argument conventions
+## 参数约定
 
-In all programming languages, code quality and performance is heavily dependent
-upon how functions treat argument values. That is, whether a value received by
-a function is a unique value or a reference, and whether it's mutable or
-immutable, has a series of consequences that define the readability,
-performance, and safety of the language.
+在所有编程语言中，代码质量和性能在很大程度上取决于函数如何处理参数值。也就是说，函数接收的值是唯一值还是引用，以及它是可变的还是不可变的，都会产生一系列后果，定义了语言的可读性、性能和安全性。
 
-In Mojo, we want to provide full value
-semantics by default, which provides
-consistent and predictable behavior. But as a systems programming language, we
-also need to offer full control over memory optimizations, which generally
-requires reference semantics. The trick is to introduce reference semantics in
-a way that ensures all code is memory safe by tracking the lifetime of every
-value and destroying each one at the right time (and only once). All of this is
-made possible in Mojo through the use of argument conventions that ensure every
-value has only one owner at a time.
+在Mojo中，我们默认提供完整的值语义，这提供了一致和可预测的行为。但作为一种系统编程语言，我们还需要提供对内存优化的完全控制，这通常需要引用语义。关键在于以确保所有代码通过追踪每个值的生命周期并在正确的时间（且仅一次）销毁每个值的方式引入引用语义。在Mojo中，通过使用参数约定来实现所有这些。
 
-An argument convention specifies whether an argument is mutable or immutable,
-and whether the function owns the value. Each convention is defined by a
-keyword at the beginning of an argument declaration:
+参数约定指定了参数是可变的还是不可变的，以及函数是否拥有该值。每个约定由参数声明的开头的关键字定义：
 
-- `borrowed`: The function receives an **immutable reference**. This means the
-  function can read the original value (it is *not* a copy), but it cannot
-  mutate (modify) it.
-  
-- `inout`: The function receives a **mutable reference**. This means the
-  function can read and mutate the original value (it is *not* a copy).
-  
-- `owned`: The function takes **ownership**. This means the function has
-  exclusive mutable access to the argument—the function caller does not have
-  access to this value (anymore). Often, this also implies that the caller
-  should transfer ownership to this function, but that's not always what
-  happens and this might instead be a copy (as you'll learn below).
+- `borrowed`：函数接收一个**不可变引用**。这意味着函数可以读取原始值（它不是副本），但不能修改它。
 
-For example, this function has one argument that's a mutable
-reference and one that's immutable:
+- `inout`：函数接收一个**可变引用**。这意味着函数可以读取和修改原始值（它不是副本）。
 
+- `owned`：函数拥有**所有权**。这意味着函数对参数具有独占的可变访问权——函数调用者不再对此值具有访问权限。通常，这也意味着调用者应该将所有权转移给该函数，但并不总是发生这种情况，而可能是一个副本（后面将会了解）。
+
+例如，此函数有一个可变引用参数和一个不可变引用参数：
 
 ```python
 fn add(inout x: Int, borrowed y: Int):
@@ -62,60 +29,37 @@ fn main():
     var a = 1
     var b = 2
     add(a, b)
-    print(a)  # Prints 3
+    print(a)  # 输出 3
 ```
 
-You've probably already seen some function arguments that don't declare a
-convention. That's because every argument has a default convention, depending
-on whether the function is declared with `fn` or `def`:
+你可能已经看到了一些没有声明约定的函数参数。这是因为每个参数都有一个默认约定，取决于函数是用`fn`还是`def`声明的：
 
-- All values passed into a Mojo `def`
-  function are `owned`,
-  by default. 
+- 所有传递给Mojo `def`函数的值默认为`owned`。
 
-- All values passed into a Mojo `fn`
-  function are `borrowed`,
-  by default.
+- 所有传递给Mojo `fn`函数的值默认为`borrowed`。
 
-In the following sections, we'll explain each of these argument conventions in
-more detail.
+在接下来的章节中，我们将详细解释每个参数约定。
 
-## Ownership summary
+## 拥有权概述
 
-The fundamental rules that make Mojo's ownership model work are the following:
+Mojo的拥有权模型工作的基本规则如下：
 
-- Every value has only one owner at a time.
-- When the lifetime of the owner ends, Mojo destroys the value.
+- 每个值在任何时候只有一个所有者。
+- 当所有者的生命周期结束时，Mojo销毁该值。
 
-The "borrow checker" is a process in the Mojo compiler that ensures there is
-only one owner for each value at any time. It also enforces some other
-memory-safety rules:
+"借用检查器"是Mojo编译器中的一个过程，确保每个值在任何时候只有一个所有者。它还强制执行一些其他的内存安全规则：
 
-- You cannot create multiple mutable references (`inout`) for the same value.
-  (Multiple immutable references (`borrowed`) are okay.)
+- 不能为同一个值创建多个可变引用（`inout`）。（多个不可变引用（`borrowed`）是可以的。）
 
-- You cannot create a mutable reference (`inout`) if there exists an
-  immutable reference (`borrowed`) for the same value. (TODO: Not currently
-  implemented.)
+- 如果存在对同一值的不可变引用（`borrowed`），则不能创建可变引用（`inout`）。 （待办事项：目前尚未实现。）
 
-Because Mojo does not allow a mutable reference to overlap with another mutable
-or immutable reference, it provides a predictable programming model about which
-references are and aren't valid (an invalid reference is one who's lifetime has
-ended, perhaps because the value ownership was transferred). Importantly, this
-logic allows Mojo to immediately destroy
-values when their lifetime ends.
+因为Mojo不允许可变引用与另一个可变引用或不可变引用重叠，所以它提供了一个可预测的编程模型，用于确定哪些引用是有效的（无效引用是指其生命周期已结束，可能是因为值的所有权已经转移）。重要的是，这种逻辑允许Mojo在值的生命周期结束时立即销毁值。
 
-## Immutable arguments (`borrowed`)
+## 不可变参数（`borrowed`）
 
-If you'd like your function to receive an **immutable reference**, add the
-`borrowed` keyword in front of the argument name.
+如果您希望函数接收一个**不可变引用**，请在参数名称前加上`borrowed`关键字。
 
-The `borrowed` convention is the default for all arguments in an `fn` function,
-but you can still specify it to be explicit. It also works on `def` functions,
-which otherwise receive arguments by value, which might not be desirable, such
-as when the type is expensive to copy (or not copyable at all) and you just
-need to read it. For example:
-
+`borrowed`约定是`fn`函数中所有参数的默认值，但您仍然可以明确指定它。它也适用于`def`函数，`def`函数通常按值接收参数，这可能不是理想的情况，比如类型的复制成本很高（或根本不能复制），而您只需要读取它。例如：
 
 ```python
 from tensor import Tensor, TensorShape
@@ -131,46 +75,23 @@ print_shape(tensor)
     256x256
     
 
-In general, passing an immutable reference is much more efficient when handling
-large or expensive-to-copy values, because the copy constructor and destructor
-are not invoked for a borrow.
+通常情况下，当处理大型或成本昂贵的值时，传递不可变引用要比传递值更高效，因为借用不会调用复制构造函数和析构函数。
 
-### Compared to C++ and Rust
+### 与C++和Rust的比较
 
-Mojo's borrowed argument convention is similar in some ways to passing an
-argument by `const&` in C++, which also avoids a copy of the value and disables
-mutability in the callee. However, the borrowed convention differs from
-`const&` in C++ in two important ways:
+Mojo的`borrowed`参数约定在某些方面类似于在C++中通过`const&`传递参数，它也避免了对值的复制并禁用了调用方的可变性。然而，`borrowed`约定与C++中的`const&`有两个重要的不同之处：
 
-- The Mojo compiler implements a borrow checker (similar to Rust) that prevents
-code from dynamically forming mutable references to a value when there are
-immutable references outstanding, and it prevents multiple mutable references
-to the same value.
+- Mojo编译器实现了一个借用检查器（类似于Rust），当存在不可变引用时，防止代码动态形成对值的可变引用，并防止对同一值的多个可变引用。
 
-- Small values like `Int`, `Float`, and `SIMD` are passed directly in machine
-registers instead of through an extra indirection (this is because they are
-declared with the `@register_passable` decorator). This is a [significant
-performance
-enhancement](https://www.forrestthewoods.com/blog/should-small-rust-structs-be-passed-by-copy-or-by-borrow/)
-when compared to languages like C++ and Rust, and moves this optimization from
-every call site to a declaration on the type definition.
+- 像`Int`、`Float`和`SIMD`这样的小值直接通过机器寄存器传递，而不是通过额外的间接方式传递（这是因为它们使用了`@register_passable`装饰器声明）。这是与C++和Rust等语言相比的[重大性能提升](https://www.forrestthewoods.com/blog/should-small-rust-structs-be-passed-by-copy-or-by-borrow/)，将此优化从每个调用点移动到类型定义上。
 
-Similar to Rust, Mojo's borrow checker enforces the exclusivity of invariants.
-The major difference between Rust and Mojo is that Mojo does not require a
-sigil on the caller side to pass by borrow. Also, Mojo is more efficient when
-passing small values, and Rust defaults to moving values instead of passing
-them around by borrow. These policy and syntax decisions allow Mojo to provide
-an easier-to-use programming model.
+与Rust类似，Mojo的借用检查器强制执行不变量的排他性。Rust和Mojo之间的主要区别在于Mojo不需要在调用方上加上标记来进行借用传递。此外，在传递小值时，Mojo更高效，而Rust默认将值移动而不是通过借用传递。这些策略和语法决策使Mojo能够提供更易于使用的编程模型。
 
-## Mutable arguments (`inout`)
+## 可变参数（`inout`）
 
-If you'd like your function to receive a **mutable reference**, add the `inout`
-keyword in front of the argument name. You can think of `inout` like this: it
-means any changes to the value *in*side the function are visible *out*side the
-function.
+如果您希望函数接收一个**可变引用**，请在参数名称前加上`inout`关键字。您可以这样理解`inout`：它意味着在函数内部对值的任何更改都在函数外部可见。
 
-For example, this `mutate()` function updates the original `x` value:
-
+例如，这个`mutate()`函数更新了原始的`x`值：
 
 ```python
 def mutate(inout y: Int):
@@ -184,8 +105,7 @@ print(x)
     2
     
 
-That behaves like an optimized shorthand for this:
-
+这就像是对下面这个优化的简写：
 
 ```python
 def mutate_copy(y: Int) -> Int:
@@ -200,62 +120,29 @@ print(x)
     2
     
 
-Although the code using `inout` isn't that much shorter, it's more memory
-efficient because it does not make a copy of the value.
+尽管使用`inout`的代码并没有那么短，但它更节省内存，因为它不会对值进行复制。
 
-However, remember that the values passed as `inout` must already be mutable.
-For example, if you try to take a `borrowed` value and pass it to another
-function as `inout`, you'll get a compiler error because Mojo can't form a
-mutable reference from an immutable reference.
+然而，请记住，作为`inout`传递的值必须已经是可变的。例如，如果您尝试将一个`borrowed`值作为`inout`传递给另一个函数，您将会得到一个编译器错误，因为Mojo不能从不可变引用形成可变引用。
 
+请注意，我们不将此参数传递称为“按引用传递”。虽然`inout`约定在概念上是相同的，但我们不将其称为按引用传递，因为实际上实现可能使用指针来传递值。
 
+您不能为`inout`参数定义默认值。
 
-Notice that we don't call this argument passing "by reference."
-Although the `inout` convention is conceptually the same, we don't call it
-by-reference passing because the implementation may actually pass values using
-pointers.
+## 转移参数（`owned`和`^`）
 
+最后，如果您希望函数接收值的**所有权**，请在参数名称前加上`owned`关键字。
 
+通常，这个约定与在传递给函数的变量上使用后缀`^`“转移”运算符相结合，该运算符结束了该变量的生命周期。
 
+从技术上讲，`owned`关键字并不保证接收到的值是对原始值的可变引用，它只保证函数对这个特定值拥有唯一的所有权（强制值语义）。这可以通过以下两种方式之一来实现：
 
+- 调用者使用带有`^`转移运算符的参数，这将结束该变量的生命周期（变量变为无效），并将所有权转移给函数，而不复制任何堆分配的数据。
 
-You cannot define default
-values for `inout`
-arguments.
+- 调用者**不使用**`^`转移运算符，此时该值将被复制到函数参数中，原始变量仍然有效（除非它不再使用，在这种情况下，编译器会销毁该变量，因为它的生命周期在那里自然结束）。
 
+无论如何，当函数将参数声明为`owned`时，它可以确定自己对该值具有唯一的可变访问权限。
 
-
-## Transfer arguments (`owned` and `^`)
-
-And finally, if you'd like your function to receive value **ownership**, add the
-`owned` keyword in front of the argument name.
-
-This convention is usually combined with use of the postfixed `^` "transfer"
-operator on the variable that is passed into the function, which ends the
-lifetime of that variable.
-
-Technically, the `owned` keyword does not guarantee that the received value is
-a mutable reference to _the original value_—it guarantees only that the function
-gets unique ownership of this particular value (enforcing value
-semantics). This happens in one of
-two ways:
-
-- The caller passes the argument with the `^` transfer operator, which ends the
-lifetime of that variable (the variable becomes invalid) and ownership is
-transferred into the function without making a copy of any heap-allocated data.
-
-- The caller **does not** use the `^` transfer operator, in which case, the
-value is copied into the function argument and the original variable remains
-valid (unless it is not used again, in which case the compiler destroys the
-variable anyway because its lifetime naturally ends there).
-
-Regardless, when the function declares an argument as `owned`, it can be certain
-that it has unique mutable access to that value. 
-
-For example, the following code works by making a copy of the string,
-because—although `take_text()` uses the `owned` convention—the caller does not
-include the transfer operator:
-
+例如，以下代码通过复制字符串的方式工作，因为虽然`take_text()`使用了`owned`约定，但调用者没有包含转移运算符：
 
 ```python
 fn take_text(owned text: String):
@@ -274,25 +161,18 @@ my_function()
     Hello
     
 
-However, if you add the `^` transfer operator when calling `take_text()`, the
-compiler complains about `print(message)`, because at that point, the `message`
-variable is no longer initialized. That is, this version does not compile:
+然而，如果在调用`take_text()`时添加了`^`转移运算符，编译器会对`print(message)`报错，因为此时`message`变量已经未初始化。也就是说，以下版本无法编译：
 
 ```python
 fn my_function():
     var message: String = "Hello"
     take_text(message^)  
-    print(message)  # ERROR: The `message` variable is uninitialized
+    print(message)  # 错误：`message`变量未初始化
 ```
 
-This is a critical feature of Mojo's borrow checker, because it ensures that no
-two variables can have ownership of the same value. To fix the error, you must
-not use the `message` variable after you end its lifetime with the `^` transfer
-operator. So here is the corrected code:
-
+这是Mojo借用检查器的一个关键特性，因为它确保没有两个变量可以拥有相同值的所有权。要修复错误，您必须在使用`^`转移运算符结束其生命周期后不再使用`message`变量。下面是修正后的代码：
 
 ```python
-
 fn my_function():
     var message: String = "Hello"
     take_text(message^)
@@ -303,52 +183,29 @@ my_function()
     Hello!
     
 
+Mojo的REPL中的顶层代码还没有完全实现值的生命周期，因此转移运算符目前仅在函数内部使用时起作用。
 
+### 转移实现细节
 
-Value lifetimes are not fully implemented for top-level code in
-Mojo's REPL, so the transfer operator currently works as intended only when
-used inside a function.
+在Mojo中，重要的是不要将“所有权转移”与“移动操作”混为一谈，它们并不完全相同。
 
+Mojo有多种方式可以在不进行复制的情况下转移值的所有权：
 
+- 如果一个类型实现了移动构造函数`__moveinit__()`，当这个类型的值作为`owned`参数传递到函数中时，Mojo可能会调用这个方法，前提是原始值的生命周期在同一点结束（无论是否使用了`^`转移运算符）。
 
-### Transfer implementation details
+- 如果一个类型没有实现`__moveinit__()`，Mojo可以通过简单地将值的引用传递给调用者的堆栈中的接收者来转移所有权。
 
-In Mojo, it's important that you not conflate "ownership transfer" with a "move
-operation"—these are not strictly the same thing. 
+为了使`owned`约定在没有转移运算符的情况下工作，值类型必须是可复制的（通过`__copyinit__()`）。
 
-There are multiple ways that Mojo can transfer ownership of a value without
-making a copy:
+### 比较`def`和`fn`的参数约定
 
-- If a type implements the move
-  constructor,
-  `__moveinit__()`, Mojo may invoke this method _if_ a value of that type is
-  transferred into a function as an `owned` argument, _and_ the original value's
-  lifetime ends at the same point (with or without use of the `^` transfer
-  operator).
+如上所述，对于调用者来说，`def`和`fn`函数是可以互换的，它们都可以实现相同的功能。它们的区别仅在于内部实现，Mojo的`def`函数本质上只是`fn`函数的语法糖：
 
-- If a type hasn't implemented `__moveinit__()` Mojo may transfer ownership by
-  simply passing the recipient a reference to the value in the caller's stack.
+- 没有类型注解的`def`参数默认为`object`类型（而`fn`要求所有类型都必须显式声明）。
 
-In order for the `owned` convention to work _without_ the transfer
-operator, the value type must be copyable (via `__copyinit__()`).
+- 没有约定关键字（`borrowed`、`inout`或`owned`）的`def`参数默认为`owned`（它接收一个带有可变变量的副本）。
 
-## Comparing `def` and `fn` argument conventions
-
-As mentioned in the section about
-functions, the `def` and `fn` functions
-are interchangeable, as far as a caller is concerned, and they can both
-accomplish the same things. It's only the inside that differs, and Mojo's `def`
-function is essentially just sugaring for the `fn` function:
-
-- A `def` argument without a type annotation defaults to
-  `object` type (whereas as `fn`
-  requires all types be explicitly declared).
-
-- A `def` argument without a convention keyword (`borrowed`, `inout`, or
-  `owned`) defaults to `owned` (it receives a copy with a mutable variable).
-
-For example, these two functions have the exact same behavior:
-
+例如，下面这两个函数具有完全相同的行为：
 
 ```python
 def example(borrowed a: Int, inout b: Int, c):
@@ -358,9 +215,7 @@ fn example(a: Int, inout b: Int, owned c: object):
     pass
 ```
 
-Or, instead of specifying `owned` for the `c` argument, you can get the same
-effect by manually making a copy when you need it:
-
+或者，您可以通过在需要时手动进行复制来获得与`c`参数相同的效果：
 
 ```python
 fn example(a: Int, inout b: Int, c_in: object):
@@ -368,6 +223,4 @@ fn example(a: Int, inout b: Int, c_in: object):
     pass
 ```
 
-This shadow copy typically adds no overhead, because references for small types
-like `object` are cheap to copy. The expensive part is adjusting the reference
-count, but that's also eliminated by a compiler optimization.
+这个影子复制通常不会增加额外的开销，因为像`object`这样的小型类型的引用是廉价的复制。昂贵的部分是调整引用计数，但这也可以通过编译器优化来消除。

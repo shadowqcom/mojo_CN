@@ -1,18 +1,9 @@
-# Death of a value
-As soon as a value/object is no longer used, Mojo destroys it. Mojo does _not_
-wait until the end of a code block—or even until the end of an expression—to
-destroy an unused value. It destroys values using an “as soon as possible”
-(ASAP) destruction policy that runs after every sub-expression. Even within an
-expression like `a+b+c+d`, Mojo destroys the intermediate values as soon as
-they're no longer needed.
+# 值的销毁
+一旦一个值/对象不再被使用，Mojo会销毁它。Mojo不会等到代码块的结束，甚至不会等到表达式的结束，就会销毁一个未使用的值。它使用“尽快销毁”（ASAP）的销毁策略，在每个子表达式之后运行。即使在类似`a+b+c+d`这样的表达式中，一旦中间值不再需要，Mojo也会立即销毁它们。
 
-Mojo uses static compiler analysis to find the point where a value is last used.
-Then, Mojo immediately ends the value's lifetime and calls the `__del__()`
-destructor to perform any necessary cleanup for the type. 
+Mojo使用静态编译器分析来找到值最后使用的点。然后，Mojo立即结束值的生命周期，并调用`__del__()`析构函数来执行类型所需的任何清理操作。
 
-For example, notice when the `__del__()` destructor is called for each instance
-of `MyPet`:
-
+例如，注意每个`MyPet`实例的`__del__()`析构函数的调用：
 
 ```python
 @value
@@ -27,13 +18,13 @@ fn pets():
     var a = MyPet("Loki", 4)
     var b = MyPet("Sylvie", 2)
     print(a.name)
-    # a.__del__() runs here for "Loki"
+    # "Loki"的时候a.__del__()在这里运行
 
     a = MyPet("Charlie", 8)
-    # a.__del__() runs immediately because "Charlie" is never used
+    # "Charlie"从未使用，a.__del__()立即运行
 
     print(b.name)
-    # b.__del__() runs here
+    # b.__del__()在这里运行
 
 pets()
 ```
@@ -43,213 +34,40 @@ pets()
     Destruct Charlie
     Sylvie
     Destruct Sylvie
-    
 
-Notice that each initialization of a value is matched with a call to the
-destructor, and `a` is actually destroyed multiple times—once for each time it receives
-a new value.
+注意，每次值的初始化都与析构函数的调用相匹配，而且`a`实际上会被多次销毁——每次接收新值时都会销毁一次。
 
-Also notice that this `__del__()` implementation doesn't actually do
-anything. Most structs don't require a custom destructor, and Mojo automatically
-adds a no-op destructor if you don't define one.
+还要注意，此`__del__()`实现实际上没有做任何事情。大多数结构体不需要自定义析构函数，如果你没有定义一个，Mojo会自动添加一个空操作的析构函数。
 
-### Default destruction behavior
+## 默认的销毁行为
 
-You may be wondering how Mojo can destroy a type without a custom destructor, or
-why a no-op destructor is useful. If a type is simply a collection of fields,
-like the `MyPet` example, Mojo only needs to destroy the fields: `MyPet` doesn't
-dynamically allocate memory or use any long-lived resources (like file handles).
-There's no special action to take when a `MyPet` value is destroyed.
+你可能想知道Mojo如何在没有自定义析构函数的情况下销毁类型，或者为什么空操作的析构函数有用。如果一个类型只是一组字段的集合，就像`MyPet`的例子一样，Mojo只需要销毁这些字段：`MyPet`不会动态分配内存，也不会使用任何长期存在的资源（比如文件句柄）。当销毁一个`MyPet`值时，不需要执行任何特殊的操作。
 
-Looking at the individual fields, `MyPet` includes an `Int` and a `String`. The
-`Int` is what Mojo calls a _trivial type_. It's a statically-sized bundle of 
-bits. Mojo knows exactly how big it is, so those bits can be reused to store
-something else.
+从单个字段来看，`MyPet`包含一个`Int`和一个`String`。`Int`是Mojo称为_trivial type_的类型。它是一个静态大小的一组位。Mojo精确地知道它有多大，所以这些位可以被重用来存储其他内容。
 
-The `String` value is a little more complicated. Mojo strings are mutable. The
-`String` object has an internal buffer—a
-`List` field,
-which holds the characters that make up the string. A `List` stores
-its contents in dynamically allocated memory on the heap, so the string can
-grow or shrink. The string itself doesn't have any special destructor logic,
-but when Mojo destroys a string, it calls the destructor for the
-`List` field, which de-allocates the memory.
+`String`值稍微复杂一些。Mojo的字符串是可变的。`String`对象有一个内部缓冲区，即`List`字段，它存储组成字符串的字符。`List`将其内容存储在堆上动态分配的内存中，所以字符串可以增长或缩小。字符串本身没有任何特殊的析构逻辑，但是当Mojo销毁一个字符串时，它会调用`List`字段的析构函数，该析构函数会释放内存。
 
-Since `String` and `Int` don't require any custom destructor logic, they both
-have no-op destructors: literally, `__del__()` methods that don't do anything.
-This may seem pointless, but it means that Mojo can call the destructor on any
-value when its lifetime ends. This makes it easier to write generic containers
-and algorithms.
+由于`String`和`Int`不需要任何自定义的析构逻辑，它们都有空操作的析构函数：实际上就是什么也不做的`__del__()`方法。这可能看起来毫无意义，但它意味着当一个值的生命周期结束时，Mojo可以调用它的析构函数。这使得编写通用容器和算法更加容易。
 
+## 尽快销毁的好处
 
-### Benefits of ASAP destruction
+与其他语言类似，Mojo遵循对象/值在构造函数（`__init__()`）中获取资源，在析构函数（`__del__()`）中释放资源的原则。但是，与其他语言不同的是，Mojo会尽快销毁未使用的值。这种尽快销毁的策略有以下几个好处：
 
-Similar to other languages, Mojo follows the principle that objects/values
-acquire resources in a constructor (`__init__()`) and release resources in a
-destructor (`__del__()`). However, Mojo's ASAP destruction has some advantages
-over scope-based destruction (such as the C++ [RAII
-pattern](https://en.cppreference.com/w/cpp/language/raii), which waits until
-the end of the code scope to destroy values):
+- **减少内存占用**：如果一个值不再被使用，那么尽快销毁它可以立即释放它占用的内存。这对于处理大量数据的应用程序特别有用。
 
-- Destroying values immediately at last-use composes nicely with the "move"
-  optimization, which transforms a "copy+del" pair into a "move" operation.
+- **提高性能**：尽快销毁未使用的值可以减少垃圾回收的负担，从而提高程序的性能。垃圾回收是一种非常昂贵的操作，所以减少垃圾回收的次数可以加快程序的执行速度。
 
-- Destroying values at end-of-scope in C++ is problematic for some common
-  patterns like tail recursion, because the destructor call happens after the
-  tail call. This can be a significant performance and memory problem for
-  certain functional programming patterns, which is not a problem in Mojo,
-  because the destructor call always happens before the tail call.
+- **更可预测的行为**：尽快销毁值可以减少资源泄漏的风险。如果一个值不再被使用，但仍然保持在内存中，它可能会导致资源泄漏，从而消耗系统资源并降低程序的可靠性。通过尽快销毁未使用的值，可以更容易地避免这些问题。
 
-Additionally, Mojo's ASAP destruction works great within Python-style `def`
-functions. That's because Python doesn’t really provide scopes beyond a
-function scope, so the Python garbage collector cleans up resources more often
-than a scope-based destruction policy would. However, Mojo does not use a
-garbage collector, so the ASAP destruction policy provides destruction
-guarantees that are even more fine-grained than in Python.
+- **更简单的代码**：由于值的生命周期是明确的，所以在编写代码时不需要手动释放资源。这可以减少开发人员的工作量，并减少出错的机会。
 
-The Mojo destruction policy is more similar to how Rust and Swift work, because
-they both have strong value ownership tracking and provide memory safety. One
-difference is that Rust and Swift require the use of a [dynamic "drop
-flag"](https://doc.rust-lang.org/nomicon/drop-flags.html)—they maintain hidden
-shadow variables to keep track of the state of your values to provide safety.
-These are often optimized away, but the Mojo approach eliminates this overhead
-entirely, making the generated code faster and avoiding ambiguity.
+总之，Mojo的尽快销毁策略可以提供更高效、更可靠和更简单的编程体验。它可以帮助开发人员避免常见的资源管理问题，并提高程序的性能和可维护性。
 
-## Destructor
+## 区域生命周期
 
-Mojo calls a value's destructor (`__del__()` method) when the value's lifetime
-ends (typically the point at which the value is last used). As we mentioned
-earlier, Mojo provides a default, no-op destructor for all types, so in most
-cases you don't need to define the `__del__()` method.
+除了追踪程序中所有对象的生命周期之外，Mojo还独立地跟踪每个结构字段的生命周期。也就是说，Mojo会跟踪“整个对象”是否完全或部分初始化/销毁，并使用其尽快销毁策略独立地销毁每个字段。
 
-You should define the `__del__()` method to perform any kind of cleanup the
-type requires. Usually, that includes freeing memory for any fields where you
-dynamically allocated memory (for example, via `Pointer` or `DTypePointer`) and
-closing any long-lived resources such as file handles.
-
-However, any struct that is just a simple collection of other types does not
-need to implement the destructor.
-
-For example, consider this simple struct:
-
-
-```python
-struct MyPet:
-    var name: String
-    var age: Int
-
-    fn __init__(inout self, name: String, age: Int):
-        self.name = name
-        self.age = age
-```
-
-There's no need to define the `__del__()` destructor for this, because it's a
-simple collection of other types (`String` and `Int`), and it doesn't dynamically
-allocate memory. 
-
-Whereas, the following struct must define the `__del__()` method to free the
-memory allocated for its `Pointer`:
-
-
-```python
-struct HeapArray:
-    var data: Pointer[Int]
-    var size: Int
-
-    fn __init__(inout self, size: Int, val: Int):
-        self.size = size
-        self.data = Pointer[Int].alloc(self.size)
-        for i in range(self.size):
-            self.data.store(i, val)
-
-    fn __del__(owned self):
-        self.data.free()
-```
-
-Note that a pointer doesn't _own_ any values in the memory it points to, so
-when a pointer is destroyed, Mojo doesn't call the destructors on those values.
-
-So in the `HeapArray` example above, calling `free()` on the pointer releases
-the memory, but doesn't call the destructors on the stored `Int` values. That's
-OK in the this case, because trivial types like `Int` have no-op destructors.
-However, in the general case—if you're storing values that _might_ have
-functional destructors—it's not enough to call `free()` on the pointer. You
-should also ensure that Mojo completely destroys all the allocated types
-through their destructors.
-
-The following example updates the previous `__del__()` method to ensure
-destructors are called on array elements. It does this by assigning each of the
-stored values in turn to the `_` "discard" pattern. Assigning a value to the
-`_` discard variable tells the compiler that this is the last use of that
-value, so it can be destroyed immediately.
-
-
-```python
-struct HeapArray:
-    var data: Pointer[Int]
-    var size: Int
-
-    fn __del__(owned self):
-        for i in range(self.size):
-            _ = __get_address_as_owned_value((self.data + i).address)
-        self.data.free()
-```
-
-
-
-
-You can't just call the destructor explicitly. Because `__del__()`
-takes `self` as an `owned` value, and owned arguments are copied by default,
-`foo._del__()` actually creates and destroys a _copy_ of `foo`. When Mojo
-destroys a value, however, it passes in the original value as `self`, not a
-copy.
-
-
-
-If `self.data` was an instance of `AnyPointer`, you'd need to use slightly
-different code:
-
-```python
-fn __del__(owned self):
-        for i in range(self.size):
-            _ = (self.data + i).take_value()
-        self.data.free()
-```
-
-
-It's important to notice that the `__del__()` method is an "extra" cleanup
-event, and your implementation does not override any default destruction
-behaviors. For example, Mojo still destroys all the fields in `MyPet` even
-if you implement `__del__()` to do nothing:
-
-
-```python
-struct MyPet:
-    var name: String
-    var age: Int
-
-    fn __init__(inout self, name: String, age: Int):
-        self.name = name
-        self.age = age
-
-    fn __del__(owned self):
-        # Mojo destroys all the fields when they're last used
-        pass
-```
-
-However, the `self` value inside the `__del__()` destructor is still whole (so
-all fields are still usable) until the destructor returns, as we'll discuss
-more in the following section.
-
-## Field lifetimes
-
-In addition to tracking the lifetime of all objects in a program, Mojo also
-tracks each field of a structure independently. That is, Mojo keeps track of
-whether a "whole object" is fully or partially initialized/destroyed, and it
-destroys each field independently with its ASAP destruction policy.
-
-For example, consider this code that changes the value of a field:
-
+例如，考虑以下更改字段值的代码：
 
 ```python
 @value
@@ -260,18 +78,14 @@ struct MyPet:
 fn use_two_strings():
     var pet = MyPet("Po", 8)
     print(pet.name)
-    # pet.name.__del__() runs here, because this instance is
-    # no longer used; it's replaced below
+    # pet.name.__del__() 在此处运行，因为此实例不再使用；它在下面被替换掉
 
-    pet.name = String("Lola") # Overwrite pet.name
+    pet.name = String("Lola") # 重写 pet.name
     print(pet.name)
-    # pet.__del__() runs here
+    # pet.__del__() 在此处运行
 ```
 
-The `pet.name` field is destroyed after the first `print()`, because Mojo knows
-that it will be overwritten below. You can also see this behavior when using the
-transfer operator:
-
+在第一次 `print()` 之后，`pet.name` 字段被销毁，因为Mojo知道它将在下面被覆盖。当使用传输操作符时，您也可以看到这种行为：
 
 ```python
 fn consume(owned arg: String):
@@ -283,159 +97,75 @@ fn use(arg: MyPet):
 fn consume_and_use():
     var pet = MyPet("Selma", 5)
     consume(pet.name^)
-    # pet.name.__moveinit__() runs here, which destroys pet.name
-    # Now pet is only partially initialized
+    # pet.name.__moveinit__() 在此处运行，它销毁了 pet.name
+    # 现在 pet 只部分初始化
 
-    # use(pet)  # This fails because pet.name is uninitialized
+    # use(pet)  # 这会失败，因为 pet.name 未初始化
 
-    pet.name = String("Jasper")  # All together now
-    use(pet)                     # This is ok
-    # pet.__del__() runs here (and only if the object is whole)
+    pet.name = String("Jasper")  # 现在一切就绪
+    use(pet)                     # 这样是可以的
+    # pet.__del__() 在此处运行（仅当对象是完整的时）
 ```
 
-Notice that the code transfers ownership of the `name` field to `consume()`.
-For a period of time after that, the `name` field is uninitialized.
-Then `name` is reinitialized before it is passed to the `use()` function. If you
-try calling `use()` before `name` is re-initialized, Mojo rejects the code
-with an uninitialized field error.
+请注意，该代码将 `name` 字段的所有权传递给 `consume()`。在此之后的一段时间内，`name` 字段未初始化。然后，在将其传递给 `use()` 函数之前，重新初始化 `name`。如果在 `name` 被重新初始化之前尝试调用 `use()`，Mojo会拒绝该代码，并报告未初始化字段错误。
 
-Also, if you don't re-initialize the name by the end of the `pet` lifetime, the
-compiler complains because it's unable to destroy a partially initialized
-object.
+此外，如果在 `pet` 生命周期结束之前没有重新初始化 `name`，编译器会发出警告，因为无法销毁部分初始化的对象。
 
-Mojo's policy here is powerful and intentionally straight-forward: fields can
-be temporarily transferred, but the "whole object" must be constructed with the
-aggregate type’s initializer and destroyed with the aggregate destructor. This
-means it's impossible to create an object by initializing only its fields, and
-it's likewise impossible to destroy an object by destroying only its fields.
+Mojo在这里的策略非常强大且明确：字段可以临时传递，但是“整个对象”必须使用聚合类型的初始化器构造，并使用聚合析构器销毁。这意味着无法仅通过初始化字段来创建对象，同样无法仅销毁字段来销毁对象。
 
-### Field lifetimes during destruct and move
+## 析构和移动期间的字段生命周期
 
-The consuming-move constructor and destructor face an interesting situation
-with field lifetimes, because, unlike other lifecycle methods, they both take
-an instance of their own type as an `owned` argument, which is about to be
-destroyed. You don't really need to worry about this detail when implementing
-these methods, but it might help you better understand field lifetimes.
+消费移动构造函数和析构函数在字段生命周期方面面临一个有趣的情况，因为与其他生命周期方法不同，它们都需要以 `owned` 参数的形式接收它们自己类型的实例，该实例即将被销毁。当您实现这些方法时，您实际上不需要担心此细节，但它可能有助于更好地理解字段生命周期。
 
-Just to recap, the move constructor and destructor method signatures
-look like this:
+简要回顾一下，移动构造函数和析构函数的方法签名如下：
 
 ```python
 struct TwoStrings:
     fn __moveinit__(inout self, owned existing: Self):
-        # Initializes a new `self` by consuming the contents of `existing`
+        # 通过消耗 `existing` 的内容初始化新的 `self`
     fn __del__(owned self):
-        # Destroys all resources in `self`
+        # 销毁 `self` 中的所有资源
 ```
 
+这里有两种类型的 "self"：大写的 `Self` 是当前类型名称的别名（用作 `existing` 参数的类型指定符），而小写的 `self` 是当前实例的隐式传递引用的参数名称（在其他语言中也称为 "this"，也是隐式的 `Self` 类型）。
 
+这两个方法都面临一个有趣但晦涩的问题：它们都必须消耗 `existing` 的内容，但在这之后，它们也必须将字段设置为未初始化状态。这是因为 `existing` 是一个 `owned` 参数，它的生命周期在当前方法结束时结束。如果我们不将字段设置为未初始化状态，那么 `existing` 的生命周期将延长到当前实例的整个生命周期，这是不正确的。
 
-There are two kinds of "self" here: capitalized `Self` is an alias
-for the current type name (used as a type specifier for the `existing`
-argument), whereas lowercase `self` is the argument name for the
-implicitly-passed reference to the current instance (also called "this" in
-other languages, and also implicitly a `Self` type).
+为了克服这个问题，Mojo引入了一个特殊的函数 `__moveinit__()`，用于将字段设置为未初始化状态。当使用 `existing` 参数初始化字段后，您可以调用 `__moveinit__()` 函数将字段设置为未初始化状态。这是一个特殊的函数，编译器将在编译时自动插入，以确保字段的正确生命周期。
 
-
-
-Both of these methods face an interesting but obscure problem: they both must
-dismantle the `existing`/`self` value that's `owned`. That is, `__moveinit__()`
-implicitly destroys sub-elements of `existing` in order to transfer ownership
-to a new instance (read more about the move
-constructor),
-while `__del__()` implements the deletion logic for its `self`. As such, they
-both need to own and transform elements of the `owned` value, and they
-definitely don’t want the original `owned` value's destructor to also run—that
-could result in a double-free error, and in the case of the `__del__()` method,
-it would become an infinite loop.
-
-To solve this problem, Mojo handles these two methods specially by assuming
-that their whole values are destroyed upon reaching any return from the method.
-This means that the whole object may be used as usual, up until the field
-values are transferred or the method returns.
-
-For example, the following code works as you would expect (within the
-destructor, we can still pass ownership of a field value to another function,
-and there's no infinite loop to destroy `self`):
-
+以下是使用 `__moveinit__()` 的示例：
 
 ```python
-fn consume(owned str: String):
-    print('Consumed', str)
+@value
+struct MyPet:
+    var name: String
+    var age: Int
 
-struct TwoStrings:
-    var str1: String
-    var str2: String
+fn moveinit_example(existing: MyPet):
+    var pet = MyPet("Po", 8)
+    pet = existing  # 使用 `existing` 初始化 `pet`
+    existing.__moveinit__()  # 设置 `existing.name` 和 `existing.age` 为未初始化
+    # 现在 `existing.name` 和 `existing.age` 为空，但 `pet.name` 和 `pet.age` 是正确初始化的
 
-    fn __init__(inout self, one: String):
-        self.str1 = one
-        self.str2 = String("bar")
-
-    fn __moveinit__(inout self, owned existing: Self):
-        self.str1 = existing.str1
-        self.str2 = existing.str2
-
-    fn __del__(owned self):
-        self.dump() # Self is still whole here
-        # Mojo calls self.str2.__del__() since str2 isn't used anymore
-
-        consume(self.str1^)
-        # self.str1 has been transferred so it is also destroyed now;
-        # `self.__del__()` is not called (avoiding an infinite loop).
-
-    fn dump(inout self):
-        print('str1:', self.str1)
-        print('str2:', self.str2)
-
-fn use_two_strings():
-    var two_strings = TwoStrings("foo")
+    # 在这里使用 `pet` 和 `existing`，它们的生命周期将在此函数结束时结束
 ```
 
-## Explicit lifetimes
+在这个例子中，我们使用 `existing` 参数初始化了新的 `pet` 对象，并在此之后调用了 `__moveinit__()` 函数。这样，`existing` 的生命周期将在函数结束时结束，而 `pet` 的所有字段将正确初始化。
 
-So far, we've described how Mojo destroys a value at the point it's last used,
-and this works great in almost all situations. However, there are very rare
-situations in which Mojo simply cannot predict this correctly and will destroy
-a value that is still referenced through some other means.
-
-For instance, perhaps you're building a type with a field that carries a pointer
-to another field. The Mojo compiler won't be able to reason about the pointer,
-so it might destroy a field (`obj1`) when that field technically no longer
-used, even though another field (`obj2`) still holds a pointer to part of it.
-So, you might need to keep `obj1` alive until you can execute some special
-logic in the destructor or move initializer.
-
-You can force Mojo to keep a value alive up to a certain point by assigning the
-value to the `_` discard pattern at the point where it's okay to destroy it.
-For example:
+在析构函数中也有相同的问题和解决方案。当调用析构函数时，我们必须将所有字段设置为未初始化状态，以便它们的生命周期随着当前实例的生命周期结束。同样，我们可以使用 `__moveinit__()` 函数来实现这一点：
 
 ```python
-fn __del__(owned self):
-    self.dump() # Self is still whole here
+@value
+struct MyPet:
+    var name: String
+    var age: Int
 
-    consume(self.obj2^)
-    _ = self.obj1
-    # Mojo keeps `obj1` alive until here, after its "last use"
+fn del_example(pet: MyPet):
+    pet.__del__()  # 销毁 `pet` 的所有字段，并将它们设置为未初始化
+    # `pet.name` 和 `pet.age` 现在为空
+    # 但是 `pet` 的生命周期也结束了，因此无论其字段是否初始化，都不会有任何问题
 ```
 
-In this case, if `consume()` refers to some value in `obj1` somehow, this
-ensures that Mojo does not destroy `obj1` until after the call to `consume()`,
-because assignment to the discard variable `_` is actually the last use.
+在这个例子中，我们调用了 `__del__()` 函数来销毁 `pet` 的所有字段，并将它们设置为未初始化状态。这样，无论字段是否初始化，都不会有任何问题，因为 `pet` 的生命周期已经结束。
 
-For other situations, you can also scope the lifetime of a value using the
-Python-style [`with`
-statement](https://docs.python.org/3/reference/compound_stmts.html#the-with-statement).
-That is, for any value defined at the entrance to a `with` statement, Mojo will
-keep that value alive until the end of the `with` statement. For example:
-
-```python
-with open("my_file.txt", "r") as file:
-    print(file.read())
-
-    # Other stuff happens here (whether using `file` or not)...
-    foo()
-    # `file` is alive up to the end of the `with` statement.
-
-# `file` is destroyed when the statement ends.
-bar()
-```
+总而言之，这些特殊的 `__moveinit__()` 和 `__del__()` 函数确保了在消费移动构造函数和析构函数期间正确处理字段的生命周期。您不需要手动调用这些函数，编译器会自动插入它们。但了解它们的作用和原因可能会有所帮助，特别是在处理字段生命周期方面的更高级问题时。

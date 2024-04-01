@@ -1,17 +1,10 @@
-# Modules and packages
+# 模块和包
 
-Mojo provides a packaging system that allows you to organize and compile code
-libraries into importable files. This page introduces the necessary concepts
-about how to organize your code into modules and packages (which is a lot
-like Python), and shows you how to create a packaged binary with the `mojo
-package` command.
+Mojo提供了一个包装系统，允许你将代码库组织和编译成可导入的文件。本页面介绍如何将代码组织成模块和包（类似于Python），并演示如何使用`mojo package`命令创建打包的二进制文件。
 
-## Mojo modules
+## Mojo模块
 
-To understand Mojo packages, you first need to understand Mojo modules. A
-Mojo module is a single Mojo source file that includes code suitable for use
-by other files that import it. For example, you can create a module
-to define a struct such as this one:
+要理解Mojo包，首先需要了解Mojo模块。Mojo模块是一个包含适用于其他导入它的文件使用的代码的单个Mojo源文件。例如，你可以创建一个模块来定义一个结构体，如下所示：
 
 ```{.mojo filename="mymodule.mojo"}
 struct MyPair:
@@ -26,12 +19,9 @@ struct MyPair:
         print(self.first, self.second)
 ```
 
-Notice that this code has no `main()` function, so you can't execute
-`mymodule.mojo`. However, you can import this into another file with a
-`main()` function and use it there.
+注意，这段代码没有`main()`函数，所以不能直接执行`mymodule.mojo`。但是，你可以在另一个有`main()`函数的文件中导入它并在那里使用。
 
-For example, here's how you can import `MyPair` into a file named `main.mojo`
-that's in the same directory as `mymodule.mojo`:
+例如，以下是如何将`MyPair`导入到名为`main.mojo`的文件中（与`mymodule.mojo`位于同一目录）：
 
 ```{.mojo filename="main.mojo"}
 from mymodule import MyPair
@@ -41,8 +31,7 @@ fn main():
     mine.dump()
 ```
 
-Alternatively, you can import the whole module and then access its members
-through the module name. For example:
+或者，你可以导入整个模块，然后通过模块名访问其成员。例如：
 
 ```{.mojo filename="main.mojo"}
 import mymodule
@@ -52,7 +41,7 @@ fn main():
     mine.dump()
 ```
 
-You can also create an alias for an imported member with `as`, like this:
+你还可以使用`as`为导入的成员创建别名，像这样：
 
 ```{.mojo filename="main.mojo"}
 import mymodule as my
@@ -62,36 +51,17 @@ fn main():
     mine.dump()
 ```
 
-In this example, it only works when `mymodule.mojo` is in the same directory as
-`main.mojo`. Currently, you can't import `.mojo` files as modules if they
-reside in other directories. That is, unless you treat the directory as a Mojo
-package, as described in the next section.
+在这个例子中，只有当`mymodule.mojo`与`main.mojo`位于同一目录时才有效。目前，如果`.mojo`文件位于其他目录中，你不能将其作为模块导入。除非你将该目录视为Mojo包，如下一节所述。
 
+Mojo模块可以包含`main()`函数，也可以是可执行的，但这通常不是常规做法，模块通常包含可供其他Mojo程序导入和使用的API。
 
+## Mojo包
 
-Mojo module may include a `main()` function and may also be
-executable, but that's generally not the practice and modules typically include
-APIs to be imported and used in other Mojo programs.
+Mojo包只是一个包含`__init__.mojo`文件的目录中的Mojo模块集合。通过将模块组织在一个目录中，你可以一起或单独导入所有模块。此外，你还可以将包编译成`.mojopkg`或`.ðŸ“¦`文件，这样更容易共享，并且与其他系统架构兼容。
 
+你可以直接从源文件或编译后的`.mojopkg`/`.ðŸ“¦`文件导入包及其模块，对Mojo来说，导入包的方式没有实质性的区别。当从源文件导入时，目录名作为包名，而从编译后的包导入时，文件名作为包名（可以使用`mojo package`命令指定，它可以与目录名不同）。
 
-
-## Mojo packages
-
-A Mojo package is just a collection of Mojo modules in a directory that
-includes an `__init__.mojo` file. By organizing modules together in a
-directory, you can then import all the modules together or individually.
-Optionally, you can also compile the package into a `.mojopkg` or `.📦` file
-that's easier to share and still compatible with other system architectures.
-
-You can import a package and its modules either directly from source files or
-from a compiled `.mojopkg`/`.📦` file. It makes no real difference to Mojo
-which way you import a package. When importing from source files, the directory
-name works as the package name, whereas when importing from a compiled package,
-the filename is the package name (which you specify with the `mojo
-package` command—it can differ from the directory
-name).
-
-For example, consider a project with these files:
+例如，考虑一个具有以下文件的项目：
 
 ```ini
 main.mojo
@@ -100,11 +70,9 @@ mypackage/
     mymodule.mojo
 ```
 
-`mymodule.mojo` is the same code from examples above (with the `MyPair`
-struct) and `__init__.mojo` is empty.
+`mymodule.mojo`是上面示例中的相同代码（包含`MyPair`结构体），而`__init__.mojo`是空的。
 
-In this case, the `main.mojo` file can now import `MyPair` through the package
-name like this:
+在这种情况下，`main.mojo`文件现在可以通过包名导入`MyPair`，如下所示：
 
 ```{.mojo filename="main.mojo"}
 from mypackage.mymodule import MyPair
@@ -114,114 +82,76 @@ fn main():
     mine.dump()
 ```
 
-Notice that the `__init__.mojo` is crucial here. If you delete it, then Mojo
-doesn't recognize the directory as a package and it cannot import `mymodule`.
+注意，`__init__.mojo`在这里至关键。如果删除它，Mojo将不会将该目录识别为包，并且无法导入`mymodule`。
 
-Then, let's say you don't want the `mypackage` source code in the same location
-as `main.mojo`. So, you can compile it into a package file like this:
+然后，假设你不想让`mypackage`的源代码与`main.mojo`位于相同位置。因此，你可以将其编译为一个包文件，如下所示：
 
 ```sh
 mojo package mypackage -o mypack.mojopkg
 ```
 
+`.mojopkg`文件包含了非详细的代码，因此可以在系统之间共享。只有在导入到使用`mojo build`编译的Mojo程序中后，代码才会变成特定于架构的可执行文件。
 
-
-A `.mojopkg` file contains non-elaborated code, so you can share it across
-systems. The code becomes an architecture-specific executable only after it's
-imported into a Mojo program that's then compiled with `mojo build`.
-
-
-
-Now, you can move the `mypackage` source somewhere else, and the project files
-now look like this:
+现在，你可以将`mypackage`的源代码移动到其他位置，项目文件现在如下所示：
 
 ```ini
 main.mojo
 mypack.mojopkg
 ```
 
-Because we named the package file different from the directory, we need to fix
-the import statement and it all works the same:
+因为我们将包文件命名为与目录不同的名称，所以需要修正导入语句，但其余部分保持不变：
 
 ```{.mojo filename="main.mojo"}
 from mypack.mymodule import MyPair
 ```
 
+如果要重命名包，你不能简单地编辑`.mojopkg`或`.📦`文件，因为包名已编码在文件中。你必须再次运行`mojo package`命令来指定新名称。
 
+### `__init__`文件
 
-If you want to rename your package, you cannot simply edit the
-`.mojopkg` or `.📦` filename, because the package name is encoded in the file.
-You must instead run `mojo package` again to specify a new name.
+如上所述，`__init__.mojo`文件是指示将一个目录视为Mojo包的必需文件，它可以为空。
 
+目前，顶级代码在`.mojo`文件中不受支持，因此与Python不同，你不能在`__init__.mojo`中编写在导入时执行的代码。但是，你可以在其中添加结构体和函数，然后可以从包名导入它们。
 
+然而，与其在`__init__.mojo`文件中添加API，你可以通过导入模块成员来实现相同的效果，从而使你的API从包名可访问，而不需要使用`<package_name>.<member>`的形式。
 
-### The `__init__` file
+例如，再次假设您有这些文件：
 
-As mentioned above, the `__init__.mojo` file is required to indicate that a
-directory should be treated as a Mojo package, and it can be empty.
-
-Currently, top-level code is not supported in `.mojo` files, so unlike Python,
-you can't write code in `__init__.mojo` that executes upon import. You can,
-however, add structs and functions, which you can then import from the package
-name.
-
-However, instead of adding APIs in the `__init__.mojo` file, you can import
-module members, which has the same effect by making your APIs accessible from
-the package name, instead of requiring the `<package_name>.<module_name>`
-notation.
-
-For example, again let's say you have these files:
-
-```ini
+```python
 main.mojo
 mypackage/
     __init__.mojo
     mymodule.mojo
 ```
 
-Let's now add the following line in `__init__.mojo`:
+现在让我们在中添加以下行__init__.mojo：
 
-```{.mojo filename="__init__.mojo"}
+__init__.mojo
+```
 from .mymodule import MyPair
 ```
 
-That's all that's in there. Now, we can simplify the import statement in
-`main.mojo` like this:
+这就是里面的全部内容。现在，我们可以main.mojo像这样简化 import 语句 ：
 
-```{.mojo filename="main.mojo"}
+main.mojo
+```
 from mypackage import MyPair
 ```
 
-This feature explains why some members in the Mojo standard library can be
-imported from their package name, while others required the
-`<package_name>.<module_name>` notation. For example, the
-`functional` module resides in the
-`algorithm` package, so you can import members of that module (such as the
-`map()` function) like this:
+此功能解释了为什么 Mojo 标准库中的某些成员可以从其包名称导入，而其他成员则需要符号 <package_name>.<module_name>。例如， functional模块驻留在 包中，因此您可以像这样algorithm导入该模块的成员（例如函数 ）：map()
 
-```python
 from algorithm.functional import map
+
+但是，该algorithm/__init__.mojo文件还包含以下行：
+
+algorithm/__init__.mojo
 ```
-
-However, the `algorithm/__init__.mojo` file also includes these lines:
-
-```{.mojo filename="algorithm/__init__.mojo"}
 from .functional import *
 from .reduction import *
 ```
 
-So you can actually import anything from `functional` or `reduction` simply by
-naming the package. That is, you can drop the `functional` name from the import
-statement, and it also works:
 
-```python
+因此，您实际上可以从包中导入任何内容functional，或者reduction只需命名包即可。也就是说，您可以functional从 import 语句中删除名称，它也可以工作：
+```
 from algorithm import map
 ```
-
-
-
-Which modules in the standard library are imported to the package
-scope varies, and is subject to change. Refer to the documentation for each
-module to see how you can import its members.
-
-

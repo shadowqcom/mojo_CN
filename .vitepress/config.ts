@@ -58,47 +58,47 @@ export default defineConfig({
           {text: '语言基础知识',
           collapsed: true,
           items: [
-            { text: 'Introduction to Mojo', link: '/mojo/manual/languagebasics/introductiontomojo' },
-            { text: 'Functions', link: '/mojo/manual/languagebasics/functions' },
-            { text: 'Variables', link: '/mojo/manual/languagebasics/variables' },
-            { text: 'Structs', link: '/mojo/manual/languagebasics/structs' },
-            { text: 'Modules and packages', link: '/mojo/manual/languagebasics/modulesandpackages' },
+            { text: 'Mojo入门', link: '/mojo/manual/languagebasics/introductiontomojo' },
+            { text: '函数', link: '/mojo/manual/languagebasics/functions' },
+            { text: '变量', link: '/mojo/manual/languagebasics/variables' },
+            { text: '结构体', link: '/mojo/manual/languagebasics/structs' },
+            { text: '模块和包', link: '/mojo/manual/languagebasics/modulesandpackages' },
             ]
           },
           {text: '所有权',
           collapsed: true,
           items: [
-            { text: 'Intro to value ownership', link: '/mojo/manual/valueownership/introtovalueownership' },
-            { text: 'Value semantics', link: '/mojo/manual/valueownership/valuesemantics' },
-            { text: 'Ownership and borrowing', link: '/mojo/manual/valueownership/ownershipandborrowing' },
+            { text: '值的所有权介绍', link: '/mojo/manual/valueownership/introtovalueownership' },
+            { text: '值语义', link: '/mojo/manual/valueownership/valuesemantics' },
+            { text: '所有权和借用', link: '/mojo/manual/valueownership/ownershipandborrowing' },
             ]
           },
           {text: '生命周期',
           collapsed: true,
           items: [
-            { text: 'Intro to value lifecycle', link: '/mojo/manual/valuelifecycle/introtovaluelifecycle' },
-            { text: 'Life of a value', link: '/mojo/manual/valuelifecycle/lifeofavalue' },
-            { text: 'Death of a value', link: '/mojo/manual/valuelifecycle/deathofavalue' },
+            { text: '值生命周期简介', link: '/mojo/manual/valuelifecycle/introtovaluelifecycle' },
+            { text: '值的生命周期', link: '/mojo/manual/valuelifecycle/lifeofavalue' },
+            { text: '值的销毁', link: '/mojo/manual/valuelifecycle/deathofavalue' },
             ]
           },
           {text: '特征和参数',
           collapsed: true,
           items: [
-            { text: 'Traits', link: '/mojo/manual/traitsandparameters/traits' },
-            { text: 'Parameterization_compile_time_metaprogramming', link: '/mojo/manual/traitsandparameters/parameterizationcompiletimemetaprogramming' },
+            { text: '特征', link: '/mojo/manual/traitsandparameters/traits' },
+            { text: '参数化：编译时元编程', link: '/mojo/manual/traitsandparameters/parameterizationcompiletimemetaprogramming' },
             ]
           },
           {text: 'Python',
           collapsed: true,
           items: [
-            { text: 'Python integration', link: '/mojo/manual/python/Pythonintegration' },
-            { text: 'Python types', link: '/mojo/manual/python/pythontypes' },
+            { text: 'Python集成', link: '/mojo/manual/python/Pythonintegration' },
+            { text: 'Python类型', link: '/mojo/manual/python/pythontypes' },
             ]
           },
           {text: '工具',
           collapsed: true,
           items: [
-            { text: 'Debugging', link: '/mojo/manual/tools/debugging' },
+            { text: '调试', link: '/mojo/manual/tools/debugging' },
             ]
           },
         ],

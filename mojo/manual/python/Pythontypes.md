@@ -1,17 +1,11 @@
-# Python types
-When calling Python methods, Mojo needs to convert back and forth between native
-Python objects and native Mojo objects. Most of these conversions happen
-automatically, but there are a number of cases that Mojo doesn't handle yet.
-In these cases you may need to do an explicit conversion, or call an extra
-method.
+# Python类型
+在调用Python方法时，Mojo需要在本地Python对象和本地Mojo对象之间进行转换。大多数情况下，这些转换会自动进行，但有一些情况Mojo尚未处理。在这些情况下，您可能需要进行显式转换或调用额外的方法。
 
-## Mojo types in Python
+## Python中的Mojo类型
 
-Mojo primitive types implicitly convert into Python objects.
-Today we support lists, tuples, integers, floats, booleans, and strings.
+Mojo原始类型会隐式转换为Python对象。目前，我们支持列表、元组、整数、浮点数、布尔值和字符串。
 
-For example, given this Python function that prints Python types:
-
+例如，给定以下打印Python类型的Python函数：
 
 ```python
 %%python
@@ -19,11 +13,9 @@ def type_printer(value):
     print(type(value))
 ```
 
-(You can ignore the `%%python` at the start of the code sample; it's explained
-in the note below.)
+（您可以忽略代码示例开头的`%%python`，它在下面的说明中解释。）
 
-You can pass this Python function Mojo types with no problem:
-
+您可以毫无问题地将Mojo类型传递给这个Python函数：
 
 ```python
 type_printer(4)
@@ -34,24 +26,12 @@ type_printer(("Mojo", True))
     <class 'int'>
     <class 'float'>
     <class 'tuple'>
-    
 
+这是一个简化的代码示例，以一组Jupyter笔记本单元格的形式编写。第一个单元格包含`%%python`指令，因此被解释为Python代码。第二个单元格包含顶级Mojo代码。您需要根据实际情况调整此代码才能在其他地方运行。
 
+## Mojo中的Python类型
 
-This is a simplified code example written as a set of Jupyter
-notebook cells. The first cell includes the `%%python` directive so it's
-interpreted as Python. The second cell includes top-level Mojo code. You'd need
-to adjust this code to run it elsewhere.
-
-
-
-## Python types in Mojo
-
-You can also use Python objects from Mojo. For example, Mojo doesn't have a
-standard dictionary type yet, but you can work with Python dictionaries in Mojo. 
-To create a Python dictionary, use the 
-`dict()` method:
-
+您也可以在Mojo中使用Python对象。例如，Mojo还没有标准的字典类型，但是您可以在Mojo中使用Python字典。要创建Python字典，请使用`dict()`方法：
 
 ```python
 from python import Python
@@ -63,17 +43,11 @@ fn use_dict() raises:
     print("Fruit: ", dictionary["fruit"])
 ```
 
-### Mojo wrapper objects
+### Mojo包装对象
 
-When you use Python objects in your Mojo code, Mojo adds the 
-`PythonObject` wrapper around
-the Python object. This object exposes a number of common double underscore
-methods (dunder methods) like `__getitem__()` and `__getattr__()`, passing them
-through to the underlying Python object. 
+当您在Mojo代码中使用Python对象时，Mojo会在Python对象周围添加`PythonObject`包装器。该对象公开了许多常见的双下划线方法（dunder方法），如`__getitem__()`和`__getattr__()`，并将它们传递给底层的Python对象。
 
-You can explicitly create a wrapped Python object by initializing a 
-`PythonObject` with a Mojo literal:
-
+您可以通过使用Mojo文字初始化`PythonObject`来显式创建一个包装的Python对象：
 
 ```python
 from python.object import PythonObject
@@ -81,80 +55,45 @@ from python.object import PythonObject
 var py_list: PythonObject = [1, 2, 3, 4]
 ```
 
-Most of the time, you can treat the wrapped object just like you'd treat it in 
-Python. You can use Python's `[]` operators to access an item in a list, and use
-dot-notation to access attributes and call methods. For example:
-
+大多数情况下，您可以像在Python中一样处理包装对象。您可以使用Python的`[]`运算符访问列表中的项，并使用点表示法访问属性和调用方法。例如：
 
 ```python
 var n = py_list[2]
 py_list.append(5)
 ```
 
-
-If you want to construct a Python type that doesn't have a literal Mojo 
-equivalent, you can also use the 
-`Python.evaluate()` method. For
-example, to create a Python `set`:
-
+如果您想构造一个在Mojo中没有字面等效的Python类型，您还可以使用`Python.evaluate()`方法。例如，要创建一个Python `set`：
 
 ```python
 fn use_py_set() raises:
     var py_set = Python.evaluate('set([2, 3, 5, 7, 11])')
     var num_items = len(py_set)
-    print(num_items, " items in set.")  # prints "5 items in set"
-    print(py_set.__contains__(6))       # prints "False"
+    print(num_items, " items in set.")  # 输出 "5 items in set"
+    print(py_set.__contains__(6))       # 输出 "False"
 ```
 
-TODO: You should be able to use the expression `6 in py_set`. However, because
-of the way `PythonObject` currently works, you need to call the 
-`__contains__()` method directly.
+注意：您应该能够使用表达式`6 in py_set`。然而，由于`PythonObject`目前的工作方式，您需要直接调用`__contains__()`方法。
 
-Some Mojo APIs handle `PythonObject` just fine, but sometimes you'll need to 
-explicitly convert a Python value into a native Mojo value. 
+某些Mojo API可以很好地处理`PythonObject`，但有时您需要显式将Python值转换为本地Mojo值。
 
-Currently `PythonObject` conforms to the 
-`Intable` and 
-`Stringable` traits, which means you
-can  convert Python values to Mojo `Int` and `String` types using the built-in 
-`int()` and
-`str()` functions, and print Python values
-using the built-in `print()` function.
-  
-`PythonObject` also provides the
-`__bool__()` and 
-`to_float64()` methods for 
-converting to boolean and floating point values, respectively.
+目前，`PythonObject`符合`Intable`和`Stringable`特征，这意味着您可以使用内置的`int()`和`str()`函数将Python值转换为Mojo的`Int`和`String`类型，并使用内置的`print()`函数打印Python值。
+
+`PythonObject`还提供了`__bool__()`和`to_float64()`方法，用于分别转换为布尔值和浮点数值。
 
 ```python
 var i: Int = int(py_int)
 var s: String = str(py_string)
-var b: Bool = py_bool.__bool__()
+varbool = py_bool.__bool__()
 var f: Float64 = py_float.to_float64()
 ```
 
+我们提到过Python类型会被包装在`PythonObject`包装器中。目前有一个例外情况：Python字典有自己专门的Mojo包装类型`Dictionary`。尽管名称是这样，但它并不是真正的字典类型，只是另一种包装类型。大多数情况下，这只是一个实现细节，但您可能会注意到类型不同。
 
+### 在Mojo中比较Python类型
 
-We mentioned that Python types get wrapped in `PythonObject` wrapper. 
-There is currently one exception to this: Python dictionaries have their own
-specialized Mojo wrapper type, `Dictionary`. Despite the name, it's not a true
-dictionary type, just another kind of wrapper. Most of the time this is
-just an implementation detail, but you may notice that the types are different.
+在条件语句中，Python对象的行为与您预期的一样：像`False`和`None`这样的Python值在Mojo中也会被解释为假。
 
-
-
-### Comparing Python types in Mojo
-
-In conditionals, Python objects act like you'd expect them to: Python values 
-like `False` and `None` evaluate as false in Mojo, too.
-
-If you need to know the type of the underlying Python object, you can use the 
-`Python.type()` method, which is 
-equivalent to the Python `type()` builtin. You can compare the identity of two
-Python objects using the
-`Python.is_type()` method (which is
-equivalent to the Python `is` operator):
-
+如果您需要知道底层Python对象的类型，可以使用`Python.type()`方法，它相当于Python的内置`type()`函数。您可以使用`Python.is_type()`方法（相当于Python的`is`运算符）比较两个Python对象的标识：
 
 ```python
 fn python_types() raises:
@@ -171,11 +110,8 @@ fn python_types() raises:
     print(Python.is_type(Python.type(value1), Python.none()))        # False
 ```
 
-One TODO item here: The `Python.is_type()` method is misleadingly named, since 
-it doesn't compare _types_, but object identity.
+这里有一个TODO项：`Python.is_type()`方法的命名有些误导，因为它不是比较类型，而是比较对象的标识。
 
-## Further reading
+## 更多阅读
 
-For more information, see 
-Using Mojo with Python on 
-the Modular Blog.
+了解更多信息，请参阅Mojo开发者社区中的[结合Python使用Mojo](https://dev.mojocn.org/d/5)。

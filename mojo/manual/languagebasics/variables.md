@@ -1,264 +1,143 @@
-# Variables
+# 变量
 
-A variable is a name that holds a value or object. All variables in Mojo are mutable—their value can be changed. (If you want to define a constant value that can't change at runtime, see the 
-`alias` keyword.)
+变量是一个保存值或对象的名称。Mojo中的所有变量都是可变的 - 它们的值可以改变。（如果您想定义一个在运行时无法更改的常量值，请参见`alias`关键字。）
 
+Mojo曾经支持使用`let`关键字来声明不可变变量。为了简化语言，并出于其他原因，在[此处讨论](https://github.com/modularml/mojo/blob/main/proposals/remove-let-decls.md)已经将其移除。为了简化旧代码的迁移，当前仍然支持`let`声明，但其功能与`var`声明相同。
 
+## 未声明的变量
 
-Mojo formerly supported the `let` keyword for declaring immutable variables.
-This has been removed to simplify the language, and for other reasons
-[discussed
-elsewhere](https://github.com/modularml/mojo/blob/main/proposals/remove-let-decls.md).
-To simplify the migration of older code, `let` declarations are currently
-supported, but function the same as `var` declarations.
-
-
-
-## Undeclared variables
-
-Within a `def` function or a REPL environment, you can create a variable with
-just a name and a value. For example:
-
+在`def`函数或REPL环境中，您可以使用变量的名称和值创建一个变量。例如：
 
 ```python
 name = "Sam"
 ```
 
-A variable declared without `var` follows s.
+没有使用`var`声明的变量遵循...
 
+在`fn`函数或结构的字段中，不允许使用未声明的变量。
 
+## 声明的变量
 
-
-Undeclared variables are not allowed in an `fn` function or as a struct
-field.
-
-
-
-## Declared variables
-
-You can declare a variable with the `var` keyword. For example:
-
+您可以使用`var`关键字声明一个变量。例如：
 
 ```python
 var name = "Sam"
 var user_id: Int
 ```
 
-The `name` variable is initialized to the string "Sam". The `user_id` variable is uninitialized, but it has a declared type, `Int` for an integer value. All
-declared values are typed—either explicitly with a 
-type annotation or implicitly when they're initialized with a value.
+`name`变量被初始化为字符串"Sam"。`user_id`变量未初始化，但它有一个声明的类型，即整数值的`Int`类型。所有声明的变量都有类型 - 可以是显式地使用类型注解指定的类型，也可以是在使用值初始化时隐式地推断出的类型。
 
-Since declared variables are strongly typed, you can't assign a variable a
-value of a different type, unless those types can be 
-implicitly converted. For example, this code will not compile:
+由于声明的变量具有强类型，除非这些类型可以隐式转换，否则不能将变量赋值为不同类型的值。例如，以下代码将无法编译通过：
 
 ```python
 var user_id: Int = "Sam"
 ```
 
-In addition to typing, declared variables also follow 
-lexical scoping, unlike undeclared variables.
+除了类型化，声明的变量还遵循词法作用域，与未声明的变量不同。
 
-Finally, using `var` helps prevent runtime errors caused by typos. For example,
-if you misspell the name of an undeclared variable,
-Mojo simply instantiates a new variable using the misspelled name. But when all
-mutable variables must be first declared with `var` (which is the case inside
-an `fn` function), then misspellings such as the following are caught by the
-compiler:
+最后，使用`var`有助于防止由拼写错误引起的运行时错误。例如，如果您拼写了一个未声明的变量的名称，Mojo将简单地使用拼写错误的名称实例化一个新变量。但是，当所有可变变量必须首先用`var`声明（这是在`fn`函数内部的情况），那么像下面这样的拼写错误将被编译器捕捉到：
 
 ```python
 var name = "Sam"
-# Somewhere later...
-nane = "Sammy"  # This is not allowed in an `fn` function
+# 以后的某个位置...
+nane = "Sammy"  # 在`fn`函数中不允许这样做
 ```
 
-Although you can use `var` in a `def` function, this benefit is
-realized only when used inside an `fn` function, where the Mojo compiler will
-flag undeclared variables (such as the above `nane`) as unknown declarations.
+尽管您可以在`def`函数中使用`var`，但只有在`fn`函数内部使用时才会实现这个好处，Mojo编译器将会将未声明的变量（例如上面的`nane`）标记为未知声明。
 
+在REPL环境中使用Mojo时，顶层变量（在函数或结构外部的变量）不需要`var`声明。
 
+## 类型注解
 
+虽然Mojo支持动态变量类型（它可以在运行时推断值的类型），但它也支持对变量进行静态类型注解。这可以为变量提供强大的编译时类型检查，使您的代码更可预测、可管理和安全（特别是与`fn`函数中的类型检查相结合时）。
 
-When using Mojo in a REPL environment, top-level variables (variables
-outside a function or struct) do not require `var` declarations.
-
-
-
-## Type annotations
-
-Although Mojo supports dynamic variable types (it can infer a value type at
-runtime), it also supports static type annotations on variables. This enables
-strong compile-time type checking for variables, which can make your code more
-predictable, manageable, and secure (especially when combined with type
-checking in `fn` functions).
-
-To specify the type for a variable, add a colon followed by the type name:
-
+要为变量指定类型，请在冒号后面加上类型名称：
 
 ```python
 var name: String = "Sam"
 ```
 
-This way, `name` can never be assigned a value that's not a string (or that
-cannot be implicitly converted to a string).
+通过这种方式，`name`永远不会被赋值为不是字符串的值（或者不能隐式转换为字符串的值）。
 
+您必须使用`var`声明一个变量才能使用类型注解。
 
-
-You must declare a variable with `var` to use type annotations.
-
-
-
-If a type has a constructor with just one argument, you can initialize it in
-two ways:
-
+如果一个类型具有只有一个参数的构造函数，您可以以两种方式进行初始化：
 
 ```python
 var name1: String = "Sam"
 var name2 = String("Sam")
 ```
 
-Both of these lines invoke the same constructor to create a `String` from a
-`StringLiteral`.
+这两行代码都使用相同的构造函数从`StringLiteral`创建一个`String`。
 
-### Late initialization
+#### 变量
 
-Using type annotations allows for late initialization. For example, notice here
-that the `z` variable is first declared with just a type, and the value is
-assigned later:
+变量是一个保存值或对象的名称。在Mojo中，所有的变量都是可变的——它们的值可以被修改。（如果你想定义一个在运行时不能改变的常量值，请参见`alias`关键字。）
 
+Mojo以前支持使用`let`关键字来声明不可变的变量。为了简化语言，并出于其他原因，已经在[此处](https://github.com/modularml/mojo/blob/main/proposals/remove-let-decls.md)讨论，并将其移除。为了简化旧代码的迁移，当前仍然支持`let`声明，但其作用与`var`声明相同。
 
-```python
-fn my_function(x: Int):
-    var z: Float32
-    if x != 0:
-        z = 1.0
-    else:
-        z = foo()
-    print(z)
+## 未声明的变量
 
-fn foo() -> Float32:
-    return 3.14
-```
-
-
-
-Late initialization works only if the variable is declared with a
-type.
-
-
-
-### Implicit type conversion
-
-Some types include built-in type conversion (type casting) from one type into
-its own type. For example, if you assign a number to a `String`, it creates the
-string `"1"` instead of a compiler error:
-
+在`def`函数或REPL环境中，您可以仅通过名称和值创建一个变量。例如：
 
 ```python
-var number: String = 1
+name = "Sam"
 ```
 
-As shown above, value assignment can be converted into a constructor call if the 
-target type has a constructor that takes a single argument that matches the
-value being assigned. So, this code uses the 
-`String` constructor that takes an
-integer: `__init__(inout self, num: Int)`.
+没有使用`var`声明的变量遵循...
 
-Implicit conversion follows the logic of overloaded
-functions, because
-that's exactly what's happening here: assigning a number to a `String` variable
-is exactly the same as this:
+在`fn`函数或结构体的字段中，不允许使用未声明的变量。
 
+## 声明的变量
+
+您可以使用`var`关键字声明一个变量。例如：
 
 ```python
-var number = String(1)
+var name = "Sam"
+var user_id: Int
 ```
 
-Thus, if you call a function that requires an argument of a certain type (such
-as `String`), you can pass in any value as long as that value type can
-implicitly convert to the required type (using one of the type's overloaded
-constructors).
+`name`变量被初始化为字符串"Sam"。`user_id`变量没有被初始化，但它有一个声明的类型，即整数类型`Int`。所有声明的值都是有类型的——可以是显式地使用类型注解指定的类型，也可以是在初始化时隐式地推断出的类型。
 
-For example, you can pass an `Int` to a function that expects a `String`,
-because `String` includes a constructor that takes an `Int`:
-
+由于声明的变量是强类型的，除非这些类型可以隐式转换，否则不能将变量赋予不同类型的值。例如，下面的代码将无法编译通过：
 
 ```python
-fn take_string(version: String):
-    print(version)
-
-fn pass_integer():
-    var version: Int = 1
-    take_string(version)
+var user_id: Int = "Sam"
 ```
 
-For more details on implicit conversion, see 
-Constructors and implicit 
-conversion.
+除了类型化，声明的变量还遵循词法作用域，与未声明的变量不同。
 
-## Variable scopes
-
-Variables declared with `var` are bound by *lexical scoping*. This
-means that nested code blocks can read and modify variables defined in an
-outer scope. But an outer scope **cannot** read variables defined in an
-inner scope at all.
-
-For example, the `if` code block shown here creates an inner scope where outer
-variables are accessible to read/write, but any new variables do not live
-beyond the scope of the `if` block:
-
+最后，使用`var`有助于防止由于拼写错误导致的运行时错误。例如，如果您拼写了一个未声明的变量的名称，Mojo将简单地使用拼写错误的名称实例化一个新变量。但是，当所有可变的变量必须首先使用`var`声明（这是在`fn`函数内部的情况），那么像下面这样的拼写错误将被编译器捕获：
 
 ```python
-def lexical_scopes():
-    var num = 10
-    var dig = 1
-    if True:
-        print("num:", num)  # Reads the outer-scope "num"
-        var num = 20        # Creates new inner-scope "num"
-        print("num:", num)  # Reads the inner-scope "num"
-        dig = 2             # Edits the outer-scope "dig"
-    print("num:", num)      # Reads the outer-scope "num"
-    print("dig:", dig)      # Reads the outer-scope "dig"
-
-lexical_scopes()
+var name = "Sam"
+# 某个地方以后...
+nane = "Sammy"  # 这在`fn`函数中是不允许的
 ```
 
-    num: 10
-    num: 20
-    num: 10
-    dig: 2
-    
+虽然您可以在`def`函数中使用`var`，但只有在`fn`函数内部使用时才会实现这个好处，Mojo编译器将会将未声明的变量（比如上面的`nane`）标记为未知声明。
 
-Note that the `var` statement inside the `if` creates a **new** variable with the same name as the outer variable. This prevents the inner loop from accessing the outer `num` variable. (This is called "variable shadowing," where the inner scope variable hides or "shadows" a variable from an outer scope.)
+在REPL环境中使用Mojo时，顶层变量（在函数或结构体之外的变量）不需要`var`声明。
 
-The lifetime of the inner `num` ends exactly where the `if` code block ends,
-because that's the scope in which the variable was defined.
+## 类型注解
 
-This is in contrast to undeclared variables (those without the `var`
-keyword), which use **function-level scoping** (consistent with Python variable
-behavior). That means, when you change the value of an undeclared variable
-inside the `if` block, it actually changes the value for the entire function.
+尽管Mojo支持动态变量类型（它可以在运行时推断值的类型），但它也支持对变量进行静态类型注解。这可以为变量提供强大的编译时类型检查，使您的代码更可预测、可管理和安全（特别是与`fn`函数中的类型检查结合使用时）。
 
-For example, here's the same code but *without* the `var` declarations:
-
+要为一个变量指定类型，请在冒号后面加上类型名称：
 
 ```python
-def function_scopes():
-    num = 1
-    if num == 1:
-        print(num)   # Reads the function-scope "num"
-        num = 2      # Updates the function-scope variable
-        print(num)   # Reads the function-scope "num"
-    print(num)       # Reads the function-scope "num"
-
-function_scopes()
+var name: String = "Sam"
 ```
 
-    1
-    2
-    2
-    
+这样，`name`将永远不能被赋予一个不是字符串的值（或者不能隐式转换为字符串的值）。
 
-Now, the last `print()` function sees the updated `num` value from the inner
-scope, because undeclared variables (Python-style variables) use function-level
-scope (instead of lexical scope).
+您必须使用`var`声明一个变量才能使用类型注解。
+
+如果一个类型具有一个只有一个参数的构造函数，您可以使用两种方式进行初始化：
+
+```python
+var name1: String = "Sam"
+var name2 = String("Sam")
+```
+
+这两行代码都使用相同的构造函数从`StringLiteral
