@@ -51,7 +51,7 @@ def gen_random_values(size, base):
 ```
 
 以下是如何导入并在Mojo文件中使用它：
-```mojo
+```python
 from python import Python
 
 fn main() raises:

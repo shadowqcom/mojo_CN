@@ -220,8 +220,10 @@ fn test_static_overload():
     # `foo(inout self)`优先于静态方法。
     a.foo()
 ```
+```python
 foo[x: MyInt, a: Int]() bar[a: Int](b: Int) bar[*a: Int](b: Int)
-    
+```
+
 
 ## 使用参数化类型和函数
 
@@ -565,7 +567,7 @@ var instance = createInstance("Hello", _, 4, _)
 
 ### 使用部分绑定类型的自动参数化
 
-Mojo还支持自动参数化：使用[部分绑定的参数化类型](#fully-bound-partially-bound-and-unbound-types)（即，具有一些但不是全部参数指定的类型）。
+Mojo还支持自动参数化：使用部分绑定的参数化类型（即，具有一些但不是全部参数指定的类型）。
 
 例如，假设我们有一个具有三个参数的`Fudge`结构体：
 
