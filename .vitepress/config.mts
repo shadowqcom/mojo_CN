@@ -91,7 +91,7 @@ export default defineConfig({
           {text: 'Python',
           collapsed: true,
           items: [
-            { text: 'Python集成', link: '/mojo/manual/python/Pythonintegration' },
+            { text: 'Python集成', link: '/mojo/manual/python/pythonintegration' },
             { text: 'Python类型', link: '/mojo/manual/python/pythontypes' },
             ]
           },
