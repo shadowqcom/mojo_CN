@@ -6,7 +6,7 @@ Implements the swap function.
 from algorithm.swap import swap
 ```
 
-## `swap`[​](https://docs.modular.com/mojo/stdlib/algorithm/swap#swap "Direct link to swap")
+## `swap`
 
 `swap[T: Movable](inout lhs: T, inout rhs: T)`
 

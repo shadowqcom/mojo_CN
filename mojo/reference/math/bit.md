@@ -8,7 +8,7 @@ You can import these APIs from the `math` package. For example:
 from math.bit import ctlz
 ```
 
-## `ctlz`[​](https://docs.modular.com/mojo/stdlib/math/bit#ctlz "Direct link to ctlz")
+## `ctlz`
 
 `ctlz(val: Int) -> Int`
 
@@ -43,7 +43,7 @@ DType must be integral.
 
 A SIMD value where the element at position `i` contains the number of leading zeros at position `i` of the input value.
 
-## `cttz`[​](https://docs.modular.com/mojo/stdlib/math/bit#cttz "Direct link to cttz")
+## `cttz`
 
 `cttz(val: Int) -> Int`
 
@@ -78,7 +78,7 @@ DType must be integral.
 
 A SIMD value where the element at position `i` contains the number of trailing zeros at position `i` of the input value.
 
-## `select`[​](https://docs.modular.com/mojo/stdlib/math/bit#select "Direct link to select")
+## `select`
 
 `select[type: DType, simd_width: Int](cond: SIMD[bool, simd_width], true_case: SIMD[type, simd_width], false_case: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -99,7 +99,7 @@ Performs an elementwise select based on the input condition value.
 
 A SIMD value where the element at position `i` contains `true_case[i]` if `cond[i]` is True and `false_case[i]` otherwise.
 
-## `bitreverse`[​](https://docs.modular.com/mojo/stdlib/math/bit#bitreverse "Direct link to bitreverse")
+## `bitreverse`
 
 `bitreverse[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -122,7 +122,7 @@ DType must be integral.
 
 A SIMD value where the element at position `i` has a reversed bitpattern of an integer value of the element at position `i` of the input value.
 
-## `bswap`[​](https://docs.modular.com/mojo/stdlib/math/bit#bswap "Direct link to bswap")
+## `bswap`
 
 `bswap[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -149,7 +149,7 @@ Number of bytes must be even (Bitwidth % 16 == 0). DType must be integral.
 
 A SIMD value where the element at position `i` is the value of the element at position `i` of the input value with its bytes swapped.
 
-## `ctpop`[​](https://docs.modular.com/mojo/stdlib/math/bit#ctpop "Direct link to ctpop")
+## `ctpop`
 
 `ctpop[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -172,7 +172,7 @@ DType must be integral.
 
 A SIMD value where the element at position `i` contains the number of bits set in the element at position `i` of the input value.
 
-## `bit_not`[​](https://docs.modular.com/mojo/stdlib/math/bit#bit_not "Direct link to bit_not")
+## `bit_not`
 
 `bit_not[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -195,7 +195,7 @@ DType must be integral.
 
 A SIMD value where the element at position `i` is computed as a bitwise NOT of the integer value at position `i` of the input value.
 
-## `bit_and`[​](https://docs.modular.com/mojo/stdlib/math/bit#bit_and "Direct link to bit_and")
+## `bit_and`
 
 `bit_and[type: DType, simd_width: Int](a: SIMD[type, simd_width], b: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -219,7 +219,7 @@ DType must be integral.
 
 A SIMD value where the element at position `i` is computed as a bitwise AND of the elements at position `i` of the input values.
 
-## `bit_length`[​](https://docs.modular.com/mojo/stdlib/math/bit#bit_length "Direct link to bit_length")
+## `bit_length`
 
 `bit_length[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 

@@ -8,7 +8,7 @@ You can import these APIs from the `python` package. For example:
 from python.object import PythonObject
 ```
 
-## `PythonObject`[​](https://docs.modular.com/mojo/stdlib/python/object#pythonobject "Direct link to pythonobject")
+## `PythonObject`
 
 A Python object.
 
@@ -22,7 +22,7 @@ A Python object.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/python/object#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -130,7 +130,7 @@ Initialize the object from a tuple literal.
 
 - ​**value** (`Tuple[Ts]`): The tuple value.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/python/object#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -142,7 +142,7 @@ This increments the underlying refcount of the existing object.
 
 - ​**existing** (`Self`): The value to copy.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/python/object#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: Self)`
 
@@ -150,7 +150,7 @@ Destroy the object.
 
 This decrements the underlying refcount of the pointed-to object.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/python/object#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -160,7 +160,7 @@ Evaluate the boolean value of the object.
 
 Whether the object evaluates as true.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/python/object#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, *args: Self) -> Self`
 
@@ -174,7 +174,7 @@ Return the value for the given key or keys.
 
 The value corresponding to the given key for this object.
 
-### `__neg__`[​](https://docs.modular.com/mojo/stdlib/python/object#__neg__ "Direct link to __neg__")
+### `__neg__`
 
 `__neg__(self: Self) -> Self`
 
@@ -186,7 +186,7 @@ Calls the underlying object's `__neg__` method.
 
 The result of prefixing this object with a `-` operator. For most numerical objects, this returns the negative.
 
-### `__pos__`[​](https://docs.modular.com/mojo/stdlib/python/object#__pos__ "Direct link to __pos__")
+### `__pos__`
 
 `__pos__(self: Self) -> Self`
 
@@ -198,7 +198,7 @@ Calls the underlying object's `__pos__` method.
 
 The result of prefixing this object with a `+` operator. For most numerical objects, this does nothing.
 
-### `__invert__`[​](https://docs.modular.com/mojo/stdlib/python/object#__invert__ "Direct link to __invert__")
+### `__invert__`
 
 `__invert__(self: Self) -> Self`
 
@@ -210,7 +210,7 @@ Calls the underlying object's `__invert__` method.
 
 The logical inverse of this object: a bitwise representation where all bits are flipped, from zero to one, and from one to zero.
 
-### `__lt__`[​](https://docs.modular.com/mojo/stdlib/python/object#__lt__ "Direct link to __lt__")
+### `__lt__`
 
 `__lt__(self: Self, rhs: Self) -> Self`
 
@@ -224,7 +224,7 @@ Less than comparator. This lexicographically compares strings and lists.
 
 True if the object is less than the right hard argument.
 
-### `__le__`[​](https://docs.modular.com/mojo/stdlib/python/object#__le__ "Direct link to __le__")
+### `__le__`
 
 `__le__(self: Self, rhs: Self) -> Self`
 
@@ -238,7 +238,7 @@ Less than or equal to comparator. This lexicographically compares strings and li
 
 True if the object is less than or equal to the right hard argument.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/python/object#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Self`
 
@@ -252,7 +252,7 @@ Equality comparator. This compares the elements of strings and lists.
 
 True if the objects are equal.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/python/object#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Self`
 
@@ -266,7 +266,7 @@ Inequality comparator. This compares the elements of strings and lists.
 
 True if the objects are not equal.
 
-### `__gt__`[​](https://docs.modular.com/mojo/stdlib/python/object#__gt__ "Direct link to __gt__")
+### `__gt__`
 
 `__gt__(self: Self, rhs: Self) -> Self`
 
@@ -280,7 +280,7 @@ Greater than comparator. This lexicographically compares the elements of strings
 
 True if the left hand value is greater.
 
-### `__ge__`[​](https://docs.modular.com/mojo/stdlib/python/object#__ge__ "Direct link to __ge__")
+### `__ge__`
 
 `__ge__(self: Self, rhs: Self) -> Self`
 
@@ -294,7 +294,7 @@ Greater than or equal to comparator. This lexicographically compares the element
 
 True if the left hand value is greater than or equal to the right hand value.
 
-### `__is__`[​](https://docs.modular.com/mojo/stdlib/python/object#__is__ "Direct link to __is__")
+### `__is__`
 
 `__is__(self: Self, other: Self) -> Bool`
 
@@ -308,7 +308,7 @@ Test if the PythonObject is the `other` PythonObject, the same as `x is y` in Py
 
 True if they are the same object and False otherwise.
 
-### `__isnot__`[​](https://docs.modular.com/mojo/stdlib/python/object#__isnot__ "Direct link to __isnot__")
+### `__isnot__`
 
 `__isnot__(self: Self, other: Self) -> Bool`
 
@@ -322,7 +322,7 @@ Test if the PythonObject is not the `other` PythonObject, the same as `x is not 
 
 True if they are not the same object and False otherwise.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/python/object#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, rhs: Self) -> Self`
 
@@ -338,7 +338,7 @@ Calls the underlying object's `__add__` method.
 
 The sum or concatenated values.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/python/object#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__(self: Self, rhs: Self) -> Self`
 
@@ -354,7 +354,7 @@ Calls the underlying object's `__sub__` method.
 
 The difference.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/python/object#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, rhs: Self) -> Self`
 
@@ -370,7 +370,7 @@ Calls the underlying object's `__mul__` method.
 
 The product.
 
-### `__truediv__`[​](https://docs.modular.com/mojo/stdlib/python/object#__truediv__ "Direct link to __truediv__")
+### `__truediv__`
 
 `__truediv__(self: Self, rhs: Self) -> Self`
 
@@ -386,7 +386,7 @@ Calls the underlying object's `__truediv__` method.
 
 The result of dividing the right-hand-side value by this.
 
-### `__floordiv__`[​](https://docs.modular.com/mojo/stdlib/python/object#__floordiv__ "Direct link to __floordiv__")
+### `__floordiv__`
 
 `__floordiv__(self: Self, rhs: Self) -> Self`
 
@@ -402,7 +402,7 @@ Calls the underlying object's `__floordiv__` method.
 
 The result of dividing this by the right-hand-side value, modulo any remainder.
 
-### `__mod__`[​](https://docs.modular.com/mojo/stdlib/python/object#__mod__ "Direct link to __mod__")
+### `__mod__`
 
 `__mod__(self: Self, rhs: Self) -> Self`
 
@@ -418,7 +418,7 @@ Calls the underlying object's `__mod__` method.
 
 The remainder of dividing self by rhs.
 
-### `__pow__`[​](https://docs.modular.com/mojo/stdlib/python/object#__pow__ "Direct link to __pow__")
+### `__pow__`
 
 `__pow__(self: Self, rhs: Self) -> Self`
 
@@ -432,7 +432,7 @@ Raises this object to the power of the given value.
 
 The result of raising this by the given exponent.
 
-### `__lshift__`[​](https://docs.modular.com/mojo/stdlib/python/object#__lshift__ "Direct link to __lshift__")
+### `__lshift__`
 
 `__lshift__(self: Self, rhs: Self) -> Self`
 
@@ -446,7 +446,7 @@ Bitwise left shift.
 
 This value, shifted left by the given value.
 
-### `__rshift__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rshift__ "Direct link to __rshift__")
+### `__rshift__`
 
 `__rshift__(self: Self, rhs: Self) -> Self`
 
@@ -460,7 +460,7 @@ Bitwise right shift.
 
 This value, shifted right by the given value.
 
-### `__and__`[​](https://docs.modular.com/mojo/stdlib/python/object#__and__ "Direct link to __and__")
+### `__and__`
 
 `__and__(self: Self, rhs: Self) -> Self`
 
@@ -474,7 +474,7 @@ Bitwise AND.
 
 The bitwise AND result of this and the given value.
 
-### `__or__`[​](https://docs.modular.com/mojo/stdlib/python/object#__or__ "Direct link to __or__")
+### `__or__`
 
 `__or__(self: Self, rhs: Self) -> Self`
 
@@ -488,7 +488,7 @@ Bitwise OR.
 
 The bitwise OR result of this and the given value.
 
-### `__xor__`[​](https://docs.modular.com/mojo/stdlib/python/object#__xor__ "Direct link to __xor__")
+### `__xor__`
 
 `__xor__(self: Self, rhs: Self) -> Self`
 
@@ -502,7 +502,7 @@ Exclusive OR.
 
 The exclusive OR result of this and the given value.
 
-### `__radd__`[​](https://docs.modular.com/mojo/stdlib/python/object#__radd__ "Direct link to __radd__")
+### `__radd__`
 
 `__radd__(self: Self, lhs: Self) -> Self`
 
@@ -518,7 +518,7 @@ Calls the underlying object's `__radd__` method.
 
 The sum.
 
-### `__rsub__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rsub__ "Direct link to __rsub__")
+### `__rsub__`
 
 `__rsub__(self: Self, lhs: Self) -> Self`
 
@@ -534,7 +534,7 @@ Calls the underlying object's `__rsub__` method.
 
 The result of subtracting this from the given value.
 
-### `__rmul__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rmul__ "Direct link to __rmul__")
+### `__rmul__`
 
 `__rmul__(self: Self, lhs: Self) -> Self`
 
@@ -550,7 +550,7 @@ Calls the underlying object's `__rmul__` method.
 
 The product of the multiplication.
 
-### `__rtruediv__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rtruediv__ "Direct link to __rtruediv__")
+### `__rtruediv__`
 
 `__rtruediv__(self: Self, lhs: Self) -> Self`
 
@@ -566,7 +566,7 @@ Calls the underlying object's `__rtruediv__` method.
 
 The result of dividing the given value by this.
 
-### `__rfloordiv__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rfloordiv__ "Direct link to __rfloordiv__")
+### `__rfloordiv__`
 
 `__rfloordiv__(self: Self, lhs: Self) -> Self`
 
@@ -582,7 +582,7 @@ Calls the underlying object's `__rfloordiv__` method.
 
 The result of dividing the given value by this, modulo any remainder.
 
-### `__rmod__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rmod__ "Direct link to __rmod__")
+### `__rmod__`
 
 `__rmod__(self: Self, lhs: Self) -> Self`
 
@@ -598,7 +598,7 @@ Calls the underlying object's `__rmod__` method.
 
 The remainder from dividing the given value by this.
 
-### `__rpow__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rpow__ "Direct link to __rpow__")
+### `__rpow__`
 
 `__rpow__(self: Self, lhs: Self) -> Self`
 
@@ -612,7 +612,7 @@ Reverse power of.
 
 The result of raising the given value by this exponent.
 
-### `__rlshift__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rlshift__ "Direct link to __rlshift__")
+### `__rlshift__`
 
 `__rlshift__(self: Self, lhs: Self) -> Self`
 
@@ -626,7 +626,7 @@ Reverse bitwise left shift.
 
 The given value, shifted left by this.
 
-### `__rrshift__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rrshift__ "Direct link to __rrshift__")
+### `__rrshift__`
 
 `__rrshift__(self: Self, lhs: Self) -> Self`
 
@@ -640,7 +640,7 @@ Reverse bitwise right shift.
 
 The given value, shifted right by this.
 
-### `__rand__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rand__ "Direct link to __rand__")
+### `__rand__`
 
 `__rand__(self: Self, lhs: Self) -> Self`
 
@@ -654,7 +654,7 @@ Reverse bitwise and.
 
 The bitwise AND result of the given value and this.
 
-### `__ror__`[​](https://docs.modular.com/mojo/stdlib/python/object#__ror__ "Direct link to __ror__")
+### `__ror__`
 
 `__ror__(self: Self, lhs: Self) -> Self`
 
@@ -668,7 +668,7 @@ Reverse bitwise OR.
 
 The bitwise OR result of the given value and this.
 
-### `__rxor__`[​](https://docs.modular.com/mojo/stdlib/python/object#__rxor__ "Direct link to __rxor__")
+### `__rxor__`
 
 `__rxor__(self: Self, lhs: Self) -> Self`
 
@@ -682,7 +682,7 @@ Reverse exclusive OR.
 
 The exclusive OR result of the given value and this.
 
-### `__iadd__`[​](https://docs.modular.com/mojo/stdlib/python/object#__iadd__ "Direct link to __iadd__")
+### `__iadd__`
 
 `__iadd__(inout self: Self, rhs: Self)`
 
@@ -692,7 +692,7 @@ Immediate addition and concatenation.
 
 - ​**rhs** (`Self`): The right-hand-side value that is added to this object.
 
-### `__isub__`[​](https://docs.modular.com/mojo/stdlib/python/object#__isub__ "Direct link to __isub__")
+### `__isub__`
 
 `__isub__(inout self: Self, rhs: Self)`
 
@@ -702,7 +702,7 @@ Immediate subtraction.
 
 - ​**rhs** (`Self`): The right-hand-side value that is subtracted from this object.
 
-### `__imul__`[​](https://docs.modular.com/mojo/stdlib/python/object#__imul__ "Direct link to __imul__")
+### `__imul__`
 
 `__imul__(inout self: Self, rhs: Self)`
 
@@ -714,7 +714,7 @@ Calls the underlying object's `__imul__` method.
 
 - ​**rhs** (`Self`): The right-hand-side value by which this object is multiplied.
 
-### `__itruediv__`[​](https://docs.modular.com/mojo/stdlib/python/object#__itruediv__ "Direct link to __itruediv__")
+### `__itruediv__`
 
 `__itruediv__(inout self: Self, rhs: Self)`
 
@@ -724,7 +724,7 @@ Immediate division.
 
 - ​**rhs** (`Self`): The value by which this object is divided.
 
-### `__ifloordiv__`[​](https://docs.modular.com/mojo/stdlib/python/object#__ifloordiv__ "Direct link to __ifloordiv__")
+### `__ifloordiv__`
 
 `__ifloordiv__(inout self: Self, rhs: Self)`
 
@@ -734,7 +734,7 @@ Immediate floor division.
 
 - ​**rhs** (`Self`): The value by which this object is divided.
 
-### `__imod__`[​](https://docs.modular.com/mojo/stdlib/python/object#__imod__ "Direct link to __imod__")
+### `__imod__`
 
 `__imod__(inout self: Self, rhs: Self)`
 
@@ -744,7 +744,7 @@ Immediate modulo.
 
 - ​**rhs** (`Self`): The right-hand-side value that is used to divide this object.
 
-### `__ipow__`[​](https://docs.modular.com/mojo/stdlib/python/object#__ipow__ "Direct link to __ipow__")
+### `__ipow__`
 
 `__ipow__(inout self: Self, rhs: Self)`
 
@@ -754,7 +754,7 @@ Immediate power of.
 
 - ​**rhs** (`Self`): The exponent.
 
-### `__ilshift__`[​](https://docs.modular.com/mojo/stdlib/python/object#__ilshift__ "Direct link to __ilshift__")
+### `__ilshift__`
 
 `__ilshift__(inout self: Self, rhs: Self)`
 
@@ -764,7 +764,7 @@ Immediate bitwise left shift.
 
 - ​**rhs** (`Self`): The right-hand-side value by which this object is bitwise shifted to the left.
 
-### `__irshift__`[​](https://docs.modular.com/mojo/stdlib/python/object#__irshift__ "Direct link to __irshift__")
+### `__irshift__`
 
 `__irshift__(inout self: Self, rhs: Self)`
 
@@ -774,7 +774,7 @@ Immediate bitwise right shift.
 
 - ​**rhs** (`Self`): The right-hand-side value by which this object is bitwise shifted to the right.
 
-### `__iand__`[​](https://docs.modular.com/mojo/stdlib/python/object#__iand__ "Direct link to __iand__")
+### `__iand__`
 
 `__iand__(inout self: Self, rhs: Self)`
 
@@ -784,7 +784,7 @@ Immediate bitwise AND.
 
 - ​**rhs** (`Self`): The right-hand-side value with which this object is bitwise AND'ed.
 
-### `__ixor__`[​](https://docs.modular.com/mojo/stdlib/python/object#__ixor__ "Direct link to __ixor__")
+### `__ixor__`
 
 `__ixor__(inout self: Self, rhs: Self)`
 
@@ -794,7 +794,7 @@ Immediate exclusive OR.
 
 - ​**rhs** (`Self`): The right-hand-side value with which this object is exclusive OR'ed.
 
-### `__ior__`[​](https://docs.modular.com/mojo/stdlib/python/object#__ior__ "Direct link to __ior__")
+### `__ior__`
 
 `__ior__(inout self: Self, rhs: Self)`
 
@@ -804,7 +804,7 @@ Immediate bitwise OR.
 
 - ​**rhs** (`Self`): The right-hand-side value with which this object is bitwise OR'ed.
 
-### `__iter__`[​](https://docs.modular.com/mojo/stdlib/python/object#__iter__ "Direct link to __iter__")
+### `__iter__`
 
 `__iter__(self: Self) -> _PyIter`
 
@@ -816,7 +816,7 @@ Raises: If the object is not iterable.
 
 An iterator object.
 
-### `__getattr__`[​](https://docs.modular.com/mojo/stdlib/python/object#__getattr__ "Direct link to __getattr__")
+### `__getattr__`
 
 `__getattr__(self: Self, name: StringLiteral) -> Self`
 
@@ -830,7 +830,7 @@ Return the value of the object attribute with the given name.
 
 The value of the object attribute with the given name.
 
-### `__setattr__`[​](https://docs.modular.com/mojo/stdlib/python/object#__setattr__ "Direct link to __setattr__")
+### `__setattr__`
 
 `__setattr__(self: Self, name: StringLiteral, newValue: Self)`
 
@@ -841,7 +841,7 @@ Set the given value for the object attribute with the given name.
 - ​**name** (`StringLiteral`): The name of the object attribute to set.
 - ​**newValue** (`Self`): The new value to be set for that attribute.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/python/object#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -851,7 +851,7 @@ Returns the length of the object.
 
 The length of the object.
 
-### `__call__`[​](https://docs.modular.com/mojo/stdlib/python/object#__call__ "Direct link to __call__")
+### `__call__`
 
 `__call__(self: Self, *args: Self, *, owned kwargs: Dict[String, PythonObject]) -> Self`
 
@@ -861,7 +861,7 @@ Call the underlying object as if it were a function.
 
 The return value from the called object.
 
-### `to_float64`[​](https://docs.modular.com/mojo/stdlib/python/object#to_float64 "Direct link to to_float64")
+### `to_float64`
 
 `to_float64(self: Self) -> SIMD[f64, 1]`
 
@@ -871,7 +871,7 @@ Returns a float representation of the object.
 
 A floating point value that represents this object.
 
-### `__index__`[​](https://docs.modular.com/mojo/stdlib/python/object#__index__ "Direct link to __index__")
+### `__index__`
 
 `__index__(self: Self) -> Int`
 
@@ -881,7 +881,7 @@ Returns an index representation of the object.
 
 An index value that represents this object.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/python/object#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
@@ -891,7 +891,7 @@ Returns an integral representation of the object.
 
 An integral value that represents this object.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/python/object#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 

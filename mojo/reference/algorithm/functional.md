@@ -30,7 +30,7 @@ from algorithm import map
 
 - ​`Static1DTileUnitFuncWithFlags = fn[Int, Bool, Bool](Int, /) capturing -> None`
 
-## `map`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#map "Direct link to map")
+## `map`
 
 `map[func: fn(Int, /) capturing -> None](size: Int)`
 
@@ -44,7 +44,7 @@ Maps a function over a range from 0 to size.
 
 - ​**size** (`Int`): The number of elements.
 
-## `vectorize`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#vectorize "Direct link to vectorize")
+## `vectorize`
 
 `vectorize[func: fn[Int](Int, /) capturing -> None, simd_width: Int, unroll_factor: Int](size: Int)`
 
@@ -123,7 +123,7 @@ closure[4](0)closure[4](4)closure[2](8)
 - ​**size** (`Int`): The upper limit for the loop.
 - ​**unroll\_factor** (`Int`): The unroll factor for the main loop (Default 1).
 
-## `async_parallelize`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#async_parallelize "Direct link to async_parallelize")
+## `async_parallelize`
 
 `async_parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int)`
 
@@ -151,7 +151,7 @@ TODO: Currently exceptions raised by func will cause a trap rather than be propa
 
 - ​**num\_work\_items** (`Int`): Number of parallel tasks.
 
-## `sync_parallelize`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#sync_parallelize "Direct link to sync_parallelize")
+## `sync_parallelize`
 
 `sync_parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int)`
 
@@ -179,7 +179,7 @@ TODO: Currently exceptions raised by func will cause a trap rather than be propa
 
 - ​**num\_work\_items** (`Int`): Number of parallel tasks.
 
-## `parallelize`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#parallelize "Direct link to parallelize")
+## `parallelize`
 
 `parallelize[func: fn(Int, /) capturing -> None]()`
 
@@ -216,7 +216,7 @@ Executes func(0) ... func(num\_work\_items-1) as sub-tasks in parallel, and retu
 - ​**num\_work\_items** (`Int`): Number of parallel tasks.
 - ​**num\_workers** (`Int`): The number of workers to use for execution.
 
-## `tile`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#tile "Direct link to tile")
+## `tile`
 
 `tile[workgroup_function: fn[Int](Int, /) capturing -> None, tile_size_list: VariadicList[Int]](offset: Int, upperbound: Int)`
 
@@ -286,7 +286,7 @@ Launches workgroup\_function using the largest tile sizes possible in each dimen
 - ​**upperbound\_x** (`Int`): Max offset in x dimension passed to workgroup function.
 - ​**upperbound\_y** (`Int`): Max offset in y dimension passed to workgroup function.
 
-## `unswitch`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#unswitch "Direct link to unswitch")
+## `unswitch`
 
 `unswitch[switched_func: fn[Bool]() capturing -> None](dynamic_switch: Bool)`
 
@@ -331,7 +331,7 @@ Performs a functional 2-predicates unswitch transformation.
 - ​**dynamic\_switch\_a** (`Bool`): The first dynamic condition that enables the outer unswitched code path.
 - ​**dynamic\_switch\_b** (`Bool`): The second dynamic condition that enables the inner unswitched code path.
 
-## `tile_and_unswitch`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#tile_and_unswitch "Direct link to tile_and_unswitch")
+## `tile_and_unswitch`
 
 `tile_and_unswitch[workgroup_function: fn[Int, Bool](Int, Int, /) capturing -> None, tile_size_list: VariadicList[Int]](offset: Int, upperbound: Int)`
 
@@ -365,7 +365,7 @@ A variant of dynamic tile given a workgroup function that can be unswitched. Thi
 - ​**upperbound** (`Int`): The runtime upperbound that the work function should not exceed.
 - ​**tile\_size\_list** (`VariadicList[Int]`): List of tile sizes to launch work.
 
-## `tile_middle_unswitch_boundaries`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#tile_middle_unswitch_boundaries "Direct link to tile_middle_unswitch_boundaries")
+## `tile_middle_unswitch_boundaries`
 
 `tile_middle_unswitch_boundaries[work_fn: fn[Int, Bool](Int, /) capturing -> None, middle_tile_sizes: VariadicList[Int], left_tile_size: Int, right_tile_size: Int](left_boundary_start: Int, left_boundary_end: Int, right_boundary_start: Int, right_boundary_end: Int)`
 
@@ -403,7 +403,7 @@ This generator is primarily for convolution with static shapes. `work_fn`'s flag
 - ​**tile\_size** (`Int`): 1D Tile size.
 - ​**size** (`Int`): Iteration range is \[0, size).
 
-## `elementwise`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#elementwise "Direct link to elementwise")
+## `elementwise`
 
 `elementwise[func: fn[Int, Int](StaticIntTuple[$1], /) capturing -> None, simd_width: Int, rank: Int](shape: StaticIntTuple[rank])`
 
@@ -419,7 +419,7 @@ Executes `func[width, rank](indices)`, possibly as sub-tasks, for a suitable com
 
 - ​**shape** (`StaticIntTuple[rank]`): The shape of the buffer.
 
-## `parallelize_over_rows`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#parallelize_over_rows "Direct link to parallelize_over_rows")
+## `parallelize_over_rows`
 
 `parallelize_over_rows[func: fn(Int, Int, /) capturing -> None, shape: Int](shape: StaticIntTuple[shape], axis: Int, grain_size: Int)`
 
@@ -435,7 +435,7 @@ Parallelize func over non-axis dims of shape.
 - ​**axis** (`Int`): Rows are slices along the axis dimension of shape.
 - ​**grain\_size** (`Int`): The minimum number of elements to warrant using an additional thread.
 
-## `stencil`[​](https://docs.modular.com/mojo/stdlib/algorithm/functional#stencil "Direct link to stencil")
+## `stencil`
 
 `stencil[rank: Int, stencil_rank: Int, stencil_axis: StaticIntTuple[stencil_rank], simd_width: Int, type: DType, map_fn: fn(StaticIntTuple[stencil_rank], /) capturing -> Tuple[StaticIntTuple[stencil_rank], StaticIntTuple[stencil_rank]], map_strides: fn(dim: Int) capturing -> Int, load_fn: fn[Int, DType](StaticIntTuple[rank], /) capturing -> SIMD[$1, $0], compute_init_fn: fn[Int]() capturing -> SIMD[type, $0], compute_fn: fn[Int](StaticIntTuple[rank], SIMD[type, $0], SIMD[type, $0], /) capturing -> SIMD[type, $0], compute_finalize_fn: fn[Int](StaticIntTuple[rank], SIMD[type, $0], /) capturing -> None](shape: StaticIntTuple[rank], input_shape: StaticIntTuple[rank])`
 

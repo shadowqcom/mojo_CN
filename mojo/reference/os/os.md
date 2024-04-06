@@ -8,7 +8,7 @@ You can import a method from the `os` package. For example:
 from os import listdir
 ```
 
-## `listdir`[​](https://docs.modular.com/mojo/stdlib/os/os#listdir "Direct link to listdir")
+## `listdir`
 
 `listdir(path: String) -> List[String]`
 
@@ -38,7 +38,7 @@ Gets the list of entries contained in the path provided.
 
 Returns the list of entries in the path provided.
 
-## `abort`[​](https://docs.modular.com/mojo/stdlib/os/os#abort "Direct link to abort")
+## `abort`
 
 `abort[result: Movable]() -> result`
 

@@ -8,7 +8,7 @@ You can import these APIs from the `os` package. For example:
 from os import setenv
 ```
 
-## `setenv`[​](https://docs.modular.com/mojo/stdlib/os/env#setenv "Direct link to setenv")
+## `setenv`
 
 `setenv(name: String, value: String, overwrite: Bool) -> Bool`
 
@@ -28,7 +28,7 @@ The function only works on macOS or Linux and returns False otherwise.
 
 False if the name is empty or contains an `=` character. In any other case, True is returned.
 
-## `getenv`[​](https://docs.modular.com/mojo/stdlib/os/env#getenv "Direct link to getenv")
+## `getenv`
 
 `getenv(name: String, default: String) -> String`
 

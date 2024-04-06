@@ -22,7 +22,7 @@ You can import these APIs from the `sys` package. For example:
 from sys.param_env import is_defined
 ```
 
-## `is_defined`[​](https://docs.modular.com/mojo/stdlib/sys/param_env#is_defined "Direct link to is_defined")
+## `is_defined`
 
 `is_defined[name: StringLiteral]() -> Bool`
 
@@ -36,7 +36,7 @@ Return true if the named value is defined.
 
 True if the name is defined.
 
-## `env_get_int`[​](https://docs.modular.com/mojo/stdlib/sys/param_env#env_get_int "Direct link to env_get_int")
+## `env_get_int`
 
 `env_get_int[name: StringLiteral]() -> Int`
 
@@ -63,7 +63,7 @@ Try to get an integer-valued define. If the name is not defined, return a defaul
 
 An integer parameter value.
 
-## `env_get_string`[​](https://docs.modular.com/mojo/stdlib/sys/param_env#env_get_string "Direct link to env_get_string")
+## `env_get_string`
 
 `env_get_string[name: StringLiteral]() -> StringLiteral`
 

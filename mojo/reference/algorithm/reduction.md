@@ -8,7 +8,7 @@ You can import these APIs from the `algorithm` package. For example:
 from algorithm import map_reduce
 ```
 
-## `map_reduce`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#map_reduce "Direct link to map_reduce")
+## `map_reduce`
 
 `map_reduce[simd_width: Int, size: Dim, type: DType, acc_type: DType, input_gen_fn: fn[DType, Int](Int, /) capturing -> SIMD[$0, $1], reduce_vec_to_vec_fn: fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2], reduce_vec_to_scalar_fn: fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1]](dst: Buffer[type, size, 0], init: SIMD[acc_type, 1]) -> SIMD[acc_type, 1]`
 
@@ -33,7 +33,7 @@ Stores the result of calling input\_gen\_fn in dst and simultaneously reduce the
 
 The computed reduction value.
 
-## `reduce`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#reduce "Direct link to reduce")
+## `reduce`
 
 `reduce[reduce_fn: fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2], src: DType, src: Dim, src: AddressSpace, init: DType](src: Buffer[src, src, src], init: SIMD[init, 1]) -> SIMD[init, 1]`
 
@@ -70,7 +70,7 @@ First src is reshaped into a 3D tensor. Without loss of generality, the three ax
 - ​**dst** (`NDBuffer[dst, dst, dst, dst]`): The output buffer.
 - ​**init** (`SIMD[dst, 1]`): The initial value to use in accumulator.
 
-## `reduce_boolean`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#reduce_boolean "Direct link to reduce_boolean")
+## `reduce_boolean`
 
 `reduce_boolean[reduce_fn: fn[DType, Int](SIMD[$0, $1], /) capturing -> Bool, continue_fn: fn(Bool, /) capturing -> Bool, src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src], init: Bool) -> Bool`
 
@@ -90,7 +90,7 @@ Computes a bool reduction of buffer elements. The reduction will early exit if t
 
 The computed reduction value.
 
-## `max`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#max "Direct link to max")
+## `max`
 
 `max[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
@@ -117,7 +117,7 @@ Computes the max across reduce\_axis of an NDBuffer.
 - ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
 - ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
 
-## `min`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#min "Direct link to min")
+## `min`
 
 `min[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
@@ -144,7 +144,7 @@ Computes the min across reduce\_axis of an NDBuffer.
 - ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
 - ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
 
-## `sum`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#sum "Direct link to sum")
+## `sum`
 
 `sum[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
@@ -171,7 +171,7 @@ Computes the sum across reduce\_axis of an NDBuffer.
 - ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
 - ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
 
-## `product`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#product "Direct link to product")
+## `product`
 
 `product[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
@@ -198,7 +198,7 @@ Computes the product across reduce\_axis of an NDBuffer.
 - ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
 - ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
 
-## `mean`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#mean "Direct link to mean")
+## `mean`
 
 `mean[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
@@ -245,7 +245,7 @@ This performs the mean computation on the domain specified by `input_shape`, sto
 - ​**reduce\_dim** (`Int`): The axis to perform the mean on.
 - ​**output\_shape** (`StaticIntTuple[input_shape]`): The output shape.
 
-## `variance`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#variance "Direct link to variance")
+## `variance`
 
 `variance[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src], mean_value: SIMD[src, 1], correction: Int) -> SIMD[src, 1]`
 
@@ -284,7 +284,7 @@ variance(x) = sum((x - E(x))^2) / (size - correction)
 
 The variance value of the elements in a buffer.
 
-## `all_true`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#all_true "Direct link to all_true")
+## `all_true`
 
 `all_true[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> Bool`
 
@@ -298,7 +298,7 @@ Returns True if all the elements in a buffer are True and False otherwise.
 
 True if all of the elements of the buffer are True and False otherwise.
 
-## `any_true`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#any_true "Direct link to any_true")
+## `any_true`
 
 `any_true[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> Bool`
 
@@ -312,7 +312,7 @@ Returns True if any the elements in a buffer are True and False otherwise.
 
 True if any of the elements of the buffer are True and False otherwise.
 
-## `none_true`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#none_true "Direct link to none_true")
+## `none_true`
 
 `none_true[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> Bool`
 
@@ -326,7 +326,7 @@ Returns True if none of the elements in a buffer are True and False otherwise.
 
 True if none of the elements of the buffer are True and False otherwise.
 
-## `argmax`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#argmax "Direct link to argmax")
+## `argmax`
 
 `argmax[input: DType, input: Int, input: DimList, input: AddressSpace, output: DType, output: Int, output: DimList, output: AddressSpace](input: NDBuffer[input, input, input, input], axis: Int, output: NDBuffer[output, output, output, output])`
 
@@ -348,7 +348,7 @@ Finds the indices of the maximum element along the specified axis.
 - ​**axis\_buf** (`NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf]`): The axis tensor.
 - ​**output** (`NDBuffer[output, output, output, output]`): The axis tensor.
 
-## `argmin`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#argmin "Direct link to argmin")
+## `argmin`
 
 `argmin[input: DType, input: Int, input: DimList, input: AddressSpace, output: DType, output: Int, output: DimList, output: AddressSpace](input: NDBuffer[input, input, input, input], axis: Int, output: NDBuffer[output, output, output, output])`
 
@@ -370,7 +370,7 @@ Finds the indices of the minimum element along the specified axis.
 - ​**axis\_buf** (`NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf]`): The axis tensor.
 - ​**output** (`NDBuffer[output, output, output, output]`): The axis tensor.
 
-## `reduce_shape`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#reduce_shape "Direct link to reduce_shape")
+## `reduce_shape`
 
 `reduce_shape[input_rank: Int, input_type: DType, axis_type: DType, single_thread_blocking_override: Bool](input_buf: NDBuffer[input_type, input_rank, create_unknown[stdlib::builtin::int::Int][input_rank](), 0], axis_buf: NDBuffer[axis_type, 1, create_unknown[stdlib::builtin::int::Int][1](), 0]) -> StaticIntTuple[input_rank]`
 
@@ -392,7 +392,7 @@ Compute the output shape of a `pad` operation, and assert the inputs are compati
 
 The output shape.
 
-## `cumsum`[​](https://docs.modular.com/mojo/stdlib/algorithm/reduction#cumsum "Direct link to cumsum")
+## `cumsum`
 
 `cumsum[dst: DType, dst: Dim, dst: AddressSpace](dst: Buffer[dst, dst, dst], src: Buffer[dst, dst, dst])`
 

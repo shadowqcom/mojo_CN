@@ -8,7 +8,7 @@ You can import these APIs from the `algorithm` package. For example:
 from algorithm.sort import sort
 ```
 
-## `partition`[​](https://docs.modular.com/mojo/stdlib/algorithm/sort#partition "Direct link to partition")
+## `partition`
 
 `partition[type: AnyRegType, cmp_fn: fn[AnyRegType]($0, $0, /) capturing -> Bool](buff: Pointer[*"type", 0], k: Int, size: Int)`
 
@@ -25,7 +25,7 @@ Partition the input vector inplace such that first k elements are the largest (o
 - ​**k** (`Int`): Index of the partition element.
 - ​**size** (`Int`): The length of the buffer.
 
-## `sort`[​](https://docs.modular.com/mojo/stdlib/algorithm/sort#sort "Direct link to sort")
+## `sort`
 
 `sort(inout buff: Pointer[Int, 0], len: Int)`
 

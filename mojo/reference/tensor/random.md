@@ -1,6 +1,6 @@
 # random
 
-## `rand`[​](https://docs.modular.com/mojo/stdlib/tensor/random#rand "Direct link to rand")
+## `rand`
 
 `rand[type: DType](*shape: Int) -> Tensor[type]`
 
@@ -50,7 +50,7 @@ Constructs a new tensor with the specified specification and fills it with rando
 
 A new tensor of specified specification and filled with random elements.
 
-## `randn`[​](https://docs.modular.com/mojo/stdlib/tensor/random#randn "Direct link to randn")
+## `randn`
 
 `randn[type: DType](owned shape: TensorShape, mean: SIMD[f64, 1], variance: SIMD[f64, 1]) -> Tensor[type]`
 

@@ -2,7 +2,7 @@
 
 Implements a string that has a small-string optimization which avoids heap allocations for short strings.
 
-## `InlinedString`[​](https://docs.modular.com/mojo/stdlib/utils/inlined_string#inlinedstring "Direct link to inlinedstring")
+## `InlinedString`
 
 A string that performs small-string optimization to avoid heap allocations for short strings.
 
@@ -18,7 +18,7 @@ A string that performs small-string optimization to avoid heap allocations for s
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/utils/inlined_string#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -40,7 +40,7 @@ Construct a new small string by taking ownership of an existing heap-allocated S
 
 - ​**heap\_string** (`String`): The heap string to take ownership of.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/utils/inlined_string#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, other: StringLiteral) -> Self`
 
@@ -78,7 +78,7 @@ Construct a string by appending another string at the end of this string.
 
 A new string containing the concatenation of `self` and `other`.
 
-### `__iadd__`[​](https://docs.modular.com/mojo/stdlib/utils/inlined_string#__iadd__ "Direct link to __iadd__")
+### `__iadd__`
 
 `__iadd__(inout self: Self, literal: StringLiteral)`
 
@@ -104,15 +104,15 @@ Appends another string to this string.
 
 - ​**strref** (`StringRef`): The string to append.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/utils/inlined_string#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/utils/inlined_string#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
-### `as_ptr`[​](https://docs.modular.com/mojo/stdlib/utils/inlined_string#as_ptr "Direct link to as_ptr")
+### `as_ptr`
 
 `as_ptr(self: Self) -> DTypePointer[si8, 0]`
 

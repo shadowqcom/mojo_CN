@@ -8,7 +8,7 @@ You can import these APIs from the `math` package. For example:
 from math import mul
 ```
 
-## `mod`[​](https://docs.modular.com/mojo/stdlib/math/math#mod "Direct link to mod")
+## `mod`
 
 `mod[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -28,7 +28,7 @@ Performs elementwise modulo operation of two SIMD vectors.
 
 The remainder of x divided by y.
 
-## `mul`[​](https://docs.modular.com/mojo/stdlib/math/math#mul "Direct link to mul")
+## `mul`
 
 `mul[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -48,7 +48,7 @@ Performs elementwise multiplication of two SIMD vectors.
 
 Elementwise multiplication of x and y.
 
-## `sub`[​](https://docs.modular.com/mojo/stdlib/math/math#sub "Direct link to sub")
+## `sub`
 
 `sub[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -68,7 +68,7 @@ Performs elementwise subtraction of two SIMD vectors.
 
 Elementwise subtraction of SIMD vector y x - y).
 
-## `add`[​](https://docs.modular.com/mojo/stdlib/math/math#add "Direct link to add")
+## `add`
 
 `add[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -88,7 +88,7 @@ Performs elementwise addition of two SIMD vectors.
 
 Elementwise addition of x and y.
 
-## `div`[​](https://docs.modular.com/mojo/stdlib/math/math#div "Direct link to div")
+## `div`
 
 `div[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -108,7 +108,7 @@ Performs elementwise division of two SIMD vectors.
 
 Elementwise division of SIMD vector x by SIMD vector y (this is x / y).
 
-## `clamp`[​](https://docs.modular.com/mojo/stdlib/math/math#clamp "Direct link to clamp")
+## `clamp`
 
 `clamp[type: DType, simd_width: Int](x: SIMD[type, simd_width], lower_bound: SIMD[type, simd_width], upper_bound: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -131,7 +131,7 @@ Clamp cuts values in the input SIMD vector off at the upper bound and lower boun
 
 A new SIMD vector containing x clamped to be within lower\_bound and upper\_bound.
 
-## `abs`[​](https://docs.modular.com/mojo/stdlib/math/math#abs "Direct link to abs")
+## `abs`
 
 `abs(x: Int) -> Int`
 
@@ -179,7 +179,7 @@ Performs elementwise absolute value on the elements of a SIMD vector.
 
 The elementwise absolute value of x.
 
-## `rotate_bits_left`[​](https://docs.modular.com/mojo/stdlib/math/math#rotate_bits_left "Direct link to rotate_bits_left")
+## `rotate_bits_left`
 
 `rotate_bits_left[shift: Int](x: Int) -> Int`
 
@@ -223,7 +223,7 @@ Shifts bits to the left by `shift` positions (with wrap-around) for each element
 
 The SIMD vector with each element's bits shifted to the left by `shift` bits (with wrap-around).
 
-## `rotate_bits_right`[​](https://docs.modular.com/mojo/stdlib/math/math#rotate_bits_right "Direct link to rotate_bits_right")
+## `rotate_bits_right`
 
 `rotate_bits_right[shift: Int](x: Int) -> Int`
 
@@ -267,7 +267,7 @@ Shifts bits to the right by `shift` positions (with wrap-around) for each elemen
 
 The SIMD vector with each element's bits shifted to the right by `shift` bits (with wrap-around).
 
-## `rotate_left`[​](https://docs.modular.com/mojo/stdlib/math/math#rotate_left "Direct link to rotate_left")
+## `rotate_left`
 
 `rotate_left[shift: Int](x: Int) -> Int`
 
@@ -311,7 +311,7 @@ Shifts the elements of a SIMD vector to the left by `shift` elements (with wrap-
 
 The SIMD vector rotated to the left by `shift` elements (with wrap-around).
 
-## `rotate_right`[​](https://docs.modular.com/mojo/stdlib/math/math#rotate_right "Direct link to rotate_right")
+## `rotate_right`
 
 `rotate_right[shift: Int](x: Int) -> Int`
 
@@ -355,7 +355,7 @@ Shifts the elements of a SIMD vector to the right by `shift` elements (with wrap
 
 The SIMD vector rotated to the right by `shift` elements (with wrap-around).
 
-## `floor`[​](https://docs.modular.com/mojo/stdlib/math/math#floor "Direct link to floor")
+## `floor`
 
 `floor[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -374,7 +374,7 @@ Performs elementwise floor on the elements of a SIMD vector.
 
 The elementwise floor of x.
 
-## `ceil`[​](https://docs.modular.com/mojo/stdlib/math/math#ceil "Direct link to ceil")
+## `ceil`
 
 `ceil[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -393,7 +393,7 @@ Performs elementwise ceiling on the elements of a SIMD vector.
 
 The elementwise ceiling of x.
 
-## `ceildiv`[​](https://docs.modular.com/mojo/stdlib/math/math#ceildiv "Direct link to ceildiv")
+## `ceildiv`
 
 `ceildiv(x: Int, y: Int) -> Int`
 
@@ -408,7 +408,7 @@ Return the rounded-up result of dividing x by y.
 
 The ceiling of dividing x by y.
 
-## `trunc`[​](https://docs.modular.com/mojo/stdlib/math/math#trunc "Direct link to trunc")
+## `trunc`
 
 `trunc[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -427,7 +427,7 @@ Performs elementwise truncation on the elements of a SIMD vector.
 
 The elementwise truncation of x.
 
-## `round`[​](https://docs.modular.com/mojo/stdlib/math/math#round "Direct link to round")
+## `round`
 
 `round[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -448,7 +448,7 @@ This rounding goes to the nearest integer with ties away from zero.
 
 The elementwise rounding of x.
 
-## `roundeven`[​](https://docs.modular.com/mojo/stdlib/math/math#roundeven "Direct link to roundeven")
+## `roundeven`
 
 `roundeven[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -469,7 +469,7 @@ This rounding goes to the nearest integer with ties toward the nearest even inte
 
 The elementwise banker's rounding of x.
 
-## `round_half_down`[​](https://docs.modular.com/mojo/stdlib/math/math#round_half_down "Direct link to round_half_down")
+## `round_half_down`
 
 `round_half_down[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -488,7 +488,7 @@ Rounds ties towards the smaller integer".
 
 The elementwise rounding of x evaluating ties towards the smaller integer.
 
-## `round_half_up`[​](https://docs.modular.com/mojo/stdlib/math/math#round_half_up "Direct link to round_half_up")
+## `round_half_up`
 
 `round_half_up[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -507,7 +507,7 @@ Rounds ties towards the larger integer".
 
 The elementwise rounding of x evaluating ties towards the larger integer.
 
-## `sqrt`[​](https://docs.modular.com/mojo/stdlib/math/math#sqrt "Direct link to sqrt")
+## `sqrt`
 
 `sqrt(x: Int) -> Int`
 
@@ -538,7 +538,7 @@ Performs elementwise square root on the elements of a SIMD vector.
 
 The elementwise square root of x.
 
-## `rsqrt`[​](https://docs.modular.com/mojo/stdlib/math/math#rsqrt "Direct link to rsqrt")
+## `rsqrt`
 
 `rsqrt[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -557,7 +557,7 @@ Performs elementwise reciprocal square root on the elements of a SIMD vector.
 
 The elementwise reciprocal square root of x.
 
-## `exp2`[​](https://docs.modular.com/mojo/stdlib/math/math#exp2 "Direct link to exp2")
+## `exp2`
 
 `exp2[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -576,7 +576,7 @@ Computes elementwise 2 raised to the power of n, where n is an element of the in
 
 Vector containing 2n2^n2n computed elementwise, where n is an element in the input SIMD vector.
 
-## `ldexp`[​](https://docs.modular.com/mojo/stdlib/math/math#ldexp "Direct link to ldexp")
+## `ldexp`
 
 `ldexp[type: DType, simd_width: Int](x: SIMD[type, simd_width], exp: SIMD[si32, simd_width]) -> SIMD[type, simd_width]`
 
@@ -598,7 +598,7 @@ The ldexp function multiplies a floating point value x by the number 2 raised to
 
 Vector containing elementwise result of ldexp on x and exp.
 
-## `exp`[​](https://docs.modular.com/mojo/stdlib/math/math#exp "Direct link to exp")
+## `exp`
 
 `exp[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -619,7 +619,7 @@ Given an input vector XXX and an output vector YYY, sets Yi\=eXiY\_i = e^{X\_i}Y
 
 A SIMD vector containing eee raised to the power XiX\_iXi​ where XiX\_iXi​ is an element in the input SIMD vector.
 
-## `frexp`[​](https://docs.modular.com/mojo/stdlib/math/math#frexp "Direct link to frexp")
+## `frexp`
 
 `frexp[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> StaticTuple[SIMD[type, simd_width], 2]`
 
@@ -642,7 +642,7 @@ Breaks floating point values into a fractional part and an exponent part.
 
 A tuple of two SIMD vectors containing the fractional and exponent parts of the input floating point values.
 
-## `log`[​](https://docs.modular.com/mojo/stdlib/math/math#log "Direct link to log")
+## `log`
 
 `log[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -661,7 +661,7 @@ Performs elementwise natural log (base E) of a SIMD vector.
 
 Vector containing result of performing natural log base E on x.
 
-## `log2`[​](https://docs.modular.com/mojo/stdlib/math/math#log2 "Direct link to log2")
+## `log2`
 
 `log2[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -680,7 +680,7 @@ Performs elementwise log (base 2) of a SIMD vector.
 
 Vector containing result of performing log base 2 on x.
 
-## `copysign`[​](https://docs.modular.com/mojo/stdlib/math/math#copysign "Direct link to copysign")
+## `copysign`
 
 `copysign[type: DType, simd_width: Int](magnitude: SIMD[type, simd_width], sign: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -700,7 +700,7 @@ Returns a value with the magnitude of the first operand and the sign of the seco
 
 Copies the sign from sign to magnitude.
 
-## `erf`[​](https://docs.modular.com/mojo/stdlib/math/math#erf "Direct link to erf")
+## `erf`
 
 `erf[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -719,7 +719,7 @@ Performs the elementwise Erf on a SIMD vector.
 
 The result of the elementwise Erf operation.
 
-## `tanh`[​](https://docs.modular.com/mojo/stdlib/math/math#tanh "Direct link to tanh")
+## `tanh`
 
 `tanh[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -738,7 +738,7 @@ Performs elementwise evaluation of the tanh function.
 
 The result of the elementwise tanh operation.
 
-## `isclose`[​](https://docs.modular.com/mojo/stdlib/math/math#isclose "Direct link to isclose")
+## `isclose`
 
 `isclose[type: DType, simd_width: Int](a: SIMD[type, simd_width], b: SIMD[type, simd_width], *, atol: SIMD[type, 1], rtol: SIMD[type, 1]) -> SIMD[bool, simd_width]`
 
@@ -764,7 +764,7 @@ Unlike Pythons's `math.isclose`, this implementation is symmetric. I.e. `isclose
 
 A boolean vector where a and b are equal within the specified tolerance.
 
-## `all_true`[​](https://docs.modular.com/mojo/stdlib/math/math#all_true "Direct link to all_true")
+## `all_true`
 
 `all_true[simd_width: Int](val: SIMD[bool, simd_width]) -> Bool`
 
@@ -782,7 +782,7 @@ Returns True if all elements in the SIMD vector are True and False otherwise.
 
 True if all values in the SIMD vector are True and False otherwise.
 
-## `any_true`[​](https://docs.modular.com/mojo/stdlib/math/math#any_true "Direct link to any_true")
+## `any_true`
 
 `any_true[simd_width: Int](val: SIMD[bool, simd_width]) -> Bool`
 
@@ -800,7 +800,7 @@ Returns True if any elements in the SIMD vector is True and False otherwise.
 
 True if any values in the SIMD vector is True and False otherwise.
 
-## `none_true`[​](https://docs.modular.com/mojo/stdlib/math/math#none_true "Direct link to none_true")
+## `none_true`
 
 `none_true[simd_width: Int](val: SIMD[bool, simd_width]) -> Bool`
 
@@ -818,7 +818,7 @@ Returns True if all element in the SIMD vector are False and False otherwise.
 
 True if all values in the SIMD vector are False and False otherwise.
 
-## `reduce_bit_count`[​](https://docs.modular.com/mojo/stdlib/math/math#reduce_bit_count "Direct link to reduce_bit_count")
+## `reduce_bit_count`
 
 `reduce_bit_count[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> Int`
 
@@ -841,7 +841,7 @@ The input must be either integral or boolean type.
 
 Count of set bits across all elements of the vector.
 
-## `iota`[​](https://docs.modular.com/mojo/stdlib/math/math#iota "Direct link to iota")
+## `iota`
 
 `iota[type: DType, simd_width: Int]() -> SIMD[type, simd_width]`
 
@@ -915,7 +915,7 @@ The function doesn't return anything, the vector is updated inplace.
 - ​**v** (`List[Int]`): The vector to fill.
 - ​**offset** (`Int`): The value to fill at index 0.
 
-## `is_power_of_2`[​](https://docs.modular.com/mojo/stdlib/math/math#is_power_of_2 "Direct link to is_power_of_2")
+## `is_power_of_2`
 
 `is_power_of_2[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -948,7 +948,7 @@ Checks whether an integer is a power of two.
 
 True if val is a power of two, otherwise False.
 
-## `is_odd`[​](https://docs.modular.com/mojo/stdlib/math/math#is_odd "Direct link to is_odd")
+## `is_odd`
 
 `is_odd(val: Int) -> Bool`
 
@@ -981,7 +981,7 @@ An element of the result SIMD vector will be True if the value is odd, and False
 
 A SIMD vector containing True if the corresponding element in val is odd, otherwise False.
 
-## `is_even`[​](https://docs.modular.com/mojo/stdlib/math/math#is_even "Direct link to is_even")
+## `is_even`
 
 `is_even(val: Int) -> Bool`
 
@@ -1014,7 +1014,7 @@ An element of the result SIMD vector will be True if the value is even, and Fals
 
 A SIMD vector containing True if the corresponding element in val is even, otherwise False.
 
-## `fma`[​](https://docs.modular.com/mojo/stdlib/math/math#fma "Direct link to fma")
+## `fma`
 
 `fma(a: Int, b: Int, c: Int) -> Int`
 
@@ -1053,7 +1053,7 @@ Each element in the result SIMD vector is (Ai∗Bi)+Ci(A\_i \* B\_i) + C\_i(Ai�
 
 Elementwise `fma` of a, b and c.
 
-## `reciprocal`[​](https://docs.modular.com/mojo/stdlib/math/math#reciprocal "Direct link to reciprocal")
+## `reciprocal`
 
 `reciprocal[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1072,7 +1072,7 @@ Takes the elementwise reciprocal of a SIMD vector.
 
 A SIMD vector the elementwise reciprocal of x.
 
-## `identity`[​](https://docs.modular.com/mojo/stdlib/math/math#identity "Direct link to identity")
+## `identity`
 
 `identity[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1091,7 +1091,7 @@ Gets the identity of a SIMD vector.
 
 Identity of x, which is x.
 
-## `greater`[​](https://docs.modular.com/mojo/stdlib/math/math#greater "Direct link to greater")
+## `greater`
 
 `greater[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1113,7 +1113,7 @@ An element of the result SIMD vector will be True if the corresponding element i
 
 A SIMD vector containing True if the corresponding element in x is greater than the corresponding element in y, otherwise False.
 
-## `greater_equal`[​](https://docs.modular.com/mojo/stdlib/math/math#greater_equal "Direct link to greater_equal")
+## `greater_equal`
 
 `greater_equal[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1135,7 +1135,7 @@ An element of the result SIMD vector will be True if the corresponding element i
 
 A SIMD vector containing True if the corresponding element in x is greater than or equal to the corresponding element in y, otherwise False.
 
-## `less`[​](https://docs.modular.com/mojo/stdlib/math/math#less "Direct link to less")
+## `less`
 
 `less[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1157,7 +1157,7 @@ An element of the result SIMD vector will be True if the corresponding element i
 
 A SIMD vector containing True if the corresponding element in x is less than the corresponding element in y, otherwise False.
 
-## `less_equal`[​](https://docs.modular.com/mojo/stdlib/math/math#less_equal "Direct link to less_equal")
+## `less_equal`
 
 `less_equal[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1179,7 +1179,7 @@ An element of the result SIMD vector will be True if the corresponding element i
 
 A SIMD vector containing True if the corresponding element in x is less than or equal to the corresponding element in y, otherwise False.
 
-## `equal`[​](https://docs.modular.com/mojo/stdlib/math/math#equal "Direct link to equal")
+## `equal`
 
 `equal[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1201,7 +1201,7 @@ An element of the result SIMD vector will be True if the corresponding element i
 
 A SIMD vector containing True if the corresponding element in x is equal to the corresponding element in y, otherwise False.
 
-## `logical_and`[​](https://docs.modular.com/mojo/stdlib/math/math#logical_and "Direct link to logical_and")
+## `logical_and`
 
 `logical_and[simd_width: Int](x: SIMD[bool, simd_width], y: SIMD[bool, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1222,7 +1222,7 @@ An element of the result SIMD vector will be True if the corresponding elements 
 
 A SIMD vector containing True if the corresponding elements in x and y are both True, otherwise False.
 
-## `logical_not`[​](https://docs.modular.com/mojo/stdlib/math/math#logical_not "Direct link to logical_not")
+## `logical_not`
 
 `logical_not[simd_width: Int](x: SIMD[bool, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1242,7 +1242,7 @@ An element of the result SIMD vector will be True if the corresponding element i
 
 A SIMD vector containing True if the corresponding element in x is True, otherwise False.
 
-## `logical_xor`[​](https://docs.modular.com/mojo/stdlib/math/math#logical_xor "Direct link to logical_xor")
+## `logical_xor`
 
 `logical_xor[simd_width: Int](x: SIMD[bool, simd_width], y: SIMD[bool, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1263,7 +1263,7 @@ An element of the result SIMD vector will be True if only one of the correspondi
 
 A SIMD vector containing True if only one of the corresponding elements in x and y is True, otherwise False.
 
-## `not_equal`[​](https://docs.modular.com/mojo/stdlib/math/math#not_equal "Direct link to not_equal")
+## `not_equal`
 
 `not_equal[type: DType, simd_width: Int](x: SIMD[type, simd_width], y: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -1285,7 +1285,7 @@ An element of the result SIMD vector will be True if the corresponding element i
 
 A SIMD vector containing True if the corresponding element in x is not equal to the corresponding element in y, otherwise False.
 
-## `select`[​](https://docs.modular.com/mojo/stdlib/math/math#select "Direct link to select")
+## `select`
 
 `select[type: DType, simd_width: Int](cond: SIMD[bool, simd_width], true_case: SIMD[type, simd_width], false_case: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1306,7 +1306,7 @@ Selects the values of the true\_case or the false\_case based on the input boole
 
 A new vector of the form `[true_case[i] if cond[i] else false_case[i] in enumerate(self)]`.
 
-## `max`[​](https://docs.modular.com/mojo/stdlib/math/math#max "Direct link to max")
+## `max`
 
 `max(x: Int, y: Int) -> Int`
 
@@ -1341,7 +1341,7 @@ An element of the result SIMD vector will be the maximum of the corresponding el
 
 A SIMD vector containing the elementwise maximum of x and y.
 
-## `min`[​](https://docs.modular.com/mojo/stdlib/math/math#min "Direct link to min")
+## `min`
 
 `min(x: Int, y: Int) -> Int`
 
@@ -1376,7 +1376,7 @@ An element of the result SIMD vector will be the minimum of the corresponding el
 
 A SIMD vector containing the elementwise minimum of x and y.
 
-## `pow`[​](https://docs.modular.com/mojo/stdlib/math/math#pow "Direct link to pow")
+## `pow`
 
 `pow[type: DType, simd_width: Int](lhs: SIMD[type, simd_width], rhs: Int) -> SIMD[type, simd_width]`
 
@@ -1443,7 +1443,7 @@ Computes the elementwise power where the exponent is an integer known at compile
 
 A SIMD vector containing elementwise x raised to the power of n.
 
-## `div_ceil`[​](https://docs.modular.com/mojo/stdlib/math/math#div_ceil "Direct link to div_ceil")
+## `div_ceil`
 
 `div_ceil(numerator: Int, denominator: Int) -> Int`
 
@@ -1462,7 +1462,7 @@ Will raise an exception if denominator is zero.
 
 The ceiling of numerator divided by denominator.
 
-## `align_down`[​](https://docs.modular.com/mojo/stdlib/math/math#align_down "Direct link to align_down")
+## `align_down`
 
 `align_down(value: Int, alignment: Int) -> Int`
 
@@ -1481,7 +1481,7 @@ Will raise an exception if the alignment is zero.
 
 Closest multiple of the alignment that is less than or equal to the input value. In other words, floor(value / alignment) \* alignment.
 
-## `align_down_residual`[​](https://docs.modular.com/mojo/stdlib/math/math#align_down_residual "Direct link to align_down_residual")
+## `align_down_residual`
 
 `align_down_residual(value: Int, alignment: Int) -> Int`
 
@@ -1500,7 +1500,7 @@ Will raise an exception if the alignment is zero.
 
 The remainder after aligning down value to the closest multiple of alignment. In other words, value - align\_down(value, alignment).
 
-## `align_up`[​](https://docs.modular.com/mojo/stdlib/math/math#align_up "Direct link to align_up")
+## `align_up`
 
 `align_up(value: Int, alignment: Int) -> Int`
 
@@ -1519,7 +1519,7 @@ Will raise an exception if the alignment is zero.
 
 Closest multiple of the alignment that is greater than or equal to the input value. In other words, ceiling(value / alignment) \* alignment.
 
-## `acos`[​](https://docs.modular.com/mojo/stdlib/math/math#acos "Direct link to acos")
+## `acos`
 
 `acos[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1542,7 +1542,7 @@ The input must be a floating point type.
 
 The `acos` of the input.
 
-## `asin`[​](https://docs.modular.com/mojo/stdlib/math/math#asin "Direct link to asin")
+## `asin`
 
 `asin[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1565,7 +1565,7 @@ The input must be of floating point type.
 
 The `asin` of the input.
 
-## `atan`[​](https://docs.modular.com/mojo/stdlib/math/math#atan "Direct link to atan")
+## `atan`
 
 `atan[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1588,7 +1588,7 @@ The input must be of floating point type.
 
 The `atan` of the input.
 
-## `atan2`[​](https://docs.modular.com/mojo/stdlib/math/math#atan2 "Direct link to atan2")
+## `atan2`
 
 `atan2[type: DType, simd_width: Int](arg0: SIMD[type, simd_width], arg1: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1612,7 +1612,7 @@ The inputs must be of floating point type.
 
 The `atan2` of the inputs.
 
-## `cos`[​](https://docs.modular.com/mojo/stdlib/math/math#cos "Direct link to cos")
+## `cos`
 
 `cos[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1635,7 +1635,7 @@ The input must be of floating point type.
 
 The `cos` of the input.
 
-## `sin`[​](https://docs.modular.com/mojo/stdlib/math/math#sin "Direct link to sin")
+## `sin`
 
 `sin[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1658,7 +1658,7 @@ The input must be of floating point type.
 
 The `sin` of the input.
 
-## `tan`[​](https://docs.modular.com/mojo/stdlib/math/math#tan "Direct link to tan")
+## `tan`
 
 `tan[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1681,7 +1681,7 @@ The input must be of floating point type.
 
 The `tan` of the input.
 
-## `acosh`[​](https://docs.modular.com/mojo/stdlib/math/math#acosh "Direct link to acosh")
+## `acosh`
 
 `acosh[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1704,7 +1704,7 @@ The input must be of floating point type.
 
 The `acosh` of the input.
 
-## `asinh`[​](https://docs.modular.com/mojo/stdlib/math/math#asinh "Direct link to asinh")
+## `asinh`
 
 `asinh[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1727,7 +1727,7 @@ The input must be of floating point type.
 
 The `asinh` of the input.
 
-## `atanh`[​](https://docs.modular.com/mojo/stdlib/math/math#atanh "Direct link to atanh")
+## `atanh`
 
 `atanh[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1750,7 +1750,7 @@ The input must be of floating point type.
 
 The `atanh` of the input.
 
-## `cosh`[​](https://docs.modular.com/mojo/stdlib/math/math#cosh "Direct link to cosh")
+## `cosh`
 
 `cosh[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1773,7 +1773,7 @@ The input must be of floating point type.
 
 The `cosh` of the input.
 
-## `sinh`[​](https://docs.modular.com/mojo/stdlib/math/math#sinh "Direct link to sinh")
+## `sinh`
 
 `sinh[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1796,7 +1796,7 @@ The input must be of floating point type.
 
 The `sinh` of the input.
 
-## `expm1`[​](https://docs.modular.com/mojo/stdlib/math/math#expm1 "Direct link to expm1")
+## `expm1`
 
 `expm1[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1819,7 +1819,7 @@ The input must be of floating point type.
 
 The `expm1` of the input.
 
-## `log10`[​](https://docs.modular.com/mojo/stdlib/math/math#log10 "Direct link to log10")
+## `log10`
 
 `log10[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1842,7 +1842,7 @@ The input must be of floating point type.
 
 The `log10` of the input.
 
-## `log1p`[​](https://docs.modular.com/mojo/stdlib/math/math#log1p "Direct link to log1p")
+## `log1p`
 
 `log1p[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1865,7 +1865,7 @@ The input must be of floating point type.
 
 The `log1p` of the input.
 
-## `logb`[​](https://docs.modular.com/mojo/stdlib/math/math#logb "Direct link to logb")
+## `logb`
 
 `logb[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1888,7 +1888,7 @@ The input must be of floating point type.
 
 The `logb` of the input.
 
-## `cbrt`[​](https://docs.modular.com/mojo/stdlib/math/math#cbrt "Direct link to cbrt")
+## `cbrt`
 
 `cbrt[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1911,7 +1911,7 @@ The input must be of floating point type.
 
 The `cbrt` of the input.
 
-## `hypot`[​](https://docs.modular.com/mojo/stdlib/math/math#hypot "Direct link to hypot")
+## `hypot`
 
 `hypot[type: DType, simd_width: Int](arg0: SIMD[type, simd_width], arg1: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1935,7 +1935,7 @@ The inputs must be of floating point type.
 
 The `hypot` of the inputs.
 
-## `erfc`[​](https://docs.modular.com/mojo/stdlib/math/math#erfc "Direct link to erfc")
+## `erfc`
 
 `erfc[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1958,7 +1958,7 @@ The input must be of floating point type.
 
 The `erfc` of the input.
 
-## `lgamma`[​](https://docs.modular.com/mojo/stdlib/math/math#lgamma "Direct link to lgamma")
+## `lgamma`
 
 `lgamma[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -1981,7 +1981,7 @@ The input must be of floating point type.
 
 The `lgamma` of the input.
 
-## `tgamma`[​](https://docs.modular.com/mojo/stdlib/math/math#tgamma "Direct link to tgamma")
+## `tgamma`
 
 `tgamma[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2004,7 +2004,7 @@ The input must be of floating point type.
 
 The `tgamma` of the input.
 
-## `nearbyint`[​](https://docs.modular.com/mojo/stdlib/math/math#nearbyint "Direct link to nearbyint")
+## `nearbyint`
 
 `nearbyint[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2027,7 +2027,7 @@ The input must be of floating point type.
 
 The `nearbyint` of the input.
 
-## `rint`[​](https://docs.modular.com/mojo/stdlib/math/math#rint "Direct link to rint")
+## `rint`
 
 `rint[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2050,7 +2050,7 @@ The input must be of floating point type.
 
 The `rint` of the input.
 
-## `remainder`[​](https://docs.modular.com/mojo/stdlib/math/math#remainder "Direct link to remainder")
+## `remainder`
 
 `remainder[type: DType, simd_width: Int](arg0: SIMD[type, simd_width], arg1: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2074,7 +2074,7 @@ The inputs must be of floating point type.
 
 The `remainder` of the inputs.
 
-## `nextafter`[​](https://docs.modular.com/mojo/stdlib/math/math#nextafter "Direct link to nextafter")
+## `nextafter`
 
 `nextafter[type: DType, simd_width: Int](arg0: SIMD[type, simd_width], arg1: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2098,7 +2098,7 @@ The inputs must be of floating point type.
 
 The `nextafter` of the inputs.
 
-## `j0`[​](https://docs.modular.com/mojo/stdlib/math/math#j0 "Direct link to j0")
+## `j0`
 
 `j0[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2121,7 +2121,7 @@ The input vector must be of floating point type.
 
 A vector containing the computed value for each value in the input vector.
 
-## `j1`[​](https://docs.modular.com/mojo/stdlib/math/math#j1 "Direct link to j1")
+## `j1`
 
 `j1[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2144,7 +2144,7 @@ The input vector must be of floating point type.
 
 A vector containing the computed value for each value in the input vector.
 
-## `y0`[​](https://docs.modular.com/mojo/stdlib/math/math#y0 "Direct link to y0")
+## `y0`
 
 `y0[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2167,7 +2167,7 @@ The input vector must be of floating point type.
 
 A vector containing the computed value for each value in the input vector.
 
-## `y1`[​](https://docs.modular.com/mojo/stdlib/math/math#y1 "Direct link to y1")
+## `y1`
 
 `y1[type: DType, simd_width: Int](arg: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2190,7 +2190,7 @@ The input vector must be of floating point type.
 
 A vector containing the computed value for each value in the input vector.
 
-## `scalb`[​](https://docs.modular.com/mojo/stdlib/math/math#scalb "Direct link to scalb")
+## `scalb`
 
 `scalb[type: DType, simd_width: Int](arg0: SIMD[type, simd_width], arg1: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 
@@ -2214,7 +2214,7 @@ The inputs must be of floating point type.
 
 The `scalb` of the inputs.
 
-## `gcd`[​](https://docs.modular.com/mojo/stdlib/math/math#gcd "Direct link to gcd")
+## `gcd`
 
 `gcd(a: Int, b: Int) -> Int`
 
@@ -2233,7 +2233,7 @@ The inputs must be non-negative integers.
 
 The `gcd` of the inputs.
 
-## `lcm`[​](https://docs.modular.com/mojo/stdlib/math/math#lcm "Direct link to lcm")
+## `lcm`
 
 `lcm(a: Int, b: Int) -> Int`
 
@@ -2252,7 +2252,7 @@ The inputs must be non-negative integers.
 
 The least common multiple of the inputs.
 
-## `factorial`[​](https://docs.modular.com/mojo/stdlib/math/math#factorial "Direct link to factorial")
+## `factorial`
 
 `factorial(n: Int) -> Int`
 
@@ -2266,7 +2266,7 @@ Computes the factorial of the integer.
 
 The factorial of the input.
 
-## `nan`[​](https://docs.modular.com/mojo/stdlib/math/math#nan "Direct link to nan")
+## `nan`
 
 `nan[type: DType]() -> SIMD[type, 1]`
 
@@ -2284,7 +2284,7 @@ Can only be used for FP dtypes.
 
 The NaN value of the given dtype.
 
-## `isnan`[​](https://docs.modular.com/mojo/stdlib/math/math#isnan "Direct link to isnan")
+## `isnan`
 
 `isnan[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -2303,7 +2303,7 @@ Checks if the value is Not a Number (NaN).
 
 True if val is NaN and False otherwise.
 
-## `isinf`[​](https://docs.modular.com/mojo/stdlib/math/math#isinf "Direct link to isinf")
+## `isinf`
 
 `isinf[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -2324,7 +2324,7 @@ This is always False for non-FP data types.
 
 True if val is infinite and False otherwise.
 
-## `isfinite`[​](https://docs.modular.com/mojo/stdlib/math/math#isfinite "Direct link to isfinite")
+## `isfinite`
 
 `isfinite[type: DType, simd_width: Int](val: SIMD[type, simd_width]) -> SIMD[bool, simd_width]`
 
@@ -2345,7 +2345,7 @@ This is always True for non-FP data types.
 
 True if val is finite and False otherwise.
 
-## `divmod`[​](https://docs.modular.com/mojo/stdlib/math/math#divmod "Direct link to divmod")
+## `divmod`
 
 `divmod(lhs: Int, rhs: Int) -> StaticIntTuple[2]`
 
@@ -2360,7 +2360,7 @@ Computes both the quotient and remainder using integer division.
 
 The quotient and remainder as a tuple `(lhs // rhs, lhs % rhs)`.
 
-## `ulp`[​](https://docs.modular.com/mojo/stdlib/math/math#ulp "Direct link to ulp")
+## `ulp`
 
 `ulp[type: DType, simd_width: Int](x: SIMD[type, simd_width]) -> SIMD[type, simd_width]`
 

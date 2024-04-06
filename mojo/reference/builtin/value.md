@@ -4,7 +4,7 @@ Defines core value traits.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `Movable`[​](https://docs.modular.com/mojo/stdlib/builtin/value#movable "Direct link to movable")
+## `Movable`
 
 The Movable trait denotes a type whose value can be moved.
 
@@ -30,7 +30,7 @@ moving
 
 **Methods:**
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/value#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: T, owned existing: T, /)`
 
@@ -40,7 +40,7 @@ Create a new instance of the value by moving the value of another.
 
 - ​**existing** (`T`): The value to move.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/value#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -48,7 +48,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-## `Copyable`[​](https://docs.modular.com/mojo/stdlib/builtin/value#copyable "Direct link to copyable")
+## `Copyable`
 
 The Copyable trait denotes a type whose value can be copied.
 
@@ -74,7 +74,7 @@ copying value
 
 **Methods:**
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/value#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: T, existing: T, /)`
 
@@ -84,7 +84,7 @@ Create a new instance of the value by copying an existing one.
 
 - ​**existing** (`T`): The value to copy.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/value#__del__-1 "Direct link to __del__-1")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -92,7 +92,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-## `CollectionElement`[​](https://docs.modular.com/mojo/stdlib/builtin/value#collectionelement "Direct link to collectionelement")
+## `CollectionElement`
 
 The CollectionElement trait denotes a trait composition of the `Copyable` and `Movable` traits.
 
@@ -104,7 +104,7 @@ This is useful to have as a named entity since Mojo does not currently support a
 
 **Methods:**
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/value#__copyinit__-1 "Direct link to __copyinit__-1")
+### `__copyinit__`
 
 `__copyinit__(inout self: T, existing: T, /)`
 
@@ -114,7 +114,7 @@ Create a new instance of the value by copying an existing one.
 
 - ​**existing** (`T`): The value to copy.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/value#__moveinit__-1 "Direct link to __moveinit__-1")
+### `__moveinit__`
 
 `__moveinit__(inout self: T, owned existing: T, /)`
 
@@ -124,7 +124,7 @@ Create a new instance of the value by moving the value of another.
 
 - ​**existing** (`T`): The value to move.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/value#__del__-2 "Direct link to __del__-2")
+### `__del__`
 
 `__del__(owned self: T, /)`
 

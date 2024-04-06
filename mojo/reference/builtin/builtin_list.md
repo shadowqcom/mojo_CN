@@ -4,7 +4,7 @@ Implements the ListLiteral class.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `ListLiteral`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#listliteral "Direct link to listliteral")
+## `ListLiteral`
 
 The type of a literal heterogenous list expression.
 
@@ -24,7 +24,7 @@ A list consists of zero or more values, separated by commas.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(*args: Ts) -> Self`
 
@@ -38,7 +38,7 @@ Construct the list literal from the given values.
 
 The constructed ListLiteral.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -48,7 +48,7 @@ Get the list length.
 
 The length of this ListLiteral.
 
-### `get`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#get "Direct link to get")
+### `get`
 
 `get[i: Int, T: AnyRegType](self: Self) -> T`
 
@@ -63,7 +63,7 @@ Get a list element at the given index.
 
 The element at the given index.
 
-## `VariadicList`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#variadiclist "Direct link to variadiclist")
+## `VariadicList`
 
 A utility class to access variadic function arguments. Provides a "list" view of the function argument so that the size of the argument list and each individual argument can be accessed.
 
@@ -87,7 +87,7 @@ A utility class to access variadic function arguments. Provides a "list" view of
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__init__-1 "Direct link to __init__-1")
+### `__init__`
 
 `__init__(*value: *"type") -> Self`
 
@@ -113,7 +113,7 @@ Constructs a VariadicList from a variadic argument type.
 
 The VariadicList constructed.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, index: Int) -> *"type"`
 
@@ -127,7 +127,7 @@ Gets a single element on the variadic list.
 
 The element on the list corresponding to the given index.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__len__-1 "Direct link to __len__-1")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -137,7 +137,7 @@ Gets the size of the list.
 
 The number of elements on the variadic list.
 
-### `__iter__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__iter__ "Direct link to __iter__")
+### `__iter__`
 
 `__iter__(self: Self) -> _VariadicListIter[*"type"]`
 
@@ -147,7 +147,7 @@ Iterate over the list.
 
 An iterator to the start of the list.
 
-## `VariadicListMem`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#variadiclistmem "Direct link to variadiclistmem")
+## `VariadicListMem`
 
 A utility class to access variadic function arguments of memory-only types that may have ownership. It exposes references to the elements in a way that can be enumerated. Each element may be accessed with `elt[]`.
 
@@ -179,7 +179,7 @@ A utility class to access variadic function arguments of memory-only types that 
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__init__-2 "Direct link to __init__-2")
+### `__init__`
 
 `__init__(inout self: Self, *value: element_type)`
 
@@ -205,7 +205,7 @@ Constructs a VariadicList from a variadic argument type.
 
 - ​**value** (`*element_type`): The variadic argument to construct the list with.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: Self, owned existing: Self)`
 
@@ -215,13 +215,13 @@ Moves constructor.
 
 - ​**existing** (`Self`): The existing VariadicListMem.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: Self)`
 
 Destructor that releases elements if owned.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__getitem__-1 "Direct link to __getitem__-1")
+### `__getitem__`
 
 `__getitem__(self: Self, index: Int) -> Reference[element_type, elt_is_mutable, lifetime]`
 
@@ -235,7 +235,7 @@ Gets a single element on the variadic list.
 
 A low-level pointer to the element on the list corresponding to the given index.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__len__-2 "Direct link to __len__-2")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -245,7 +245,7 @@ Gets the size of the list.
 
 The number of elements on the variadic list.
 
-### `__refitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__refitem__ "Direct link to __refitem__")
+### `__refitem__`
 
 `__refitem__(self: Self, index: Int) -> Reference[element_type, elt_is_mutable, {lifetime, (mutcast imm self)}]`
 
@@ -259,7 +259,7 @@ Gets a single element on the variadic list.
 
 A low-level pointer to the element on the list corresponding to the given index.
 
-### `__iter__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__iter__-1 "Direct link to __iter__-1")
+### `__iter__`
 
 `__iter__(self: Self) -> _VariadicListMemIter[element_type, elt_is_mutable, lifetime, self]`
 
@@ -269,7 +269,7 @@ Iterate over the list.
 
 An iterator to the start of the list.
 
-## `VariadicPack`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#variadicpack "Direct link to variadicpack")
+## `VariadicPack`
 
 A utility class to access variadic pack arguments and provide an API for doing things with them.
 
@@ -285,7 +285,7 @@ A utility class to access variadic pack arguments and provide an API for doing t
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__init__-3 "Direct link to __init__-3")
+### `__init__`
 
 `__init__(inout self: Self, value: !lit.ref.pack<:variadic<trait<_stdlib::_builtin::_anytype::_AnyType>> element_types, mut=elt_is_mutable, lifetime>, is_owned: Bool)`
 
@@ -296,13 +296,13 @@ Constructs a VariadicPack from the internal representation.
 - ​**value** (`!lit.ref.pack<:variadic<trait<_stdlib::_builtin::_anytype::_AnyType>> element_types, mut=elt_is_mutable, lifetime>`): The argument to construct the pack with.
 - ​**is\_owned** (`Bool`): Whether this is an 'owned' pack or 'inout'/'borrowed'.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__del__-1 "Direct link to __del__-1")
+### `__del__`
 
 `__del__(owned self: Self)`
 
 Destructor that releases elements if owned.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#__len__-3 "Direct link to __len__-3")
+### `__len__`
 
 `static __len__() -> Int`
 
@@ -320,7 +320,7 @@ Return the VariadicPack length.
 
 The number of elements in the variadic pack.
 
-### `get_element`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#get_element "Direct link to get_element")
+### `get_element`
 
 `get_element[index: Int](self: Self) -> Reference[element_types[index.value], elt_is_mutable, lifetime]`
 
@@ -334,7 +334,7 @@ Return a reference to an element of the pack.
 
 A reference to the element. The Reference's mutability follows the mutability of the pack argument convention.
 
-### `each`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_list#each "Direct link to each")
+### `each`
 
 `each[func: fn[AnyType]($0, /) -> None](self: Self)`
 

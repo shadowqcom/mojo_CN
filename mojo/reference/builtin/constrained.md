@@ -4,7 +4,7 @@ Implements compile time contraints.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `constrained`[​](https://docs.modular.com/mojo/stdlib/builtin/constrained#constrained "Direct link to constrained")
+## `constrained`
 
 `constrained[cond: Bool, msg: StringLiteral]()`
 

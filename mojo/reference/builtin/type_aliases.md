@@ -14,7 +14,7 @@ These are Mojo built-ins, so you don't need to import them.
 
 - ​`MutLifetime = lifetime<1>`: Mutable lifetime reference.
 
-## `AnyLifetime`[​](https://docs.modular.com/mojo/stdlib/builtin/type_aliases#anylifetime "Direct link to anylifetime")
+## `AnyLifetime`
 
 This represents a lifetime reference of potentially parametric type. TODO: This should be replaced with a parametric type alias.
 

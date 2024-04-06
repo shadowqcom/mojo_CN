@@ -8,7 +8,7 @@ You can import these APIs from the `memory` package. For example:
 from memory.anypointer import AnyPointer
 ```
 
-## `AnyPointer`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#anypointer "Direct link to anypointer")
+## `AnyPointer`
 
 This is a pointer type that can point to any generic value that is movable.
 
@@ -32,7 +32,7 @@ This is a pointer type that can point to any generic value that is movable.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -54,7 +54,7 @@ Create a pointer with the input value.
 
 A null pointer.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -64,7 +64,7 @@ Return true if the pointer is non-null.
 
 Whether the pointer is null.
 
-### `__lt__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__lt__ "Direct link to __lt__")
+### `__lt__`
 
 `__lt__(self: Self, rhs: Self) -> Bool`
 
@@ -78,7 +78,7 @@ Returns True if this pointer represents a lower address than rhs.
 
 True if this pointer represents a lower address and False otherwise.
 
-### `__le__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__le__ "Direct link to __le__")
+### `__le__`
 
 `__le__(self: Self, rhs: Self) -> Bool`
 
@@ -92,7 +92,7 @@ Returns True if this pointer represents a lower than or equal address than rhs.
 
 True if this pointer represents a lower address and False otherwise.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Bool`
 
@@ -106,7 +106,7 @@ Returns True if the two pointers are equal.
 
 True if the two pointers are equal and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Bool`
 
@@ -120,7 +120,7 @@ Returns True if the two pointers are not equal.
 
 True if the two pointers are not equal and False otherwise.
 
-### `__gt__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__gt__ "Direct link to __gt__")
+### `__gt__`
 
 `__gt__(self: Self, rhs: Self) -> Bool`
 
@@ -134,7 +134,7 @@ Returns True if this pointer represents a higher address than rhs.
 
 True if this pointer represents a higher than or equal address and False otherwise.
 
-### `__ge__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__ge__ "Direct link to __ge__")
+### `__ge__`
 
 `__ge__(self: Self, rhs: Self) -> Bool`
 
@@ -148,7 +148,7 @@ Returns True if this pointer represents a higher than or equal address than rhs.
 
 True if this pointer represents a higher than or equal address and False otherwise.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, offset: Int) -> Self`
 
@@ -162,7 +162,7 @@ Return a pointer at an offset from the current one.
 
 An offset pointer.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__(self: Self, offset: Int) -> Self`
 
@@ -176,7 +176,7 @@ Return a pointer at an offset from the current one.
 
 An offset pointer.
 
-### `alloc`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#alloc "Direct link to alloc")
+### `alloc`
 
 `static alloc(count: Int) -> Self`
 
@@ -190,7 +190,7 @@ Allocate an array with default alignment.
 
 The pointer to the newly allocated array.
 
-### `address_of`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#address_of "Direct link to address_of")
+### `address_of`
 
 `static address_of(inout arg: T) -> Self`
 
@@ -204,13 +204,13 @@ Gets the address of the argument.
 
 An AnyPointer which contains the address of the argument.
 
-### `free`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#free "Direct link to free")
+### `free`
 
 `free(self: Self)`
 
 Free the memory referenced by the pointer.
 
-### `bitcast`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#bitcast "Direct link to bitcast")
+### `bitcast`
 
 `bitcast[new_type: Movable](self: Self) -> AnyPointer[new_type]`
 
@@ -224,7 +224,7 @@ Bitcasts the pointer to a different type.
 
 A new pointer with the specified type and the same address, as the original pointer.
 
-### `take_value`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#take_value "Direct link to take_value")
+### `take_value`
 
 `take_value(self: Self) -> T`
 
@@ -238,7 +238,7 @@ This performs a _consuming_ move, ending the lifetime of the value stored in thi
 
 The value at the pointer.
 
-### `emplace_value`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#emplace_value "Direct link to emplace_value")
+### `emplace_value`
 
 `emplace_value(self: Self, owned value: T)`
 
@@ -250,7 +250,7 @@ The pointer memory location is assumed to contain uninitialized data, and conseq
 
 - ​**value** (`T`): The value to emplace.
 
-### `move_into`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#move_into "Direct link to move_into")
+### `move_into`
 
 `move_into(self: Self, dest: Self)`
 
@@ -266,7 +266,7 @@ Safety: \* `self` must not be null \* `self` must contain a valid, initialized i
 
 - ​**dest** (`Self`): Destination pointer that the value will be moved into.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
@@ -276,11 +276,11 @@ Returns the pointer address as an integer.
 
 The address of the pointer as an Int.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
-### `__refitem__`[​](https://docs.modular.com/mojo/stdlib/memory/anypointer#__refitem__ "Direct link to __refitem__")
+### `__refitem__`
 
 `__refitem__(self: Self) -> !lit.ref<:trait<_stdlib::_builtin::_value::_Movable> T, mut #lit.lifetime>`
 

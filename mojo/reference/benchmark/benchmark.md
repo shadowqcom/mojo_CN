@@ -76,7 +76,7 @@ r = benchmark.run[sleeper](1, 2, 3, 4)
 
 Note that the min total time will take precedence over max iterations
 
-## `Batch`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#batch "Direct link to batch")
+## `Batch`
 
 A batch of benchmarks, the benchmark.run() function works out how many iterations to run in each batch based the how long the previous iterations took.
 
@@ -92,7 +92,7 @@ A batch of benchmarks, the benchmark.run() function works out how many iteration
 
 **Methods:**
 
-### `mean`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#mean "Direct link to mean")
+### `mean`
 
 `mean(self: Self, unit: String) -> SIMD[f64, 1]`
 
@@ -106,7 +106,7 @@ Returns the average duration of the batch.
 
 The average duration of the batch.
 
-## `Unit`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#unit "Direct link to unit")
+## `Unit`
 
 Time Unit used by Benchmark Report.
 
@@ -122,7 +122,7 @@ Time Unit used by Benchmark Report.
 
 `AnyType`
 
-## `Report`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#report "Direct link to report")
+## `Report`
 
 Contains the average execution time, iterations, min and max of each batch.
 
@@ -140,7 +140,7 @@ Contains the average execution time, iterations, min and max of each batch.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -148,7 +148,7 @@ Default initializer for the Report.
 
 Sets all values to 0
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -158,7 +158,7 @@ Creates a shallow copy (it doesn't copy the data).
 
 - ​**existing** (`Self`): The `Report` to copy.
 
-### `iters`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#iters "Direct link to iters")
+### `iters`
 
 `iters(self: Self) -> Int`
 
@@ -168,7 +168,7 @@ The total benchmark iterations.
 
 The total benchmark iterations.
 
-### `duration`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#duration "Direct link to duration")
+### `duration`
 
 `duration(self: Self, unit: String) -> SIMD[f64, 1]`
 
@@ -182,7 +182,7 @@ The total duration it took to run all benchmarks.
 
 The total duration it took to run all benchmarks.
 
-### `mean`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#mean-1 "Direct link to mean-1")
+### `mean`
 
 `mean(self: Self, unit: String) -> SIMD[f64, 1]`
 
@@ -196,7 +196,7 @@ The average duration of all benchmark runs.
 
 The average duration of all benchmark runs.
 
-### `min`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#min "Direct link to min")
+### `min`
 
 `min(self: Self, unit: String) -> SIMD[f64, 1]`
 
@@ -210,7 +210,7 @@ The batch of benchmarks that was the fastest to run.
 
 The fastest duration out of all batches.
 
-### `max`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#max "Direct link to max")
+### `max`
 
 `max(self: Self, unit: String) -> SIMD[f64, 1]`
 
@@ -224,7 +224,7 @@ The batch of benchmarks that was the slowest to run.
 
 The slowest duration out of all batches.
 
-### `print`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#print "Direct link to print")
+### `print`
 
 `print(self: Self, unit: String)`
 
@@ -234,7 +234,7 @@ Prints out the shortened version of the report.
 
 - ​**unit** (`String`): The time unit to display for example: ns, ms, s (default `s`).
 
-### `print_full`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#print_full "Direct link to print_full")
+### `print_full`
 
 `print_full(self: Self, unit: String)`
 
@@ -244,7 +244,7 @@ Prints out the full version of the report with each batch of benchmark runs.
 
 - ​**unit** (`String`): The time unit to display for example: ns, ms, s (default `s`).
 
-## `run`[​](https://docs.modular.com/mojo/stdlib/benchmark/benchmark#run "Direct link to run")
+## `run`
 
 `run[func: fn() -> None](num_warmup: Int, max_iters: Int, min_runtime_secs: SIMD[f64, 1], max_runtime_secs: SIMD[f64, 1], max_batch_size: Int) -> Report`
 

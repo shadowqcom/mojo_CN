@@ -32,7 +32,7 @@ These are Mojo built-ins, so you don't need to import them.
 
 - ​`Float64 = SIMD[f64, 1]`: Represents a 64-bit floating point value.
 
-## `SIMD`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#simd "Direct link to simd")
+## `SIMD`
 
 Represents a small vector that is backed by a hardware vector element.
 
@@ -69,7 +69,7 @@ The size of the SIMD vector to be positive and a power of 2.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -181,7 +181,7 @@ The value is splatted across all the elements of the SIMD vector.
 
 SIMD vector whose elements have the specified value.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -191,7 +191,7 @@ Converts the SIMD vector into a boolean scalar value.
 
 True if all the elements in the SIMD vector are non-zero and False otherwise.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, idx: Int) -> SIMD[type, 1]`
 
@@ -205,7 +205,7 @@ Gets an element from the vector.
 
 The value at position `idx`.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__(inout self: Self, idx: Int, val: SIMD[type, 1])`
 
@@ -225,7 +225,7 @@ Sets an element in the vector.
 - ​**idx** (`Int`): The index to set.
 - ​**val** (`scalar<#lit.struct.extract<:_stdlib::_builtin::_dtype::_DType type, "value">>`): The value to set.
 
-### `__neg__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__neg__ "Direct link to __neg__")
+### `__neg__`
 
 `__neg__(self: Self) -> Self`
 
@@ -235,7 +235,7 @@ Defines the unary `-` operation.
 
 The negation of this SIMD vector.
 
-### `__pos__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__pos__ "Direct link to __pos__")
+### `__pos__`
 
 `__pos__(self: Self) -> Self`
 
@@ -245,7 +245,7 @@ Defines the unary `+` operation.
 
 This SIMD vector.
 
-### `__invert__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__invert__ "Direct link to __invert__")
+### `__invert__`
 
 `__invert__(self: Self) -> Self`
 
@@ -259,7 +259,7 @@ The element type of the SIMD vector must be boolean or integral.
 
 The `~self` value.
 
-### `__lt__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__lt__ "Direct link to __lt__")
+### `__lt__`
 
 `__lt__(self: Self, rhs: Self) -> SIMD[bool, size]`
 
@@ -273,7 +273,7 @@ Compares two SIMD vectors using less-than comparison.
 
 A new bool SIMD vector of the same size whose element at position `i` is True or False depending on the expression `self[i] < rhs[i]`.
 
-### `__le__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__le__ "Direct link to __le__")
+### `__le__`
 
 `__le__(self: Self, rhs: Self) -> SIMD[bool, size]`
 
@@ -287,7 +287,7 @@ Compares two SIMD vectors using less-than-or-equal comparison.
 
 A new bool SIMD vector of the same size whose element at position `i` is True or False depending on the expression `self[i] <= rhs[i]`.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> SIMD[bool, size]`
 
@@ -301,7 +301,7 @@ Compares two SIMD vectors using equal-to comparison.
 
 A new bool SIMD vector of the same size whose element at position `i` is True or False depending on the expression `self[i] == rhs[i]`.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> SIMD[bool, size]`
 
@@ -315,7 +315,7 @@ Compares two SIMD vectors using not-equal comparison.
 
 A new bool SIMD vector of the same size whose element at position `i` is True or False depending on the expression `self[i] != rhs[i]`.
 
-### `__gt__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__gt__ "Direct link to __gt__")
+### `__gt__`
 
 `__gt__(self: Self, rhs: Self) -> SIMD[bool, size]`
 
@@ -329,7 +329,7 @@ Compares two SIMD vectors using greater-than comparison.
 
 A new bool SIMD vector of the same size whose element at position `i` is True or False depending on the expression `self[i] > rhs[i]`.
 
-### `__ge__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__ge__ "Direct link to __ge__")
+### `__ge__`
 
 `__ge__(self: Self, rhs: Self) -> SIMD[bool, size]`
 
@@ -343,7 +343,7 @@ Compares two SIMD vectors using greater-than-or-equal comparison.
 
 A new bool SIMD vector of the same size whose element at position `i` is True or False depending on the expression `self[i] >= rhs[i]`.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, rhs: Self) -> Self`
 
@@ -357,7 +357,7 @@ Computes `self + rhs`.
 
 A new vector whose element at position `i` is computed as `self[i] + rhs[i]`.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__(self: Self, rhs: Self) -> Self`
 
@@ -371,7 +371,7 @@ Computes `self - rhs`.
 
 A new vector whose element at position `i` is computed as `self[i] - rhs[i]`.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, rhs: Self) -> Self`
 
@@ -385,7 +385,7 @@ Computes `self * rhs`.
 
 A new vector whose element at position `i` is computed as `self[i] * rhs[i]`.
 
-### `__truediv__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__truediv__ "Direct link to __truediv__")
+### `__truediv__`
 
 `__truediv__(self: Self, rhs: Self) -> Self`
 
@@ -399,7 +399,7 @@ Computes `self / rhs`.
 
 A new vector whose element at position `i` is computed as `self[i] / rhs[i]`.
 
-### `__floordiv__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__floordiv__ "Direct link to __floordiv__")
+### `__floordiv__`
 
 `__floordiv__(self: Self, rhs: Self) -> Self`
 
@@ -417,7 +417,7 @@ The element type of the SIMD vector must be numeric.
 
 `floor(self / rhs)` value.
 
-### `__mod__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__mod__ "Direct link to __mod__")
+### `__mod__`
 
 `__mod__(self: Self, rhs: Self) -> Self`
 
@@ -431,7 +431,7 @@ Returns the remainder of self divided by rhs.
 
 The remainder of dividing self by rhs.
 
-### `__pow__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__pow__ "Direct link to __pow__")
+### `__pow__`
 
 `__pow__(self: Self, rhs: Int) -> Self`
 
@@ -473,7 +473,7 @@ Computes the vector raised elementwise to the right hand side power.
 
 A SIMD vector where each element is raised to the power of the specified exponential value.
 
-### `__lshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__lshift__ "Direct link to __lshift__")
+### `__lshift__`
 
 `__lshift__(self: Self, rhs: Self) -> Self`
 
@@ -491,7 +491,7 @@ The element type of the SIMD vector must be integral.
 
 `self << rhs`.
 
-### `__rshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__rshift__ "Direct link to __rshift__")
+### `__rshift__`
 
 `__rshift__(self: Self, rhs: Self) -> Self`
 
@@ -509,7 +509,7 @@ The element type of the SIMD vector must be integral.
 
 `self >> rhs`.
 
-### `__and__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__and__ "Direct link to __and__")
+### `__and__`
 
 `__and__(self: Self, rhs: Self) -> Self`
 
@@ -527,7 +527,7 @@ The element type of the SIMD vector must be bool or integral.
 
 `self & rhs`.
 
-### `__or__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__or__ "Direct link to __or__")
+### `__or__`
 
 `__or__(self: Self, rhs: Self) -> Self`
 
@@ -545,7 +545,7 @@ The element type of the SIMD vector must be bool or integral.
 
 `self | rhs`.
 
-### `__xor__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__xor__ "Direct link to __xor__")
+### `__xor__`
 
 `__xor__(self: Self, rhs: Self) -> Self`
 
@@ -563,7 +563,7 @@ The element type of the SIMD vector must be bool or integral.
 
 `self ^ rhs`.
 
-### `__radd__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__radd__ "Direct link to __radd__")
+### `__radd__`
 
 `__radd__(self: Self, value: Self) -> Self`
 
@@ -577,7 +577,7 @@ Returns `value + self`.
 
 `value + self`.
 
-### `__rsub__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__rsub__ "Direct link to __rsub__")
+### `__rsub__`
 
 `__rsub__(self: Self, value: Self) -> Self`
 
@@ -591,7 +591,7 @@ Returns `value - self`.
 
 `value - self`.
 
-### `__rmul__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__rmul__ "Direct link to __rmul__")
+### `__rmul__`
 
 `__rmul__(self: Self, value: Self) -> Self`
 
@@ -605,7 +605,7 @@ Returns `value * self`.
 
 `value * self`.
 
-### `__rtruediv__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__rtruediv__ "Direct link to __rtruediv__")
+### `__rtruediv__`
 
 `__rtruediv__(self: Self, value: Self) -> Self`
 
@@ -619,7 +619,7 @@ Returns `value / self`.
 
 `value / self`.
 
-### `__rlshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__rlshift__ "Direct link to __rlshift__")
+### `__rlshift__`
 
 `__rlshift__(self: Self, value: Self) -> Self`
 
@@ -637,7 +637,7 @@ The element type of the SIMD vector must be integral.
 
 `value << self`.
 
-### `__rrshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__rrshift__ "Direct link to __rrshift__")
+### `__rrshift__`
 
 `__rrshift__(self: Self, value: Self) -> Self`
 
@@ -655,7 +655,7 @@ The element type of the SIMD vector must be integral.
 
 `value >> self`.
 
-### `__rand__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__rand__ "Direct link to __rand__")
+### `__rand__`
 
 `__rand__(self: Self, value: Self) -> Self`
 
@@ -673,7 +673,7 @@ The element type of the SIMD vector must be bool or integral.
 
 `value & self`.
 
-### `__ror__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__ror__ "Direct link to __ror__")
+### `__ror__`
 
 `__ror__(self: Self, value: Self) -> Self`
 
@@ -691,7 +691,7 @@ The element type of the SIMD vector must be bool or integral.
 
 `value | self`.
 
-### `__rxor__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__rxor__ "Direct link to __rxor__")
+### `__rxor__`
 
 `__rxor__(self: Self, value: Self) -> Self`
 
@@ -709,7 +709,7 @@ The element type of the SIMD vector must be bool or integral.
 
 `value ^ self`.
 
-### `__iadd__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__iadd__ "Direct link to __iadd__")
+### `__iadd__`
 
 `__iadd__(inout self: Self, rhs: Self)`
 
@@ -721,7 +721,7 @@ The vector is mutated where each element at position `i` is computed as `self[i]
 
 - ​**rhs** (`Self`): The rhs of the addition operation.
 
-### `__isub__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__isub__ "Direct link to __isub__")
+### `__isub__`
 
 `__isub__(inout self: Self, rhs: Self)`
 
@@ -733,7 +733,7 @@ The vector is mutated where each element at position `i` is computed as `self[i]
 
 - ​**rhs** (`Self`): The rhs of the operation.
 
-### `__imul__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__imul__ "Direct link to __imul__")
+### `__imul__`
 
 `__imul__(inout self: Self, rhs: Self)`
 
@@ -745,7 +745,7 @@ The vector is mutated where each element at position `i` is computed as `self[i]
 
 - ​**rhs** (`Self`): The rhs of the operation.
 
-### `__itruediv__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__itruediv__ "Direct link to __itruediv__")
+### `__itruediv__`
 
 `__itruediv__(inout self: Self, rhs: Self)`
 
@@ -757,7 +757,7 @@ The vector is mutated where each element at position `i` is computed as `self[i]
 
 - ​**rhs** (`Self`): The rhs of the operation.
 
-### `__ifloordiv__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__ifloordiv__ "Direct link to __ifloordiv__")
+### `__ifloordiv__`
 
 `__ifloordiv__(inout self: Self, rhs: Self)`
 
@@ -769,7 +769,7 @@ The vector is mutated where each element at position `i` is computed as `self[i]
 
 - ​**rhs** (`Self`): The rhs of the operation.
 
-### `__imod__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__imod__ "Direct link to __imod__")
+### `__imod__`
 
 `__imod__(inout self: Self, rhs: Self)`
 
@@ -781,7 +781,7 @@ The vector is mutated where each element at position `i` is computed as `self[i]
 
 - ​**rhs** (`Self`): The rhs of the operation.
 
-### `__ipow__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__ipow__ "Direct link to __ipow__")
+### `__ipow__`
 
 `__ipow__(inout self: Self, rhs: Int)`
 
@@ -793,7 +793,7 @@ The vector is mutated where each element at position `i` is computed as `pow(sel
 
 - ​**rhs** (`Int`): The rhs of the operation.
 
-### `__ilshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__ilshift__ "Direct link to __ilshift__")
+### `__ilshift__`
 
 `__ilshift__(inout self: Self, rhs: Self)`
 
@@ -807,7 +807,7 @@ The element type of the SIMD vector must be integral.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__irshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__irshift__ "Direct link to __irshift__")
+### `__irshift__`
 
 `__irshift__(inout self: Self, rhs: Self)`
 
@@ -821,7 +821,7 @@ The element type of the SIMD vector must be integral.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__iand__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__iand__ "Direct link to __iand__")
+### `__iand__`
 
 `__iand__(inout self: Self, rhs: Self)`
 
@@ -835,7 +835,7 @@ The element type of the SIMD vector must be bool or integral.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__ixor__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__ixor__ "Direct link to __ixor__")
+### `__ixor__`
 
 `__ixor__(inout self: Self, rhs: Self)`
 
@@ -849,7 +849,7 @@ The element type of the SIMD vector must be bool or integral.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__ior__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__ior__ "Direct link to __ior__")
+### `__ior__`
 
 `__ior__(inout self: Self, rhs: Self)`
 
@@ -863,7 +863,7 @@ The element type of the SIMD vector must be bool or integral.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -873,7 +873,7 @@ Gets the length of the SIMD vector.
 
 The length of the SIMD vector.
 
-### `splat`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#splat "Direct link to splat")
+### `splat`
 
 `static splat(x: Bool) -> Self`
 
@@ -899,7 +899,7 @@ Splats (broadcasts) the element onto the vector.
 
 A new SIMD vector whose elements are the same as the input value.
 
-### `cast`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#cast "Direct link to cast")
+### `cast`
 
 `cast[target: DType](self: Self) -> SIMD[target, size]`
 
@@ -913,7 +913,7 @@ Casts the elements of the SIMD vector to the target element type.
 
 A new SIMD vector whose elements have been casted to the target element type.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
@@ -927,7 +927,7 @@ The size of the SIMD vector must be 1.
 
 The value as an integer.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -937,7 +937,7 @@ Get the SIMD as a string.
 
 A string representation.
 
-### `to_int`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#to_int "Direct link to to_int")
+### `to_int`
 
 `to_int(self: Self) -> Int`
 
@@ -951,7 +951,7 @@ The size of the SIMD vector must be 1.
 
 The value of the single integer element in the SIMD vector.
 
-### `fma`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#fma "Direct link to fma")
+### `fma`
 
 `fma(self: Self, multiplier: Self, accumulator: Self) -> Self`
 
@@ -966,7 +966,7 @@ Performs a fused multiply-add operation, i.e. `self*multiplier + accumulator`.
 
 A new vector whose element at position `i` is computed as `self[i]*multiplier[i] + accumulator[i]`.
 
-### `shuffle`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#shuffle "Direct link to shuffle")
+### `shuffle`
 
 `shuffle[*mask: Int](self: Self) -> Self`
 
@@ -996,7 +996,7 @@ Shuffles (also called blend) the values of the current vector with the `other` v
 
 A new vector of length `len` where the value at position `i` is `(self+other)[permutation[i]]`.
 
-### `__hash__`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#__hash__ "Direct link to __hash__")
+### `__hash__`
 
 `__hash__(self: Self) -> Int`
 
@@ -1006,7 +1006,7 @@ Hash the value using builtin hash.
 
 A 64-bit hash value. This value is _not_ suitable for cryptographic uses. Its intended usage is for data structures. See the `hash` builtin documentation for more details.
 
-### `slice`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#slice "Direct link to slice")
+### `slice`
 
 `slice[output_width: Int](self: Self, offset: Int) -> SIMD[type, output_width]`
 
@@ -1028,7 +1028,7 @@ Returns a slice of the vector of the specified width with the given offset.
 
 A new vector whose elements map to `self[offset:offset+output_width]`.
 
-### `insert`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#insert "Direct link to insert")
+### `insert`
 
 `insert[input_width: Int](self: Self, value: SIMD[type, input_width], offset: Int) -> Self`
 
@@ -1047,7 +1047,7 @@ Returns a the vector where the elements between `offset` and `offset + input_wid
 
 A new vector whose elements at `self[offset:offset+input_width]` contain the values of `value`.
 
-### `join`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#join "Direct link to join")
+### `join`
 
 `join(self: Self, other: Self) -> SIMD[type, __mul__(2, size)]`
 
@@ -1061,7 +1061,7 @@ Concatenates the two vectors together.
 
 A new vector `self_0, self_1, ..., self_n, other_0, ..., other_n`.
 
-### `interleave`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#interleave "Direct link to interleave")
+### `interleave`
 
 `interleave(self: Self, other: Self) -> SIMD[type, __mul__(2, size)]`
 
@@ -1075,7 +1075,7 @@ Constructs a vector by interleaving two input vectors.
 
 A new vector `self_0, other_0, ..., self_n, other_n`.
 
-### `deinterleave`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#deinterleave "Direct link to deinterleave")
+### `deinterleave`
 
 `deinterleave(self: Self) -> StaticTuple[SIMD[type, __floordiv__(size, 2)], 2]`
 
@@ -1089,7 +1089,7 @@ The vector size must be greater than 1.
 
 Two vectors the first of the form `self_0, self_2, ..., self_{n-2}` and the other being `self_1, self_3, ..., self_{n-1}`.
 
-### `min`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#min "Direct link to min")
+### `min`
 
 `min(self: Self, other: Self) -> Self`
 
@@ -1103,7 +1103,7 @@ Computes the elementwise minimum between the two vectors.
 
 A new SIMD vector where each element at position `i` is `min(self[i], other[i])`.
 
-### `max`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#max "Direct link to max")
+### `max`
 
 `max(self: Self, other: Self) -> Self`
 
@@ -1117,7 +1117,7 @@ Computes the elementwise maximum between the two vectors.
 
 A new SIMD vector where each element at position `i` is `max(self[i], other[i])`.
 
-### `reduce`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#reduce "Direct link to reduce")
+### `reduce`
 
 `reduce[func: fn[DType, Int](SIMD[$0, $1], SIMD[$0, $1], /) capturing -> SIMD[$0, $1], size_out: Int](self: Self) -> SIMD[type, size_out]`
 
@@ -1132,7 +1132,7 @@ Reduces the vector using a provided reduce operator.
 
 A new scalar which is the reduction of all vector elements.
 
-### `reduce_max`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#reduce_max "Direct link to reduce_max")
+### `reduce_max`
 
 `reduce_max[size_out: Int](self: Self) -> SIMD[type, size_out]`
 
@@ -1150,7 +1150,7 @@ The element type of the vector must be integer or FP.
 
 The maximum element of the vector.
 
-### `reduce_min`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#reduce_min "Direct link to reduce_min")
+### `reduce_min`
 
 `reduce_min[size_out: Int](self: Self) -> SIMD[type, size_out]`
 
@@ -1168,7 +1168,7 @@ The element type of the vector must be integer or FP.
 
 The minimum element of the vector.
 
-### `reduce_add`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#reduce_add "Direct link to reduce_add")
+### `reduce_add`
 
 `reduce_add[size_out: Int](self: Self) -> SIMD[type, size_out]`
 
@@ -1182,7 +1182,7 @@ Reduces the vector using the `add` operator.
 
 The sum of all vector elements.
 
-### `reduce_mul`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#reduce_mul "Direct link to reduce_mul")
+### `reduce_mul`
 
 `reduce_mul[size_out: Int](self: Self) -> SIMD[type, size_out]`
 
@@ -1200,7 +1200,7 @@ The element type of the vector must be integer or FP.
 
 The product of all vector elements.
 
-### `reduce_and`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#reduce_and "Direct link to reduce_and")
+### `reduce_and`
 
 `reduce_and(self: Self) -> Bool`
 
@@ -1214,7 +1214,7 @@ The element type of the vector must be boolean.
 
 True if all element in the vector is True and False otherwise.
 
-### `reduce_or`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#reduce_or "Direct link to reduce_or")
+### `reduce_or`
 
 `reduce_or(self: Self) -> Bool`
 
@@ -1228,7 +1228,7 @@ The element type of the vector must be boolean.
 
 True if any element in the vector is True and False otherwise.
 
-### `select`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#select "Direct link to select")
+### `select`
 
 `select[result_type: DType](self: Self, true_case: SIMD[result_type, size], false_case: SIMD[result_type, size]) -> SIMD[result_type, size]`
 
@@ -1247,7 +1247,7 @@ Selects the values of the `true_case` or the `false_case` based on the current b
 
 A new vector of the form `[true_case[i] if elem else false_case[i] for i, elem in enumerate(self)]`.
 
-### `rotate_left`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#rotate_left "Direct link to rotate_left")
+### `rotate_left`
 
 `rotate_left[shift: Int](self: Self) -> Self`
 
@@ -1265,7 +1265,7 @@ Shifts the elements of a SIMD vector to the left by `shift` elements (with wrap-
 
 The SIMD vector rotated to the left by `shift` elements (with wrap-around).
 
-### `rotate_right`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#rotate_right "Direct link to rotate_right")
+### `rotate_right`
 
 `rotate_right[shift: Int](self: Self) -> Self`
 
@@ -1283,7 +1283,7 @@ Shifts the elements of a SIMD vector to the right by `shift` elements (with wrap
 
 The SIMD vector rotated to the right by `shift` elements (with wrap-around).
 
-### `shift_left`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#shift_left "Direct link to shift_left")
+### `shift_left`
 
 `shift_left[shift: Int](self: Self) -> Self`
 
@@ -1301,7 +1301,7 @@ Shifts the elements of a SIMD vector to the left by `shift` elements (no wrap-ar
 
 The SIMD vector rotated to the left by `shift` elements (no wrap-around, fill with zero).
 
-### `shift_right`[​](https://docs.modular.com/mojo/stdlib/builtin/simd#shift_right "Direct link to shift_right")
+### `shift_right`
 
 `shift_right[shift: Int](self: Self) -> Self`
 

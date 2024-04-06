@@ -6,7 +6,7 @@ Implements a foreign functions interface (FFI).
 
 - ​`DEFAULT_RTLD = __or__(2, cond(apply(:!lit.signature<("self": !lit.declref<@stdlib::@builtin::@bool::@Bool> borrow) -> i1> @stdlib::@builtin::@bool::@Bool::@"__mlir_i1__(stdlib::builtin::bool::Bool)", apply(:!lit.signature<() -> !lit.declref<@stdlib::@builtin::@bool::@Bool>> @stdlib::@sys::@info::@"os_is_linux()")), {:!kgen.int_literal 256}, {:!kgen.int_literal 8}))`
 
-## `RTLD`[​](https://docs.modular.com/mojo/stdlib/sys/ffi#rtld "Direct link to rtld")
+## `RTLD`
 
 Enumeration of the RTLD flags used during dynamic library loading.
 
@@ -24,7 +24,7 @@ Enumeration of the RTLD flags used during dynamic library loading.
 
 `AnyType`
 
-## `DLHandle`[​](https://docs.modular.com/mojo/stdlib/sys/ffi#dlhandle "Direct link to dlhandle")
+## `DLHandle`
 
 Represents a dynamically linked library that can be loaded and unloaded.
 
@@ -40,7 +40,7 @@ The library is loaded on initialization and unloaded on deletion of the object.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/sys/ffi#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(path: String, flags: Int) -> Self`
 
@@ -55,13 +55,13 @@ Initialize a DLHandle object by loading the dynamic library at the given path.
 
 The constructed handle object.
 
-### `close`[​](https://docs.modular.com/mojo/stdlib/sys/ffi#close "Direct link to close")
+### `close`
 
 `close(inout self: Self)`
 
 Delete the DLHandle object unloading the associated dynamic library.
 
-### `get_function`[​](https://docs.modular.com/mojo/stdlib/sys/ffi#get_function "Direct link to get_function")
+### `get_function`
 
 `get_function[result_type: AnyRegType](self: Self, name: String) -> result_type`
 
@@ -79,7 +79,7 @@ Returns a handle to the function with the given name in the dynamic library.
 
 A handle to the function.
 
-## `external_call`[​](https://docs.modular.com/mojo/stdlib/sys/ffi#external_call "Direct link to external_call")
+## `external_call`
 
 `external_call[callee: StringLiteral, type: AnyRegType]() -> *"type"`
 

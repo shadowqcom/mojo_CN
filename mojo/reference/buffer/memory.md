@@ -8,7 +8,7 @@ You can import these APIs from the `buffer` package. For example:
 from buffer import parallel_memcpy
 ```
 
-## `parallel_memcpy`[​](https://docs.modular.com/mojo/stdlib/buffer/memory#parallel_memcpy "Direct link to parallel_memcpy")
+## `parallel_memcpy`
 
 `parallel_memcpy[type: DType](dest: DTypePointer[type, 0], src: DTypePointer[type, 0], count: Int, count_per_task: Int, num_tasks: Int)`
 

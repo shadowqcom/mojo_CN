@@ -8,7 +8,7 @@ You can import these APIs from the `memory` package. For example:
 from buffer import Buffer
 ```
 
-## `Buffer`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#buffer "Direct link to buffer")
+## `Buffer`
 
 Defines a Buffer which can be parametrized on a static size and Dtype.
 
@@ -34,7 +34,7 @@ The Buffer does not own its underlying pointer.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -90,7 +90,7 @@ The size is unknown.
 - ​**ptr** (`DTypePointer[type, address_space]`): Pointer to the data.
 - ​**in\_size** (`Int`): Dynamic size of the buffer.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, idx: Int) -> SIMD[type, 1]`
 
@@ -104,7 +104,7 @@ Loads a single element (SIMD of size 1) from the buffer at the specified index.
 
 The value at the `idx` position.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__(self: Self, idx: Int, val: scalar<#lit.struct.extract<:_stdlib::_builtin::_dtype::_DType type, "value">>)`
 
@@ -124,7 +124,7 @@ Stores a single value into the buffer at the specified index.
 - ​**idx** (`Int`): The index into the Buffer.
 - ​**val** (`SIMD[type, 1]`): The value to store.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -136,7 +136,7 @@ This method is used by `Buffer.__len__` to get the size of the buffer. If the Bu
 
 The size if static otherwise dynamic\_size.
 
-### `load`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#load "Direct link to load")
+### `load`
 
 `load[width: Int, alignment: Int](self: Self, idx: Int) -> SIMD[type, width]`
 
@@ -155,7 +155,7 @@ Loads a simd value from the buffer at the specified index.
 
 The simd value starting at the `idx` position and ending at `idx+width`.
 
-### `store`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#store "Direct link to store")
+### `store`
 
 `store[width: Int, alignment: Int](self: Self, idx: Int, val: SIMD[type, width])`
 
@@ -171,7 +171,7 @@ Stores a simd value into the buffer at the specified index.
 - ​**idx** (`Int`): The index into the Buffer.
 - ​**val** (`SIMD[type, width]`): The value to store.
 
-### `simd_nt_store`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#simd_nt_store "Direct link to simd_nt_store")
+### `simd_nt_store`
 
 `simd_nt_store[width: Int](self: Self, idx: Int, val: SIMD[type, width])`
 
@@ -190,7 +190,7 @@ The address must be properly aligned, 64B for avx512, 32B for avx2, and 16B for 
 - ​**idx** (`Int`): The index into the Buffer.
 - ​**val** (`SIMD[type, width]`): The value to store.
 
-### `prefetch`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#prefetch "Direct link to prefetch")
+### `prefetch`
 
 `prefetch[params: PrefetchOptions](self: Self, idx: Int)`
 
@@ -204,7 +204,7 @@ Prefetches the data at the given index.
 
 - ​**idx** (`Int`): The index of the prefetched location.
 
-### `bytecount`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#bytecount "Direct link to bytecount")
+### `bytecount`
 
 `bytecount(self: Self) -> Int`
 
@@ -214,13 +214,13 @@ Returns the size of the Buffer in bytes.
 
 The size of the Buffer in bytes.
 
-### `zero`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#zero "Direct link to zero")
+### `zero`
 
 `zero(self: Self)`
 
 Sets all bytes of the Buffer to 0.
 
-### `fill`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#fill "Direct link to fill")
+### `fill`
 
 `fill(self: Self, val: SIMD[type, 1])`
 
@@ -232,7 +232,7 @@ The fill is performed in chunks of size N, where N is the native SIMD width of t
 
 - ​**val** (`SIMD[type, 1]`): The value to store.
 
-### `tofile`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#tofile "Direct link to tofile")
+### `tofile`
 
 `tofile(self: Self, path: Path)`
 
@@ -242,7 +242,7 @@ Write values to a file.
 
 - ​**path** (`Path`): Path to the output file.
 
-### `aligned_stack_allocation`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#aligned_stack_allocation "Direct link to aligned_stack_allocation")
+### `aligned_stack_allocation`
 
 `static aligned_stack_allocation[alignment: Int]() -> Self`
 
@@ -256,7 +256,7 @@ Constructs a buffer instance backed by stack allocated memory space.
 
 Constructed buffer with the allocated space.
 
-### `stack_allocation`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#stack_allocation "Direct link to stack_allocation")
+### `stack_allocation`
 
 `static stack_allocation() -> Self`
 
@@ -266,7 +266,7 @@ Constructs a buffer instance backed by stack allocated memory space.
 
 Constructed buffer with the allocated space.
 
-## `NDBuffer`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#ndbuffer "Direct link to ndbuffer")
+## `NDBuffer`
 
 An N-dimensional Buffer.
 
@@ -295,7 +295,7 @@ NDBuffer can be parametrized on rank, static dimensions and Dtype. It does not o
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__init__-1 "Direct link to __init__-1")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -420,7 +420,7 @@ The rank is known.
 - ​**dynamic\_shape** (`DimList`): A DimList of size 'rank' representing shapes.
 - ​**dynamic\_stride** (`StaticIntTuple[rank]`): A static tuple of size 'rank' representing strides.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__getitem__-1 "Direct link to __getitem__-1")
+### `__getitem__`
 
 `__getitem__(self: Self, *idx: Int) -> SIMD[type, 1]`
 
@@ -446,7 +446,7 @@ Gets an element from the buffer from the specified index.
 
 The value of the element.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__setitem__-1 "Direct link to __setitem__-1")
+### `__setitem__`
 
 `__setitem__(self: Self, idx: StaticIntTuple[rank], val: SIMD[type, 1])`
 
@@ -457,7 +457,7 @@ Stores a single value into the buffer at the specified index.
 - ​**idx** (`StaticIntTuple[rank]`): The index into the Buffer.
 - ​**val** (`SIMD[type, 1]`): The value to store.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__[rhs: DType, rhs: Int, rhs: DimList, rhs: AddressSpace](self: Self, rhs: NDBuffer[rhs, rhs, rhs, rhs]) -> Self`
 
@@ -471,7 +471,7 @@ Adds a NDBuffer.
 
 The addition result.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__(self: Self, rhs: Self) -> Self`
 
@@ -501,7 +501,7 @@ Subtracts a NDBuffer.
 
 The subtraction result.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, rhs: Self) -> Self`
 
@@ -515,7 +515,7 @@ Multiplies a NDBuffer.
 
 The division result.
 
-### `__imul__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__imul__ "Direct link to __imul__")
+### `__imul__`
 
 `__imul__(inout self: Self, rhs: SIMD[f32, 1])`
 
@@ -533,7 +533,7 @@ In-place multiplies a NDBuffer.
 
 - ​**rhs** (`NDBuffer[rhs, rhs, rhs, rhs]`): The RHS of the mul operation.
 
-### `__itruediv__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__itruediv__ "Direct link to __itruediv__")
+### `__itruediv__`
 
 `__itruediv__[rhs: DType, rhs: Int, rhs: DimList, rhs: AddressSpace](inout self: Self, rhs: NDBuffer[rhs, rhs, rhs, rhs])`
 
@@ -543,7 +543,7 @@ In-place divides a NDBuffer.
 
 - ​**rhs** (`NDBuffer[rhs, rhs, rhs, rhs]`): The RHS of the div operation.
 
-### `get_rank`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#get_rank "Direct link to get_rank")
+### `get_rank`
 
 `get_rank(self: Self) -> Int`
 
@@ -553,7 +553,7 @@ Returns the rank of the buffer.
 
 The rank of NDBuffer.
 
-### `get_shape`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#get_shape "Direct link to get_shape")
+### `get_shape`
 
 `get_shape(self: Self) -> StaticIntTuple[rank]`
 
@@ -563,7 +563,7 @@ Returns the shapes of the buffer.
 
 A static tuple of size 'rank' representing shapes of the NDBuffer.
 
-### `get_nd_index`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#get_nd_index "Direct link to get_nd_index")
+### `get_nd_index`
 
 `get_nd_index(self: Self, idx: Int) -> StaticIntTuple[rank]`
 
@@ -577,7 +577,7 @@ Computes the NDBuffer's ND-index based on the flat index.
 
 The index positions.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__len__-1 "Direct link to __len__-1")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -587,7 +587,7 @@ Computes the NDBuffer's number of elements.
 
 The total number of elements in the NDBuffer.
 
-### `num_elements`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#num_elements "Direct link to num_elements")
+### `num_elements`
 
 `num_elements(self: Self) -> Int`
 
@@ -597,7 +597,7 @@ Computes the NDBuffer's number of elements.
 
 The total number of elements in the NDBuffer.
 
-### `size`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#size "Direct link to size")
+### `size`
 
 `size(self: Self) -> Int`
 
@@ -607,7 +607,7 @@ Computes the NDBuffer's number of elements.
 
 The total number of elements in the NDBuffer.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -617,7 +617,7 @@ Gets the buffer as a string.
 
 A compact string of the buffer.
 
-### `__repr__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__repr__ "Direct link to __repr__")
+### `__repr__`
 
 `__repr__(self: Self) -> String`
 
@@ -627,7 +627,7 @@ Gets the buffer as a string.
 
 A compact string representation of the buffer.
 
-### `tile`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#tile "Direct link to tile")
+### `tile`
 
 `tile[*tile_sizes: Dim](self: Self, tile_coords: StaticIntTuple[rank]) -> NDBuffer[type, rank, DimList(VariadicList[Dim](tile_sizes)), address_space]`
 
@@ -645,7 +645,7 @@ Returns an n-d tile "slice" of the buffer of size tile\_sizes at coords.
 
 The tiled buffer at tile\_coords.
 
-### `load`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#load-1 "Direct link to load-1")
+### `load`
 
 `load[width: Int, alignment: Int](self: Self, *idx: Int) -> SIMD[type, width]`
 
@@ -731,7 +731,7 @@ The buffer must be contiguous or width must be 1.
 
 The simd value starting at the `idx` position and ending at `idx+width`.
 
-### `store`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#store-1 "Direct link to store-1")
+### `store`
 
 `store[width: Int, alignment: Int](self: Self, idx: StaticIntTuple[rank], val: SIMD[type, width])`
 
@@ -769,7 +769,7 @@ The buffer must be contiguous or width must be 1.
 - ​**idx** (`StaticTuple[Int, rank]`): The index into the Buffer.
 - ​**val** (`SIMD[type, width]`): The value to store.
 
-### `simd_nt_store`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#simd_nt_store-1 "Direct link to simd_nt_store-1")
+### `simd_nt_store`
 
 `simd_nt_store[width: Int](self: Self, idx: StaticIntTuple[rank], val: SIMD[type, width])`
 
@@ -805,7 +805,7 @@ The buffer must be contiguous. The address must be properly aligned, 64B for avx
 - ​**idx** (`StaticTuple[Int, rank]`): The index into the Buffer.
 - ​**val** (`SIMD[type, width]`): The value to store.
 
-### `dim`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#dim "Direct link to dim")
+### `dim`
 
 `dim[index: Int](self: Self) -> Int`
 
@@ -831,7 +831,7 @@ Gets the buffer dimension at the given index.
 
 The buffer size at the given dimension.
 
-### `stride`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#stride "Direct link to stride")
+### `stride`
 
 `stride(self: Self, index: Int) -> Int`
 
@@ -845,7 +845,7 @@ Gets the buffer stride at the given index.
 
 The stride at the given dimension.
 
-### `flatten`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#flatten "Direct link to flatten")
+### `flatten`
 
 `flatten(self: Self) -> Buffer[type, Dim(), address_space]`
 
@@ -859,7 +859,7 @@ The buffer must be contiguous.
 
 Constructed Buffer object.
 
-### `make_dims_unknown`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#make_dims_unknown "Direct link to make_dims_unknown")
+### `make_dims_unknown`
 
 `make_dims_unknown(self: Self) -> NDBuffer[type, rank, create_unknown[stdlib::builtin::int::Int][rank](), address_space]`
 
@@ -869,7 +869,7 @@ Rebinds the NDBuffer to one with unknown shape.
 
 The rebound NDBuffer with unknown shape.
 
-### `bytecount`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#bytecount-1 "Direct link to bytecount-1")
+### `bytecount`
 
 `bytecount(self: Self) -> Int`
 
@@ -879,7 +879,7 @@ Returns the size of the NDBuffer in bytes.
 
 The size of the NDBuffer in bytes.
 
-### `zero`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#zero-1 "Direct link to zero-1")
+### `zero`
 
 `zero(self: Self)`
 
@@ -889,7 +889,7 @@ Sets all bytes of the NDBuffer to 0.
 
 The buffer must be contiguous.
 
-### `tofile`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#tofile-1 "Direct link to tofile-1")
+### `tofile`
 
 `tofile(self: Self, path: Path)`
 
@@ -899,7 +899,7 @@ Write values to a file.
 
 - ​**path** (`Path`): Path to the output file.
 
-### `fill`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#fill-1 "Direct link to fill-1")
+### `fill`
 
 `fill(self: Self, val: SIMD[type, 1])`
 
@@ -911,7 +911,7 @@ The fill is performed in chunks of size N, where N is the native SIMD width of t
 
 - ​**val** (`SIMD[type, 1]`): The value to store.
 
-### `aligned_stack_allocation`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#aligned_stack_allocation-1 "Direct link to aligned_stack_allocation-1")
+### `aligned_stack_allocation`
 
 `static aligned_stack_allocation[alignment: Int]() -> Self`
 
@@ -925,7 +925,7 @@ Constructs an NDBuffer instance backed by stack allocated memory space.
 
 Constructed NDBuffer with the allocated space.
 
-### `stack_allocation`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#stack_allocation-1 "Direct link to stack_allocation-1")
+### `stack_allocation`
 
 `static stack_allocation() -> Self`
 
@@ -935,7 +935,7 @@ Constructs an NDBuffer instance backed by stack allocated memory space.
 
 Constructed NDBuffer with the allocated space.
 
-### `prefetch`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#prefetch-1 "Direct link to prefetch-1")
+### `prefetch`
 
 `prefetch[params: PrefetchOptions](self: Self, *idx: Int)`
 
@@ -961,7 +961,7 @@ Prefetches the data at the given index.
 
 - ​**indices** (`StaticIntTuple[rank]`): The N-D index of the prefetched location.
 
-## `DynamicRankBuffer`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#dynamicrankbuffer "Direct link to dynamicrankbuffer")
+## `DynamicRankBuffer`
 
 DynamicRankBuffer represents a buffer with unknown rank, shapes and dtype.
 
@@ -983,7 +983,7 @@ It is not as efficient as the statically ranked buffer, but is useful when inter
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#__init__-2 "Direct link to __init__-2")
+### `__init__`
 
 `__init__(inout self: Self, data: DTypePointer[invalid, 0], rank: Int, shape: StaticIntTuple[8], type: DType)`
 
@@ -996,7 +996,7 @@ Construct DynamicRankBuffer.
 - ​**shape** (`StaticIntTuple[8]`): Shapes of the buffer.
 - ​**type** (`DType`): `dtype` of the buffer.
 
-### `to_buffer`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#to_buffer "Direct link to to_buffer")
+### `to_buffer`
 
 `to_buffer[type: DType](self: Self) -> Buffer[type, Dim(), 0]`
 
@@ -1010,7 +1010,7 @@ Casts DynamicRankBuffer to Buffer.
 
 Constructed Buffer.
 
-### `to_ndbuffer`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#to_ndbuffer "Direct link to to_ndbuffer")
+### `to_ndbuffer`
 
 `to_ndbuffer[type: DType, rank: Int](self: Self) -> NDBuffer[type, rank, create_unknown[stdlib::builtin::int::Int][rank](), 0]`
 
@@ -1050,7 +1050,7 @@ Rank of DynamicRankBuffer must equal rank of NDBuffer.
 
 Constructed NDBuffer.
 
-### `rank_dispatch`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#rank_dispatch "Direct link to rank_dispatch")
+### `rank_dispatch`
 
 `rank_dispatch[func: fn[Int]() capturing -> None](self: Self)`
 
@@ -1064,7 +1064,7 @@ Rank must be positive and less or equal to 8.
 
 - ​**func** (`fn[Int]() capturing -> None`): Function to dispatch. The function should be parametrized on an index parameter, which will be used for rank when the function will be called.
 
-### `num_elements`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#num_elements-1 "Direct link to num_elements-1")
+### `num_elements`
 
 `num_elements(self: Self) -> Int`
 
@@ -1074,7 +1074,7 @@ Gets number of elements in the buffer.
 
 The number of elements in the buffer.
 
-### `get_shape`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#get_shape-1 "Direct link to get_shape-1")
+### `get_shape`
 
 `get_shape[rank: Int](self: Self) -> StaticIntTuple[rank]`
 
@@ -1088,7 +1088,7 @@ Gets a static tuple representing the buffer shape.
 
 A static tuple of size 'Rank' filled with buffer shapes.
 
-### `dim`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#dim-1 "Direct link to dim-1")
+### `dim`
 
 `dim(self: Self, idx: Int) -> Int`
 
@@ -1102,7 +1102,7 @@ Gets given dimension.
 
 The buffer size on the given dimension.
 
-## `partial_simd_load`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#partial_simd_load "Direct link to partial_simd_load")
+## `partial_simd_load`
 
 `partial_simd_load[width: Int, storage: DType, storage: AddressSpace](storage: DTypePointer[storage, storage], lbound: Int, rbound: Int, pad_value: SIMD[storage, 1]) -> SIMD[storage, width]`
 
@@ -1129,7 +1129,7 @@ addr 0  1  2  3data x 42 43  xpartial_simd_load[4](addr0, 1, 3) #gives [0 42 43 
 
 The SIMD vector loaded and zero-filled.
 
-## `partial_simd_store`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#partial_simd_store "Direct link to partial_simd_store")
+## `partial_simd_store`
 
 `partial_simd_store[width: Int, storage: DType, storage: AddressSpace](storage: DTypePointer[storage, storage], lbound: Int, rbound: Int, data: SIMD[storage, width])`
 
@@ -1154,7 +1154,7 @@ partial_simd_load[4](addr0, 1, 3, [-1, 42, 43, -1]) #gives [0 42 43 0]
 - ​**rbound** (`Int`): Upper bound of valid index within simd (non-inclusive).
 - ​**data** (`SIMD[storage, width]`): The vector value to store.
 
-## `prod_dims`[​](https://docs.modular.com/mojo/stdlib/buffer/buffer#prod_dims "Direct link to prod_dims")
+## `prod_dims`
 
 `prod_dims[start_dim: Int, end_dim: Int, x: DType, x: Int, x: DimList, x: AddressSpace](x: NDBuffer[x, x, x, x]) -> Int`
 

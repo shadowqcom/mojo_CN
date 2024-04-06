@@ -8,7 +8,7 @@ You can import these APIs from the `math` package. For example:
 from math.limit import inf
 ```
 
-## `inf`[​](https://docs.modular.com/mojo/stdlib/math/limit#inf "Direct link to inf")
+## `inf`
 
 `inf[type: DType]() -> SIMD[type, 1]`
 
@@ -26,7 +26,7 @@ Can only be used for FP dtypes.
 
 The +inf value of the given dtype.
 
-## `neginf`[​](https://docs.modular.com/mojo/stdlib/math/limit#neginf "Direct link to neginf")
+## `neginf`
 
 `neginf[type: DType]() -> SIMD[type, 1]`
 
@@ -44,7 +44,7 @@ Can only be used for FP dtypes.
 
 The -inf value of the given dtype.
 
-## `max_finite`[​](https://docs.modular.com/mojo/stdlib/math/limit#max_finite "Direct link to max_finite")
+## `max_finite`
 
 `max_finite[type: DType]() -> SIMD[type, 1]`
 
@@ -58,7 +58,7 @@ Returns the maximum finite value of type.
 
 The maximum representable value of the type. Does not include infinity for floating-point types.
 
-## `min_finite`[​](https://docs.modular.com/mojo/stdlib/math/limit#min_finite "Direct link to min_finite")
+## `min_finite`
 
 `min_finite[type: DType]() -> SIMD[type, 1]`
 

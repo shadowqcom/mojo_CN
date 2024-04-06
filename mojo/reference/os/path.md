@@ -8,7 +8,7 @@ You can import these APIs from the `os.path` package. For example:
 from os.path import isdir
 ```
 
-## `isdir`[​](https://docs.modular.com/mojo/stdlib/os/path/path#isdir "Direct link to isdir")
+## `isdir`
 
 `isdir(path: String) -> Bool`
 
@@ -38,7 +38,7 @@ Return True if path is an existing directory. This follows symbolic links, so bo
 
 True if the path is a directory or a link to a directory and False otherwise.
 
-## `isfile`[​](https://docs.modular.com/mojo/stdlib/os/path/path#isfile "Direct link to isfile")
+## `isfile`
 
 `isfile(path: String) -> Bool`
 
@@ -68,7 +68,7 @@ Test whether a path is a regular file.
 
 Returns True if the path is a regular file.
 
-## `islink`[​](https://docs.modular.com/mojo/stdlib/os/path/path#islink "Direct link to islink")
+## `islink`
 
 `islink(path: String) -> Bool`
 
@@ -98,7 +98,7 @@ Return True if path refers to an existing directory entry that is a symbolic lin
 
 True if the path is a link to a directory and False otherwise.
 
-## `exists`[​](https://docs.modular.com/mojo/stdlib/os/path/path#exists "Direct link to exists")
+## `exists`
 
 `exists(path: String) -> Bool`
 
@@ -128,7 +128,7 @@ Return True if path exists.
 
 Returns True if the path exists and is not a broken symbolic link.
 
-## `lexists`[​](https://docs.modular.com/mojo/stdlib/os/path/path#lexists "Direct link to lexists")
+## `lexists`
 
 `lexists(path: String) -> Bool`
 

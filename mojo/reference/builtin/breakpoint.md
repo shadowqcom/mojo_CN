@@ -2,7 +2,7 @@
 
 This module includes the builtin breakpoint function.
 
-## `breakpoint`[​](https://docs.modular.com/mojo/stdlib/builtin/breakpoint#breakpoint "Direct link to breakpoint")
+## `breakpoint`
 
 `breakpoint()`
 

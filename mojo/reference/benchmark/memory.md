@@ -1,6 +1,6 @@
 # memory
 
-## `clobber_memory`[​](https://docs.modular.com/mojo/stdlib/benchmark/memory#clobber_memory "Direct link to clobber_memory")
+## `clobber_memory`
 
 `clobber_memory()`
 

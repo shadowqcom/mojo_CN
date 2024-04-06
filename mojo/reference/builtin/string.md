@@ -4,7 +4,7 @@ Implements basic object methods for working with strings.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `String`[​](https://docs.modular.com/mojo/stdlib/builtin/string#string "Direct link to string")
+## `String`
 
 Represents a mutable string.
 
@@ -14,7 +14,7 @@ Represents a mutable string.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self, owned impl: List[SIMD[si8, 1]])`
 
@@ -84,7 +84,7 @@ The buffer must be terminated with a null byte.
 - ​**ptr** (`DTypePointer[si8, 0]`): The pointer to the buffer.
 - ​**len** (`Int`): The length of the buffer, including the null terminator.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -94,7 +94,7 @@ Creates a deep copy of an existing string.
 
 - ​**existing** (`Self`): The string to copy.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: Self, owned existing: Self)`
 
@@ -104,7 +104,7 @@ Move the value of a string.
 
 - ​**existing** (`Self`): The string to move.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -114,7 +114,7 @@ Checks if the string is not empty.
 
 True if the string length is greater than zero, and False otherwise.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, idx: Int) -> Self`
 
@@ -140,7 +140,7 @@ Gets the sequence of characters at the specified positions.
 
 A new string containing the string at the specified positions.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, other: Self) -> Bool`
 
@@ -154,7 +154,7 @@ Compares two Strings if they have the same values.
 
 True if the Strings are equal and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, other: Self) -> Bool`
 
@@ -168,7 +168,7 @@ Compares two Strings if they do not have the same values.
 
 True if the Strings are not equal and False otherwise.
 
-### `__contains__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__contains__ "Direct link to __contains__")
+### `__contains__`
 
 `__contains__(self: Self, substr: Self) -> Bool`
 
@@ -182,7 +182,7 @@ Returns True if the substring is contained within the current string.
 
 True if the string contains the substring.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, other: Self) -> Self`
 
@@ -196,7 +196,7 @@ Creates a string by appending another string at the end.
 
 The new constructed string.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, n: Int) -> Self`
 
@@ -210,7 +210,7 @@ Concatenates the string `n` times.
 
 The string concantenated `n` times.
 
-### `__radd__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__radd__ "Direct link to __radd__")
+### `__radd__`
 
 `__radd__(self: Self, other: Self) -> Self`
 
@@ -224,7 +224,7 @@ Creates a string by prepending another string to the start.
 
 The new constructed string.
 
-### `__iadd__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__iadd__ "Direct link to __iadd__")
+### `__iadd__`
 
 `__iadd__(inout self: Self, other: Self)`
 
@@ -234,11 +234,11 @@ Appends another string to this string.
 
 - ​**other** (`Self`): The string to append.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> Self`
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -248,7 +248,7 @@ Returns the string length.
 
 The string length.
 
-### `join`[​](https://docs.modular.com/mojo/stdlib/builtin/string#join "Direct link to join")
+### `join`
 
 `join[rank: Int](self: Self, elems: StaticIntTuple[rank]) -> Self`
 
@@ -282,7 +282,7 @@ Joins string elements using the current string as a delimiter.
 
 The joined string.
 
-### `as_bytes`[​](https://docs.modular.com/mojo/stdlib/builtin/string#as_bytes "Direct link to as_bytes")
+### `as_bytes`
 
 `as_bytes(self: Self) -> List[SIMD[si8, 1]]`
 
@@ -294,7 +294,7 @@ This does not include the trailing null terminator.
 
 A sequence containing the encoded characters stored in this string.
 
-### `count`[​](https://docs.modular.com/mojo/stdlib/builtin/string#count "Direct link to count")
+### `count`
 
 `count(self: Self, substr: Self) -> Int`
 
@@ -310,7 +310,7 @@ If sub is empty, returns the number of empty strings between characters which is
 
 The number of occurrences of `substr`.
 
-### `find`[​](https://docs.modular.com/mojo/stdlib/builtin/string#find "Direct link to find")
+### `find`
 
 `find(self: Self, substr: Self, start: Int) -> Int`
 
@@ -325,7 +325,7 @@ Finds the offset of the first occurrence of `substr` starting at `start`. If not
 
 The offset of `substr` relative to the beginning of the string.
 
-### `rfind`[​](https://docs.modular.com/mojo/stdlib/builtin/string#rfind "Direct link to rfind")
+### `rfind`
 
 `rfind(self: Self, substr: Self, start: Int) -> Int`
 
@@ -340,7 +340,7 @@ Finds the offset of the last occurrence of `substr` starting at `start`. If not 
 
 The offset of `substr` relative to the beginning of the string.
 
-### `split`[​](https://docs.modular.com/mojo/stdlib/builtin/string#split "Direct link to split")
+### `split`
 
 `split(self: Self, delimiter: Self) -> List[String]`
 
@@ -356,7 +356,7 @@ Raises: Error if an empty delimiter is specified.
 
 A List of Strings containing the input split by the delimiter.
 
-### `replace`[​](https://docs.modular.com/mojo/stdlib/builtin/string#replace "Direct link to replace")
+### `replace`
 
 `replace(self: Self, old: Self, new: Self) -> Self`
 
@@ -371,7 +371,7 @@ Return a copy of the string with all occurrences of substring `old` if replaced 
 
 The string where all occurences of `old` are replaced with `new`.
 
-### `strip`[​](https://docs.modular.com/mojo/stdlib/builtin/string#strip "Direct link to strip")
+### `strip`
 
 `strip(self: Self) -> Self`
 
@@ -383,7 +383,7 @@ See `isspace` for a list of whitespace characters
 
 A copy of the string with no leading or trailing whitespace characters.
 
-### `rstrip`[​](https://docs.modular.com/mojo/stdlib/builtin/string#rstrip "Direct link to rstrip")
+### `rstrip`
 
 `rstrip(self: Self) -> Self`
 
@@ -395,7 +395,7 @@ See `isspace` for a list of whitespace characters
 
 A copy of the string with no trailing whitespace characters.
 
-### `lstrip`[​](https://docs.modular.com/mojo/stdlib/builtin/string#lstrip "Direct link to lstrip")
+### `lstrip`
 
 `lstrip(self: Self) -> Self`
 
@@ -407,7 +407,7 @@ See `isspace` for a list of whitespace characters
 
 A copy of the string with no leading whitespace characters.
 
-### `__hash__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__hash__ "Direct link to __hash__")
+### `__hash__`
 
 `__hash__(self: Self) -> Int`
 
@@ -417,7 +417,7 @@ Hash the underlying buffer using builtin hash.
 
 A 64-bit hash value. This value is _not_ suitable for cryptographic uses. Its intended usage is for data structures. See the `hash` builtin documentation for more details.
 
-### `lower`[​](https://docs.modular.com/mojo/stdlib/builtin/string#lower "Direct link to lower")
+### `lower`
 
 `lower(self: Self) -> Self`
 
@@ -427,7 +427,7 @@ Returns a copy of the string with all ASCII cased characters converted to lowerc
 
 A new string where cased letters have been convered to lowercase.
 
-### `upper`[​](https://docs.modular.com/mojo/stdlib/builtin/string#upper "Direct link to upper")
+### `upper`
 
 `upper(self: Self) -> Self`
 
@@ -437,7 +437,7 @@ Returns a copy of the string with all ASCII cased characters converted to upperc
 
 A new string where cased letters have been converted to uppercase.
 
-### `startswith`[​](https://docs.modular.com/mojo/stdlib/builtin/string#startswith "Direct link to startswith")
+### `startswith`
 
 `startswith(self: Self, prefix: Self, start: Int, end: Int) -> Bool`
 
@@ -453,7 +453,7 @@ Checks if the string starts with the specified prefix between start and end posi
 
 True if the self\[start:end\] is prefixed by the input prefix.
 
-### `endswith`[​](https://docs.modular.com/mojo/stdlib/builtin/string#endswith "Direct link to endswith")
+### `endswith`
 
 `endswith(self: Self, suffix: Self, start: Int, end: Int) -> Bool`
 
@@ -469,7 +469,7 @@ Checks if the string end with the specified suffix between start and end positio
 
 True if the self\[start:end\] is suffixed by the input suffix.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/builtin/string#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
@@ -481,7 +481,7 @@ For example, `int("19")` returns `19`. If the given string cannot be parsed as a
 
 An integer value that represents the string, or otherwise raises.
 
-## `ord`[​](https://docs.modular.com/mojo/stdlib/builtin/string#ord "Direct link to ord")
+## `ord`
 
 `ord(s: String) -> Int`
 
@@ -499,7 +499,7 @@ Currently, extended ASCII characters are not supported in this function.
 
 An integer representing the code point of the given character.
 
-## `chr`[​](https://docs.modular.com/mojo/stdlib/builtin/string#chr "Direct link to chr")
+## `chr`
 
 `chr(c: Int) -> String`
 
@@ -515,7 +515,7 @@ Returns the string representing a character whose code point (which must be a po
 
 A string containing a single character based on the given code point.
 
-## `atol`[​](https://docs.modular.com/mojo/stdlib/builtin/string#atol "Direct link to atol")
+## `atol`
 
 `atol(str: String) -> Int`
 
@@ -531,7 +531,7 @@ For example, `atol("19")` returns `19`. If the given string cannot be parsed as 
 
 An integer value that represents the string, or otherwise raises.
 
-## `isdigit`[​](https://docs.modular.com/mojo/stdlib/builtin/string#isdigit "Direct link to isdigit")
+## `isdigit`
 
 `isdigit(c: SIMD[si8, 1]) -> Bool`
 
@@ -545,7 +545,7 @@ Determines whether the given character is a digit \[0-9\].
 
 True if the character is a digit.
 
-## `isupper`[​](https://docs.modular.com/mojo/stdlib/builtin/string#isupper "Direct link to isupper")
+## `isupper`
 
 `isupper(c: SIMD[si8, 1]) -> Bool`
 
@@ -559,7 +559,7 @@ Determines whether the given character is an uppercase character. This currently
 
 True if the character is uppercase.
 
-## `islower`[​](https://docs.modular.com/mojo/stdlib/builtin/string#islower "Direct link to islower")
+## `islower`
 
 `islower(c: SIMD[si8, 1]) -> Bool`
 
@@ -573,7 +573,7 @@ Determines whether the given character is an lowercase character. This currently
 
 True if the character is lowercase.
 
-## `isspace`[​](https://docs.modular.com/mojo/stdlib/builtin/string#isspace "Direct link to isspace")
+## `isspace`
 
 `isspace(c: SIMD[si8, 1]) -> Bool`
 

@@ -8,7 +8,7 @@ You can import these APIs from the `collections` package. For example:
 from collections.vector import InlinedFixedVector
 ```
 
-## `InlinedFixedVector`[​](https://docs.modular.com/mojo/stdlib/collections/vector#inlinedfixedvector "Direct link to inlinedfixedvector")
+## `InlinedFixedVector`
 
 A dynamically-allocated vector with small-vector optimization and a fixed maximum capacity.
 
@@ -49,7 +49,7 @@ This data structure is useful for applications where the number of required elem
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/collections/vector#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self, capacity: Int)`
 
@@ -61,7 +61,7 @@ The dynamically allocated portion is `capacity - size`.
 
 - ​**capacity** (`Int`): The requested maximum capacity of the vector.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/collections/vector#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -71,7 +71,7 @@ Creates a shallow copy (doesn't copy the underlying elements).
 
 - ​**existing** (`Self`): The `InlinedFixedVector` to copy.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/collections/vector#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, i: Int) -> *"type"`
 
@@ -85,7 +85,7 @@ Gets a vector element at the given index.
 
 The element at the given index.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/collections/vector#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__(inout self: Self, i: Int, *value: "type")`
 
@@ -96,7 +96,7 @@ Sets a vector element at the given index.
 - ​**i** (`Int`): The index of the element.
 - ​**value** (`*"type"`): The value to assign.
 
-### `deepcopy`[​](https://docs.modular.com/mojo/stdlib/collections/vector#deepcopy "Direct link to deepcopy")
+### `deepcopy`
 
 `deepcopy(self: Self) -> Self`
 
@@ -106,7 +106,7 @@ Creates a deep copy of this vector.
 
 The created copy of this vector.
 
-### `append`[​](https://docs.modular.com/mojo/stdlib/collections/vector#append "Direct link to append")
+### `append`
 
 `append(inout self: Self, *value: "type")`
 
@@ -116,7 +116,7 @@ Appends a value to this vector.
 
 - ​**value** (`*"type"`): The value to append.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/collections/vector#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -126,13 +126,13 @@ Gets the number of elements in the vector.
 
 The number of elements in the vector.
 
-### `clear`[​](https://docs.modular.com/mojo/stdlib/collections/vector#clear "Direct link to clear")
+### `clear`
 
 `clear(inout self: Self)`
 
 Clears the elements in the vector.
 
-### `__iter__`[​](https://docs.modular.com/mojo/stdlib/collections/vector#__iter__ "Direct link to __iter__")
+### `__iter__`
 
 `__iter__(inout self: Self) -> _VecIter[*"type", InlinedFixedVector[*"type", size], _deref_iter_impl[*"type", size]]`
 

@@ -12,7 +12,7 @@ from utils.index import StaticIntTuple
 
 - ​`mlir_bool = scalar<bool>`
 
-## `StaticIntTuple`[​](https://docs.modular.com/mojo/stdlib/utils/index_#staticinttuple "Direct link to staticinttuple")
+## `StaticIntTuple`
 
 A base struct that implements size agnostic index functions.
 
@@ -30,7 +30,7 @@ A base struct that implements size agnostic index functions.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -124,7 +124,7 @@ Creates a tuple constant using the specified values.
 
 A tuple with the values filled in.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__[intable: Intable](self: Self, index: intable) -> Int`
 
@@ -142,7 +142,7 @@ Gets an element from the tuple by index.
 
 The tuple element value.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__[index: Int](inout self: Self, val: Int)`
 
@@ -169,7 +169,7 @@ Sets an element in the tuple at the given index.
 - ​**index** (`intable`): The element index.
 - ​**val** (`Int`): The value to store.
 
-### `__lt__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__lt__ "Direct link to __lt__")
+### `__lt__`
 
 `__lt__(self: Self, rhs: Self) -> Bool`
 
@@ -187,7 +187,7 @@ Note: This is **not** a lexical comparison.
 
 The comparison result.
 
-### `__le__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__le__ "Direct link to __le__")
+### `__le__`
 
 `__le__(self: Self, rhs: Self) -> Bool`
 
@@ -205,7 +205,7 @@ Note: This is **not** a lexical comparison.
 
 The comparison result.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Bool`
 
@@ -221,7 +221,7 @@ The tuples are equal if all corresponding elements are equal.
 
 The comparison result.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Bool`
 
@@ -237,7 +237,7 @@ The tuples are non-equal if at least one element of LHS isn't equal to the corre
 
 The comparison result.
 
-### `__gt__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__gt__ "Direct link to __gt__")
+### `__gt__`
 
 `__gt__(self: Self, rhs: Self) -> Bool`
 
@@ -255,7 +255,7 @@ Note: This is **not** a lexical comparison.
 
 The comparison result.
 
-### `__ge__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__ge__ "Direct link to __ge__")
+### `__ge__`
 
 `__ge__(self: Self, rhs: Self) -> Bool`
 
@@ -273,7 +273,7 @@ Note: This is **not** a lexical comparison.
 
 The comparison result.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, rhs: Self) -> Self`
 
@@ -287,7 +287,7 @@ Performs element-wise integer add.
 
 The resulting index tuple.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__(self: Self, rhs: Self) -> Self`
 
@@ -301,7 +301,7 @@ Performs element-wise integer subtract.
 
 The resulting index tuple.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, rhs: Self) -> Self`
 
@@ -315,7 +315,7 @@ Performs element-wise integer multiply.
 
 The resulting index tuple.
 
-### `__floordiv__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__floordiv__ "Direct link to __floordiv__")
+### `__floordiv__`
 
 `__floordiv__(self: Self, rhs: Self) -> Self`
 
@@ -329,7 +329,7 @@ Performs element-wise integer floor division.
 
 The resulting index tuple.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -339,7 +339,7 @@ Returns the size of the tuple.
 
 The tuple size.
 
-### `as_tuple`[​](https://docs.modular.com/mojo/stdlib/utils/index_#as_tuple "Direct link to as_tuple")
+### `as_tuple`
 
 `as_tuple(self: Self) -> StaticTuple[Int, size]`
 
@@ -349,7 +349,7 @@ Converts this StaticIntTuple to StaticTuple.
 
 The corresponding StaticTuple object.
 
-### `flattened_length`[​](https://docs.modular.com/mojo/stdlib/utils/index_#flattened_length "Direct link to flattened_length")
+### `flattened_length`
 
 `flattened_length(self: Self) -> Int`
 
@@ -359,7 +359,7 @@ Returns the flattened length of the tuple.
 
 The flattened length of the tuple.
 
-### `remu`[​](https://docs.modular.com/mojo/stdlib/utils/index_#remu "Direct link to remu")
+### `remu`
 
 `remu(self: Self, rhs: Self) -> Self`
 
@@ -373,7 +373,7 @@ Performs element-wise integer unsigned modulo.
 
 The resulting index tuple.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/utils/index_#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -383,7 +383,7 @@ Get the tuple as a string.
 
 A string representation.
 
-## `Index`[​](https://docs.modular.com/mojo/stdlib/utils/index_#index "Direct link to index")
+## `Index`
 
 `Index[T0: Intable](x: T0) -> StaticIntTuple[1]`
 
@@ -485,7 +485,7 @@ Constructs a 5-D Index from the given values.
 
 The constructed StaticIntTuple.
 
-## `product`[​](https://docs.modular.com/mojo/stdlib/utils/index_#product "Direct link to product")
+## `product`
 
 `product[size: Int](tuple: StaticIntTuple[size], end_idx: Int) -> Int`
 

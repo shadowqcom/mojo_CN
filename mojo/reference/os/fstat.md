@@ -8,7 +8,7 @@ You can import these APIs from the `os` package. For example:
 from os import stat
 ```
 
-## `stat_result`[​](https://docs.modular.com/mojo/stdlib/os/fstat#stat_result "Direct link to stat_result")
+## `stat_result`
 
 Object whose fields correspond to the members of the stat structure.
 
@@ -50,7 +50,7 @@ Object whose fields correspond to the members of the stat structure.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/os/fstat#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self, *, st_mode: Int, st_ino: Int, st_dev: Int, st_nlink: Int, st_uid: Int, st_gid: Int, st_size: Int, st_atimespec: _CTimeSpec, st_mtimespec: _CTimeSpec, st_ctimespec: _CTimeSpec, st_birthtimespec: _CTimeSpec, st_blocks: Int, st_blksize: Int, st_rdev: Int, st_flags: Int)`
 
@@ -74,7 +74,7 @@ Intialize the stat\_result structure.
 - ​**st\_rdev** (`Int`): Type of device if an inode device.
 - ​**st\_flags** (`Int`): User defined flags for file.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/os/fstat#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -84,7 +84,7 @@ Constructs a string representation of stat\_result.
 
 A string representation of stat\_result.
 
-### `__repr__`[​](https://docs.modular.com/mojo/stdlib/os/fstat#__repr__ "Direct link to __repr__")
+### `__repr__`
 
 `__repr__(self: Self) -> String`
 
@@ -94,7 +94,7 @@ Constructs a representation of stat\_result.
 
 A representation of stat\_result.
 
-## `stat`[​](https://docs.modular.com/mojo/stdlib/os/fstat#stat "Direct link to stat")
+## `stat`
 
 `stat(path: String) -> stat_result`
 
@@ -124,7 +124,7 @@ Get the status of a file or a file descriptor.
 
 Returns the stat\_result on the path.
 
-## `lstat`[​](https://docs.modular.com/mojo/stdlib/os/fstat#lstat "Direct link to lstat")
+## `lstat`
 
 `lstat(path: String) -> stat_result`
 

@@ -8,7 +8,7 @@ You can import these APIs from the `collections` package. For example:
 from collections import List
 ```
 
-## `List`[​](https://docs.modular.com/mojo/stdlib/collections/list#list "Direct link to list")
+## `List`
 
 The `List` type is a dynamically-allocated list.
 
@@ -32,7 +32,7 @@ It supports pushing and popping from the back resizing the underlying storage as
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/collections/list#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -62,7 +62,7 @@ Constructs a list from the given values.
 
 - ​**values** (`*T`): The values to populate the list with.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/collections/list#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -72,7 +72,7 @@ Creates a deepcopy of the given list.
 
 - ​**existing** (`Self`): The list to copy.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/collections/list#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: Self, owned existing: Self)`
 
@@ -82,13 +82,13 @@ Move data of an existing list into a new one.
 
 - ​**existing** (`Self`): The existing list.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/collections/list#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: Self)`
 
 Destroy all elements in the list and free its memory.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/collections/list#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, span: Slice) -> Self`
 
@@ -116,7 +116,7 @@ FIXME(lifetimes): This should return a reference, not a copy!
 
 A copy of the element at the given index.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/collections/list#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__(inout self: Self, i: Int, owned value: T)`
 
@@ -127,7 +127,7 @@ Sets a list element at the given index.
 - ​**i** (`Int`): The index of the element.
 - ​**value** (`T`): The value to assign.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/collections/list#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -137,7 +137,7 @@ Gets the number of elements in the list.
 
 The number of elements in the list.
 
-### `append`[​](https://docs.modular.com/mojo/stdlib/collections/list#append "Direct link to append")
+### `append`
 
 `append(inout self: Self, owned value: T)`
 
@@ -147,7 +147,7 @@ Appends a value to this list.
 
 - ​**value** (`T`): The value to append.
 
-### `extend`[​](https://docs.modular.com/mojo/stdlib/collections/list#extend "Direct link to extend")
+### `extend`
 
 `extend(inout self: Self, owned other: Self)`
 
@@ -157,7 +157,7 @@ Extends this list by consuming the elements of `other`.
 
 - ​**other** (`Self`): List whose elements will be added in order at the end of this list.
 
-### `pop_back`[​](https://docs.modular.com/mojo/stdlib/collections/list#pop_back "Direct link to pop_back")
+### `pop_back`
 
 `pop_back(inout self: Self) -> T`
 
@@ -167,7 +167,7 @@ Pops a value from the back of this list.
 
 The popped value.
 
-### `reserve`[​](https://docs.modular.com/mojo/stdlib/collections/list#reserve "Direct link to reserve")
+### `reserve`
 
 `reserve(inout self: Self, new_capacity: Int)`
 
@@ -179,7 +179,7 @@ If the current capacity is greater or equal, this is a no-op. Otherwise, the sto
 
 - ​**new\_capacity** (`Int`): The new capacity.
 
-### `resize`[​](https://docs.modular.com/mojo/stdlib/collections/list#resize "Direct link to resize")
+### `resize`
 
 `resize(inout self: Self, new_size: Int, value: T)`
 
@@ -192,19 +192,19 @@ If the new size is smaller than the current one, elements at the end are discard
 - ​**new\_size** (`Int`): The new size.
 - ​**value** (`T`): The value to use to populate new elements.
 
-### `reverse`[​](https://docs.modular.com/mojo/stdlib/collections/list#reverse "Direct link to reverse")
+### `reverse`
 
 `reverse(inout self: Self)`
 
 Reverses the elements of the list.
 
-### `clear`[​](https://docs.modular.com/mojo/stdlib/collections/list#clear "Direct link to clear")
+### `clear`
 
 `clear(inout self: Self)`
 
 Clears the elements in the list.
 
-### `steal_data`[​](https://docs.modular.com/mojo/stdlib/collections/list#steal_data "Direct link to steal_data")
+### `steal_data`
 
 `steal_data(inout self: Self) -> AnyPointer[T]`
 
@@ -214,7 +214,7 @@ Take ownership of the underlying pointer from the list.
 
 The underlying data.
 
-### `__iter__`[​](https://docs.modular.com/mojo/stdlib/collections/list#__iter__ "Direct link to __iter__")
+### `__iter__`
 
 `__iter__[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_list::_List<:trait<_stdlib::_builtin::_value::_CollectionElement> T>, mut=mutability, self_life>) -> _ListIter[T, mutability, self_life]`
 

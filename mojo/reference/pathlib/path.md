@@ -6,7 +6,7 @@ Implements `Path` and related functions.
 
 - ​`DIR_SEPARATOR = cond(apply(:!lit.signature<("self": !lit.declref<@stdlib::@builtin::@bool::@Bool> borrow) -> i1> @stdlib::@builtin::@bool::@Bool::@"__mlir_i1__(stdlib::builtin::bool::Bool)", apply(:!lit.signature<() -> !lit.declref<@stdlib::@builtin::@bool::@Bool>> @stdlib::@sys::@info::@"os_is_windows()")), {:string "\\"}, {:string "/"})`
 
-## `Path`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#path "Direct link to path")
+## `Path`
 
 The Path object.
 
@@ -20,7 +20,7 @@ The Path object.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -42,7 +42,7 @@ Initializes a path with the provided path.
 
 - ​**path** (`String`): The file system path.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -52,7 +52,7 @@ Copy constructor for the path struct.
 
 - ​**existing** (`Self`): The existing struct to copy from.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: Self, owned existing: Self)`
 
@@ -62,7 +62,7 @@ Move data of an existing Path into a new one.
 
 - ​**existing** (`Self`): The existing Path.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, other: Self) -> Bool`
 
@@ -76,7 +76,7 @@ Returns True if the two paths are equal.
 
 True if the paths are equal and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, other: Self) -> Bool`
 
@@ -90,7 +90,7 @@ Returns True if the two paths are not equal.
 
 True if the paths are not equal and False otherwise.
 
-### `__truediv__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__truediv__ "Direct link to __truediv__")
+### `__truediv__`
 
 `__truediv__(self: Self, suffix: Self) -> Self`
 
@@ -128,7 +128,7 @@ Joins two paths using the system-defined path separator.
 
 A new path with the suffix appended to the current path.
 
-### `__itruediv__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__itruediv__ "Direct link to __itruediv__")
+### `__itruediv__`
 
 `__itruediv__(inout self: Self, suffix: String)`
 
@@ -138,7 +138,7 @@ Joins two paths using the system-defined path separator.
 
 - ​**suffix** (`String`): The suffix to append to the path.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -148,7 +148,7 @@ Returns a string representation of the path.
 
 A string represntation of the path.
 
-### `__fspath__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__fspath__ "Direct link to __fspath__")
+### `__fspath__`
 
 `__fspath__(self: Self) -> String`
 
@@ -158,7 +158,7 @@ Returns a string representation of the path.
 
 A string represntation of the path.
 
-### `__repr__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__repr__ "Direct link to __repr__")
+### `__repr__`
 
 `__repr__(self: Self) -> String`
 
@@ -168,7 +168,7 @@ Returns a printable representation of the path.
 
 A printable represntation of the path.
 
-### `__hash__`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#__hash__ "Direct link to __hash__")
+### `__hash__`
 
 `__hash__(self: Self) -> Int`
 
@@ -178,7 +178,7 @@ Hash the underlying path string using builtin hash.
 
 An integer value containing the hash of the path string.
 
-### `stat`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#stat "Direct link to stat")
+### `stat`
 
 `stat(self: Self) -> stat_result`
 
@@ -188,7 +188,7 @@ Returns the stat information on the path.
 
 A stat\_result object containing information about the path.
 
-### `lstat`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#lstat "Direct link to lstat")
+### `lstat`
 
 `lstat(self: Self) -> stat_result`
 
@@ -198,7 +198,7 @@ Returns the lstat information on the path. This is similar to stat, but if the f
 
 A stat\_result object containing information about the path.
 
-### `exists`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#exists "Direct link to exists")
+### `exists`
 
 `exists(self: Self) -> Bool`
 
@@ -208,7 +208,7 @@ Returns True if the path exists and False otherwise.
 
 True if the path exists on disk and False otherwise.
 
-### `is_dir`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#is_dir "Direct link to is_dir")
+### `is_dir`
 
 `is_dir(self: Self) -> Bool`
 
@@ -218,7 +218,7 @@ Returns True if the path is a directory and False otherwise.
 
 Return True if the path points to a directory (or a link pointing to a directory).
 
-### `is_file`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#is_file "Direct link to is_file")
+### `is_file`
 
 `is_file(self: Self) -> Bool`
 
@@ -228,7 +228,7 @@ Returns True if the path is a file and False otherwise.
 
 Return True if the path points to a file (or a link pointing to a file).
 
-### `read_text`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#read_text "Direct link to read_text")
+### `read_text`
 
 `read_text(self: Self) -> String`
 
@@ -238,7 +238,7 @@ Returns content of the file.
 
 Contents of file as string.
 
-### `read_bytes`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#read_bytes "Direct link to read_bytes")
+### `read_bytes`
 
 `read_bytes(self: Self) -> List[SIMD[si8, 1]]`
 
@@ -248,7 +248,7 @@ Returns content of the file as bytes.
 
 Contents of file as list of bytes.
 
-### `write_text`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#write_text "Direct link to write_text")
+### `write_text`
 
 `write_text[stringable: Stringable](self: Self, value: stringable)`
 
@@ -262,7 +262,7 @@ Writes the value to the file as text.
 
 - ​**value** (`stringable`): The value to write.
 
-### `suffix`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#suffix "Direct link to suffix")
+### `suffix`
 
 `suffix(self: Self) -> String`
 
@@ -272,7 +272,7 @@ The path's extension, if any. This includes the leading period. For example: '.t
 
 The path's extension.
 
-### `joinpath`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#joinpath "Direct link to joinpath")
+### `joinpath`
 
 `joinpath(self: Self, *pathsegments: String) -> Self`
 
@@ -286,7 +286,7 @@ Joins the Path using the pathsegments.
 
 The path concatination with the pathsegments using the directory separator.
 
-### `listdir`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#listdir "Direct link to listdir")
+### `listdir`
 
 `listdir(self: Self) -> List[Path]`
 
@@ -296,7 +296,7 @@ Gets the list of entries contained in the path provided.
 
 Returns the list of entries in the path provided.
 
-## `cwd`[​](https://docs.modular.com/mojo/stdlib/pathlib/path#cwd "Direct link to cwd")
+## `cwd`
 
 `cwd() -> Path`
 

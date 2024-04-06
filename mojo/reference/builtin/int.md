@@ -4,7 +4,7 @@ Implements the Int class.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `Int`[​](https://docs.modular.com/mojo/stdlib/builtin/int#int "Direct link to int")
+## `Int`
 
 This type represents an integer value.
 
@@ -24,7 +24,7 @@ This type represents an integer value.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -118,7 +118,7 @@ Construct Int from the given IntLiteral value.
 
 The constructed Int object.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -128,7 +128,7 @@ Convert this Int to Bool.
 
 False Bool value if the value is equal to 0 and True otherwise.
 
-### `__neg__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__neg__ "Direct link to __neg__")
+### `__neg__`
 
 `__neg__(self: Self) -> Self`
 
@@ -138,7 +138,7 @@ Return -self.
 
 The -self value.
 
-### `__pos__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__pos__ "Direct link to __pos__")
+### `__pos__`
 
 `__pos__(self: Self) -> Self`
 
@@ -148,7 +148,7 @@ Return +self.
 
 The +self value.
 
-### `__invert__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__invert__ "Direct link to __invert__")
+### `__invert__`
 
 `__invert__(self: Self) -> Self`
 
@@ -158,7 +158,7 @@ Return ~self.
 
 The ~self value.
 
-### `__lt__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__lt__ "Direct link to __lt__")
+### `__lt__`
 
 `__lt__(self: Self, rhs: Self) -> Bool`
 
@@ -172,7 +172,7 @@ Compare this Int to the RHS using LT comparison.
 
 True if this Int is less-than the RHS Int and False otherwise.
 
-### `__le__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__le__ "Direct link to __le__")
+### `__le__`
 
 `__le__(self: Self, rhs: Self) -> Bool`
 
@@ -186,7 +186,7 @@ Compare this Int to the RHS using LE comparison.
 
 True if this Int is less-or-equal than the RHS Int and False otherwise.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Bool`
 
@@ -200,7 +200,7 @@ Compare this Int to the RHS using EQ comparison.
 
 True if this Int is equal to the RHS Int and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Bool`
 
@@ -214,7 +214,7 @@ Compare this Int to the RHS using NE comparison.
 
 True if this Int is non-equal to the RHS Int and False otherwise.
 
-### `__gt__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__gt__ "Direct link to __gt__")
+### `__gt__`
 
 `__gt__(self: Self, rhs: Self) -> Bool`
 
@@ -228,7 +228,7 @@ Compare this Int to the RHS using GT comparison.
 
 True if this Int is greater-than the RHS Int and False otherwise.
 
-### `__ge__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__ge__ "Direct link to __ge__")
+### `__ge__`
 
 `__ge__(self: Self, rhs: Self) -> Bool`
 
@@ -242,7 +242,7 @@ Compare this Int to the RHS using GE comparison.
 
 True if this Int is greater-or-equal than the RHS Int and False otherwise.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, rhs: Self) -> Self`
 
@@ -256,7 +256,7 @@ Return `self + rhs`.
 
 `self + rhs` value.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__(self: Self, rhs: Self) -> Self`
 
@@ -270,7 +270,7 @@ Return `self - rhs`.
 
 `self - rhs` value.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, rhs: Self) -> Self`
 
@@ -284,7 +284,7 @@ Return `self * rhs`.
 
 `self * rhs` value.
 
-### `__truediv__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__truediv__ "Direct link to __truediv__")
+### `__truediv__`
 
 `__truediv__(self: Self, rhs: Self) -> SIMD[f64, 1]`
 
@@ -298,7 +298,7 @@ Return the floating point division of `self` and `rhs`.
 
 `float(self)/float(rhs)` value.
 
-### `__floordiv__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__floordiv__ "Direct link to __floordiv__")
+### `__floordiv__`
 
 `__floordiv__(self: Self, rhs: Self) -> Self`
 
@@ -312,7 +312,7 @@ Return the division of `self` and `rhs` rounded down to the nearest integer.
 
 `floor(self/rhs)` value.
 
-### `__mod__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__mod__ "Direct link to __mod__")
+### `__mod__`
 
 `__mod__(self: Self, rhs: Self) -> Self`
 
@@ -326,7 +326,7 @@ Return the remainder of self divided by rhs.
 
 The remainder of dividing self by rhs.
 
-### `__pow__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__pow__ "Direct link to __pow__")
+### `__pow__`
 
 `__pow__(self: Self, rhs: Self) -> Self`
 
@@ -342,7 +342,7 @@ Computes the power of an integer using the Russian Peasant Method.
 
 The value of `pow(self, rhs)`.
 
-### `__lshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__lshift__ "Direct link to __lshift__")
+### `__lshift__`
 
 `__lshift__(self: Self, rhs: Self) -> Self`
 
@@ -356,7 +356,7 @@ Return `self << rhs`.
 
 `self << rhs`.
 
-### `__rshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rshift__ "Direct link to __rshift__")
+### `__rshift__`
 
 `__rshift__(self: Self, rhs: Self) -> Self`
 
@@ -370,7 +370,7 @@ Return `self >> rhs`.
 
 `self >> rhs`.
 
-### `__and__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__and__ "Direct link to __and__")
+### `__and__`
 
 `__and__(self: Self, rhs: Self) -> Self`
 
@@ -384,7 +384,7 @@ Return `self & rhs`.
 
 `self & rhs`.
 
-### `__or__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__or__ "Direct link to __or__")
+### `__or__`
 
 `__or__(self: Self, rhs: Self) -> Self`
 
@@ -398,7 +398,7 @@ Return `self | rhs`.
 
 `self | rhs`.
 
-### `__xor__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__xor__ "Direct link to __xor__")
+### `__xor__`
 
 `__xor__(self: Self, rhs: Self) -> Self`
 
@@ -412,7 +412,7 @@ Return `self ^ rhs`.
 
 `self ^ rhs`.
 
-### `__radd__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__radd__ "Direct link to __radd__")
+### `__radd__`
 
 `__radd__(self: Self, value: Self) -> Self`
 
@@ -426,7 +426,7 @@ Return `value + self`.
 
 `value + self`.
 
-### `__rsub__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rsub__ "Direct link to __rsub__")
+### `__rsub__`
 
 `__rsub__(self: Self, value: Self) -> Self`
 
@@ -440,7 +440,7 @@ Return `value - self`.
 
 `value - self`.
 
-### `__rmul__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rmul__ "Direct link to __rmul__")
+### `__rmul__`
 
 `__rmul__(self: Self, value: Self) -> Self`
 
@@ -454,7 +454,7 @@ Return `value * self`.
 
 `value * self`.
 
-### `__rfloordiv__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rfloordiv__ "Direct link to __rfloordiv__")
+### `__rfloordiv__`
 
 `__rfloordiv__(self: Self, value: Self) -> Self`
 
@@ -468,7 +468,7 @@ Return `value // self`.
 
 `value // self`.
 
-### `__rmod__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rmod__ "Direct link to __rmod__")
+### `__rmod__`
 
 `__rmod__(self: Self, value: Self) -> Self`
 
@@ -482,7 +482,7 @@ Return `value % self`.
 
 `value % self`.
 
-### `__rpow__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rpow__ "Direct link to __rpow__")
+### `__rpow__`
 
 `__rpow__(self: Self, value: Self) -> Self`
 
@@ -496,7 +496,7 @@ Return `pow(value,self)`.
 
 `pow(value,self)`.
 
-### `__rlshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rlshift__ "Direct link to __rlshift__")
+### `__rlshift__`
 
 `__rlshift__(self: Self, value: Self) -> Self`
 
@@ -510,7 +510,7 @@ Return `value << self`.
 
 `value << self`.
 
-### `__rrshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rrshift__ "Direct link to __rrshift__")
+### `__rrshift__`
 
 `__rrshift__(self: Self, value: Self) -> Self`
 
@@ -524,7 +524,7 @@ Return `value >> self`.
 
 `value >> self`.
 
-### `__rand__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rand__ "Direct link to __rand__")
+### `__rand__`
 
 `__rand__(self: Self, value: Self) -> Self`
 
@@ -538,7 +538,7 @@ Return `value & self`.
 
 `value & self`.
 
-### `__ror__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__ror__ "Direct link to __ror__")
+### `__ror__`
 
 `__ror__(self: Self, value: Self) -> Self`
 
@@ -552,7 +552,7 @@ Return `value | self`.
 
 `value | self`.
 
-### `__rxor__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__rxor__ "Direct link to __rxor__")
+### `__rxor__`
 
 `__rxor__(self: Self, value: Self) -> Self`
 
@@ -566,7 +566,7 @@ Return `value ^ self`.
 
 `value ^ self`.
 
-### `__iadd__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__iadd__ "Direct link to __iadd__")
+### `__iadd__`
 
 `__iadd__(inout self: Self, rhs: Self)`
 
@@ -576,7 +576,7 @@ Compute `self + rhs` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__isub__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__isub__ "Direct link to __isub__")
+### `__isub__`
 
 `__isub__(inout self: Self, rhs: Self)`
 
@@ -586,7 +586,7 @@ Compute `self - rhs` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__imul__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__imul__ "Direct link to __imul__")
+### `__imul__`
 
 `__imul__(inout self: Self, rhs: Self)`
 
@@ -596,7 +596,7 @@ Compute self\*rhs and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__itruediv__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__itruediv__ "Direct link to __itruediv__")
+### `__itruediv__`
 
 `__itruediv__(inout self: Self, rhs: Self)`
 
@@ -608,7 +608,7 @@ Since `floor(self / rhs)` is equivalent to `self // rhs`, this yields the same a
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__ifloordiv__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__ifloordiv__ "Direct link to __ifloordiv__")
+### `__ifloordiv__`
 
 `__ifloordiv__(inout self: Self, rhs: Self)`
 
@@ -618,7 +618,7 @@ Compute `self // rhs` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__imod__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__imod__ "Direct link to __imod__")
+### `__imod__`
 
 `__imod__(inout self: Self, rhs: Self)`
 
@@ -628,7 +628,7 @@ Compute `self % rhs` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__ipow__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__ipow__ "Direct link to __ipow__")
+### `__ipow__`
 
 `__ipow__(inout self: Self, rhs: Self)`
 
@@ -638,7 +638,7 @@ Compute `pow(self, rhs)` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__ilshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__ilshift__ "Direct link to __ilshift__")
+### `__ilshift__`
 
 `__ilshift__(inout self: Self, rhs: Self)`
 
@@ -648,7 +648,7 @@ Compute `self << rhs` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__irshift__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__irshift__ "Direct link to __irshift__")
+### `__irshift__`
 
 `__irshift__(inout self: Self, rhs: Self)`
 
@@ -658,7 +658,7 @@ Compute `self >> rhs` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__iand__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__iand__ "Direct link to __iand__")
+### `__iand__`
 
 `__iand__(inout self: Self, rhs: Self)`
 
@@ -668,7 +668,7 @@ Compute `self & rhs` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__ixor__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__ixor__ "Direct link to __ixor__")
+### `__ixor__`
 
 `__ixor__(inout self: Self, rhs: Self)`
 
@@ -678,7 +678,7 @@ Compute `self ^ rhs` and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__ior__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__ior__ "Direct link to __ior__")
+### `__ior__`
 
 `__ior__(inout self: Self, rhs: Self)`
 
@@ -688,7 +688,7 @@ Compute self|rhs and save the result in self.
 
 - ​**rhs** (`Self`): The RHS value.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Self`
 
@@ -698,7 +698,7 @@ Gets the integral value (this is an identity function for Int).
 
 The value as an integer.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -708,7 +708,7 @@ Get the integer as a string.
 
 A string representation.
 
-### `__mlir_index__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__mlir_index__ "Direct link to __mlir_index__")
+### `__mlir_index__`
 
 `__mlir_index__(self: Self) -> index`
 
@@ -718,7 +718,7 @@ Convert to index.
 
 The corresponding \_\_mlir\_type.index value.
 
-### `__index__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__index__ "Direct link to __index__")
+### `__index__`
 
 `__index__(self: Self) -> Self`
 
@@ -730,7 +730,7 @@ For Int type this is simply the value.
 
 The corresponding Int value.
 
-### `__hash__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__hash__ "Direct link to __hash__")
+### `__hash__`
 
 `__hash__(self: Self) -> Self`
 
@@ -740,7 +740,7 @@ Hash the int using builtin hash.
 
 A 64-bit hash value. This value is _not_ suitable for cryptographic uses. Its intended usage is for data structures. See the `hash` builtin documentation for more details.
 
-## `Intable`[​](https://docs.modular.com/mojo/stdlib/builtin/int#intable "Direct link to intable")
+## `Intable`
 
 The `Intable` trait describes a type that can be converted to an Int.
 
@@ -770,7 +770,7 @@ If the `__int__()` method can raise an error, use the [`IntableRaising`](https:/
 
 **Methods:**
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -778,7 +778,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__int__-1 "Direct link to __int__-1")
+### `__int__`
 
 `__int__(self: T) -> Int`
 
@@ -788,7 +788,7 @@ Get the integral representation of the value.
 
 The integral representation of the value.
 
-## `IntableRaising`[​](https://docs.modular.com/mojo/stdlib/builtin/int#intableraising "Direct link to intableraising")
+## `IntableRaising`
 
 The `IntableRaising` trait describes a type can be converted to an Int, but the conversion might raise an error.
 
@@ -816,7 +816,7 @@ True
 
 **Methods:**
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__del__-1 "Direct link to __del__-1")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -824,7 +824,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/builtin/int#__int__-2 "Direct link to __int__-2")
+### `__int__`
 
 `__int__(self: T) -> Int`
 
@@ -836,7 +836,7 @@ Raises: If the type does not have an integral representation.
 
 The integral representation of the type.
 
-## `int`[​](https://docs.modular.com/mojo/stdlib/builtin/int#int-1 "Direct link to int-1")
+## `int`
 
 `int[T: Intable](value: T) -> Int`
 

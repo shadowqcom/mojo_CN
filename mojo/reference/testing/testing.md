@@ -8,7 +8,7 @@ You can import these APIs from the `testing` package. For example:
 from testing import assert_true
 ```
 
-## `assert_raises`[​](https://docs.modular.com/mojo/stdlib/testing/testing#assert_raises "Direct link to assert_raises")
+## `assert_raises`
 
 Context manager that asserts that the block raises an exception.
 
@@ -28,7 +28,7 @@ from testing import assert_raises# Good! Caught the raised error, test passeswit
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/testing/testing#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -42,13 +42,13 @@ Construct a context manager matching specific errors.
 
 - ​**contains** (`String`): The test will only pass if the error message includes the literal text passed.
 
-### `__enter__`[​](https://docs.modular.com/mojo/stdlib/testing/testing#__enter__ "Direct link to __enter__")
+### `__enter__`
 
 `__enter__(self: Self)`
 
 Enter the context manager.
 
-### `__exit__`[​](https://docs.modular.com/mojo/stdlib/testing/testing#__exit__ "Direct link to __exit__")
+### `__exit__`
 
 `__exit__(self: Self)`
 
@@ -62,7 +62,7 @@ Exit the context manager with an error.
 
 Raises: Error: If the error raised doesn't match the expected error to raise.
 
-## `assert_true`[​](https://docs.modular.com/mojo/stdlib/testing/testing#assert_true "Direct link to assert_true")
+## `assert_true`
 
 `assert_true[T: Boolable](val: T, msg: String)`
 
@@ -79,7 +79,7 @@ Raises: An Error with the provided message if assert fails and `None` otherwise.
 - ​**val** (`T`): The value to assert to be True.
 - ​**msg** (`String`): The message to be printed if the assertion fails.
 
-## `assert_false`[​](https://docs.modular.com/mojo/stdlib/testing/testing#assert_false "Direct link to assert_false")
+## `assert_false`
 
 `assert_false[T: Boolable](val: T, msg: String)`
 
@@ -96,7 +96,7 @@ Raises: An Error with the provided message if assert fails and `None` otherwise.
 - ​**val** (`T`): The value to assert to be False.
 - ​**msg** (`String`): The message to be printed if the assertion fails.
 
-## `assert_equal`[​](https://docs.modular.com/mojo/stdlib/testing/testing#assert_equal "Direct link to assert_equal")
+## `assert_equal`
 
 `assert_equal(lhs: Int, rhs: Int, msg: String)`
 
@@ -139,7 +139,7 @@ Raises: An Error with the provided message if assert fails and `None` otherwise.
 - ​**rhs** (`SIMD[type, size]`): The rhs of the equality.
 - ​**msg** (`String`): The message to be printed if the assertion fails.
 
-## `assert_not_equal`[​](https://docs.modular.com/mojo/stdlib/testing/testing#assert_not_equal "Direct link to assert_not_equal")
+## `assert_not_equal`
 
 `assert_not_equal(lhs: Int, rhs: Int, msg: String)`
 
@@ -182,7 +182,7 @@ Raises: An Error with the provided message if assert fails and `None` otherwise.
 - ​**rhs** (`SIMD[type, size]`): The rhs of the inequality.
 - ​**msg** (`String`): The message to be printed if the assertion fails.
 
-## `assert_almost_equal`[​](https://docs.modular.com/mojo/stdlib/testing/testing#assert_almost_equal "Direct link to assert_almost_equal")
+## `assert_almost_equal`
 
 `assert_almost_equal[type: DType, size: Int](lhs: SIMD[type, size], rhs: SIMD[type, size], /, *, msg: String, atol: SIMD[type, 1], rtol: SIMD[type, 1])`
 

@@ -4,7 +4,7 @@ Implements a 'range' call.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `range`[​](https://docs.modular.com/mojo/stdlib/builtin/range#range "Direct link to range")
+## `range`
 
 `range[type: Intable](*end: "type") -> _ZeroStartingRange`
 

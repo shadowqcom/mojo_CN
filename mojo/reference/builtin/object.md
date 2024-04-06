@@ -4,7 +4,7 @@ Defines the object type, which is used to represent untyped values.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `Attr`[​](https://docs.modular.com/mojo/stdlib/builtin/object#attr "Direct link to attr")
+## `Attr`
 
 A generic object's attributes are set on construction, after which the attributes can be read and modified, but no attributes may be removed or added.
 
@@ -20,7 +20,7 @@ A generic object's attributes are set on construction, after which the attribute
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self, key: StringLiteral, owned value: object)`
 
@@ -31,7 +31,7 @@ Initializes the attribute with a key and value.
 - ​**key** (`StringLiteral`): The string literal key.
 - ​**value** (`object`): The object value of the attribute.
 
-## `object`[​](https://docs.modular.com/mojo/stdlib/builtin/object#object "Direct link to object")
+## `object`
 
 Represents an object without a concrete type.
 
@@ -53,7 +53,7 @@ This is the type of arguments in `def` functions that do not have a type annotat
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__init__-1 "Direct link to __init__-1")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -179,7 +179,7 @@ Initializes the object with a sequence of zero or more attributes.
 
 - ​**attrs** (`*Attr`): Zero or more attributes.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -189,7 +189,7 @@ Copies the object. This clones the underlying string value and increases the ref
 
 - ​**existing** (`Self`): The object to copy.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: Self, owned existing: Self)`
 
@@ -199,13 +199,13 @@ Move the value of an object.
 
 - ​**existing** (`Self`): The object to move.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: Self)`
 
 Delete the object and release any owned memory.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -215,7 +215,7 @@ Performs conversion to bool according to Python semantics. Integers and floats a
 
 Whether the object is considered true.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, i: Self) -> Self`
 
@@ -241,7 +241,7 @@ Gets the i-th item from the object, where i is a tuple of indices.
 
 The value at the index.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__(self: Self, i: Self, value: Self)`
 
@@ -264,7 +264,7 @@ FIXME: We need this because `obj[i, j] = value` will attempt to invoke this meth
 - ​**j** (`Self`): The second index.
 - ​**value** (`Self`): The value to set.
 
-### `__neg__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__neg__ "Direct link to __neg__")
+### `__neg__`
 
 `__neg__(self: Self) -> Self`
 
@@ -274,7 +274,7 @@ Negation operator. Only valid for bool, int, and float types. Negation on any bo
 
 The negative of the current value.
 
-### `__invert__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__invert__ "Direct link to __invert__")
+### `__invert__`
 
 `__invert__(self: Self) -> Self`
 
@@ -284,7 +284,7 @@ Invert value operator. This is only valid for bool and int values.
 
 The inverted value.
 
-### `__lt__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__lt__ "Direct link to __lt__")
+### `__lt__`
 
 `__lt__(self: Self, rhs: Self) -> Self`
 
@@ -298,7 +298,7 @@ Less-than comparator. This lexicographically compares strings and lists.
 
 True if the object is less than the right hard argument.
 
-### `__le__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__le__ "Direct link to __le__")
+### `__le__`
 
 `__le__(self: Self, rhs: Self) -> Self`
 
@@ -312,7 +312,7 @@ Less-than-or-equal to comparator. This lexicographically compares strings and li
 
 True if the object is less than or equal to the right hard argument.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Self`
 
@@ -326,7 +326,7 @@ Equality comparator. This compares the elements of strings and lists.
 
 True if the objects are equal.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Self`
 
@@ -340,7 +340,7 @@ Inequality comparator. This compares the elements of strings and lists.
 
 True if the objects are not equal.
 
-### `__gt__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__gt__ "Direct link to __gt__")
+### `__gt__`
 
 `__gt__(self: Self, rhs: Self) -> Self`
 
@@ -354,7 +354,7 @@ Greater-than comparator. This lexicographically compares the elements of strings
 
 True if the left hand value is greater.
 
-### `__ge__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__ge__ "Direct link to __ge__")
+### `__ge__`
 
 `__ge__(self: Self, rhs: Self) -> Self`
 
@@ -368,7 +368,7 @@ Greater-than-or-equal-to comparator. This lexicographically compares the element
 
 True if the left hand value is greater than or equal to the right hand value.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, rhs: Self) -> Self`
 
@@ -382,7 +382,7 @@ Addition and concatenation operator. For arithmetic types, this function will co
 
 The sum or concatenated values.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__(self: Self, rhs: Self) -> Self`
 
@@ -396,7 +396,7 @@ Subtraction operator. Valid only for arithmetic types.
 
 The difference.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, rhs: Self) -> Self`
 
@@ -410,7 +410,7 @@ Multiplication operator. Valid only for arithmetic types.
 
 The product.
 
-### `__pow__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__pow__ "Direct link to __pow__")
+### `__pow__`
 
 `__pow__(self: Self, rhs: Self) -> Self`
 
@@ -424,7 +424,7 @@ Exponentiation operator. Valid only for arithmetic types.
 
 The left hand value raised to the power of the right hand value.
 
-### `__and__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__and__ "Direct link to __and__")
+### `__and__`
 
 `__and__(self: Self, rhs: Self) -> Self`
 
@@ -438,7 +438,7 @@ Bool AND operator. If the left hand value is False, return the left-hand value.
 
 The current value if it is False.
 
-### `__or__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__or__ "Direct link to __or__")
+### `__or__`
 
 `__or__(self: Self, rhs: Self) -> Self`
 
@@ -452,7 +452,7 @@ Bool OR operator. If the left hand value is True, return the left-hand value.
 
 The current value if it is True.
 
-### `__radd__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__radd__ "Direct link to __radd__")
+### `__radd__`
 
 `__radd__(self: Self, lhs: Self) -> Self`
 
@@ -466,7 +466,7 @@ Reverse addition or concatenation operator.
 
 The sum or concatenated value.
 
-### `__rsub__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__rsub__ "Direct link to __rsub__")
+### `__rsub__`
 
 `__rsub__(self: Self, lhs: Self) -> Self`
 
@@ -480,7 +480,7 @@ Reverse subtraction operator.
 
 The result of subtracting this from the left-hand-side value.
 
-### `__rmul__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__rmul__ "Direct link to __rmul__")
+### `__rmul__`
 
 `__rmul__(self: Self, lhs: Self) -> Self`
 
@@ -494,7 +494,7 @@ Reverse multiplication operator.
 
 The product.
 
-### `__rpow__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__rpow__ "Direct link to __rpow__")
+### `__rpow__`
 
 `__rpow__(self: Self, lhs: Self) -> Self`
 
@@ -508,7 +508,7 @@ Reverse exponentiation operator.
 
 The left hand value raised to the power of the right hand value.
 
-### `__rand__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__rand__ "Direct link to __rand__")
+### `__rand__`
 
 `__rand__(self: Self, lhs: Self) -> Self`
 
@@ -522,7 +522,7 @@ Reverse AND operator.
 
 The bitwise AND of the left-hand-side value and this.
 
-### `__ror__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__ror__ "Direct link to __ror__")
+### `__ror__`
 
 `__ror__(self: Self, lhs: Self) -> Self`
 
@@ -536,7 +536,7 @@ Reverse OR operator.
 
 The bitwise OR of the left-hand-side value and this.
 
-### `__iadd__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__iadd__ "Direct link to __iadd__")
+### `__iadd__`
 
 `__iadd__(inout self: Self, rhs: Self)`
 
@@ -546,7 +546,7 @@ In-place addition or concatenation operator.
 
 - ​**rhs** (`Self`): Right hand value.
 
-### `__isub__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__isub__ "Direct link to __isub__")
+### `__isub__`
 
 `__isub__(inout self: Self, rhs: Self)`
 
@@ -556,7 +556,7 @@ In-place subtraction operator.
 
 - ​**rhs** (`Self`): Right hand value.
 
-### `__imul__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__imul__ "Direct link to __imul__")
+### `__imul__`
 
 `__imul__(inout self: Self, rhs: Self)`
 
@@ -566,7 +566,7 @@ In-place multiplication operator.
 
 - ​**rhs** (`Self`): Right hand value.
 
-### `__ipow__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__ipow__ "Direct link to __ipow__")
+### `__ipow__`
 
 `__ipow__(inout self: Self, rhs: Self)`
 
@@ -576,7 +576,7 @@ In-place exponentiation operator.
 
 - ​**rhs** (`Self`): Right hand value.
 
-### `__iand__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__iand__ "Direct link to __iand__")
+### `__iand__`
 
 `__iand__(inout self: Self, rhs: Self)`
 
@@ -586,7 +586,7 @@ In-place AND operator.
 
 - ​**rhs** (`Self`): Right hand value.
 
-### `__ior__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__ior__ "Direct link to __ior__")
+### `__ior__`
 
 `__ior__(inout self: Self, rhs: Self)`
 
@@ -596,7 +596,7 @@ In-place OR operator.
 
 - ​**rhs** (`Self`): Right hand value.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
@@ -606,7 +606,7 @@ Performs conversion to integer according to Python semantics.
 
 The Int representation of the object.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -616,7 +616,7 @@ Performs conversion to string according to Python semantics.
 
 The String representation of the object.
 
-### `append`[​](https://docs.modular.com/mojo/stdlib/builtin/object#append "Direct link to append")
+### `append`
 
 `append(self: Self, value: Self)`
 
@@ -626,7 +626,7 @@ Appends a value to the list.
 
 - ​**value** (`Self`): The value to append.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -636,15 +636,15 @@ Returns the "length" of the object. Only strings, lists, and dictionaries have l
 
 The length of the string value or the number of elements in the list or dictionary value.
 
-### `__getattr__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__getattr__ "Direct link to __getattr__")
+### `__getattr__`
 
 `__getattr__(self: Self, key: StringLiteral) -> Self`
 
-### `__setattr__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__setattr__ "Direct link to __setattr__")
+### `__setattr__`
 
 `__setattr__(inout self: Self, key: StringLiteral, value: Self)`
 
-### `__call__`[​](https://docs.modular.com/mojo/stdlib/builtin/object#__call__ "Direct link to __call__")
+### `__call__`
 
 `__call__(self: Self) -> Self`
 
@@ -654,7 +654,7 @@ The length of the string value or the number of elements in the list or dictiona
 
 `__call__(self: Self, arg0: Self, arg1: Self, arg2: Self) -> Self`
 
-### `print`[​](https://docs.modular.com/mojo/stdlib/builtin/object#print "Direct link to print")
+### `print`
 
 `print(self: Self)`
 

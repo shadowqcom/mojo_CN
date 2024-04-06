@@ -8,7 +8,7 @@ You can import these APIs from the `python` package. For example:
 from python import Python
 ```
 
-## `Python`[​](https://docs.modular.com/mojo/stdlib/python/python#python "Direct link to python")
+## `Python`
 
 Provides methods that help you use Python code in Mojo.
 
@@ -22,13 +22,13 @@ Provides methods that help you use Python code in Mojo.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/python/python#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
 Default constructor.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/python/python#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -38,7 +38,7 @@ Copy constructor.
 
 - ​**existing** (`Self`): The existing instance to copy from.
 
-### `eval`[​](https://docs.modular.com/mojo/stdlib/python/python#eval "Direct link to eval")
+### `eval`
 
 `eval(inout self: Self, code: StringRef) -> Bool`
 
@@ -52,7 +52,7 @@ Executes the given Python code.
 
 `True` if the code executed successfully or `False` if the code raised an exception.
 
-### `evaluate`[​](https://docs.modular.com/mojo/stdlib/python/python#evaluate "Direct link to evaluate")
+### `evaluate`
 
 `static evaluate(expr: StringRef) -> PythonObject`
 
@@ -66,7 +66,7 @@ Executes the given Python code.
 
 `PythonObject` containing the result of the evaluation.
 
-### `add_to_path`[​](https://docs.modular.com/mojo/stdlib/python/python#add_to_path "Direct link to add_to_path")
+### `add_to_path`
 
 `static add_to_path(dir_path: String)`
 
@@ -82,7 +82,7 @@ from python import Python# Specify path to `mypython.py` modulePython.add_to_pat
 
 - ​**dir\_path** (`String`): The path to a Python module you want to import.
 
-### `import_module`[​](https://docs.modular.com/mojo/stdlib/python/python#import_module "Direct link to import_module")
+### `import_module`
 
 `static import_module(module: StringRef) -> PythonObject`
 
@@ -102,7 +102,7 @@ from python import Python# This is equivalent to Python's `import numpy as np`va
 
 The Python module.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/python/python#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(inout self: Self, str_obj: PythonObject) -> StringRef`
 
@@ -114,7 +114,7 @@ This function allows to convert Python objects to Mojo string type.
 
 Mojo string representing the given Python object.
 
-### `throw_python_exception_if_error_state`[​](https://docs.modular.com/mojo/stdlib/python/python#throw_python_exception_if_error_state "Direct link to throw_python_exception_if_error_state")
+### `throw_python_exception_if_error_state`
 
 `static throw_python_exception_if_error_state(inout cpython: CPython)`
 
@@ -124,7 +124,7 @@ Raise an exception if CPython interpreter is in an error state.
 
 - ​**cpython** (`CPython`): The cpython instance we wish to error check.
 
-### `is_type`[​](https://docs.modular.com/mojo/stdlib/python/python#is_type "Direct link to is_type")
+### `is_type`
 
 `static is_type(x: PythonObject, y: PythonObject) -> Bool`
 
@@ -139,7 +139,7 @@ Test if the `x` object is the `y` object, the same as `x is y` in Python.
 
 True if `x` and `y` are the same object and False otherwise.
 
-### `type`[​](https://docs.modular.com/mojo/stdlib/python/python#type "Direct link to type")
+### `type`
 
 `static type(obj: PythonObject) -> PythonObject`
 
@@ -153,7 +153,7 @@ Return Type of this PythonObject.
 
 A PythonObject that holds the type object.
 
-### `none`[​](https://docs.modular.com/mojo/stdlib/python/python#none "Direct link to none")
+### `none`
 
 `static none() -> PythonObject`
 

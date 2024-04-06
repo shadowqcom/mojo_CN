@@ -15,7 +15,7 @@ Value elements must be CollectionElements for a similar reason. Both key and val
 
 See the `Dict` docs for more details.
 
-## `DictEntry`[​](https://docs.modular.com/mojo/stdlib/collections/dict#dictentry "Direct link to dictentry")
+## `DictEntry`
 
 Store a key-value pair entry inside a dictionary.
 
@@ -38,7 +38,7 @@ Store a key-value pair entry inside a dictionary.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self, owned key: K, owned value: V)`
 
@@ -49,7 +49,7 @@ Create an entry from a key and value, computing the hash.
 - ​**key** (`K`): The key of the entry.
 - ​**value** (`V`): The value of the entry.
 
-## `Dict`[​](https://docs.modular.com/mojo/stdlib/collections/dict#dict "Direct link to dict")
+## `Dict`
 
 A container that stores key-value pairs.
 
@@ -86,7 +86,7 @@ from collections import Dictvar d = Dict[String, Int]()d["a"] = 1d["b"] = 2print
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__init__-1 "Direct link to __init__-1")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -100,7 +100,7 @@ Copy an existing dictiontary.
 
 - ​**existing** (`Self`): The existing dict.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, existing: Self)`
 
@@ -110,7 +110,7 @@ Copy an existing dictiontary.
 
 - ​**existing** (`Self`): The existing dict.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: Self, owned existing: Self)`
 
@@ -120,7 +120,7 @@ Move data of an existing dict into a new one.
 
 - ​**existing** (`Self`): The existing dict.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, key: K) -> V`
 
@@ -136,7 +136,7 @@ Raises: "KeyError" if the key isn't present.
 
 The value associated with the key, if it's present.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__(inout self: Self, key: K, value: V)`
 
@@ -147,7 +147,7 @@ Set a value in the dictionary by key.
 - ​**key** (`K`): The key to associate with the specified value.
 - ​**value** (`V`): The data to store in the dictionary.
 
-### `__contains__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__contains__ "Direct link to __contains__")
+### `__contains__`
 
 `__contains__(self: Self, key: K) -> Bool`
 
@@ -161,13 +161,13 @@ Check if a given value is in the dictionary or not.
 
 True if there key exists in the dictionary, False otherwise.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
 The number of elements currenly stored in the dictionary.
 
-### `find`[​](https://docs.modular.com/mojo/stdlib/collections/dict#find "Direct link to find")
+### `find`
 
 `find(self: Self, key: K) -> Optional[V]`
 
@@ -181,7 +181,7 @@ Find a value in the dictionary by key.
 
 An optional value containing a copy of the value if it was present, otherwise an empty Optional.
 
-### `pop`[​](https://docs.modular.com/mojo/stdlib/collections/dict#pop "Direct link to pop")
+### `pop`
 
 `pop(inout self: Self, key: K, owned default: Optional[V]) -> V`
 
@@ -198,7 +198,7 @@ Raises: "KeyError" if the key was not present in the dictionary and no default v
 
 The value associated with the key, if it was in the dictionary. If it wasn't, return the provided default value instead.
 
-### `__iter__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__iter__ "Direct link to __iter__")
+### `__iter__`
 
 `__iter__[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_dict::_Dict<:trait<_stdlib::_collections::_dict::_KeyElement> K, :trait<_stdlib::_builtin::_value::_CollectionElement> V>, mut=mutability, self_life>) -> _DictKeyIter[K, V, mutability, self_life]`
 
@@ -213,7 +213,7 @@ Iterate over the dict's keys as immutable references.
 
 An iterator of immutable references to the dictionary keys.
 
-### `keys`[​](https://docs.modular.com/mojo/stdlib/collections/dict#keys "Direct link to keys")
+### `keys`
 
 `keys[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_dict::_Dict<:trait<_stdlib::_collections::_dict::_KeyElement> K, :trait<_stdlib::_builtin::_value::_CollectionElement> V>, mut=mutability, self_life>) -> _DictKeyIter[K, V, mutability, self_life]`
 
@@ -228,7 +228,7 @@ Iterate over the dict's keys as immutable references.
 
 An iterator of immutable references to the dictionary keys.
 
-### `values`[​](https://docs.modular.com/mojo/stdlib/collections/dict#values "Direct link to values")
+### `values`
 
 `values[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_dict::_Dict<:trait<_stdlib::_collections::_dict::_KeyElement> K, :trait<_stdlib::_builtin::_value::_CollectionElement> V>, mut=mutability, self_life>) -> _DictValueIter[K, V, mutability, self_life]`
 
@@ -243,7 +243,7 @@ Iterate over the dict's values as references.
 
 An iterator of references to the dictionary values.
 
-### `items`[​](https://docs.modular.com/mojo/stdlib/collections/dict#items "Direct link to items")
+### `items`
 
 `items[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_dict::_Dict<:trait<_stdlib::_collections::_dict::_KeyElement> K, :trait<_stdlib::_builtin::_value::_CollectionElement> V>, mut=mutability, self_life>) -> _DictEntryIter[K, V, mutability, self_life]`
 
@@ -264,7 +264,7 @@ for e in dict.items():    print(e[].key, e[].value)
 
 An iterator of immutable references to the dictionary entries.
 
-## `KeyElement`[​](https://docs.modular.com/mojo/stdlib/collections/dict#keyelement "Direct link to keyelement")
+## `KeyElement`
 
 A trait composition for types which implement all requirements of dictionary keys. Dict keys must minimally be Movable, Hashable, and EqualityComparable for a hash map. Until we have references they must also be copyable.
 
@@ -274,7 +274,7 @@ A trait composition for types which implement all requirements of dictionary key
 
 **Methods:**
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__copyinit__-1 "Direct link to __copyinit__-1")
+### `__copyinit__`
 
 `__copyinit__(inout self: T, existing: T, /)`
 
@@ -284,7 +284,7 @@ Create a new instance of the value by copying an existing one.
 
 - ​**existing** (`T`): The value to copy.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__moveinit__-1 "Direct link to __moveinit__-1")
+### `__moveinit__`
 
 `__moveinit__(inout self: T, owned existing: T, /)`
 
@@ -294,7 +294,7 @@ Create a new instance of the value by moving the value of another.
 
 - ​**existing** (`T`): The value to move.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -302,7 +302,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: T, other: T) -> Bool`
 
@@ -316,7 +316,7 @@ Define whether two instances of the object are equal to each other.
 
 True if the instances are equal according to the type's definition of equality, False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: T, other: T) -> Bool`
 
@@ -330,7 +330,7 @@ Define whether two instances of the object are not equal to each other.
 
 True if the instances are not equal according to the type's definition of equality, False otherwise.
 
-### `__hash__`[​](https://docs.modular.com/mojo/stdlib/collections/dict#__hash__ "Direct link to __hash__")
+### `__hash__`
 
 `__hash__(self: T) -> Int`
 

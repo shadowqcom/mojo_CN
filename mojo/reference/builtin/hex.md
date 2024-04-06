@@ -4,7 +4,7 @@ Provides the `hex` function.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `hex`[​](https://docs.modular.com/mojo/stdlib/builtin/hex#hex "Direct link to hex")
+## `hex`
 
 `hex[T: Intable](value: T) -> String`
 

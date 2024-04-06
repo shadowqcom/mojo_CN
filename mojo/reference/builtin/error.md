@@ -4,7 +4,7 @@ Implements the Error class.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `Error`[​](https://docs.modular.com/mojo/stdlib/builtin/error#error "Direct link to error")
+## `Error`
 
 This type represents an Error.
 
@@ -20,7 +20,7 @@ This type represents an Error.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/error#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -66,7 +66,7 @@ Construct an Error object with a given string ref.
 
 The constructed Error object.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/error#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(existing: Self) -> Self`
 
@@ -76,13 +76,13 @@ Creates a deep copy of an existing error.
 
 The copy of the original error.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/error#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: Self)`
 
 Releases memory if allocated.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/builtin/error#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -92,7 +92,7 @@ Returns True if the error is set and false otherwise.
 
 True if the error object contains a value and False otherwise.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/error#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -102,7 +102,7 @@ Converts the Error to string representation.
 
 A String of the error message.
 
-### `__repr__`[​](https://docs.modular.com/mojo/stdlib/builtin/error#__repr__ "Direct link to __repr__")
+### `__repr__`
 
 `__repr__(self: Self) -> String`
 

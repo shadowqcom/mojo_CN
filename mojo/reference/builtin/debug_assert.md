@@ -4,7 +4,7 @@ Implements a debug assert.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `debug_assert`[​](https://docs.modular.com/mojo/stdlib/builtin/debug_assert#debug_assert "Direct link to debug_assert")
+## `debug_assert`
 
 `debug_assert(cond: Bool, msg: StringLiteral)`
 

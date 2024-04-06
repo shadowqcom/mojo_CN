@@ -8,7 +8,7 @@ You can import these APIs from the `math` package. For example:
 from math.polynomial import polynomial_evaluate
 ```
 
-## `EvaluationMethod`[​](https://docs.modular.com/mojo/stdlib/math/polynomial#evaluationmethod "Direct link to evaluationmethod")
+## `EvaluationMethod`
 
 The evaluation method used to evaluate the polynomial.
 
@@ -24,7 +24,7 @@ The evaluation method used to evaluate the polynomial.
 
 **Methods:**
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/math/polynomial#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, other: Self) -> Bool`
 
@@ -38,7 +38,7 @@ Checks if the two methods are equal.
 
 True if both methods are the same and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/math/polynomial#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, other: Self) -> Bool`
 
@@ -52,7 +52,7 @@ Checks if the two methods are not equal.
 
 True if both methods are the different and False otherwise.
 
-## `polynomial_evaluate`[​](https://docs.modular.com/mojo/stdlib/math/polynomial#polynomial_evaluate "Direct link to polynomial_evaluate")
+## `polynomial_evaluate`
 
 `polynomial_evaluate[dtype: DType, simd_width: Int, coefficients: List[SIMD[dtype, simd_width]], method: EvaluationMethod](x: SIMD[dtype, simd_width]) -> SIMD[dtype, simd_width]`
 

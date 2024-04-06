@@ -8,7 +8,7 @@ You can import these APIs from the `time` package. For example:
 from time import now
 ```
 
-## `now`[​](https://docs.modular.com/mojo/stdlib/time/time#now "Direct link to now")
+## `now`
 
 `now() -> Int`
 
@@ -18,7 +18,7 @@ Returns the current monotonic time time in nanoseconds. This function queries th
 
 The current time in ns.
 
-## `time_function`[​](https://docs.modular.com/mojo/stdlib/time/time#time_function "Direct link to time_function")
+## `time_function`
 
 `time_function[func: fn() capturing -> None]() -> Int`
 
@@ -32,7 +32,7 @@ Measures the time spent in the function.
 
 The time elapsed in the function in ns.
 
-## `sleep`[​](https://docs.modular.com/mojo/stdlib/time/time#sleep "Direct link to sleep")
+## `sleep`
 
 `sleep(sec: SIMD[f64, 1])`
 

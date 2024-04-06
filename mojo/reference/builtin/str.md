@@ -4,7 +4,7 @@ Provides the `str` function.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `Stringable`[​](https://docs.modular.com/mojo/stdlib/builtin/str#stringable "Direct link to stringable")
+## `Stringable`
 
 The `Stringable` trait describes a type that can be converted to a [`String`](https://docs.modular.com/mojo/stdlib/builtin/string.html).
 
@@ -34,7 +34,7 @@ If the `__str__()` method might raise an error, use the [`StringableRaising`](ht
 
 **Methods:**
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/str#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -42,7 +42,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/str#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: T) -> String`
 
@@ -52,7 +52,7 @@ Get the string representation of the type.
 
 The string representation of the type.
 
-## `StringableRaising`[​](https://docs.modular.com/mojo/stdlib/builtin/str#stringableraising "Direct link to stringableraising")
+## `StringableRaising`
 
 The StringableRaising trait describes a type that can be converted to a [`String`](https://docs.modular.com/mojo/stdlib/builtin/string.html).
 
@@ -80,7 +80,7 @@ True
 
 **Methods:**
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/str#__del__-1 "Direct link to __del__-1")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -88,7 +88,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/str#__str__-1 "Direct link to __str__-1")
+### `__str__`
 
 `__str__(self: T) -> String`
 
@@ -100,7 +100,7 @@ Raises: If there is an error when computing the string representation of the typ
 
 The string representation of the type.
 
-## `str`[​](https://docs.modular.com/mojo/stdlib/builtin/str#str "Direct link to str")
+## `str`
 
 `str[T: Stringable](value: T) -> String`
 

@@ -8,7 +8,7 @@ You can import these APIs from the `utils.loop` module. For example:
 from utils.loop import unroll
 ```
 
-## `unroll`[​](https://docs.modular.com/mojo/stdlib/utils/loop#unroll "Direct link to unroll")
+## `unroll`
 
 `unroll[func: fn[Int]() capturing -> None, count: Int]()`
 

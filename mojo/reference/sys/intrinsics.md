@@ -8,7 +8,7 @@ You can import these APIs from the `complex` package. For example:
 from sys.intrinsics import PrefetchLocality
 ```
 
-## `PrefetchLocality`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#prefetchlocality "Direct link to prefetchlocality")
+## `PrefetchLocality`
 
 The prefetch locality.
 
@@ -34,7 +34,7 @@ The locality, rw, and cache type correspond to LLVM prefetch intrinsic's inputs 
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(value: Int) -> Self`
 
@@ -48,7 +48,7 @@ Constructs a prefetch locality option.
 
 The prefetch locality constructed.
 
-## `PrefetchRW`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#prefetchrw "Direct link to prefetchrw")
+## `PrefetchRW`
 
 Prefetch read or write.
 
@@ -68,7 +68,7 @@ Prefetch read or write.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#__init__-1 "Direct link to __init__-1")
+### `__init__`
 
 `__init__(value: Int) -> Self`
 
@@ -82,7 +82,7 @@ Constructs a prefetch read-write option.
 
 The prefetch read-write option constructed.
 
-## `PrefetchCache`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#prefetchcache "Direct link to prefetchcache")
+## `PrefetchCache`
 
 Prefetch cache type.
 
@@ -102,7 +102,7 @@ Prefetch cache type.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#__init__-2 "Direct link to __init__-2")
+### `__init__`
 
 `__init__(value: Int) -> Self`
 
@@ -116,7 +116,7 @@ Constructs a prefetch option.
 
 The prefetch cache type that was constructed.
 
-## `PrefetchOptions`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#prefetchoptions "Direct link to prefetchoptions")
+## `PrefetchOptions`
 
 Collection of configuration parameters for a prefetch intrinsic call.
 
@@ -140,13 +140,13 @@ Note: the actual behavior of the prefetch op and concrete interpretation of thes
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#__init__-3 "Direct link to __init__-3")
+### `__init__`
 
 `__init__(inout self: Self)`
 
 Constructs an instance of PrefetchOptions with default params.
 
-### `for_read`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#for_read "Direct link to for_read")
+### `for_read`
 
 `for_read(self: Self) -> Self`
 
@@ -156,7 +156,7 @@ Sets the prefetch purpose to read.
 
 The updated prefetch parameter.
 
-### `for_write`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#for_write "Direct link to for_write")
+### `for_write`
 
 `for_write(self: Self) -> Self`
 
@@ -166,7 +166,7 @@ Sets the prefetch purpose to write.
 
 The updated prefetch parameter.
 
-### `no_locality`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#no_locality "Direct link to no_locality")
+### `no_locality`
 
 `no_locality(self: Self) -> Self`
 
@@ -176,7 +176,7 @@ Sets the prefetch locality to none.
 
 The updated prefetch parameter.
 
-### `low_locality`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#low_locality "Direct link to low_locality")
+### `low_locality`
 
 `low_locality(self: Self) -> Self`
 
@@ -186,7 +186,7 @@ Sets the prefetch locality to low.
 
 The updated prefetch parameter.
 
-### `medium_locality`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#medium_locality "Direct link to medium_locality")
+### `medium_locality`
 
 `medium_locality(self: Self) -> Self`
 
@@ -196,7 +196,7 @@ Sets the prefetch locality to medium.
 
 The updated prefetch parameter.
 
-### `high_locality`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#high_locality "Direct link to high_locality")
+### `high_locality`
 
 `high_locality(self: Self) -> Self`
 
@@ -206,7 +206,7 @@ Sets the prefetch locality to high.
 
 The updated prefetch parameter.
 
-### `to_data_cache`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#to_data_cache "Direct link to to_data_cache")
+### `to_data_cache`
 
 `to_data_cache(self: Self) -> Self`
 
@@ -216,7 +216,7 @@ Sets the prefetch target to data cache.
 
 The updated prefetch parameter.
 
-### `to_instruction_cache`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#to_instruction_cache "Direct link to to_instruction_cache")
+### `to_instruction_cache`
 
 `to_instruction_cache(self: Self) -> Self`
 
@@ -226,7 +226,7 @@ Sets the prefetch target to instruction cache.
 
 The updated prefetch parameter.
 
-## `llvm_intrinsic`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#llvm_intrinsic "Direct link to llvm_intrinsic")
+## `llvm_intrinsic`
 
 `llvm_intrinsic[intrin: StringLiteral, type: AnyRegType]() -> *"type"`
 
@@ -533,7 +533,7 @@ Calls the LLVM intrinsic with the name intrin and return type type on arguments 
 
 The result of calling the llvm intrinsic with arg0...arg9 as arguments.
 
-## `gather`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#gather "Direct link to gather")
+## `gather`
 
 `gather[type: DType, size: Int](base: SIMD[address, size], mask: SIMD[bool, size], passthrough: SIMD[type, size], alignment: Int) -> SIMD[type, size]`
 
@@ -569,7 +569,7 @@ for (int i = 0; i < N; i++)  result[i] = mask[i] ? *base[i] : passthrough[i];
 
 A SIMD\[type, size\] containing the result of the gather operation.
 
-## `scatter`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#scatter "Direct link to scatter")
+## `scatter`
 
 `scatter[type: DType, size: Int](value: SIMD[type, size], base: SIMD[address, size], mask: SIMD[bool, size], alignment: Int)`
 
@@ -605,7 +605,7 @@ for (int i = 0; i < N; i++)  if (mask[i])    base[i] = value[i];
 - ​**mask** (`SIMD[bool, size]`): A binary vector which prevents memory access to certain lanes of the base vector.
 - ​**alignment** (`Int`): The alignment of the source addresses. Must be 0 or a power of two constant integer value.
 
-## `prefetch`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#prefetch "Direct link to prefetch")
+## `prefetch`
 
 `prefetch[params: PrefetchOptions, type: DType, address_space: AddressSpace](addr: DTypePointer[type, address_space])`
 
@@ -623,7 +623,7 @@ The prefetch function provides prefetching hints for the target to prefetch inst
 
 - ​**addr** (`DTypePointer[type, address_space]`): The data pointer to prefetch.
 
-## `masked_load`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#masked_load "Direct link to masked_load")
+## `masked_load`
 
 `masked_load[size: Int, addr: DType, addr: AddressSpace](addr: DTypePointer[addr, addr], mask: SIMD[bool, size], passthrough: SIMD[addr, size], alignment: Int) -> SIMD[addr, size]`
 
@@ -644,7 +644,7 @@ Loads data from memory and return it, replacing masked lanes with values from th
 
 The loaded memory stored in a vector of type SIMD\[type, size\].
 
-## `masked_store`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#masked_store "Direct link to masked_store")
+## `masked_store`
 
 `masked_store[size: Int, value: DType, value: Int](value: SIMD[value, value], addr: DTypePointer[value, 0], mask: SIMD[bool, size], alignment: Int)`
 
@@ -661,7 +661,7 @@ Stores a value at a memory location, skipping masked lanes.
 - ​**mask** (`SIMD[bool, size]`): A binary vector which prevents memory access to certain lanes of `value`.
 - ​**alignment** (`Int`): The alignment of the destination locations. Must be 0 or a power of two constant integer value.
 
-## `compressed_store`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#compressed_store "Direct link to compressed_store")
+## `compressed_store`
 
 `compressed_store[type: DType, size: Int](value: SIMD[type, size], addr: DTypePointer[type, 0], mask: SIMD[bool, size])`
 
@@ -678,7 +678,7 @@ Compresses the lanes of `value`, skipping `mask` lanes, and stores at `addr`.
 - ​**addr** (`DTypePointer[type, 0]`): The memory location to store the compressed data.
 - ​**mask** (`SIMD[bool, size]`): A binary vector which prevents memory access to certain lanes of `value`.
 
-## `strided_load`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#strided_load "Direct link to strided_load")
+## `strided_load`
 
 `strided_load[type: DType, simd_width: Int, address_space: AddressSpace](addr: DTypePointer[type, address_space], stride: Int, mask: SIMD[bool, simd_width]) -> SIMD[type, simd_width]`
 
@@ -719,7 +719,7 @@ Loads values from addr according to a specific stride.
 
 A vector containing the loaded data.
 
-## `strided_store`[​](https://docs.modular.com/mojo/stdlib/sys/intrinsics#strided_store "Direct link to strided_store")
+## `strided_store`
 
 `strided_store[type: DType, simd_width: Int, address_space: AddressSpace](value: SIMD[type, simd_width], addr: DTypePointer[type, address_space], stride: Int, mask: SIMD[bool, simd_width])`
 

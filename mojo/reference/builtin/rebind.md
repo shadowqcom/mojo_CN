@@ -4,7 +4,7 @@ Implements type rebind.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `rebind`[​](https://docs.modular.com/mojo/stdlib/builtin/rebind#rebind "Direct link to rebind")
+## `rebind`
 
 `rebind[dest_type: AnyRegType, src_type: AnyRegType](val: src_type) -> dest_type`
 

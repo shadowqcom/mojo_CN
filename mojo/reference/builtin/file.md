@@ -16,7 +16,7 @@ Or use a `with` statement to close the file automatically:
 with open("my_file.txt", "r") as f:  print(f.read())
 ```
 
-## `FileHandle`[​](https://docs.modular.com/mojo/stdlib/builtin/file#filehandle "Direct link to filehandle")
+## `FileHandle`
 
 File handle to an opened file.
 
@@ -30,7 +30,7 @@ File handle to an opened file.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/file#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -54,7 +54,7 @@ Construct the FileHandle using the file path and string.
 - ​**path** (`StringRef`): The file path.
 - ​**mode** (`StringRef`): The mode to open the file in (the mode can be "r" or "w").
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/builtin/file#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: Self, owned existing: Self)`
 
@@ -64,19 +64,19 @@ Moves constructor for the file handle.
 
 - ​**existing** (`Self`): The existing file handle.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/file#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: Self)`
 
 Closes the file handle.
 
-### `close`[​](https://docs.modular.com/mojo/stdlib/builtin/file#close "Direct link to close")
+### `close`
 
 `close(inout self: Self)`
 
 Closes the file handle.
 
-### `read`[​](https://docs.modular.com/mojo/stdlib/builtin/file#read "Direct link to read")
+### `read`
 
 `read(self: Self, size: SIMD[si64, 1]) -> String`
 
@@ -90,7 +90,7 @@ Reads the data from the file.
 
 The contents of the file.
 
-### `read_bytes`[​](https://docs.modular.com/mojo/stdlib/builtin/file#read_bytes "Direct link to read_bytes")
+### `read_bytes`
 
 `read_bytes(self: Self, size: SIMD[si64, 1]) -> List[SIMD[si8, 1]]`
 
@@ -104,7 +104,7 @@ Read from file buffer until we have `size` characters or we hit EOF. If `size` i
 
 The contents of the file.
 
-### `seek`[​](https://docs.modular.com/mojo/stdlib/builtin/file#seek "Direct link to seek")
+### `seek`
 
 `seek(self: Self, offset: SIMD[ui64, 1]) -> SIMD[ui64, 1]`
 
@@ -120,7 +120,7 @@ Raises: An error if this file handle is invalid, or if file seek returned a fail
 
 The resulting byte offset from the start of the file.
 
-### `write`[​](https://docs.modular.com/mojo/stdlib/builtin/file#write "Direct link to write")
+### `write`
 
 `write(self: Self, data: StringLiteral)`
 
@@ -146,13 +146,13 @@ Write the data to the file.
 
 - ​**data** (`StringRef`): The data to write to the file.
 
-### `__enter__`[​](https://docs.modular.com/mojo/stdlib/builtin/file#__enter__ "Direct link to __enter__")
+### `__enter__`
 
 `__enter__(owned self: Self) -> Self`
 
 The function to call when entering the context.
 
-## `open`[​](https://docs.modular.com/mojo/stdlib/builtin/file#open "Direct link to open")
+## `open`
 
 `open(path: String, mode: String) -> FileHandle`
 

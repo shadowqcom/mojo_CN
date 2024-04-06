@@ -8,7 +8,7 @@ You can import these APIs from the `memory` package. For example:
 from memory.unsafe import Pointer, AnyLifetime
 ```
 
-## `AddressSpace`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#addressspace "Direct link to addressspace")
+## `AddressSpace`
 
 Address space of the pointer.
 
@@ -22,7 +22,7 @@ Address space of the pointer.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(value: Int) -> Self`
 
@@ -48,7 +48,7 @@ Initializes the address space from the underlying integeral value.
 
 The address space.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, other: Self) -> Bool`
 
@@ -62,7 +62,7 @@ True if the two address spaces are equal and False otherwise.
 
 True if the two address spaces are equal and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, other: Self) -> Bool`
 
@@ -76,7 +76,7 @@ True if the two address spaces are inequal and False otherwise.
 
 True if the two address spaces are inequal and False otherwise.
 
-### `value`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#value "Direct link to value")
+### `value`
 
 `value(self: Self) -> Int`
 
@@ -86,7 +86,7 @@ The integral value of the address space.
 
 The integral value of the address space.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
@@ -96,7 +96,7 @@ The integral value of the address space.
 
 The integral value of the address space.
 
-## `Reference`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#reference "Direct link to reference")
+## `Reference`
 
 Defines a non-nullable safe reference.
 
@@ -120,7 +120,7 @@ Defines a non-nullable safe reference.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__init__-1 "Direct link to __init__-1")
+### `__init__`
 
 `__init__(inout self: Self, value: !lit.ref<:trait<_stdlib::_builtin::_anytype::_AnyType> *"type", mut=is_mutable, lifetime>)`
 
@@ -130,7 +130,7 @@ Constructs a Reference from the MLIR reference.
 
 - ​**value** (`!lit.ref<:trait<_stdlib::_builtin::_anytype::_AnyType> *"type", mut=is_mutable, lifetime>`): The MLIR reference.
 
-### `__refitem__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__refitem__ "Direct link to __refitem__")
+### `__refitem__`
 
 `__refitem__(self: Self) -> !lit.ref<:trait<_stdlib::_builtin::_anytype::_AnyType> *"type", mut=is_mutable, lifetime>`
 
@@ -140,7 +140,7 @@ Enable subscript syntax `ref[]` to access the element.
 
 The MLIR reference for the Mojo compiler to use.
 
-### `__mlir_ref__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__mlir_ref__ "Direct link to __mlir_ref__")
+### `__mlir_ref__`
 
 `__mlir_ref__(self: Self) -> !lit.ref<:trait<_stdlib::_builtin::_anytype::_AnyType> *"type", mut=is_mutable, lifetime>`
 
@@ -150,7 +150,7 @@ Enable the Mojo compiler to see into `Reference`.
 
 The MLIR reference for the Mojo compiler to use.
 
-### `get_unsafe_pointer`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#get_unsafe_pointer "Direct link to get_unsafe_pointer")
+### `get_unsafe_pointer`
 
 `get_unsafe_pointer(self: Self) -> Pointer[*"type", 0]`
 
@@ -160,7 +160,7 @@ Constructs a Pointer from a safe reference.
 
 Constructed Pointer object.
 
-### `offset`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#offset "Direct link to offset")
+### `offset`
 
 `offset(self: Self, offset: Int) -> Self`
 
@@ -174,7 +174,7 @@ Offset the reference like an array.
 
 A new reference.
 
-### `bitcast_element`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#bitcast_element "Direct link to bitcast_element")
+### `bitcast_element`
 
 `bitcast_element[new_element_type: AnyType](self: Self) -> Reference[new_element_type, is_mutable, lifetime]`
 
@@ -188,13 +188,13 @@ Cast the reference to one of another element type, but the same lifetime, mutabi
 
 The new reference.
 
-### `destroy_element_unsafe`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#destroy_element_unsafe "Direct link to destroy_element_unsafe")
+### `destroy_element_unsafe`
 
 `destroy_element_unsafe(self: Self)`
 
 This unsafe operation runs the destructor of the element addressed by this reference. This is equivalent to `x->~Type()` syntax in C++.
 
-## `Pointer`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#pointer "Direct link to pointer")
+## `Pointer`
 
 Defines a Pointer struct that contains the address of a register passable type.
 
@@ -217,7 +217,7 @@ Defines a Pointer struct that contains the address of a register passable type.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__init__-2 "Direct link to __init__-2")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -263,7 +263,7 @@ Constructs a Pointer from the value of scalar address.
 
 Constructed Pointer object.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -273,7 +273,7 @@ Checks if the Pointer is null.
 
 Returns False if the Pointer is null and True otherwise.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__[T: Intable](self: Self, offset: T) -> *"type"`
 
@@ -291,7 +291,7 @@ Loads the value the Pointer object points to with the given offset.
 
 The loaded value.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__[T: Intable](self: Self, offset: T, *val: "type")`
 
@@ -306,7 +306,7 @@ Stores the specified value to the location the Pointer object points to with the
 - ​**offset** (`T`): The offset to store to.
 - ​**val** (`*"type"`): The value to store.
 
-### `__lt__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__lt__ "Direct link to __lt__")
+### `__lt__`
 
 `__lt__(self: Self, rhs: Self) -> Bool`
 
@@ -320,7 +320,7 @@ Returns True if this pointer represents a lower address than rhs.
 
 True if this pointer represents a lower address and False otherwise.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__eq__-1 "Direct link to __eq__-1")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Bool`
 
@@ -334,7 +334,7 @@ Returns True if the two pointers are equal.
 
 True if the two pointers are equal and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__ne__-1 "Direct link to __ne__-1")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Bool`
 
@@ -348,7 +348,7 @@ Returns True if the two pointers are not equal.
 
 True if the two pointers are not equal and False otherwise.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__[T: Intable](self: Self, rhs: T) -> Self`
 
@@ -366,7 +366,7 @@ Returns a new pointer shifted by the specified offset.
 
 The new Pointer shifted by the offset.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__[T: Intable](self: Self, rhs: T) -> Self`
 
@@ -384,7 +384,7 @@ Returns a new pointer shifted back by the specified offset.
 
 The new Pointer shifted back by the offset.
 
-### `__iadd__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__iadd__ "Direct link to __iadd__")
+### `__iadd__`
 
 `__iadd__[T: Intable](inout self: Self, rhs: T)`
 
@@ -398,7 +398,7 @@ Shifts the current pointer by the specified offset.
 
 - ​**rhs** (`T`): The offset.
 
-### `__isub__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__isub__ "Direct link to __isub__")
+### `__isub__`
 
 `__isub__[T: Intable](inout self: Self, rhs: T)`
 
@@ -412,7 +412,7 @@ Shifts back the current pointer by the specified offset.
 
 - ​**rhs** (`T`): The offset.
 
-### `__refitem__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__refitem__-1 "Direct link to __refitem__-1")
+### `__refitem__`
 
 `__refitem__(self: Self) -> !lit.ref<*"type", mut #lit.lifetime, #lit.struct.extract<:_stdlib::_builtin::_int::_Int apply(:!lit.signature<("self": !lit.declref<_stdlib::_memory::_unsafe::_AddressSpace> borrow) -> !lit.declref<_stdlib::_builtin::_int::_Int>> _stdlib::_memory::_unsafe::_AddressSpace::_"value(stdlib::memory::unsafe::AddressSpace)", address_space), "value">>`
 
@@ -422,7 +422,7 @@ Enable subscript syntax `ref[]` to access the element.
 
 The MLIR reference for the Mojo compiler to use.
 
-### `get_null`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#get_null "Direct link to get_null")
+### `get_null`
 
 `static get_null() -> Self`
 
@@ -432,7 +432,7 @@ Constructs a Pointer representing nullptr.
 
 Constructed nullptr Pointer object.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -442,7 +442,7 @@ Format this pointer as a hexadecimal string.
 
 A String containing the hexadecimal representation of the memory location destination of this pointer.
 
-### `address_of`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#address_of "Direct link to address_of")
+### `address_of`
 
 `static address_of(inout *arg: "type") -> Self`
 
@@ -456,7 +456,7 @@ Gets the address of the argument.
 
 A Pointer struct which contains the address of the argument.
 
-### `load`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#load "Direct link to load")
+### `load`
 
 `load[alignment: Int](self: Self) -> *"type"`
 
@@ -487,7 +487,7 @@ Loads the value the Pointer object points to with the given offset.
 
 The loaded value.
 
-### `store`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#store "Direct link to store")
+### `store`
 
 `store[T: Intable, alignment: Int](self: Self, offset: T, *value: "type")`
 
@@ -515,7 +515,7 @@ Stores the specified value to the location the Pointer object points to.
 
 - ​**value** (`*"type"`): The value to store.
 
-### `nt_store`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#nt_store "Direct link to nt_store")
+### `nt_store`
 
 `nt_store(self: Self, *value: "type")`
 
@@ -527,7 +527,7 @@ The address must be properly aligned, 64B for avx512, 32B for avx2, and 16B for 
 
 - ​**value** (`*"type"`): The value to store.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__int__-1 "Direct link to __int__-1")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
@@ -537,7 +537,7 @@ Returns the pointer address as an integer.
 
 The address of the pointer as an Int.
 
-### `alloc`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#alloc "Direct link to alloc")
+### `alloc`
 
 `static alloc(count: Int, /, *, alignment: Int) -> Self`
 
@@ -552,13 +552,13 @@ Heap-allocates a number of element of the specified type using the specified ali
 
 A new Pointer object which has been allocated on the heap.
 
-### `free`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#free "Direct link to free")
+### `free`
 
 `free(self: Self)`
 
 Frees the heap allocated memory.
 
-### `bitcast`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#bitcast "Direct link to bitcast")
+### `bitcast`
 
 `bitcast[new_type: AnyRegType](self: Self) -> Pointer[new_type, address_space]`
 
@@ -572,7 +572,7 @@ Bitcasts a Pointer to a different type.
 
 A new Pointer object with the specified type and the same address, as the original Pointer.
 
-### `address_space_cast`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#address_space_cast "Direct link to address_space_cast")
+### `address_space_cast`
 
 `address_space_cast[new_address_space: AddressSpace](self: Self) -> Pointer[*"type", new_address_space]`
 
@@ -586,7 +586,7 @@ Casts a Pointer to a different address space.
 
 A new Pointer object with the specified type and the same address, as the original Pointer but located in a different address space.
 
-### `offset`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#offset-1 "Direct link to offset-1")
+### `offset`
 
 `offset[T: Intable](self: Self, idx: T) -> Self`
 
@@ -604,7 +604,7 @@ Returns a new pointer shifted by the specified offset.
 
 The new Pointer shifted by the offset.
 
-## `DTypePointer`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#dtypepointer "Direct link to dtypepointer")
+## `DTypePointer`
 
 Defines a `DTypePointer` struct that contains an address of the given dtype.
 
@@ -629,7 +629,7 @@ Defines a `DTypePointer` struct that contains an address of the given dtype.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__init__-3 "Direct link to __init__-3")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -675,7 +675,7 @@ Constructs a `DTypePointer` from the value of scalar address.
 
 Constructed `DTypePointer` object.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__bool__-1 "Direct link to __bool__-1")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -685,7 +685,7 @@ Checks if the DTypePointer is _null_.
 
 Returns False if the DTypePointer is _null_ and True otherwise.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__getitem__-1 "Direct link to __getitem__-1")
+### `__getitem__`
 
 `__getitem__[T: Intable](self: Self, offset: T) -> SIMD[type, 1]`
 
@@ -703,7 +703,7 @@ Loads a single element (SIMD of size 1) from the pointer at the specified index.
 
 The loaded value.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__setitem__-1 "Direct link to __setitem__-1")
+### `__setitem__`
 
 `__setitem__[T: Intable](self: Self, offset: T, val: SIMD[type, 1])`
 
@@ -718,7 +718,7 @@ Stores a single element value at the given offset.
 - ​**offset** (`T`): The offset to store to.
 - ​**val** (`SIMD[type, 1]`): The value to store.
 
-### `__lt__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__lt__-1 "Direct link to __lt__-1")
+### `__lt__`
 
 `__lt__(self: Self, rhs: Self) -> Bool`
 
@@ -732,7 +732,7 @@ Returns True if this pointer represents a lower address than rhs.
 
 True if this pointer represents a lower address and False otherwise.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__eq__-2 "Direct link to __eq__-2")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Bool`
 
@@ -746,7 +746,7 @@ Returns True if the two pointers are equal.
 
 True if the two pointers are equal and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__ne__-2 "Direct link to __ne__-2")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Bool`
 
@@ -760,7 +760,7 @@ Returns True if the two pointers are not equal.
 
 True if the two pointers are not equal and False otherwise.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__add__-1 "Direct link to __add__-1")
+### `__add__`
 
 `__add__[T: Intable](self: Self, rhs: T) -> Self`
 
@@ -778,7 +778,7 @@ Returns a new pointer shifted by the specified offset.
 
 The new DTypePointer shifted by the offset.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__sub__-1 "Direct link to __sub__-1")
+### `__sub__`
 
 `__sub__[T: Intable](self: Self, rhs: T) -> Self`
 
@@ -796,7 +796,7 @@ Returns a new pointer shifted back by the specified offset.
 
 The new DTypePointer shifted by the offset.
 
-### `__iadd__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__iadd__-1 "Direct link to __iadd__-1")
+### `__iadd__`
 
 `__iadd__[T: Intable](inout self: Self, rhs: T)`
 
@@ -810,7 +810,7 @@ Shifts the current pointer by the specified offset.
 
 - ​**rhs** (`T`): The offset.
 
-### `__isub__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__isub__-1 "Direct link to __isub__-1")
+### `__isub__`
 
 `__isub__[T: Intable](inout self: Self, rhs: T)`
 
@@ -824,7 +824,7 @@ Shifts back the current pointer by the specified offset.
 
 - ​**rhs** (`T`): The offset.
 
-### `get_null`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#get_null-1 "Direct link to get_null-1")
+### `get_null`
 
 `static get_null() -> Self`
 
@@ -834,7 +834,7 @@ Constructs a `DTypePointer` representing _nullptr_.
 
 Constructed _nullptr_ `DTypePointer` object.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__str__-1 "Direct link to __str__-1")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -844,7 +844,7 @@ Format this pointer as a hexadecimal string.
 
 A String containing the hexadecimal representation of the memory location destination of this pointer.
 
-### `address_of`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#address_of-1 "Direct link to address_of-1")
+### `address_of`
 
 `static address_of(inout arg: SIMD[type, 1]) -> Self`
 
@@ -858,7 +858,7 @@ Gets the address of the argument.
 
 A DTypePointer struct which contains the address of the argument.
 
-### `alloc`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#alloc-1 "Direct link to alloc-1")
+### `alloc`
 
 `static alloc(count: Int, /, *, alignment: Int) -> Self`
 
@@ -873,13 +873,13 @@ Heap-allocates a number of element of the specified type using the specified ali
 
 A new `DTypePointer` object which has been allocated on the heap.
 
-### `free`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#free-1 "Direct link to free-1")
+### `free`
 
 `free(self: Self)`
 
 Frees the heap allocates memory.
 
-### `bitcast`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#bitcast-1 "Direct link to bitcast-1")
+### `bitcast`
 
 `bitcast[new_type: DType](self: Self) -> DTypePointer[new_type, address_space]`
 
@@ -893,7 +893,7 @@ Bitcasts `DTypePointer` to a different dtype.
 
 A new `DTypePointer` object with the specified dtype and the same address, as the original `DTypePointer`.
 
-### `address_space_cast`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#address_space_cast-1 "Direct link to address_space_cast-1")
+### `address_space_cast`
 
 `address_space_cast[new_address_space: AddressSpace](self: Self) -> DTypePointer[type, new_address_space]`
 
@@ -907,7 +907,7 @@ Casts a Pointer to a different address space.
 
 A new Pointer object with the specified type and the same address, as the original Pointer but located in a different address space.
 
-### `prefetch`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#prefetch "Direct link to prefetch")
+### `prefetch`
 
 `prefetch[params: PrefetchOptions](self: Self)`
 
@@ -917,7 +917,7 @@ Prefetches memory at the underlying address.
 
 - ​**params** (`PrefetchOptions`): Prefetch options (see `PrefetchOptions` for details).
 
-### `load`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#load-1 "Direct link to load-1")
+### `load`
 
 `load[width: Int, alignment: Int](self: Self) -> SIMD[type, width]`
 
@@ -950,7 +950,7 @@ Loads the value the Pointer object points to with the given offset.
 
 The loaded value.
 
-### `store`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#store-1 "Direct link to store-1")
+### `store`
 
 `store[T: Intable, width: Int, alignment: Int](self: Self, offset: T, val: SIMD[type, width])`
 
@@ -980,7 +980,7 @@ Stores a single element value.
 
 - ​**val** (`SIMD[type, width]`): The value to store.
 
-### `simd_nt_store`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#simd_nt_store "Direct link to simd_nt_store")
+### `simd_nt_store`
 
 `simd_nt_store[width: Int, T: Intable](self: Self, offset: T, val: SIMD[type, width])`
 
@@ -1010,7 +1010,7 @@ The address must be properly aligned, 64B for avx512, 32B for avx2, and 16B for 
 
 - ​**val** (`SIMD[type, width]`): The SIMD value to store.
 
-### `simd_strided_load`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#simd_strided_load "Direct link to simd_strided_load")
+### `simd_strided_load`
 
 `simd_strided_load[width: Int, T: Intable](self: Self, stride: T) -> SIMD[type, width]`
 
@@ -1029,7 +1029,7 @@ Performs a strided load of the SIMD vector.
 
 A vector which is stride loaded.
 
-### `simd_strided_store`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#simd_strided_store "Direct link to simd_strided_store")
+### `simd_strided_store`
 
 `simd_strided_store[width: Int, T: Intable](self: Self, val: SIMD[type, width], stride: T)`
 
@@ -1045,7 +1045,7 @@ Performs a strided store of the SIMD vector.
 - ​**val** (`SIMD[type, width]`): The SIMD value to store.
 - ​**stride** (`T`): The stride between stores.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#__int__-2 "Direct link to __int__-2")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
@@ -1055,7 +1055,7 @@ Returns the pointer address as an integer.
 
 The address of the pointer as an Int.
 
-### `is_aligned`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#is_aligned "Direct link to is_aligned")
+### `is_aligned`
 
 `is_aligned[alignment: Int](self: Self) -> Bool`
 
@@ -1069,7 +1069,7 @@ Checks if the pointer is aligned.
 
 `True` if the pointer is at least `alignment`\-aligned or `False` otherwise.
 
-### `offset`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#offset-2 "Direct link to offset-2")
+### `offset`
 
 `offset[T: Intable](self: Self, idx: T) -> Self`
 
@@ -1087,7 +1087,7 @@ Returns a new pointer shifted by the specified offset.
 
 The new constructed DTypePointer.
 
-## `bitcast`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#bitcast-2 "Direct link to bitcast-2")
+## `bitcast`
 
 `bitcast[type: AnyRegType, address_space: AddressSpace](val: Int) -> Pointer[*"type", address_space]`
 
@@ -1241,7 +1241,7 @@ The bitwidth of the two types must be the same.
 
 A new integer scalar which has the same bitwidth as the bool vector.
 
-## `emplace_ref_unsafe`[​](https://docs.modular.com/mojo/stdlib/memory/unsafe#emplace_ref_unsafe "Direct link to emplace_ref_unsafe")
+## `emplace_ref_unsafe`
 
 `emplace_ref_unsafe[type: Movable, lifetime: lifetime<1>](dest: Reference[*"type", 1, lifetime], owned *value: "type")`
 

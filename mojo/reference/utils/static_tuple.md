@@ -8,7 +8,7 @@ You can import these APIs from the `utils` package. For example:
 from utils.static_tuple import StaticTuple
 ```
 
-## `StaticTuple`[​](https://docs.modular.com/mojo/stdlib/utils/static_tuple#statictuple "Direct link to statictuple")
+## `StaticTuple`
 
 A statically sized tuple type which contains elements of homogeneous types.
 
@@ -31,7 +31,7 @@ A statically sized tuple type which contains elements of homogeneous types.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/utils/static_tuple#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -65,7 +65,7 @@ Creates a tuple constant using the specified values.
 
 A tuple with the values filled in.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/utils/static_tuple#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__[index: Int](self: Self) -> element_type`
 
@@ -95,7 +95,7 @@ Returns the value of the tuple at the given dynamic index.
 
 The value at the specified position.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/utils/static_tuple#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__[index: Int](inout self: Self, val: element_type)`
 
@@ -122,7 +122,7 @@ Stores a single value into the tuple at the specified dynamic index.
 - ​**index** (`intable`): The index into the tuple.
 - ​**val** (`element_type`): The value to store.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/utils/static_tuple#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -132,7 +132,7 @@ Returns the length of the array. This is a known constant value.
 
 The size of the list.
 
-### `as_ptr`[​](https://docs.modular.com/mojo/stdlib/utils/static_tuple#as_ptr "Direct link to as_ptr")
+### `as_ptr`
 
 `as_ptr(inout self: Self) -> Pointer[element_type, 0]`
 

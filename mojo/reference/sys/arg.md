@@ -8,7 +8,7 @@ You can import these APIs from the `sys` package. For example:
 from sys import argv
 ```
 
-## `argv`[​](https://docs.modular.com/mojo/stdlib/sys/arg#argv "Direct link to argv")
+## `argv`
 
 `argv() -> VariadicList[StringRef]`
 

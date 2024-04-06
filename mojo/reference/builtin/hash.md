@@ -9,7 +9,7 @@ There are a few main tools in this module:
 - A `hash()` implementation for abritrary byte strings, `hash(data: DTypePointer[DType.int8], n: Int) -> Int`, is the workhorse function, which implements efficient hashing via SIMD vectors. See the documentation of this function for more details on the hash implementation.
 - `hash(SIMD)` and `hash(Int8)` implementations These are useful helpers to specialize for the general bytes implementation.
 
-## `Hashable`[​](https://docs.modular.com/mojo/stdlib/builtin/hash#hashable "Direct link to hashable")
+## `Hashable`
 
 A trait for types which specify a function to hash their data.
 
@@ -25,7 +25,7 @@ This hash function will be used for applications like hash maps, and don't need 
 
 **Methods:**
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/hash#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -33,13 +33,13 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-### `__hash__`[​](https://docs.modular.com/mojo/stdlib/builtin/hash#__hash__ "Direct link to __hash__")
+### `__hash__`
 
 `__hash__(self: T) -> Int`
 
 Return a 64-bit hash of the type's data.
 
-## `hash`[​](https://docs.modular.com/mojo/stdlib/builtin/hash#hash "Direct link to hash")
+## `hash`
 
 `hash[T: Hashable](hashable: T) -> Int`
 

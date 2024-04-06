@@ -4,7 +4,7 @@ Provides utilities for working with input/output.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `print`[​](https://docs.modular.com/mojo/stdlib/builtin/io#print "Direct link to print")
+## `print`
 
 `print(*, sep: StringLiteral, end: StringLiteral, flush: Bool)`
 

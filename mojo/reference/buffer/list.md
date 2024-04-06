@@ -8,7 +8,7 @@ You can import these APIs from the `buffer` package. For example:
 from buffer.list import Dim
 ```
 
-## `Dim`[​](https://docs.modular.com/mojo/stdlib/buffer/list#dim "Direct link to dim")
+## `Dim`
 
 A static or dynamic dimension modeled with an optional integer.
 
@@ -24,7 +24,7 @@ This class is meant to represent an optional static dimension. When a value is p
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__[type: Intable](*value: "type") -> Self`
 
@@ -62,7 +62,7 @@ Creates a dynamic dimension.
 
 A dimension value with no static value.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -72,7 +72,7 @@ Returns True if the dimension has a static value.
 
 Whether the dimension has a static value.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Bool`
 
@@ -86,7 +86,7 @@ Compares two dimensions for equality.
 
 True if the dimensions are the same.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Bool`
 
@@ -100,7 +100,7 @@ Compare two dimensions for inequality.
 
 True if they are not equal.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, rhs: Self) -> Self`
 
@@ -116,7 +116,7 @@ If either are unknown, the result is unknown as well.
 
 The product of the two dimensions.
 
-### `__floordiv__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__floordiv__ "Direct link to __floordiv__")
+### `__floordiv__`
 
 `__floordiv__(self: Self, rhs: Self) -> Self`
 
@@ -132,7 +132,7 @@ If either are unknown, the result is unknown as well.
 
 The floor division of the two dimensions.
 
-### `has_value`[​](https://docs.modular.com/mojo/stdlib/buffer/list#has_value "Direct link to has_value")
+### `has_value`
 
 `has_value(self: Self) -> Bool`
 
@@ -142,7 +142,7 @@ Returns True if the dimension has a static value.
 
 Whether the dimension has a static value.
 
-### `is_dynamic`[​](https://docs.modular.com/mojo/stdlib/buffer/list#is_dynamic "Direct link to is_dynamic")
+### `is_dynamic`
 
 `is_dynamic(self: Self) -> Bool`
 
@@ -152,7 +152,7 @@ Returns True if the dimension has a dynamic value.
 
 Whether the dimension is dynamic.
 
-### `get`[​](https://docs.modular.com/mojo/stdlib/buffer/list#get "Direct link to get")
+### `get`
 
 `get(self: Self) -> Int`
 
@@ -162,7 +162,7 @@ Gets the static dimension value.
 
 The static dimension value.
 
-### `is_multiple`[​](https://docs.modular.com/mojo/stdlib/buffer/list#is_multiple "Direct link to is_multiple")
+### `is_multiple`
 
 `is_multiple[alignment: Int](self: Self) -> Bool`
 
@@ -176,11 +176,11 @@ Checks if the dimension is aligned.
 
 Whether the dimension is aligned.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -190,7 +190,7 @@ Converts the Dim to a String. If the value is unknown, then the string "?" is re
 
 The string representation of the type.
 
-## `DimList`[​](https://docs.modular.com/mojo/stdlib/buffer/list#dimlist "Direct link to dimlist")
+## `DimList`
 
 This type represents a list of dimensions. Each dimension may have a static value or not have a value, which represents a dynamic dimension.
 
@@ -204,7 +204,7 @@ This type represents a list of dimensions. Each dimension may have a static valu
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__init__-1 "Direct link to __init__-1")
+### `__init__`
 
 `__init__(values: Tuple[Int]) -> Self`
 
@@ -266,7 +266,7 @@ Creates a dimension list from the given Dim values.
 
 A dimension list.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -276,7 +276,7 @@ Gets the size of the DimList.
 
 The number of elements in the DimList.
 
-### `get`[​](https://docs.modular.com/mojo/stdlib/buffer/list#get-1 "Direct link to get-1")
+### `get`
 
 `get[i: Int](self: Self) -> Int`
 
@@ -290,7 +290,7 @@ Gets the static dimension value at a specified index.
 
 The static dimension value at the specified index.
 
-### `at`[​](https://docs.modular.com/mojo/stdlib/buffer/list#at "Direct link to at")
+### `at`
 
 `at[i: Int](self: Self) -> Dim`
 
@@ -304,7 +304,7 @@ Gets the dimension at a specified index.
 
 The dimension at the specified index.
 
-### `has_value`[​](https://docs.modular.com/mojo/stdlib/buffer/list#has_value-1 "Direct link to has_value-1")
+### `has_value`
 
 `has_value[i: Int](self: Self) -> Bool`
 
@@ -318,7 +318,7 @@ Returns True if the dimension at the given index has a static value.
 
 Whether the specified dimension has a static value.
 
-### `product`[​](https://docs.modular.com/mojo/stdlib/buffer/list#product "Direct link to product")
+### `product`
 
 `product[length: Int](self: Self) -> Dim`
 
@@ -334,7 +334,7 @@ If any are dynamic, the result is a dynamic dimension value.
 
 The product of all the dimensions.
 
-### `product_range`[​](https://docs.modular.com/mojo/stdlib/buffer/list#product_range "Direct link to product_range")
+### `product_range`
 
 `product_range[start: Int, end: Int](self: Self) -> Dim`
 
@@ -351,7 +351,7 @@ If any in the range are dynamic, the result is a dynamic dimension value.
 
 The product of all the dimensions.
 
-### `contains`[​](https://docs.modular.com/mojo/stdlib/buffer/list#contains "Direct link to contains")
+### `contains`
 
 `contains[length: Int](self: Self, value: Dim) -> Bool`
 
@@ -369,7 +369,7 @@ Determines whether the dimension list contains a specified dimension value.
 
 True if the list contains a dimension of the specified value.
 
-### `all_known`[​](https://docs.modular.com/mojo/stdlib/buffer/list#all_known "Direct link to all_known")
+### `all_known`
 
 `all_known[length: Int](self: Self) -> Bool`
 
@@ -396,7 +396,7 @@ Determines whether all dimensions within \[start, end) are statically known.
 
 True if all queried dimensions have a static value.
 
-### `create_unknown`[​](https://docs.modular.com/mojo/stdlib/buffer/list#create_unknown "Direct link to create_unknown")
+### `create_unknown`
 
 `static create_unknown[length: Int]() -> Self`
 
@@ -410,7 +410,7 @@ Creates a dimension list of all dynamic dimension values.
 
 A list of all dynamic dimension values.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/buffer/list#__str__-1 "Direct link to __str__-1")
+### `__str__`
 
 `__str__(self: Self) -> String`
 

@@ -4,7 +4,7 @@ Implements the DType class.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `DType`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#dtype "Direct link to dtype")
+## `DType`
 
 Represents DType and provides methods for working with it.
 
@@ -56,7 +56,7 @@ Represents DType and provides methods for working with it.
 
 **Methods:**
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Bool`
 
@@ -70,7 +70,7 @@ Compares one DType to another for equality.
 
 True if the DTypes are the same and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Bool`
 
@@ -84,7 +84,7 @@ Compares one DType to another for non-equality.
 
 False if the DTypes are the same and True otherwise.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -94,7 +94,7 @@ Gets the name of the DType.
 
 The name of the dtype.
 
-### `get_value`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#get_value "Direct link to get_value")
+### `get_value`
 
 `get_value(self: Self) -> dtype`
 
@@ -104,11 +104,11 @@ Gets the associated internal kgen.dtype value.
 
 The kgen.dtype value.
 
-### `__hash__`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#__hash__ "Direct link to __hash__")
+### `__hash__`
 
 `__hash__(self: Self) -> Int`
 
-### `isa`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#isa "Direct link to isa")
+### `isa`
 
 `isa[other: Self](self: Self) -> Bool`
 
@@ -122,7 +122,7 @@ Checks if this DType matches the other one, specified as a parameter.
 
 True if the DTypes are the same and False otherwise.
 
-### `is_bool`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_bool "Direct link to is_bool")
+### `is_bool`
 
 `is_bool(self: Self) -> Bool`
 
@@ -132,7 +132,7 @@ Checks if this DType is Bool.
 
 True if the DType is Bool and False otherwise.
 
-### `is_uint8`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_uint8 "Direct link to is_uint8")
+### `is_uint8`
 
 `is_uint8(self: Self) -> Bool`
 
@@ -142,7 +142,7 @@ Checks if this DType is UInt8.
 
 True if the DType is UInt8 and False otherwise.
 
-### `is_int8`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_int8 "Direct link to is_int8")
+### `is_int8`
 
 `is_int8(self: Self) -> Bool`
 
@@ -152,7 +152,7 @@ Checks if this DType is Int8.
 
 True if the DType is Int8 and False otherwise.
 
-### `is_uint16`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_uint16 "Direct link to is_uint16")
+### `is_uint16`
 
 `is_uint16(self: Self) -> Bool`
 
@@ -162,7 +162,7 @@ Checks if this DType is UInt16.
 
 True if the DType is UInt16 and False otherwise.
 
-### `is_int16`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_int16 "Direct link to is_int16")
+### `is_int16`
 
 `is_int16(self: Self) -> Bool`
 
@@ -172,7 +172,7 @@ Checks if this DType is Int16.
 
 True if the DType is Int16 and False otherwise.
 
-### `is_uint32`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_uint32 "Direct link to is_uint32")
+### `is_uint32`
 
 `is_uint32(self: Self) -> Bool`
 
@@ -182,7 +182,7 @@ Checks if this DType is UInt32.
 
 True if the DType is UInt32 and False otherwise.
 
-### `is_int32`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_int32 "Direct link to is_int32")
+### `is_int32`
 
 `is_int32(self: Self) -> Bool`
 
@@ -192,7 +192,7 @@ Checks if this DType is Int32.
 
 True if the DType is Int32 and False otherwise.
 
-### `is_uint64`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_uint64 "Direct link to is_uint64")
+### `is_uint64`
 
 `is_uint64(self: Self) -> Bool`
 
@@ -202,7 +202,7 @@ Checks if this DType is UInt64.
 
 True if the DType is UInt64 and False otherwise.
 
-### `is_int64`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_int64 "Direct link to is_int64")
+### `is_int64`
 
 `is_int64(self: Self) -> Bool`
 
@@ -212,7 +212,7 @@ Checks if this DType is Int64.
 
 True if the DType is Int64 and False otherwise.
 
-### `is_bfloat16`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_bfloat16 "Direct link to is_bfloat16")
+### `is_bfloat16`
 
 `is_bfloat16(self: Self) -> Bool`
 
@@ -222,7 +222,7 @@ Checks if this DType is BFloat16.
 
 True if the DType is BFloat16 and False otherwise.
 
-### `is_float16`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_float16 "Direct link to is_float16")
+### `is_float16`
 
 `is_float16(self: Self) -> Bool`
 
@@ -232,7 +232,7 @@ Checks if this DType is Float16.
 
 True if the DType is Float16 and False otherwise.
 
-### `is_float32`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_float32 "Direct link to is_float32")
+### `is_float32`
 
 `is_float32(self: Self) -> Bool`
 
@@ -242,7 +242,7 @@ Checks if this DType is Float32.
 
 True if the DType is Float32 and False otherwise.
 
-### `is_tensor_float32`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_tensor_float32 "Direct link to is_tensor_float32")
+### `is_tensor_float32`
 
 `is_tensor_float32(self: Self) -> Bool`
 
@@ -252,7 +252,7 @@ Checks if this DType is Tensor Float32.
 
 True if the DType is Tensor Float32 and False otherwise.
 
-### `is_float64`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_float64 "Direct link to is_float64")
+### `is_float64`
 
 `is_float64(self: Self) -> Bool`
 
@@ -262,7 +262,7 @@ Checks if this DType is Float64.
 
 True if the DType is Float64 and False otherwise.
 
-### `is_index`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_index "Direct link to is_index")
+### `is_index`
 
 `is_index(self: Self) -> Bool`
 
@@ -272,7 +272,7 @@ Checks if this DType is Index.
 
 True if the DType is Index and False otherwise.
 
-### `is_address`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_address "Direct link to is_address")
+### `is_address`
 
 `is_address(self: Self) -> Bool`
 
@@ -282,7 +282,7 @@ Checks if this DType is Address.
 
 True if the DType is Address and False otherwise.
 
-### `is_unsigned`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_unsigned "Direct link to is_unsigned")
+### `is_unsigned`
 
 `is_unsigned(self: Self) -> Bool`
 
@@ -292,7 +292,7 @@ Returns True if the type parameter is unsigned and False otherwise.
 
 Returns True if the input type parameter is unsigned.
 
-### `is_signed`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_signed "Direct link to is_signed")
+### `is_signed`
 
 `is_signed(self: Self) -> Bool`
 
@@ -302,7 +302,7 @@ Returns True if the type parameter is signed and False otherwise.
 
 Returns True if the input type parameter is signed.
 
-### `is_integral`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_integral "Direct link to is_integral")
+### `is_integral`
 
 `is_integral(self: Self) -> Bool`
 
@@ -312,7 +312,7 @@ Returns True if the type parameter is an integer and False otherwise.
 
 Returns True if the input type parameter is an integer.
 
-### `is_floating_point`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_floating_point "Direct link to is_floating_point")
+### `is_floating_point`
 
 `is_floating_point(self: Self) -> Bool`
 
@@ -322,7 +322,7 @@ Returns True if the type parameter is a floating-point and False otherwise.
 
 Returns True if the input type parameter is a floating-point.
 
-### `is_numeric`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#is_numeric "Direct link to is_numeric")
+### `is_numeric`
 
 `is_numeric(self: Self) -> Bool`
 
@@ -332,7 +332,7 @@ Returns True if the type parameter is numeric (i.e. you can perform arithmetic o
 
 Returns True if the input type parameter is either integral or floating-point.
 
-### `sizeof`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#sizeof "Direct link to sizeof")
+### `sizeof`
 
 `sizeof(self: Self) -> Int`
 
@@ -342,7 +342,7 @@ Returns the size in bytes of the current DType.
 
 Returns the size in bytes of the current DType.
 
-### `bitwidth`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#bitwidth "Direct link to bitwidth")
+### `bitwidth`
 
 `bitwidth(self: Self) -> Int`
 
@@ -352,7 +352,7 @@ Returns the size in bits of the current DType.
 
 Returns the size in bits of the current DType.
 
-### `dispatch_integral`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#dispatch_integral "Direct link to dispatch_integral")
+### `dispatch_integral`
 
 `dispatch_integral[func: fn[DType]() capturing -> None](self: Self)`
 
@@ -366,7 +366,7 @@ DType must be integral.
 
 - ​**func** (`fn[DType]() capturing -> None`): A parametrized on dtype function to dispatch.
 
-### `dispatch_floating`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#dispatch_floating "Direct link to dispatch_floating")
+### `dispatch_floating`
 
 `dispatch_floating[func: fn[DType]() capturing -> None](self: Self)`
 
@@ -380,7 +380,7 @@ DType must be floating-point or integral.
 
 - ​**func** (`fn[DType]() capturing -> None`): A parametrized on dtype function to dispatch.
 
-### `dispatch_arithmetic`[​](https://docs.modular.com/mojo/stdlib/builtin/dtype#dispatch_arithmetic "Direct link to dispatch_arithmetic")
+### `dispatch_arithmetic`
 
 `dispatch_arithmetic[func: fn[DType]() capturing -> None](self: Self)`
 

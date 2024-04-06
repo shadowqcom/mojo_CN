@@ -1,6 +1,6 @@
 # compiler
 
-## `keep`[​](https://docs.modular.com/mojo/stdlib/benchmark/compiler#keep "Direct link to keep")
+## `keep`
 
 `keep(val: Bool)`
 

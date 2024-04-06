@@ -8,7 +8,7 @@ Optional values can be thought of as a type-safe nullable pattern. Your value ca
 from collections.optional import Optionalvar a = Optional(1)var b = Optional[Int](None)if a:    print(a.value())  # prints 1if b:  # b is False, so no print    print(b.value())var c = a.or_else(2)var d = b.or_else(2)print(c.value())  # prints 1print(d.value())  # prints 2
 ```
 
-## `Optional`[​](https://docs.modular.com/mojo/stdlib/collections/optional#optional "Direct link to optional")
+## `Optional`
 
 A type modeling a value which may or may not be present.
 
@@ -30,7 +30,7 @@ from collections.optional import Optionalvar a = Optional(1)var b = Optional[Int
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -52,7 +52,7 @@ Construct an empty Optional.
 
 - ​**value** (`None`): Must be exactly `None`.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -62,7 +62,7 @@ Return true if the Optional has a value.
 
 True if the optional has a value and False otherwise.
 
-### `__invert__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__invert__ "Direct link to __invert__")
+### `__invert__`
 
 `__invert__(self: Self) -> Bool`
 
@@ -72,7 +72,7 @@ Return False if the optional has a value.
 
 False if the optional has a value and True otherwise.
 
-### `__and__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__and__ "Direct link to __and__")
+### `__and__`
 
 `__and__[type: Boolable](self: Self, *other: "type") -> Bool`
 
@@ -90,7 +90,7 @@ Return true if self has a value and the other value is coercible to True.
 
 True if both inputs are True after boolean coercion.
 
-### `__or__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__or__ "Direct link to __or__")
+### `__or__`
 
 `__or__[type: Boolable](self: Self, *other: "type") -> Bool`
 
@@ -108,7 +108,7 @@ Return true if self has a value or the other value is coercible to True.
 
 True if either inputs is True after boolean coercion.
 
-### `__rand__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__rand__ "Direct link to __rand__")
+### `__rand__`
 
 `__rand__[type: Boolable](self: Self, *other: "type") -> Bool`
 
@@ -126,7 +126,7 @@ Return true if self has a value and the other value is coercible to True.
 
 True if both inputs are True after boolean coercion.
 
-### `__ror__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__ror__ "Direct link to __ror__")
+### `__ror__`
 
 `__ror__[type: Boolable](self: Self, *other: "type") -> Bool`
 
@@ -144,7 +144,7 @@ Return true if self has a value or the other value is coercible to True.
 
 True if either inputs is True after boolean coercion.
 
-### `value`[​](https://docs.modular.com/mojo/stdlib/collections/optional#value "Direct link to value")
+### `value`
 
 `value(self: Self) -> T`
 
@@ -158,7 +158,7 @@ This doesn't check to see if the optional contains a value. If you call this wit
 
 The contained data of the option as a T value.
 
-### `take`[​](https://docs.modular.com/mojo/stdlib/collections/optional#take "Direct link to take")
+### `take`
 
 `take(owned self: Self) -> T`
 
@@ -172,7 +172,7 @@ This doesn't check to see if the optional contains a value. If you call this wit
 
 The contained data of the option as an owned T value.
 
-### `or_else`[​](https://docs.modular.com/mojo/stdlib/collections/optional#or_else "Direct link to or_else")
+### `or_else`
 
 `or_else(self: Self, default: T) -> T`
 
@@ -186,7 +186,7 @@ Return the underlying value contained in the Optional or a default value if the 
 
 The underlying value contained in the Optional or a default value.
 
-## `OptionalReg`[​](https://docs.modular.com/mojo/stdlib/collections/optional#optionalreg "Direct link to optionalreg")
+## `OptionalReg`
 
 A register-passable optional type.
 
@@ -202,7 +202,7 @@ This struct optionally contains a value. It only works with trivial register pas
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__init__-1 "Direct link to __init__-1")
+### `__init__`
 
 `__init__() -> Self`
 
@@ -236,7 +236,7 @@ Create an optional without a value from a None literal.
 
 The optional without a value.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__bool__-1 "Direct link to __bool__-1")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -246,7 +246,7 @@ Return true if the optional has a value.
 
 True if the optional has a valu and False otherwise.
 
-### `__invert__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__invert__-1 "Direct link to __invert__-1")
+### `__invert__`
 
 `__invert__(self: Self) -> Bool`
 
@@ -256,7 +256,7 @@ Return False if the optional has a value.
 
 False if the optional has a value and True otherwise.
 
-### `__and__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__and__-1 "Direct link to __and__-1")
+### `__and__`
 
 `__and__[type: Boolable](self: Self, *other: "type") -> Bool`
 
@@ -274,7 +274,7 @@ Return true if self has a value and the other value is coercible to True.
 
 True if both inputs are True after boolean coercion.
 
-### `__or__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__or__-1 "Direct link to __or__-1")
+### `__or__`
 
 `__or__[type: Boolable](self: Self, *other: "type") -> Bool`
 
@@ -292,7 +292,7 @@ Return true if self has a value or the other value is coercible to True.
 
 True if either inputs is True after boolean coercion.
 
-### `__rand__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__rand__-1 "Direct link to __rand__-1")
+### `__rand__`
 
 `__rand__[type: Boolable](self: Self, *other: "type") -> Bool`
 
@@ -310,7 +310,7 @@ Return true if self has a value and the other value is coercible to True.
 
 True if both inputs are True after boolean coercion.
 
-### `__ror__`[​](https://docs.modular.com/mojo/stdlib/collections/optional#__ror__-1 "Direct link to __ror__-1")
+### `__ror__`
 
 `__ror__[type: Boolable](self: Self, *other: "type") -> Bool`
 
@@ -328,7 +328,7 @@ Return true if self has a value or the other value is coercible to True.
 
 True if either inputs is True after boolean coercion.
 
-### `value`[​](https://docs.modular.com/mojo/stdlib/collections/optional#value-1 "Direct link to value-1")
+### `value`
 
 `value(self: Self) -> T`
 

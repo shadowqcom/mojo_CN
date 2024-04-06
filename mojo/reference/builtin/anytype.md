@@ -4,7 +4,7 @@ Defines the `AnyType` trait.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `AnyType`[​](https://docs.modular.com/mojo/stdlib/builtin/anytype#anytype "Direct link to anytype")
+## `AnyType`
 
 The AnyType trait describes a type that has a destructor.
 
@@ -22,7 +22,7 @@ Example implementing the `AnyType` trait on `Foo` that frees the allocated memor
 
 **Methods:**
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/anytype#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: T, /)`
 

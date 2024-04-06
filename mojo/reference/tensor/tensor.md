@@ -8,7 +8,7 @@ Example:
 from tensor import Tensor, TensorSpec, TensorShapefrom utils.index import Indexfrom random import randvar height = 256var width = 256var channels = 3# Create the tensor of dimensions height, width, channels# and fill with random values.var image = rand[DType.float32](height, width, channels)# Declare the grayscale image.var spec = TensorSpec(DType.float32, height, width)var gray_scale_image = Tensor[DType.float32](spec)# Perform the RGB to grayscale transform.for y in range(height):  for x in range(width):    var r = image[y,x,0]    var g = image[y,x,1]    var b = image[y,x,2]    gray_scale_image[Index(y,x)] = 0.299 * r + 0.587 * g + 0.114 * bprint(gray_scale_image.shape().__str__())
 ```
 
-## `Tensor`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#tensor "Direct link to tensor")
+## `Tensor`
 
 A tensor type which owns its underlying data and is parameterized on DType.
 
@@ -22,7 +22,7 @@ A tensor type which owns its underlying data and is parameterized on DType.
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(inout self: Self)`
 
@@ -104,7 +104,7 @@ Initializes a 1-dimensional Tensor from the provided list.
 
 - ​**list** (`List[SIMD[dtype, 1]]`): The list to construct this Tensor from.
 
-### `__copyinit__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__copyinit__ "Direct link to __copyinit__")
+### `__copyinit__`
 
 `__copyinit__(inout self: Self, other: Self)`
 
@@ -114,7 +114,7 @@ Creates a deep copy of an existing tensor.
 
 - ​**other** (`Self`): The tensor to copy from.
 
-### `__moveinit__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__moveinit__ "Direct link to __moveinit__")
+### `__moveinit__`
 
 `__moveinit__(inout self: Self, owned existing: Self)`
 
@@ -124,13 +124,13 @@ Move initializer for the tensor.
 
 - ​**existing** (`Self`): The tensor to move.
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: Self)`
 
 Delete the spec and release any owned memory.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, index: Int) -> SIMD[dtype, 1]`
 
@@ -184,7 +184,7 @@ Gets the SIMD value at the specified indices.
 
 The value at the specified indices.
 
-### `__setitem__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__setitem__ "Direct link to __setitem__")
+### `__setitem__`
 
 `__setitem__(inout self: Self, index: Int, val: SIMD[dtype, 1])`
 
@@ -217,7 +217,7 @@ Sets the value at the specified indices.
 - ​**indices** (`StaticIntTuple[len]`): The indices of the value to set.
 - ​**val** (`SIMD[dtype, 1]`): The value to store.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, other: Self) -> Bool`
 
@@ -231,7 +231,7 @@ Returns True if the two tensors are the same and False otherwise.
 
 True if the two tensors are the same and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, other: Self) -> Bool`
 
@@ -245,7 +245,7 @@ Returns True if the two tensors are not the same and False otherwise.
 
 True if the two tensors are the not the same and False otherwise.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, other: Self) -> Self`
 
@@ -275,7 +275,7 @@ Adds this tensor with a scalar.
 
 The addition result.
 
-### `__sub__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__sub__ "Direct link to __sub__")
+### `__sub__`
 
 `__sub__(self: Self, other: Self) -> Self`
 
@@ -305,7 +305,7 @@ Subtracts a scalar from this tensor.
 
 The subtraction result.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, other: Self) -> Self`
 
@@ -335,7 +335,7 @@ Multiplies this tensor with a scalar.
 
 The multiplication result.
 
-### `__truediv__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__truediv__ "Direct link to __truediv__")
+### `__truediv__`
 
 `__truediv__(self: Self, other: Self) -> Self`
 
@@ -367,7 +367,7 @@ Divides this tensor by a scalar.
 
 The division result.
 
-### `__pow__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__pow__ "Direct link to __pow__")
+### `__pow__`
 
 `__pow__(self: Self, exponent: Int) -> Self`
 
@@ -385,7 +385,7 @@ For integral values the exponent cannot be negative.
 
 An exponentiated copy of tensor.
 
-### `__radd__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__radd__ "Direct link to __radd__")
+### `__radd__`
 
 `__radd__(self: Self, other: SIMD[dtype, 1]) -> Self`
 
@@ -399,7 +399,7 @@ Adds this tensor with a scalar.
 
 The addition result.
 
-### `__rsub__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__rsub__ "Direct link to __rsub__")
+### `__rsub__`
 
 `__rsub__(self: Self, other: SIMD[dtype, 1]) -> Self`
 
@@ -413,7 +413,7 @@ Subtracts this tensor from a scalar.
 
 The addition result.
 
-### `__rmul__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__rmul__ "Direct link to __rmul__")
+### `__rmul__`
 
 `__rmul__(self: Self, other: SIMD[dtype, 1]) -> Self`
 
@@ -427,7 +427,7 @@ Multiplies this tensor with a scalar.
 
 The multiplication result.
 
-### `__rtruediv__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__rtruediv__ "Direct link to __rtruediv__")
+### `__rtruediv__`
 
 `__rtruediv__(self: Self, other: SIMD[dtype, 1]) -> Self`
 
@@ -441,7 +441,7 @@ Divides a scalar by this tensor, broadcasting elementwise.
 
 The division result.
 
-### `__ipow__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__ipow__ "Direct link to __ipow__")
+### `__ipow__`
 
 `__ipow__(inout self: Self, exponent: Int)`
 
@@ -457,7 +457,7 @@ For integral values the exponent cannot be negative.
 
 - ​**exponent** (`Int`): Integer power to raise tensor to.
 
-### `ireshape`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#ireshape "Direct link to ireshape")
+### `ireshape`
 
 `ireshape(inout self: Self, new_shape: TensorShape)`
 
@@ -467,7 +467,7 @@ For integral values the exponent cannot be negative.
 
 - ​**new\_shape** (`TensorShape`): The new shape.
 
-### `reshape`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#reshape "Direct link to reshape")
+### `reshape`
 
 `reshape(inout self: Self, new_shape: TensorShape) -> Self`
 
@@ -481,7 +481,7 @@ Returns a reshaped tensor.
 
 A Tensor that is a reshaped version of the original tensor.
 
-### `astype`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#astype "Direct link to astype")
+### `astype`
 
 `astype[new_dtype: DType](self: Self) -> Tensor[new_dtype]`
 
@@ -495,7 +495,7 @@ Copy the Tensor with elements cast to the new type.
 
 A new tensor with the same values but the new type.
 
-### `clip`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#clip "Direct link to clip")
+### `clip`
 
 `clip(self: Self, lower_bound: SIMD[dtype, 1], upper_bound: SIMD[dtype, 1]) -> Self`
 
@@ -510,7 +510,7 @@ Clips the values of the tensor.
 
 A clipped version of the tensor.
 
-### `data`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#data "Direct link to data")
+### `data`
 
 `data(self: Self) -> DTypePointer[dtype, 0]`
 
@@ -520,7 +520,7 @@ Gets the underlying Data pointer to the Tensor.
 
 The underlying data pointer of the tensor.
 
-### `type`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#type "Direct link to type")
+### `type`
 
 `type(self: Self) -> DType`
 
@@ -530,7 +530,7 @@ Gets the underlying DType of the tensor.
 
 The underlying DType of the tensor.
 
-### `rank`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#rank "Direct link to rank")
+### `rank`
 
 `rank(self: Self) -> Int`
 
@@ -540,7 +540,7 @@ Gets the rank of the tensor.
 
 The rank of the tensor.
 
-### `num_elements`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#num_elements "Direct link to num_elements")
+### `num_elements`
 
 `num_elements(self: Self) -> Int`
 
@@ -550,7 +550,7 @@ Gets the total number of elements in the tensor.
 
 The total number of elements in the tensor.
 
-### `bytecount`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#bytecount "Direct link to bytecount")
+### `bytecount`
 
 `bytecount(self: Self) -> Int`
 
@@ -560,7 +560,7 @@ Gets the total bytecount of the tensor.
 
 The total bytecount of the tensor.
 
-### `spec`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#spec "Direct link to spec")
+### `spec`
 
 `spec(self: Self) -> TensorSpec`
 
@@ -570,7 +570,7 @@ Gets the specification of the tensor.
 
 The underlying tensor spec of the tensor.
 
-### `shape`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#shape "Direct link to shape")
+### `shape`
 
 `shape(self: Self) -> TensorShape`
 
@@ -580,7 +580,7 @@ Gets the shape of the tensor.
 
 The underlying tensor shape of the tensor.
 
-### `dim`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#dim "Direct link to dim")
+### `dim`
 
 `dim(self: Self, idx: Int) -> Int`
 
@@ -594,7 +594,7 @@ Gets the dimension at the specified index.
 
 The dimension at the specified index.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -604,7 +604,7 @@ Gets the tensor as a string.
 
 A compact string of the tensor.
 
-### `__repr__`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#__repr__ "Direct link to __repr__")
+### `__repr__`
 
 `__repr__(self: Self) -> String`
 
@@ -614,7 +614,7 @@ Gets the tensor as a string.
 
 A compact string representation of the tensor.
 
-### `load`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#load "Direct link to load")
+### `load`
 
 `load[width: Int](self: Self, index: Int) -> SIMD[dtype, width]`
 
@@ -693,7 +693,7 @@ Read tensor from a file. The path should be a file saved with Tensor.save method
 
 The tensor read from file.
 
-### `store`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#store "Direct link to store")
+### `store`
 
 `store[width: Int](inout self: Self, index: Int, val: SIMD[dtype, width])`
 
@@ -735,7 +735,7 @@ Sets the SIMD value at the specified indices.
 - ​**indices** (`StaticIntTuple[len]`): The indices of the value to set.
 - ​**val** (`SIMD[dtype, width]`): The SIMD value to store.
 
-### `argmax`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#argmax "Direct link to argmax")
+### `argmax`
 
 `argmax(self: Self, *, axis: Int) -> Self`
 
@@ -749,7 +749,7 @@ Finds the indices of the maximum element along the specified axis.
 
 A new tensor containing the indices of the maximum elements along axis.
 
-### `argmin`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#argmin "Direct link to argmin")
+### `argmin`
 
 `argmin(self: Self, *, axis: Int) -> Self`
 
@@ -763,7 +763,7 @@ Finds the indices of the minimum element along the specified axis.
 
 A new tensor containing the indices of the minimum elements along axis.
 
-### `tofile`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#tofile "Direct link to tofile")
+### `tofile`
 
 `tofile(self: Self, path: Path)`
 
@@ -773,7 +773,7 @@ Write values to a file.
 
 - ​**path** (`Path`): Path to the output file.
 
-### `fromfile`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#fromfile "Direct link to fromfile")
+### `fromfile`
 
 `static fromfile(path: Path) -> Self`
 
@@ -787,7 +787,7 @@ Read tensor from a file.
 
 The tensor read from file.
 
-### `save`[​](https://docs.modular.com/mojo/stdlib/tensor/tensor#save "Direct link to save")
+### `save`
 
 `save(self: Self, path: Path)`
 

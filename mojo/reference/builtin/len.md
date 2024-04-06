@@ -4,7 +4,7 @@ Provides the `len()` function and its associated traits.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `Sized`[​](https://docs.modular.com/mojo/stdlib/builtin/len#sized "Direct link to sized")
+## `Sized`
 
 The `Sized` trait describes a type that has an integer length (such as a string or array).
 
@@ -34,7 +34,7 @@ If the `__len__()` method can raise an error, use the [`SizedRaising`](https://d
 
 **Methods:**
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/len#__del__ "Direct link to __del__")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -42,7 +42,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/len#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: T) -> Int`
 
@@ -52,7 +52,7 @@ Get the length of the type.
 
 The length of the type.
 
-## `SizedRaising`[​](https://docs.modular.com/mojo/stdlib/builtin/len#sizedraising "Direct link to sizedraising")
+## `SizedRaising`
 
 The `SizedRaising` trait describes a type that has an integer length, which might raise an error if the length can't be determined.
 
@@ -80,7 +80,7 @@ True
 
 **Methods:**
 
-### `__del__`[​](https://docs.modular.com/mojo/stdlib/builtin/len#__del__-1 "Direct link to __del__-1")
+### `__del__`
 
 `__del__(owned self: T, /)`
 
@@ -88,7 +88,7 @@ Destroy the contained value.
 
 The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/len#__len__-1 "Direct link to __len__-1")
+### `__len__`
 
 `__len__(self: T) -> Int`
 
@@ -100,7 +100,7 @@ Raises: If the length cannot be computed.
 
 The length of the type.
 
-## `len`[​](https://docs.modular.com/mojo/stdlib/builtin/len#len "Direct link to len")
+## `len`
 
 `len[T: Sized](value: T) -> Int`
 

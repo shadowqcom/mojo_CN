@@ -20,7 +20,7 @@ Implements the stat module.
 
 - ​`S_IFSOCK = 49152`: Bits that determine the socket.
 
-## `S_ISLNK`[​](https://docs.modular.com/mojo/stdlib/stat/stat#s_islnk "Direct link to s_islnk")
+## `S_ISLNK`
 
 `S_ISLNK[intable: Intable](mode: intable) -> Bool`
 
@@ -38,7 +38,7 @@ Returns True if the mode is a symlink.
 
 True if the mode is a symlink and False otherwise.
 
-## `S_ISREG`[​](https://docs.modular.com/mojo/stdlib/stat/stat#s_isreg "Direct link to s_isreg")
+## `S_ISREG`
 
 `S_ISREG[intable: Intable](mode: intable) -> Bool`
 
@@ -56,7 +56,7 @@ Returns True if the mode is a regular file.
 
 True if the mode is a regular file and False otherwise.
 
-## `S_ISDIR`[​](https://docs.modular.com/mojo/stdlib/stat/stat#s_isdir "Direct link to s_isdir")
+## `S_ISDIR`
 
 `S_ISDIR[intable: Intable](mode: intable) -> Bool`
 
@@ -74,7 +74,7 @@ Returns True if the mode is a directory.
 
 True if the mode is a directory and False otherwise.
 
-## `S_ISCHR`[​](https://docs.modular.com/mojo/stdlib/stat/stat#s_ischr "Direct link to s_ischr")
+## `S_ISCHR`
 
 `S_ISCHR[intable: Intable](mode: intable) -> Bool`
 
@@ -92,7 +92,7 @@ Returns True if the mode is a character device.
 
 True if the mode is a character device and False otherwise.
 
-## `S_ISBLK`[​](https://docs.modular.com/mojo/stdlib/stat/stat#s_isblk "Direct link to s_isblk")
+## `S_ISBLK`
 
 `S_ISBLK[intable: Intable](mode: intable) -> Bool`
 
@@ -110,7 +110,7 @@ Returns True if the mode is a block device.
 
 True if the mode is a block device and False otherwise.
 
-## `S_ISFIFO`[​](https://docs.modular.com/mojo/stdlib/stat/stat#s_isfifo "Direct link to s_isfifo")
+## `S_ISFIFO`
 
 `S_ISFIFO[intable: Intable](mode: intable) -> Bool`
 
@@ -128,7 +128,7 @@ Returns True if the mode is a fifo.
 
 True if the mode is a fifo and False otherwise.
 
-## `S_ISSOCK`[​](https://docs.modular.com/mojo/stdlib/stat/stat#s_issock "Direct link to s_issock")
+## `S_ISSOCK`
 
 `S_ISSOCK[intable: Intable](mode: intable) -> Bool`
 

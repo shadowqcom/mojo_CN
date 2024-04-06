@@ -14,7 +14,7 @@ from complex import ComplexSIMD
 
 - ​`ComplexFloat64 = ComplexSIMD[f64, 1]`
 
-## `ComplexSIMD`[​](https://docs.modular.com/mojo/stdlib/complex/complex#complexsimd "Direct link to complexsimd")
+## `ComplexSIMD`
 
 Represents a complex SIMD value.
 
@@ -37,7 +37,7 @@ The class provides basic methods for manipulating complex values.
 
 **Methods:**
 
-### `__neg__`[​](https://docs.modular.com/mojo/stdlib/complex/complex#__neg__ "Direct link to __neg__")
+### `__neg__`
 
 `__neg__(self: Self) -> Self`
 
@@ -47,7 +47,7 @@ Negates the complex value.
 
 The negative of the complex value.
 
-### `__add__`[​](https://docs.modular.com/mojo/stdlib/complex/complex#__add__ "Direct link to __add__")
+### `__add__`
 
 `__add__(self: Self, rhs: Self) -> Self`
 
@@ -61,7 +61,7 @@ Adds two complex values.
 
 A sum of this and RHS complex values.
 
-### `__mul__`[​](https://docs.modular.com/mojo/stdlib/complex/complex#__mul__ "Direct link to __mul__")
+### `__mul__`
 
 `__mul__(self: Self, rhs: Self) -> Self`
 
@@ -75,7 +75,7 @@ Multiplies two complex values.
 
 A product of this and RHS complex values.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/complex/complex#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -85,7 +85,7 @@ Get the complex as a string.
 
 A string representation.
 
-### `norm`[​](https://docs.modular.com/mojo/stdlib/complex/complex#norm "Direct link to norm")
+### `norm`
 
 `norm(self: Self) -> SIMD[type, size]`
 
@@ -95,7 +95,7 @@ Returns the magnitude of the complex value.
 
 Value of `sqrt(re*re + im*im)`.
 
-### `squared_norm`[​](https://docs.modular.com/mojo/stdlib/complex/complex#squared_norm "Direct link to squared_norm")
+### `squared_norm`
 
 `squared_norm(self: Self) -> SIMD[type, size]`
 
@@ -105,7 +105,7 @@ Returns the squared magnitude of the complex value.
 
 Value of `re*re + im*im`.
 
-### `fma`[​](https://docs.modular.com/mojo/stdlib/complex/complex#fma "Direct link to fma")
+### `fma`
 
 `fma(self: Self, b: Self, c: Self) -> Self`
 
@@ -122,7 +122,7 @@ Compute fused multiple-add with two other complex values: `result = self * b + c
 
 Computed `Self * B + C` complex value.
 
-### `squared_add`[​](https://docs.modular.com/mojo/stdlib/complex/complex#squared_add "Direct link to squared_add")
+### `squared_add`
 
 `squared_add(self: Self, c: Self) -> Self`
 

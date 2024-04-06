@@ -4,7 +4,7 @@ Implements slice.
 
 These are Mojo built-ins, so you don't need to import them.
 
-## `Slice`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_slice#slice "Direct link to slice")
+## `Slice`
 
 Represents a slice expression.
 
@@ -28,7 +28,7 @@ var msg: String = "Hello Mojo"# Both are equivalent and print "Mojo".print(msg[6
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_slice#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(start: Int, end: Int) -> Self`
 
@@ -63,7 +63,7 @@ Construct slice given the start, end and step values.
 
 The constructed slice.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_slice#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, idx: Int) -> Int`
 
@@ -77,7 +77,7 @@ Get the slice index.
 
 The slice index.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_slice#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, other: Self) -> Bool`
 
@@ -91,7 +91,7 @@ Compare this slice to the other.
 
 True if start, end, and step values of this slice match the corresponding values of the other slice and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_slice#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, other: Self) -> Bool`
 
@@ -105,7 +105,7 @@ Compare this slice to the other.
 
 False if start, end, and step values of this slice match the corresponding values of the other slice and True otherwise.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_slice#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -115,7 +115,7 @@ Gets the string representation of the span.
 
 The string representation of the span.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_slice#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -125,7 +125,7 @@ Return the length of the slice.
 
 The length of the slice.
 
-## `slice`[​](https://docs.modular.com/mojo/stdlib/builtin/builtin_slice#slice-1 "Direct link to slice-1")
+## `slice`
 
 `slice(end: Int) -> Slice`
 

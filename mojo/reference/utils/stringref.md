@@ -2,7 +2,7 @@
 
 Implements the StringRef class.
 
-## `StringRef`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#stringref "Direct link to stringref")
+## `StringRef`
 
 Represent a constant reference to a string, i.e. a sequence of characters and a length, which need not be null terminated.
 
@@ -18,7 +18,7 @@ Represent a constant reference to a string, i.e. a sequence of characters and a 
 
 **Methods:**
 
-### `__init__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__init__ "Direct link to __init__")
+### `__init__`
 
 `__init__(str: StringLiteral) -> Self`
 
@@ -86,7 +86,7 @@ Construct a StringRef value given a null-terminated string.
 
 Constructed `StringRef` object.
 
-### `__bool__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__bool__ "Direct link to __bool__")
+### `__bool__`
 
 `__bool__(self: Self) -> Bool`
 
@@ -96,7 +96,7 @@ Checks if the string is empty or not.
 
 Returns True if the string is not empty and False otherwise.
 
-### `__getitem__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__getitem__ "Direct link to __getitem__")
+### `__getitem__`
 
 `__getitem__(self: Self, idx: Int) -> Self`
 
@@ -110,7 +110,7 @@ Get the string value at the specified position.
 
 The character at the specified position.
 
-### `__eq__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__eq__ "Direct link to __eq__")
+### `__eq__`
 
 `__eq__(self: Self, rhs: Self) -> Bool`
 
@@ -124,7 +124,7 @@ Compares two strings are equal.
 
 True if the strings match and False otherwise.
 
-### `__ne__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__ne__ "Direct link to __ne__")
+### `__ne__`
 
 `__ne__(self: Self, rhs: Self) -> Bool`
 
@@ -138,7 +138,7 @@ Compares two strings are not equal.
 
 True if the strings do not match and False otherwise.
 
-### `__contains__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__contains__ "Direct link to __contains__")
+### `__contains__`
 
 `__contains__(self: Self, substr: Self) -> Bool`
 
@@ -152,7 +152,7 @@ Returns True if the substring is contained within the current string.
 
 True if the string contains the substring.
 
-### `__str__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__str__ "Direct link to __str__")
+### `__str__`
 
 `__str__(self: Self) -> String`
 
@@ -162,7 +162,7 @@ Convert the string reference to a string.
 
 A new string.
 
-### `__len__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__len__ "Direct link to __len__")
+### `__len__`
 
 `__len__(self: Self) -> Int`
 
@@ -172,7 +172,7 @@ Returns the length of the string.
 
 The length of the string.
 
-### `__hash__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__hash__ "Direct link to __hash__")
+### `__hash__`
 
 `__hash__(self: Self) -> Int`
 
@@ -182,7 +182,7 @@ Hash the underlying buffer using builtin hash.
 
 A 64-bit hash value. This value is _not_ suitable for cryptographic uses. Its intended usage is for data structures. See the `hash` builtin documentation for more details.
 
-### `count`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#count "Direct link to count")
+### `count`
 
 `count(self: Self, substr: Self) -> Int`
 
@@ -198,7 +198,7 @@ If sub is empty, returns the number of empty strings between characters which is
 
 The number of occurrences of `substr`.
 
-### `find`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#find "Direct link to find")
+### `find`
 
 `find(self: Self, substr: Self, start: Int) -> Int`
 
@@ -213,7 +213,7 @@ Finds the offset of the first occurrence of `substr` starting at `start`. If not
 
 The offset of `substr` relative to the beginning of the string.
 
-### `rfind`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#rfind "Direct link to rfind")
+### `rfind`
 
 `rfind(self: Self, substr: Self, start: Int) -> Int`
 
@@ -228,7 +228,7 @@ Finds the offset of the last occurrence of `substr` starting at `start`. If not 
 
 The offset of `substr` relative to the beginning of the string.
 
-### `__int__`[​](https://docs.modular.com/mojo/stdlib/utils/stringref#__int__ "Direct link to __int__")
+### `__int__`
 
 `__int__(self: Self) -> Int`
 

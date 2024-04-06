@@ -8,7 +8,7 @@ You can import these APIs from the `autotune` package. For example:
 from autotune import cost_of
 ```
 
-## `cost_of`[​](https://docs.modular.com/mojo/stdlib/autotune/autotuning#cost_of "Direct link to cost_of")
+## `cost_of`
 
 `cost_of[fn_type: AnyRegType, func: fn_type]() -> Int`
 
