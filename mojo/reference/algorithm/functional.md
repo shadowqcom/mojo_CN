@@ -1,14 +1,14 @@
 # functional
 
-Implements higher-order functions.
+实现高阶函数。
 
-You can import these APIs from the `algorithm` package. For example:
+您可以从 algorithm 包导入这些 API。例如：
 
-```
+```mojo
 from algorithm import map
 ```
 
-**Aliases:**
+**别名:**
 
 - ​`Static1DTileUnitFunc = fn[Int](Int, /) capturing -> None`: Signature of a 1d tiled function that performs some work with a static tile size and an offset. i.e. func<tile\_size: Int> (offset: Int)
 
@@ -30,434 +30,496 @@ from algorithm import map
 
 - ​`Static1DTileUnitFuncWithFlags = fn[Int, Bool, Bool](Int, /) capturing -> None`
 
-## `map`
 
-`map[func: fn(Int, /) capturing -> None](size: Int)`
-
-Maps a function over a range from 0 to size.
-
+## `映射函数`
+```map[func: fn(Int, /) capturing -> None](size: Int)```
+将函数映射到从0到size的范围上。
 **Parameters:**
 
-- ​**func** (`fn(Int, /) capturing -> None`): Function to map.
+- **func** (`fn(Int, /) capturing -> None`)：要映射的函数。
 
 **Args:**
 
-- ​**size** (`Int`): The number of elements.
+- **size** (`Int`)：元素的数量。
+
 
 ## `vectorize`
 
-`vectorize[func: fn[Int](Int, /) capturing -> None, simd_width: Int, unroll_factor: Int](size: Int)`
+```vectorize[func: fn[Int](Int, /) capturing -> None, simd_width: Int, unroll_factor: Int](size: Int)```
 
-Simplifies SIMD optimized loops by mapping a function across a range from 0 to `size`, incrementing by `simd_width` at each step. The remainder of `size % simd_width` will run in separate iterations.
+通过在 0 到 的范围内映射函数并在每一步`size`递增 来简化 SIMD 优化循环`simd_width`。其余部分`size % simd_width`将在单独的迭代中运行。
 
-The below example demonstrates how you could improve the performance of a loop, by setting multiple values at the same time using SIMD registers on the machine:
+下面的示例演示了如何通过使用计算机上的 SIMD 寄存器同时设置多个值来提高循环的性能：
 
+```mojo
+from algorithm.functional import vectorize
+
+# The amount of elements to loop through
+alias size = 10
+# How many Dtype.int32 elements fit into the SIMD register (4 on 128bit)
+alias simd_width = simdwidthof[DType.int32]()
+
+fn main():
+    var p = DTypePointer[DType.int32].alloc(size)
+
+    # @parameter allows the closure to capture the `p` pointer
+    @parameter
+    fn closure[simd_width: Int](i: Int):
+        print("storing", simd_width, "els at pos", i)
+        p.store[width=simd_width](i, i)
+
+    vectorize[closure, simd_width](size)
+    print(p.load[width=size]())
 ```
-from algorithm.functional import vectorize# The amount of elements to loop throughalias size = 10# How many Dtype.int32 elements fit into the SIMD register (4 on 128bit)alias simd_width = simdwidthof[DType.int32]()fn main():    var p = DTypePointer[DType.int32].alloc(size)    # @parameter allows the closure to capture the `p` pointer    @parameter    fn closure[simd_width: Int](i: Int):        print("storing", simd_width, "els at pos", i)        p.store[width=simd_width](i, i)    vectorize[closure, simd_width](size)    print(p.load[width=size]())
+
+在 SIMD 寄存器大小为 128 的机器上，这将在每次迭代时设置 4xInt32 值。 10 % 4 的余数为 2，因此最后两个元素将在两次单独的迭代中设置：
+
+```mojo
+storing 4 els at pos 0
+storing 4 els at pos 4
+storing 1 els at pos 8
+storing 1 els at pos 9
+[0, 0, 0, 0, 4, 4, 4, 4, 8, 9]
 ```
 
-On a machine with a SIMD register size of 128, this will set 4xInt32 values on each iteration. The remainder of 10 % 4 is 2, so those last two elements will be set in two separate iterations:
+您还可以展开循环以潜在地提高性能，但代价是二进制大小：
 
-```
-storing 4 els at pos 0storing 4 els at pos 4storing 1 els at pos 8storing 1 els at pos 9[0, 0, 0, 0, 4, 4, 4, 4, 8, 9]
-```
-
-You can also unroll the loop to potentially improve performance at the cost of binary size:
-
-```
+```mojo
 vectorize[closure, width, unroll_factor=2](size)
 ```
 
-In the generated assembly the function calls will be repeated, resulting in fewer arithmetic, comparison, and conditional jump operations. The assembly would look like this in psuedocode:
+在生成的程序集中，函数调用将被重复，从而导致算术、比较和条件跳转操作减少。程序集在伪代码中看起来像这样：
 
-```
-closure[4](0)closure[4](4)# Remainder loop won't unroll unless `size` is passed as a parameterfor i in range(8, 10):    closure[1](i)    closure[1](i)
+```mojo
+closure[4](0)
+closure[4](4)
+# Remainder loop won't unroll unless `size` is passed as a parameter
+for i in range(8, 10):
+    closure[1](i)
+    closure[1](i)
 ```
 
-You can pass `size` as a parameter if it's compile time known to reduce the iterations for the remainder. This only occurs if the remainder is an exponent of 2 (2, 4, 8, 16, ...). The remainder loop will still unroll for performance improvements if not an exponent of 2.
+size如果已知编译时间可以减少剩余部分的迭代，则可以将其作为参数传递。仅当余数是 2 的指数 (2, 4, 8, 16, ...) 时才会发生这种情况。如果不是 2 的指数，余数循环仍会展开以提高性能。
 
 **Parameters:**
 
-- ​**func** (`fn[Int](Int, /) capturing -> None`): The function that will be called in the loop body.
-- ​**simd\_width** (`Int`): The SIMD vector width.
-- ​**unroll\_factor** (`Int`): The unroll factor for the main loop (Default 1).
+- **func** ( `fn[Int](Int, /) capturing -> None`)：将在循环体中调用的函数。
+- **​simd** **\_** **width** ( `Int`)：SIMD向量宽度。
+- **​unroll\_factor** ( `Int`)：主循环的展开因子（默认 1 **）****。**
 
 **Args:**
 
-- ​**size** (`Int`): The upper limit for the loop.
+- **​size** ( `Int`): 循环的上限。
 
-`vectorize[func: fn[Int](Int, /) capturing -> None, simd_width: Int, size: Int, unroll_factor: Int]()`
+```vectorize[func: fn[Int](Int, /) capturing -> None, simd_width: Int, size: Int, unroll_factor: Int]()```
 
-Simplifies SIMD optimized loops by mapping a function across a range from 0 to `size`, incrementing by `simd_width` at each step. The remainder of `size % simd_width` will run in a single iteration if it's an exponent of 2.
+通过在 0 到 的范围内映射函数并在每一步`size`递增 来简化 SIMD 优化循环`simd_width`。`size % simd_width`如果它是 2 的指数，则其余部分将在单次迭代中运行。
 
-The below example demonstrates how you could improve the performance of a loop, by setting multiple values at the same time using SIMD registers on the machine:
+下面的示例演示了如何通过使用计算机上的 SIMD 寄存器同时设置多个值来提高循环的性能：
+
+```mojo
+from algorithm.functional import vectorize
+
+# The amount of elements to loop through
+alias size = 10
+# How many Dtype.int32 elements fit in SIMD register (4 on 128bit)
+alias simd_width = simdwidthof[DType.int32]()
+
+fn main():
+    var p = DTypePointer[DType.int32].alloc(size)
+
+    # @parameter allows the closure to capture the `p` pointer
+    @parameter
+    fn closure[simd_width: Int](i: Int):
+        print("storing", simd_width, "els at pos", i)
+        p.store[width=simd_width](i, i)
+
+    vectorize[closure, simd_width, size]()
+    print(p.load[width=size]())
+```
+
+在 SIMD 寄存器大小为 128 的机器上，这将在每次迭代时设置 4xInt32 值。 10 % 4 的余数为 2，因此最后两个元素将在单次迭代中设置：
 
 ```
-from algorithm.functional import vectorize# The amount of elements to loop throughalias size = 10# How many Dtype.int32 elements fit in SIMD register (4 on 128bit)alias simd_width = simdwidthof[DType.int32]()fn main():    var p = DTypePointer[DType.int32].alloc(size)    # @parameter allows the closure to capture the `p` pointer    @parameter    fn closure[simd_width: Int](i: Int):        print("storing", simd_width, "els at pos", i)        p.store[width=simd_width](i, i)    vectorize[closure, simd_width, size]()    print(p.load[width=size]())
+storing 4 els at pos 0
+storing 4 els at pos 4
+storing 2 els at pos 8
+[0, 0, 0, 0, 4, 4, 4, 4, 8, 8]
 ```
 
-On a machine with a SIMD register size of 128, this will set 4xInt32 values on each iteration. The remainder of 10 % 4 is 2, so those last two elements will be set in a single iteration:
+如果余数不是 2 的指数（2、4、8、16 ...），则每个元素都会进行单独的迭代。然而，作为参数传递`size`还允许展开剩余元素的循环。
 
-```
-storing 4 els at pos 0storing 4 els at pos 4storing 2 els at pos 8[0, 0, 0, 0, 4, 4, 4, 4, 8, 8]
-```
-
-If the remainder is not an exponent of 2 (2, 4, 8, 16 ...) there will be a seperate iteration for each element. However passing `size` as a parameter also allows the loop for the remaining elements to be unrolled.
-
-You can also unroll the main loop to potentially improve performance at the cost of binary size:
+您还可以展开主循环以潜在地提高性能，但代价是二进制大小：
 
 ```
 vectorize[closure, width, size=size, unroll_factor=2]()
 ```
 
-In the generated assembly the function calls will be repeated, resulting in fewer arithmetic, comparison, and conditional jump operations. The assembly would look like this in psuedocode:
+在生成的程序集中，函数调用将被重复，从而导致算术、比较和条件跳转操作减少。程序集在伪代码中看起来像这样：
 
 ```
-closure[4](0)closure[4](4)closure[2](8)
+closure[4](0)
+closure[4](4)
+closure[2](8)
 ```
 
 **Parameters:**
 
-- ​**func** (`fn[Int](Int, /) capturing -> None`): The function that will be called in the loop body.
-- ​**simd\_width** (`Int`): The SIMD vector width.
-- ​**size** (`Int`): The upper limit for the loop.
-- ​**unroll\_factor** (`Int`): The unroll factor for the main loop (Default 1).
+- **func** ( `fn[Int](Int, /) capturing -> None`)：将在循环体中调用的函数。
+- **​simd** **\_** **width** ( `Int`)：SIMD向量宽度。
+- **​size** ( `Int`): 循环的上限。
+- **​unroll\_factor** ( `Int`)：主循环的展开因子（默认 1 **）****。**
 
 ## `async_parallelize`
 
-`async_parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int)`
+```async_parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int)```
 
-Executes func(0) ... func(num\_work\_items-1) as parallel sub-tasks, and asynchronously completes when all are complete.
-
-**Parameters:**
-
-- ​**func** (`fn(Int, /) capturing -> None`): The function to invoke.
-
-**Args:**
-
-- ​**num\_work\_items** (`Int`): Number of parallel tasks.
-
-`async_parallelize[func: fn(Int, /) raises capturing -> None](num_work_items: Int)`
-
-Executes func(0) ... func(num\_work\_items-1) as parallel sub-tasks, and asynchronously completes when all are complete.
-
-TODO: Currently exceptions raised by func will cause a trap rather than be propagated back to the caller.
+执行 func(0) ... func(num _ work _ items-1) 作为并行子任务，并在所有任务完成时异步完成。
 
 **Parameters:**
 
-- ​**func** (`fn(Int, /) raises capturing -> None`): The function to invoke.
+- **func** ( `fn(Int, /) capturing -> None`)：要调用的函数。
 
 **Args:**
 
-- ​**num\_work\_items** (`Int`): Number of parallel tasks.
+- **​num** **\_** **work** **\_** **items** ( `Int`)：并行任务数。
+
+```async_parallelize[func: fn(Int, /) raises capturing -> None](num_work_items: Int)```
+
+执行 func(0) ... func(num _ work _ items-1) 作为并行子任务，并在所有任务完成时异步完成。
+
+TODO：目前 func 引发的异常将导致陷阱，而不是传播回调用者。
+
+**Parameters:**
+
+- **func** ( `fn(Int, /) raises capturing -> None`)：要调用的函数。
+
+**Args:**
+
+- **​num** **\_** **work** **\_** **items** ( `Int`)：并行任务数。
 
 ## `sync_parallelize`
 
-`sync_parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int)`
+```
+sync_parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int)
+```
 
-Executes func(0) ... func(num\_work\_items-1) as parallel sub-tasks, and returns when all are complete.
-
-**Parameters:**
-
-- ​**func** (`fn(Int, /) capturing -> None`): The function to invoke.
-
-**Args:**
-
-- ​**num\_work\_items** (`Int`): Number of parallel tasks.
-
-`sync_parallelize[func: fn(Int, /) raises capturing -> None](num_work_items: Int)`
-
-Executes func(0) ... func(num\_work\_items-1) as parallel sub-tasks, and returns when all are complete.
-
-TODO: Currently exceptions raised by func will cause a trap rather than be propagated back to the caller.
+执行 func(0) ... func(num \_ work \_ items-1) 作为并行子任务，并在所有任务完成后返回。
 
 **Parameters:**
 
-- ​**func** (`fn(Int, /) raises capturing -> None`): The function to invoke.
+- **func** ( `fn(Int, /) capturing -> None`)：要调用的函数。
 
 **Args:**
 
-- ​**num\_work\_items** (`Int`): Number of parallel tasks.
+- **​num** **\_** **work** **\_** **items** ( `Int`)：并行任务数。
+
+```
+sync_parallelize[func: fn(Int, /) raises capturing -> None](num_work_items: Int)
+```
+执行 func(0) ... func(num \_ work \_ items-1) 作为并行子任务，并在所有任务完成后返回。
+
+TODO：目前 func 引发的异常将导致陷阱，而不是传播回调用者。
+
+**Parameters:**
+
+- **func** ( `fn(Int, /) raises capturing -> None`)：要调用的函数。
+
+**Args:**
+
+- **​num** **\_** **work** **\_** **items** ( `Int`)：并行任务数。
 
 ## `parallelize`
 
-`parallelize[func: fn(Int, /) capturing -> None]()`
+```
+parallelize[func: fn(Int, /) capturing -> None]()
+```
 
-Executes func(0) ... func(N-1) as sub-tasks in parallel, and returns when all are complete. N is chosen to be the number of processors on the system.
-
-**Parameters:**
-
-- ​**func** (`fn(Int, /) capturing -> None`): The function to invoke.
-
-`parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int)`
-
-Executes func(0) ... func(num\_work\_items-1) as sub-tasks in parallel, and returns when all are complete.
-
-CAUTION: Creates and destroys a local runtime! Do not use from kernels!
+并行执行 func(0) ... func(N-1) 作为子任务，并在所有任务完成后返回。 N 被选为系统上处理器的数量。
 
 **Parameters:**
 
-- ​**func** (`fn(Int, /) capturing -> None`): The function to invoke.
+- **func** ( `fn(Int, /) capturing -> None`)：要调用的函数。
+
+```parallelize\[func: fn(Int, /) capturing -> None\](num\_work\_items: Int)```
+
+并行执行 func(0) ... func(num \_ work \_ items-1) 作为子任务，并在所有任务完成后返回。
+
+注意：创建和销毁本地运行时！不要从内核中使用！
+
+**Parameters:**
+
+- **func** ( `fn(Int, /) capturing -> None`)：要调用的函数。
 
 **Args:**
 
-- ​**num\_work\_items** (`Int`): Number of parallel tasks.
+- **​num** **\_** **work** **\_** **items** ( `Int`)：并行任务数。
 
-`parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int, num_workers: Int)`
+```parallelize[func: fn(Int, /) capturing -> None](num_work_items: Int, num_workers: Int)```
 
-Executes func(0) ... func(num\_work\_items-1) as sub-tasks in parallel, and returns when all are complete.
+并行执行 func(0) ... func(num \_ work \_ items-1) 作为子任务，并在所有任务完成后返回。
 
 **Parameters:**
 
-- ​**func** (`fn(Int, /) capturing -> None`): The function to invoke.
+- **func** ( `fn(Int, /) capturing -> None`)：要调用的函数。
 
 **Args:**
 
-- ​**num\_work\_items** (`Int`): Number of parallel tasks.
-- ​**num\_workers** (`Int`): The number of workers to use for execution.
+- ​num _ work _ items ( Int)：并行任务数。
+- ​num_workers ( )：用于执行的工作人员Int数量。
 
 ## `tile`
 
-`tile[workgroup_function: fn[Int](Int, /) capturing -> None, tile_size_list: VariadicList[Int]](offset: Int, upperbound: Int)`
+```tile[workgroup_function: fn[Int](Int, /) capturing -> None, tile_size_list: VariadicList[Int]](offset: Int, upperbound: Int)```
 
-A generator that launches work groups in specified list of tile sizes.
+启动指定图块大小列表中的工作组的生成器。
 
-A workgroup function is a function that can process a configurable consecutive "tile" of workload. E.g. `work_on[3](5)` should launch computation on item 5,6,7, and should be semantically equivalent to `work_on[1](5)`, `work_on[1](6)`, `work_on[1](7)`.
+工作组功能是一种可以处理可配置的连续“区块”工作负载的功能。例如， `work_on[3](5)` 应启动第 5、6、7 项的计算，并且在语义上应等同于 `work_on[1](5)`, `work_on[1](6)`, `work_on[1](7)`。
 
-This generator will try to proceed with the given list of tile sizes on the listed order. E.g. `tile[func, (3,2,1)](offset, upperbound)` will try to call `func[3]` starting from offset until remaining work is less than 3 from upperbound and then try `func[2]`, and then `func[1]`, etc.
-
-**Parameters:**
-
-- ​**workgroup\_function** (`fn[Int](Int, /) capturing -> None`): Workgroup function that processes one tile of workload.
-- ​**tile\_size\_list** (`VariadicList[Int]`): List of tile sizes to launch work.
-
-**Args:**
-
-- ​**offset** (`Int`): The initial index to start the work from.
-- ​**upperbound** (`Int`): The runtime upperbound that the work function should not exceed.
-
-`tile[workgroup_function: fn(Int, Int, /) capturing -> None](offset: Int, upperbound: Int, tile_size_list: VariadicList[Int])`
-
-A generator that launches work groups in specified list of tile sizes.
-
-This is the version of tile generator for the case where work\_group function can take the tile size as a runtime value.
+该生成器将尝试按照列出的顺序继续处理给定的图块尺寸列表。例如， `tile[func, (3,2,1)](offset, upperbound)` 将尝试`func[3]`从偏移量开始调用，直到剩余工作距离上限小于 3，然后尝试`func[2]`，然后`func[1]`等等。
 
 **Parameters:**
 
-- ​**workgroup\_function** (`fn(Int, Int, /) capturing -> None`): Workgroup function that processes one tile of workload.
+- **​workgroup** **\_** **function** ( `fn[Int](Int, /) capturing -> None`)：处理一块工作负载的工作组函数。
+- **​tile** **\_** **size** **\_** **list** ( `VariadicList[Int]`)：要启动工作的图块尺寸列表。
 
 **Args:**
 
-- ​**offset** (`Int`): The initial index to start the work from.
-- ​**upperbound** (`Int`): The runtime upperbound that the work function should not exceed.
-- ​**tile\_size\_list** (`VariadicList[Int]`): List of tile sizes to launch work.
+- **​offset** ( `Int`): 开始工作的初始索引。
+- **​upperbound** ( `Int`)：工作函数不应超过的运行时上限。
 
-`tile[secondary_tile_size_list: VariadicList[Int], secondary_cleanup_tile: Int, workgroup_function: fn[Int](Int, Int, /) capturing -> None](offset: Int, upperbound: Int, primary_tile_size_list: VariadicList[Int], primary_cleanup_tile: Int)`
+```tile[workgroup_function: fn(Int, Int, /) capturing -> None](offset: Int, upperbound: Int, tile_size_list: VariadicList[Int])```
 
-A generator that launches work groups in specified list of tile sizes until the sum of primary\_tile\_sizes has exceeded the upperbound.
+启动指定图块大小列表中的工作组的生成器。
+
+这是瓦片生成器的版本，适用于work\_group函数可以将瓦片大小作为运行时值的情况。
 
 **Parameters:**
 
-- ​**secondary\_tile\_size\_list** (`VariadicList[Int]`): List of static tile sizes to launch work.
-- ​**secondary\_cleanup\_tile** (`Int`): Last static tile to use when primary tile sizes don't fit exactly within the upperbound.
-- ​**workgroup\_function** (`fn[Int](Int, Int, /) capturing -> None`): Workgroup function that processes one tile of workload.
+- **​workgroup** **\_** **function** ( `fn(Int, Int, /) capturing -> None`)：处理一块工作负载的工作组函数。
 
 **Args:**
 
-- ​**offset** (`Int`): The initial index to start the work from.
-- ​**upperbound** (`Int`): The runtime upperbound that the work function should not exceed.
-- ​**primary\_tile\_size\_list** (`VariadicList[Int]`): List of dynamic tile sizes to launch work.
-- ​**primary\_cleanup\_tile** (`Int`): Last dynamic tile to use when primary tile sizes don't fit exactly within the upperbound.
+- **​offset** ( `Int`): 开始工作的初始索引。
+- **​upperbound** ( `Int`)：工作函数不应超过的运行时上限。
+- **​tile** **\_** **size** **\_** **list** ( `VariadicList[Int]`)：要启动工作的图块尺寸列表。
 
-`tile[workgroup_function: fn[Int, Int](Int, Int, /) capturing -> None, tile_sizes_x: VariadicList[Int], tile_sizes_y: VariadicList[Int]](offset_x: Int, offset_y: Int, upperbound_x: Int, upperbound_y: Int)`
+> tile[secondary_tile_size_list: VariadicList[Int], secondary_cleanup_tile: Int, 
+> workgroup_function: fn[Int](Int, Int, /) capturing -> None](offset: Int, upperbound: Int, 
+> primary_tile_size_list: VariadicList[Int], primary_cleanup_tile: Int)
 
-Launches workgroup\_function using the largest tile sizes possible in each dimension, starting from the x and y offset, until the x and y upperbounds are reached.
+一个生成器，它在指定的图块大小列表中启动工作组，直到Primary_tile_大小的总和超过上限。
 
 **Parameters:**
 
-- ​**workgroup\_function** (`fn[Int, Int](Int, Int, /) capturing -> None`): Function that is invoked for each tile and offset.
-- ​**tile\_sizes\_x** (`VariadicList[Int]`): List of tile sizes to use for the first parameter of workgroup\_function.
-- ​**tile\_sizes\_y** (`VariadicList[Int]`): List of tile sizes to use for the second parameter of workgroup\_function.
+- **secondary\_tile\_size\_list** ( `VariadicList[Int]`)：要启动工作**的****静态****图块****尺寸****列表****。**
+- **secondary\_cleanup\_tile** ( **)**`Int`：当主图块大小不完全符合上限时使用的最后一个**静态****图块****。**
+- **​workgroup** **\_** **function** ( `fn[Int](Int, Int, /) capturing -> None`)：处理一块工作负载的工作组函数。
 
 **Args:**
 
-- ​**offset\_x** (`Int`): Initial x offset passed to workgroup\_function.
-- ​**offset\_y** (`Int`): Initial y offset passed to workgroup\_function.
-- ​**upperbound\_x** (`Int`): Max offset in x dimension passed to workgroup function.
-- ​**upperbound\_y** (`Int`): Max offset in y dimension passed to workgroup function.
+​offset ( Int): 开始工作的初始索引。
+​upperbound ( Int)：工作函数不应超过的运行时上限。
+​primary_tile_size_list ( ) VariadicList[Int]：要启动工作的动态图块尺寸列表。
+​primary_cleanup_tile ( ) Int：当主图块大小不完全符合上限时使用的最后一个动态图块。
+
+> tile[workgroup_function: fn[Int, Int](Int, Int, /) capturing -> None, tile_sizes_x: VariadicList[Int], tile_sizes_y: VariadicList[Int]](offset_x: Int, offset_y: Int, upperbound_x: Int, upperbound_y: Int)
+
+使用每个维度中可能的最大图块大小启动工作组_函数，从 x 和 y 偏移量开始，直到达到 x 和 y 上限。
+
+**Parameters:**
+
+- **​workgroup** **\_** **function** ( `fn[Int, Int](Int, Int, /) capturing -> None`)：为每个图块和偏移量调用的函数。
+- **​tile\_sizes\_x** **(** ) `VariadicList[Int]`：用于工作组\_函数第一个**参数的图块****尺寸列表****。**
+- **​tile\_sizes\_y** **(** ) `VariadicList[Int]`：用于workgroup\_函数第二个参数**的**图块**尺寸****列表**。
+
+**Args:**
+
+- **offset** **\_** **x** ( `Int`): 传递给 workgroup \_函数的初始 x 偏移量。
+- **offset** **\_** **y** ( `Int`): 传递给 workgroup \_函数的初始 y 偏移量。
+- **​upperbound** **\_** **x** ( `Int`)：传递给工作组函数的 x 维度最大偏移量。
+- **​upperbound** **\_** **y** ( `Int`)：传递给工作组函数的 y 维度最大偏移量。
 
 ## `unswitch`
 
 `unswitch[switched_func: fn[Bool]() capturing -> None](dynamic_switch: Bool)`
 
-Performs a functional unswitch transformation.
+执行功能性取消转换。
 
-Unswitch is a simple pattern that is similar idea to loop unswitching pass but extended to functional patterns. The pattern facilitates the following code transformation that reduces the number of branches in the generated code
+Unswitch 是一种简单的模式，与循环 unswitching pass 的想法类似，但扩展到了功能模式。该模式有利于以下代码转换，从而减少生成代码中的分支数量
 
-Before:
-
-```
-for i in range(...)    if i < xxx:        ...
-```
-
-After:
+前：
 
 ```
-if i < ...    for i in range(...)        ...else    for i in range(...)        if i < xxx:            ...
+for i in range(...)
+    if i < xxx:
+        ...
 ```
 
-This unswitch function generalizes that pattern with the help of meta parameters and can be used to perform both loop unswitching and other tile predicate lifting like in simd and amx.
+后：
 
-TODO: Generalize to support multiple predicates. TODO: Once nested lambdas compose well should make unswitch compose with tile in an easy way.
+```
+if i < ...
+    for i in range(...)
+        ...
+else
+    for i in range(...)
+        if i < xxx:
+            ...
+```
+
+此 unswitch 函数借助元参数概括了该模式，并且可用于执行循环取消切换和其他平铺谓词提升，如 simd 和 amx 中。
+
+TODO：泛化以支持多个谓词。 TODO：一旦嵌套 lambda 组合良好，应该可以轻松地使 unswitch 与tile 组合。
 
 **Parameters:**
 
-- ​**switched\_func** (`fn[Bool]() capturing -> None`): The function containing the inner loop logic that can be unswitched.
+- **​switched** **\_** **func** ( `fn[Bool]() capturing -> None`)：包含可取消切换的内部循环逻辑的函数。
 
 **Args:**
 
-- ​**dynamic\_switch** (`Bool`): The dynamic condition that enables the unswitched code path.
+- **​dynamic** **\_** **switch** ( `Bool`)：启用未切换代码路径的动态条件。
 
 `unswitch[switched_func: fn[Bool, Bool]() capturing -> None](dynamic_switch_a: Bool, dynamic_switch_b: Bool)`
 
-Performs a functional 2-predicates unswitch transformation.
+执行功能 2 谓词 unswitch 转换。
 
 **Parameters:**
 
-- ​**switched\_func** (`fn[Bool, Bool]() capturing -> None`): The function containing the inner loop logic that has 2 predicates which can be unswitched.
+- **switched** **\_** **func** ( `fn[Bool, Bool]() capturing -> None`)：包含内部循环逻辑的函数，有 2 个可以取消切换的谓词。
 
 **Args:**
 
-- ​**dynamic\_switch\_a** (`Bool`): The first dynamic condition that enables the outer unswitched code path.
-- ​**dynamic\_switch\_b** (`Bool`): The second dynamic condition that enables the inner unswitched code path.
+- **​dynamic** **\_** **switch** **\_** **a** ( `Bool`)：启用外部未切换代码路径的第一个动态条件。
+- **​dynamic** **\_** **switch** **\_** **b** ( `Bool`)：启用内部未切换代码路径的第二个动态条件。
 
 ## `tile_and_unswitch`
 
 `tile_and_unswitch[workgroup_function: fn[Int, Bool](Int, Int, /) capturing -> None, tile_size_list: VariadicList[Int]](offset: Int, upperbound: Int)`
 
-Performs time and unswitch functional transformation.
+执行时间和取消开关功能转换。
 
-A variant of static tile given a workgroup function that can be unswitched. This generator is a fused version of tile and unswitch, where the static unswitch is true throughout the "inner" portion of the workload and is false only on the residue tile.
+静态图块的一种变体，具有可以取消切换的工作组功能。该生成器是tile和unswitch的融合版本，其中静态unswitch在整个工作负载的“内部”部分为真，而仅在剩余tile上为假。
 
 **Parameters:**
 
-- ​**workgroup\_function** (`fn[Int, Bool](Int, Int, /) capturing -> None`): Workgroup function that processes one tile of workload.
-- ​**tile\_size\_list** (`VariadicList[Int]`): List of tile sizes to launch work.
+- **​workgroup** **\_** **function** ( `fn[Int, Bool](Int, Int, /) capturing -> None`)：处理一块工作负载的工作组函数。
+- **​tile** **\_** **size** **\_** **list** ( `VariadicList[Int]`)：要启动工作的图块尺寸列表。
 
 **Args:**
 
-- ​**offset** (`Int`): The initial index to start the work from.
-- ​**upperbound** (`Int`): The runtime upperbound that the work function should not exceed.
+- **​offset** ( `Int`): 开始工作的初始索引。
+- **​upperbound** ( `Int`)：工作函数不应超过的运行时上限。
 
 `tile_and_unswitch[workgroup_function: fn[Bool](Int, Int, Int, /) capturing -> None](offset: Int, upperbound: Int, tile_size_list: VariadicList[Int])`
 
-Performs time and unswitch functional transformation.
+执行时间和取消开关功能转换。
 
-A variant of dynamic tile given a workgroup function that can be unswitched. This generator is a fused version of tile and unswitch, where the static unswitch is true throughout the "inner" portion of the workload and is false only on the residue tile.
+动态图块的一种变体，具有可以取消切换的工作组功能。该生成器是tile和unswitch的融合版本，其中静态unswitch在整个工作负载的“内部”部分为真，而仅在剩余tile上为假。
 
 **Parameters:**
 
-- ​**workgroup\_function** (`fn[Bool](Int, Int, Int, /) capturing -> None`): Workgroup function that processes one tile of workload.
+- **​workgroup** **\_** **function** ( `fn[Bool](Int, Int, Int, /) capturing -> None`)：处理一块工作负载的工作组函数。
 
 **Args:**
 
-- ​**offset** (`Int`): The initial index to start the work from.
-- ​**upperbound** (`Int`): The runtime upperbound that the work function should not exceed.
-- ​**tile\_size\_list** (`VariadicList[Int]`): List of tile sizes to launch work.
+- **​offset** ( `Int`): 开始工作的初始索引。
+- **​upperbound** ( `Int`)：工作函数不应超过的运行时上限。
+- **​tile** **\_** **size** **\_** **list** ( `VariadicList[Int]`)：要启动工作的图块尺寸列表。
 
 ## `tile_middle_unswitch_boundaries`
 
 `tile_middle_unswitch_boundaries[work_fn: fn[Int, Bool](Int, /) capturing -> None, middle_tile_sizes: VariadicList[Int], left_tile_size: Int, right_tile_size: Int](left_boundary_start: Int, left_boundary_end: Int, right_boundary_start: Int, right_boundary_end: Int)`
 
-Divides 1d iteration space into three parts and tiles them with different steps.
+将一维迭代空间分为三部分，并使用不同的步骤对它们进行平铺。
 
-The 1d iteration space is divided into: 1. \[left\_boundary\_start, left\_boundary\_end), effected by left boundary. 2. \[left\_boundary\_end, right\_boundary\_start), not effected by any boundary. 3. \[right\_boundary\_start, right\_boundary\_end), effected by right boundary.
+一维迭代空间分为： 1 . \[左\_边界\_开始，左\_边界\_结束)，受左边界影响。 2 . \[左\_边界\_结束，右\_边界\_开始），不受任何边界影响。 3 . \[右\_边界\_开始，右\_边界\_结束)，受右边界影响。
 
-work\_fn's switch is true for the left and right boundaries, implying boundary conditions like padding in convolution. The middle part is tiled with static tile sizes with the switch as false.
+work \_ fn 的开关对于左右边界都是 true，这意味着边界条件，例如卷积中的填充。中间部分使用静态图块尺寸进行平铺，开关设置为 false。
 
-`middle_tile_sizes` should be in descending order for optimal performance. (Larger tile size appeared later in the list fails the while-loop.)
+`middle_tile_sizes`应按降序排列以获得最佳性能。 （列表中后面出现的较大图块大小使 while 循环失败。）
 
 **Parameters:**
 
-- ​**work\_fn** (`fn[Int, Bool](Int, /) capturing -> None`): Work function that processes one tile of workload.
-- ​**middle\_tile\_sizes** (`VariadicList[Int]`): List of tile sizes for the middle part.
-- ​**left\_tile\_size** (`Int`): Tile size for the left boundary region.
-- ​**right\_tile\_size** (`Int`): Tile size for the right boundary region.
+- **​work** **\_** **fn** ( `fn[Int, Bool](Int, /) capturing -> None`)：处理一块工作负载的工作函数。
+- **middle** **\_tile\_sizes** ( ): 中间部分的**瓷砖****尺寸**`VariadicList[Int]`列表**。**
+- **​left** **\_tile\_size** ( `Int`): 左边界区域的**平铺****大小****。**
+- **​right\_tile\_size** ( ):**右边****界**`Int`区域的平铺**大小****。**
 
 **Args:**
 
-- ​**left\_boundary\_start** (`Int`): Start index of the left boundary.
-- ​**left\_boundary\_end** (`Int`): End index of the left boundary.
-- ​**right\_boundary\_start** (`Int`): Start index of the right boundary.
-- ​**right\_boundary\_end** (`Int`): End index of the right boundary.
+- **​left\_boundary\_start** **(** ) ：**左边界**`Int`的起始**索引****。**
+- **​left** **\_** **border** **\_** **end** ( `Int`)：左边界的结束索引。
+- **​right\_boundary\_start** **(** ) ：**右边****界**`Int`的起始索引**。**
+- **​right** **\_** **border** **\_** **end** ( `Int`)：右边界的结束索引。
 
 `tile_middle_unswitch_boundaries[work_fn: fn[Int, Bool, Bool](Int, /) capturing -> None, tile_size: Int, size: Int]()`
 
-Tile 1d iteration space with boundary conditions at both ends.
+两端具有边界条件的平铺一维迭代空间。
 
-This generator is primarily for convolution with static shapes. `work_fn`'s flags hints the function to handle padding at the boundary. The size is the static output row size, i.e., WO dimension.
+该生成器主要用于与静态形状进行卷积。`work_fn`的标志暗示该函数处理边界处的填充。该大小是静态输出行大小，即WO 维度。
 
 **Parameters:**
 
-- ​**work\_fn** (`fn[Int, Bool, Bool](Int, /) capturing -> None`): Work function that updates one tile. It has two flags for left and right boundaries, respectively.
-- ​**tile\_size** (`Int`): 1D Tile size.
-- ​**size** (`Int`): Iteration range is \[0, size).
+- **​work** **\_** **fn** ( `fn[Int, Bool, Bool](Int, /) capturing -> None`)：更新一个图块的工作函数。它有两个标志，分别表示左边界和右边界。
+- **​tile** **\_** **size** ( `Int`): 一维图块尺寸。
+- **​size** ( `Int`)：迭代范围为\[ 0, size)。
 
 ## `elementwise`
 
 `elementwise[func: fn[Int, Int](StaticIntTuple[$1], /) capturing -> None, simd_width: Int, rank: Int](shape: StaticIntTuple[rank])`
 
-Executes `func[width, rank](indices)`, possibly as sub-tasks, for a suitable combination of width and indices so as to cover shape. Returns when all sub-tasks have completed.
+执行`func[width, rank](indices)`，可能作为子任务，以获得宽度和索引的适当组合，以覆盖形状。当所有子任务完成时返回。
 
 **Parameters:**
 
-- ​**func** (`fn[Int, Int](StaticIntTuple[$1], /) capturing -> None`): The body function.
-- ​**simd\_width** (`Int`): The SIMD vector width to use.
-- ​**rank** (`Int`): The rank of the buffer.
+- **​func** ( `fn[Int, Int](StaticIntTuple[$1], /) capturing -> None`)：主体函数。
+- **​simd** **\_** **width** ( `Int`)：要使用的 SIMD 向量宽度。
+- **​rank** ( `Int`)：缓冲区的排名。
 
 **Args:**
 
-- ​**shape** (`StaticIntTuple[rank]`): The shape of the buffer.
+- **​shape** ( `StaticIntTuple[rank]`): 缓冲区的形状。
 
 ## `parallelize_over_rows`
 
 `parallelize_over_rows[func: fn(Int, Int, /) capturing -> None, shape: Int](shape: StaticIntTuple[shape], axis: Int, grain_size: Int)`
 
-Parallelize func over non-axis dims of shape.
+在形状的非轴维度上并行化函数。
 
 **Parameters:**
 
-- ​**func** (`fn(Int, Int, /) capturing -> None`): Function to call on range of rows.
+- **func** ( `fn(Int, Int, /) capturing -> None`)：在行范围内调用的函数。
 
 **Args:**
 
-- ​**shape** (`StaticIntTuple[shape]`): Shape to parallelize over.
-- ​**axis** (`Int`): Rows are slices along the axis dimension of shape.
-- ​**grain\_size** (`Int`): The minimum number of elements to warrant using an additional thread.
+- **​shape** ( `StaticIntTuple[shape]`)：要并行化的形状。
+- **​axis** ( `Int`)：行是沿形状轴尺寸的切片。
+- **grain\_size** **(** ) ：保证使用附加线程**的**`Int`最小元素数。
 
 ## `stencil`
 
 `stencil[rank: Int, stencil_rank: Int, stencil_axis: StaticIntTuple[stencil_rank], simd_width: Int, type: DType, map_fn: fn(StaticIntTuple[stencil_rank], /) capturing -> Tuple[StaticIntTuple[stencil_rank], StaticIntTuple[stencil_rank]], map_strides: fn(dim: Int) capturing -> Int, load_fn: fn[Int, DType](StaticIntTuple[rank], /) capturing -> SIMD[$1, $0], compute_init_fn: fn[Int]() capturing -> SIMD[type, $0], compute_fn: fn[Int](StaticIntTuple[rank], SIMD[type, $0], SIMD[type, $0], /) capturing -> SIMD[type, $0], compute_finalize_fn: fn[Int](StaticIntTuple[rank], SIMD[type, $0], /) capturing -> None](shape: StaticIntTuple[rank], input_shape: StaticIntTuple[rank])`
 
-Computes stencil operation in parallel.
+并行计算模板操作。
 
-Computes output as a function that processes input stencils, stencils are computed as a continuous region for each output point that is determined by map\_fn : map\_fn(y) -> lower\_bound, upper\_bound. The boundary conditions for regions that fail out of the input domain are handled by load\_fn.
+将输出计算为处理输入模板的函数，模板被计算为由 map \_ fn确定的每个输出点的连续区域：map \_ fn(y) - \>下界、上界。超出输入域的区域的边界条件由 load\_fn处理。
 
 **Parameters:**
 
-- ​**rank** (`Int`): Input and output domain rank.
-- ​**stencil\_rank** (`Int`): Rank of stencil subdomain slice.
-- ​**stencil\_axis** (`StaticIntTuple[stencil_rank]`): Stencil subdomain axes.
-- ​**simd\_width** (`Int`): The SIMD vector width to use.
-- ​**type** (`DType`): The input and output data type.
-- ​**map\_fn** (`fn(StaticIntTuple[stencil_rank], /) capturing -> Tuple[StaticIntTuple[stencil_rank], StaticIntTuple[stencil_rank]]`): A function that a point in the output domain to the input co-domain.
-- ​**map\_strides** (`fn(dim: Int) capturing -> Int`): A function that returns the stride for the dim.
-- ​**load\_fn** (`fn[Int, DType](StaticIntTuple[rank], /) capturing -> SIMD[$1, $0]`): A function that loads a vector of simd\_width from input.
-- ​**compute\_init\_fn** (`fn[Int]() capturing -> SIMD[type, $0]`): A function that initializes vector compute over the stencil.
-- ​**compute\_fn** (`fn[Int](StaticIntTuple[rank], SIMD[type, $0], SIMD[type, $0], /) capturing -> SIMD[type, $0]`): A function the process the value computed for each point in the stencil.
-- ​**compute\_finalize\_fn** (`fn[Int](StaticIntTuple[rank], SIMD[type, $0], /) capturing -> None`): A function that finalizes the computation of a point in the output domain given a stencil.
+- **​rank** ( `Int`)：输入和输出域的排名。
+- **​stencil\_rank** **(** ) ：**模板**`Int`子域切片的排名。
+- **​stencil** **\_** **axis** ( `StaticIntTuple[stencil_rank]`)：模板子域轴。
+- **​simd** **\_** **width** ( `Int`)：要使用的 SIMD 向量宽度。
+- **​type** ( `DType`)：输入和输出数据类型。
+- **​map** **\_** **fn** ( `fn(StaticIntTuple[stencil_rank], /) capturing -> Tuple[StaticIntTuple[stencil_rank], StaticIntTuple[stencil_rank]]`)：将输出域中的点映射到输入共域的函数。
+- **​map** **\_** **strides** ( `fn(dim: Int) capturing -> Int`)：返回暗淡步幅的函数。
+- **​load** **\_** **fn** ( )：从输入加载 simd \_ width`fn[Int, DType](StaticIntTuple[rank], /) capturing -> SIMD[$1, $0]`向量的函数。
+- **​compute** **\_** **init** **\_** **fn** ( `fn[Int]() capturing -> SIMD[type, $0]`)：在模板上初始化向量计算的函数。
+- **​compute** **\_** **fn** ( `fn[Int](StaticIntTuple[rank], SIMD[type, $0], SIMD[type, $0], /) capturing -> SIMD[type, $0]`)：一个函数，用于处理模板中每个点的计算值。
+- **​compute** **\_** **Finalize** **\_** **fn** ( `fn[Int](StaticIntTuple[rank], SIMD[type, $0], /) capturing -> None`)：一个函数，用于完成给定模板的输出域中的点的计算。
 
 **Args:**
 
-- ​**shape** (`StaticIntTuple[rank]`): The shape of the output buffer.
-- ​**input\_shape** (`StaticIntTuple[rank]`): The shape of the input buffer.
+- **​shape** ( `StaticIntTuple[rank]`): 输出缓冲区的形状。
+- **​input** **\_** **shape** ( `StaticIntTuple[rank]`)：输入缓冲区的形状。

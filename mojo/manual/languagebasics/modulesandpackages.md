@@ -6,7 +6,8 @@ Mojo提供了一个包装系统，允许你将代码库组织和编译成可导�
 
 要理解Mojo包，首先需要了解Mojo模块。Mojo模块是一个包含适用于其他导入它的文件使用的代码的单个Mojo源文件。例如，你可以创建一个模块来定义一个结构体，如下所示：
 
-```{.mojo filename="mymodule.mojo"}
+```mojo
+{.mojo filename="mymodule.mojo"}
 struct MyPair:
     var first: Int
     var second: Int
@@ -23,7 +24,8 @@ struct MyPair:
 
 例如，以下是如何将`MyPair`导入到名为`main.mojo`的文件中（与`mymodule.mojo`位于同一目录）：
 
-```{.mojo filename="main.mojo"}
+```mojo
+{.mojo filename="main.mojo"}
 from mymodule import MyPair
 
 fn main():
@@ -33,7 +35,8 @@ fn main():
 
 或者，你可以导入整个模块，然后通过模块名访问其成员。例如：
 
-```{.mojo filename="main.mojo"}
+```mojo
+{.mojo filename="main.mojo"}
 import mymodule
 
 fn main():
@@ -43,7 +46,8 @@ fn main():
 
 你还可以使用`as`为导入的成员创建别名，像这样：
 
-```{.mojo filename="main.mojo"}
+```mojo
+{.mojo filename="main.mojo"}
 import mymodule as my
 
 fn main():
@@ -63,7 +67,8 @@ Mojo包只是一个包含`__init__.mojo`文件的目录中的Mojo模块集合。
 
 例如，考虑一个具有以下文件的项目：
 
-```ini
+```mojo
+ini
 main.mojo
 mypackage/
     __init__.mojo
@@ -74,7 +79,8 @@ mypackage/
 
 在这种情况下，`main.mojo`文件现在可以通过包名导入`MyPair`，如下所示：
 
-```{.mojo filename="main.mojo"}
+```mojo
+{.mojo filename="main.mojo"}
 from mypackage.mymodule import MyPair
 
 fn main():
@@ -94,14 +100,16 @@ mojo package mypackage -o mypack.mojopkg
 
 现在，你可以将`mypackage`的源代码移动到其他位置，项目文件现在如下所示：
 
-```ini
+```mojo
+ini
 main.mojo
 mypack.mojopkg
 ```
 
 因为我们将包文件命名为与目录不同的名称，所以需要修正导入语句，但其余部分保持不变：
 
-```{.mojo filename="main.mojo"}
+```mojo
+{.mojo filename="main.mojo"}
 from mypack.mymodule import MyPair
 ```
 
@@ -127,14 +135,14 @@ mypackage/
 现在让我们在中添加以下行__init__.mojo：
 
 __init__.mojo
-```
+```mojo
 from .mymodule import MyPair
 ```
 
 这就是里面的全部内容。现在，我们可以main.mojo像这样简化 import 语句 ：
 
 main.mojo
-```
+```mojo
 from mypackage import MyPair
 ```
 
@@ -145,13 +153,13 @@ from algorithm.functional import map
 但是，该algorithm/__init__.mojo文件还包含以下行：
 
 algorithm/__init__.mojo
-```
+```mojo
 from .functional import *
 from .reduction import *
 ```
 
 
 因此，您实际上可以从包中导入任何内容functional，或者reduction只需命名包即可。也就是说，您可以functional从 import 语句中删除名称，它也可以工作：
-```
+```mojo
 from algorithm import map
 ```

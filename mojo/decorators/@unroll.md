@@ -4,8 +4,9 @@ You can add the `@unroll` decorator on any loop (such as `for` and `while`) to m
 
 For example, the compiler will unroll all 10 iterations of the following loop into 10 consecutive calls to `print()` (removing the `for` loop entirely):
 
-```
-@unrollfor i in range(10):    print(i)
+```mojo
+@unrollfor i in range(10):    
+print(i)
 ```
 
 The decorator also accepts an "unroll factor" argument, which specifies how many iterations to unroll at once. For example, the unroll above is equivalent to `@unroll(10)` because it unrolls all iterations of the loop. So if you pass a number smaller than the loop bounds, the compiler creates multiple unrolls. For example:
@@ -16,8 +17,10 @@ The decorator also accepts an "unroll factor" argument, which specifies how many
 
 The result is equivalent to this:
 
-```
-for i in range(0, 10, 2):    print(i)    print(i+1)
+```mojo
+for i in range(0, 10, 2):    
+print(i)    
+print(i+1)
 ```
 
 However, the compiler can unroll a loop only when the following statements are true:
@@ -29,7 +32,7 @@ However, the compiler can unroll a loop only when the following statements are t
 
 ## Compared to `unroll()`
 
-The Mojo standard library also includes a function called [`unroll()`](https://docs.modular.com/mojo/stdlib/algorithm/functional.html#unroll) that unrolls a given function that you want to call repeatedly, but has some important differences when compared to the `@unroll` decorator:
+The Mojo standard library also includes a function called `unroll()`that unrolls a given function that you want to call repeatedly, but has some important differences when compared to the `@unroll` decorator:
 
 - The `@unroll` decorator operates on loop expressions only, not on functions like the `unroll()` function does.
     

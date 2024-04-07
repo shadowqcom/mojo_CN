@@ -10,6 +10,4 @@ For example, the following `NmStruct` type can be used in the parameter domain, 
 @value@register_passable("trivial")struct HasBool:    var x: Bool    fn __init__(x: Bool) -> Self:        return Self {x: x}    @always_inline("nodebug")    fn __init__(nms: NmStruct) -> Self:        return Self {x: True if (nms.x == 77) else False}@value@nonmaterializable(HasBool)@register_passable("trivial")struct NmStruct:    var x: Int    @always_inline("nodebug")    fn __add__(self: Self, rhs: Self) -> Self:        return NmStruct(self.x + rhs.x)alias still_nm_struct = NmStruct(1) + NmStruct(2)# When materializing to a run-time variable, it is automatically converted,# even without a type annotation.var converted_to_has_bool = still_nm_struct
 ```
 
-note
-
-A non-materializable struct must have all of its methods annotated as `@always_inline`, and it must be computable in the parameter domain.
+> A non-materializable struct must have all of its methods annotated as `@always_inline`, and it must be computable in the parameter domain.

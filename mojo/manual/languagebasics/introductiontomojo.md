@@ -55,7 +55,8 @@ def main():
 
 您可以使用`var`关键字声明变量。或者，如果您的代码位于`def`函数中，则可以省略`var`（在`fn`函数中，必须包含`var`关键字）。
 
-例如```mojo
+例如：
+```mojo
 def do_math(x):
     var y = x + x
     y = y * y
