@@ -40,6 +40,9 @@ export default defineConfig({
   ],
 
   themeConfig: {
+    editLink: {
+      pattern: 'https://github.com/shadowqcom/mojo_CN/tree/main/:path'
+    },
     search: {
       provider: 'local'
     },
