@@ -8,17 +8,14 @@ hero:
   tagline: Mojo 将 Python 的可用性与 C 的性能相结合，解锁了 AI 硬件无与伦比的可编程性和 AI 模型的可扩展性。
   actions:
     - theme: brand
-      text: 阅读文档
-      link: /mojo/manual/index
+      text: 快速开始
+      link: /mojo/manual/
     - theme: alt
-      text: 开发者社区
+      text: 社区
       link: https://dev.mojocn.org
     - theme: alt
-      text: 加入群聊
+      text: 用户群
       link: /mojo/chat
-    - theme: alt
-      text: 赞助我们
-      link: /mojo/sponsor
 
   image:
     src: /img/mojofire.png

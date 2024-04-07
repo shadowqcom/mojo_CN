@@ -31,9 +31,11 @@ from algorithm import map
 - ​`Static1DTileUnitFuncWithFlags = fn[Int, Bool, Bool](Int, /) capturing -> None`
 
 
-## `映射函数`
+## `map`
 ```map[func: fn(Int, /) capturing -> None](size: Int)```
+
 将函数映射到从0到size的范围上。
+
 **Parameters:**
 
 - **func** (`fn(Int, /) capturing -> None`)：要映射的函数。
