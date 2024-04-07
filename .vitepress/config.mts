@@ -2,6 +2,8 @@ import { defineConfig } from 'vitepress'
 
 
 export default defineConfig({
+  outDir: './dist',
+  srcExclude: ['**/README.md', '**/TODO.md'],
   lastUpdated: true,
   lang: 'zh_CN',
   title: "Mojo中文网",
@@ -36,7 +38,19 @@ export default defineConfig({
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
       })(window, document, "clarity", "script", "lpo3k0x6fh");
-    `]
+    `],
+    [
+      'link',
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' }
+    ],
+    [
+      'link',
+      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }
+    ],
+    [
+      'link',
+      { href: 'https://fonts.googleapis.com/css2?family=Roboto&display=swap', rel: 'stylesheet' }
+    ]
   ],
 
   themeConfig: {
@@ -352,6 +366,9 @@ export default defineConfig({
     footer: {
       message: 'Mojo中文网',
       copyright: `Copyright &copy; ${new Date().getFullYear()} MojoCN. All Rights Reserved. 影象限 版权所有`
-    }
-  }
+    },
+  },
+  sitemap: {
+    hostname: 'https://mojocn.org',
+  },
 })
