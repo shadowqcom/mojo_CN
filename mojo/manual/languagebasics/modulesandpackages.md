@@ -1,13 +1,13 @@
-# 模块和包
+# Modules and packages
 
-Mojo提供了一个包装系统，允许你将代码库组织和编译成可导入的文件。本页面介绍如何将代码组织成模块和包（类似于Python），并演示如何使用`mojo package`命令创建打包的二进制文件。
+Mojo 提供了一个打包系统，允许您组织代码库并将其编译为可导入的文件。本页介绍了有关如何将代码组织成模块和包（这很像 Python）的必要概念，并向您展示如何使用命令创建打包的二进制文件`mojo package`
 
-## Mojo模块
+## Mojo modules
 
-要理解Mojo包，首先需要了解Mojo模块。Mojo模块是一个包含适用于其他导入它的文件使用的代码的单个Mojo源文件。例如，你可以创建一个模块来定义一个结构体，如下所示：
+要了解 Mojo 包，您首先需要了解 Mojo 模块。 Mojo 模块是单个 Mojo 源文件，其中包含适合导入它的其他文件使用的代码。例如，您可以创建一个模块来定义如下所示的结构：
 
+文件名：```mymodule.mojo```
 ```mojo
-{.mojo filename="mymodule.mojo"}
 struct MyPair:
     var first: Int
     var second: Int
@@ -20,12 +20,13 @@ struct MyPair:
         print(self.first, self.second)
 ```
 
-注意，这段代码没有`main()`函数，所以不能直接执行`mymodule.mojo`。但是，你可以在另一个有`main()`函数的文件中导入它并在那里使用。
+请注意，此代码中并没有 main() 函数，因此无法直接执行 mymodule.mojo。但是，您可以将其导入到另一个包含 main() 函数的文件中，并在那里使用它。
 
-例如，以下是如何将`MyPair`导入到名为`main.mojo`的文件中（与`mymodule.mojo`位于同一目录）：
+例如，以下是如何将 MyPair 导入到名为 main.mojo 的文件中，该文件与 mymodule.mojo 在同一目录中：
+
+文件名：```main.mojo```
 
 ```mojo
-{.mojo filename="main.mojo"}
 from mymodule import MyPair
 
 fn main():
@@ -33,10 +34,11 @@ fn main():
     mine.dump()
 ```
 
-或者，你可以导入整个模块，然后通过模块名访问其成员。例如：
+另一种方法是导入整个模块，然后通过模块名访问其成员。例如：
+
+filename="main.mojo"
 
 ```mojo
-{.mojo filename="main.mojo"}
 import mymodule
 
 fn main():
@@ -44,10 +46,10 @@ fn main():
     mine.dump()
 ```
 
-你还可以使用`as`为导入的成员创建别名，像这样：
+您还可以使用`as`为导入的成员创建别名，如下所示：
 
+filename="main.mojo"
 ```mojo
-{.mojo filename="main.mojo"}
 import mymodule as my
 
 fn main():
@@ -55,32 +57,29 @@ fn main():
     mine.dump()
 ```
 
-在这个例子中，只有当`mymodule.mojo`与`main.mojo`位于同一目录时才有效。目前，如果`.mojo`文件位于其他目录中，你不能将其作为模块导入。除非你将该目录视为Mojo包，如下一节所述。
+在此示例中，仅当`mymodule.mojo`与 位于同一目录中 时才有效`main.mojo`。目前，`.mojo`如果文件驻留在其他目录中，则无法将它们作为模块导入。也就是说，除非您将目录视为 Mojo 包，如下一节所述。
 
-Mojo模块可以包含`main()`函数，也可以是可执行的，但这通常不是常规做法，模块通常包含可供其他Mojo程序导入和使用的API。
+> Mojo 模块可能包含一个`main()`函数，也可能是可执行的，但这通常不是实践，模块通常包含要在其他 Mojo 程序中导入和使用的 API。
 
-## Mojo包
+## Mojo packages
 
-Mojo包只是一个包含`__init__.mojo`文件的目录中的Mojo模块集合。通过将模块组织在一个目录中，你可以一起或单独导入所有模块。此外，你还可以将包编译成`.mojopkg`或`.ðŸ“¦`文件，这样更容易共享，并且与其他系统架构兼容。
+Mojo 包只是包含`__init__.mojo`文件的目录中 Mojo 模块的集合。通过将模块组织在一个目录中，您可以一起或单独导入所有模块。或者，您还可以将包编译为更易于共享且仍与其他系统体系结构兼容的文件`.mojopkg`。`.📦`
 
-你可以直接从源文件或编译后的`.mojopkg`/`.ðŸ“¦`文件导入包及其模块，对Mojo来说，导入包的方式没有实质性的区别。当从源文件导入时，目录名作为包名，而从编译后的包导入时，文件名作为包名（可以使用`mojo package`命令指定，它可以与目录名不同）。
+`.mojopkg`您可以直接从源文件或编译的/文件导入包及其模块`.📦`。使用哪种方式导入包对于 Mojo 来说并没有真正的区别。从源文件导入时，目录名称用作包名称，而从编译包导入时，文件名是包名称（您使用命令指定`mojo package` 它可以与目录名称不同）。
 
-例如，考虑一个具有以下文件的项目：
+例如，考虑一个包含以下文件的项目：
 
-```mojo
-ini
+```
 main.mojo
 mypackage/
     __init__.mojo
     mymodule.mojo
 ```
+`mymodule.mojo`与上面示例中的代码相同（带有`MyPair` 结构）并且`__init__.mojo`为空。
 
-`mymodule.mojo`是上面示例中的相同代码（包含`MyPair`结构体），而`__init__.mojo`是空的。
-
-在这种情况下，`main.mojo`文件现在可以通过包名导入`MyPair`，如下所示：
-
+在这种情况下，`main.mojo`文件现在可以`MyPair`通过包名称导入，如下所示：
+filename="main.mojo"
 ```mojo
-{.mojo filename="main.mojo"}
 from mypackage.mymodule import MyPair
 
 fn main():
@@ -88,78 +87,76 @@ fn main():
     mine.dump()
 ```
 
-注意，`__init__.mojo`在这里至关键。如果删除它，Mojo将不会将该目录识别为包，并且无法导入`mymodule`。
+请注意，`__init__.mojo`这里至关重要。如果删除它，Mojo 不会将该目录识别为包，并且无法导入`mymodule`.
 
-然后，假设你不想让`mypackage`的源代码与`main.mojo`位于相同位置。因此，你可以将其编译为一个包文件，如下所示：
+然后，假设您不希望`mypackage`源代码与`main.mojo`.因此，您可以将其编译成如下的包文件：
 
 ```sh
 mojo package mypackage -o mypack.mojopkg
 ```
+> 文件`.mojopkg`包含未详细说明的代码，因此您可以跨系统共享它。只有在将代码导入 Mojo 程序并使用`mojo build`.
 
-`.mojopkg`文件包含了非详细的代码，因此可以在系统之间共享。只有在导入到使用`mojo build`编译的Mojo程序中后，代码才会变成特定于架构的可执行文件。
+现在，您可以将`mypackage`源代码移至其他位置，项目文件现在如下所示：
 
-现在，你可以将`mypackage`的源代码移动到其他位置，项目文件现在如下所示：
-
-```mojo
-ini
+```ini
 main.mojo
 mypack.mojopkg
 ```
+因为我们对包文件的命名与目录不同，所以我们需要修复 import 语句，它的工作原理是一样的：
 
-因为我们将包文件命名为与目录不同的名称，所以需要修正导入语句，但其余部分保持不变：
-
+filename="main.mojo"
 ```mojo
-{.mojo filename="main.mojo"}
 from mypack.mymodule import MyPair
 ```
 
-如果要重命名包，你不能简单地编辑`.mojopkg`或`.📦`文件，因为包名已编码在文件中。你必须再次运行`mojo package`命令来指定新名称。
+如果要重命名包，则不能简单地编辑 `.mojopkg`或`.📦`文件名，因为包名称已编码在文件中。您必须`mojo package`再次运行才能指定新名称。
 
-### `__init__`文件
+### The `__init__` file
 
-如上所述，`__init__.mojo`文件是指示将一个目录视为Mojo包的必需文件，它可以为空。
+如上所述，该`__init__.mojo`文件需要指示一个目录应被视为 Mojo 包，并且可以为空。
 
-目前，顶级代码在`.mojo`文件中不受支持，因此与Python不同，你不能在`__init__.mojo`中编写在导入时执行的代码。但是，你可以在其中添加结构体和函数，然后可以从包名导入它们。
+目前，文件中不支持顶级代码`.mojo`，因此与 Python 不同，您无法编写在`__init__.mojo`导入时执行的代码。但是，您可以添加结构体和函数，然后可以从包名称中导入它们。
 
-然而，与其在`__init__.mojo`文件中添加API，你可以通过导入模块成员来实现相同的效果，从而使你的API从包名可访问，而不需要使用`<package_name>.<member>`的形式。
+但是，您可以导入模块成员，而不是在文件中添加 API `__init__.mojo`，这样可以通过包名称访问您的 API，而不需要使用符号，从而具有相同的效果`<package_name>.<module_name>` 。
 
 例如，再次假设您有这些文件：
 
-```mojo
+```ini
 main.mojo
 mypackage/
     __init__.mojo
     mymodule.mojo
 ```
 
-现在让我们在中添加以下行__init__.mojo：
+现在让我们在中添加以下行`__init__.mojo`：
 
-__init__.mojo
-```mojo
+```{.mojo filename="__init__.mojo"}
 from .mymodule import MyPair
 ```
 
-这就是里面的全部内容。现在，我们可以main.mojo像这样简化 import 语句 ：
+这就是里面的全部内容。现在，我们可以`main.mojo`像这样简化 import 语句 ：
 
-main.mojo
-```mojo
+```{.mojo filename="main.mojo"}
 from mypackage import MyPair
 ```
 
-此功能解释了为什么 Mojo 标准库中的某些成员可以从其包名称导入，而其他成员则需要符号 <package_name>.<module_name>。例如， functional模块驻留在 包中，因此您可以像这样algorithm导入该模块的成员（例如函数 ）：map()
+此功能解释了为什么 Mojo 标准库中的某些成员可以从其包名称导入，而其他成员则需要符号 `<package_name>.<module_name>`。例如， `functional`模块驻留在 包中，因此您可以像这样`algorithm`导入该模块的成员（例如函数 ）：`map()`
 
+```mojo
 from algorithm.functional import map
+```
 
-但是，该algorithm/__init__.mojo文件还包含以下行：
-
-algorithm/__init__.mojo
+但是，该`algorithm/__init__.mojo`文件还包含以下行：
+filename="algorithm/__init__.mojo"
 ```mojo
 from .functional import *
 from .reduction import *
 ```
 
+因此，您实际上可以从包中导入任何内容`functional`，或者`reduction`只需命名包即可。也就是说，您可以`functional`从 import 语句中删除名称，它也可以工作：
 
-因此，您实际上可以从包中导入任何内容functional，或者reduction只需命名包即可。也就是说，您可以functional从 import 语句中删除名称，它也可以工作：
 ```mojo
 from algorithm import map
 ```
+
+> 标准库中的哪些模块导入到包范围中各不相同，并且可能会发生变化。请参阅每个模块的文档，了解如何导入其成员。
