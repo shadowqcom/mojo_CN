@@ -19,7 +19,7 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 <div id="wechat" align="center">
     <figure>
         <img height="200" width="200" src="./public/img/wechat.png"/>
-        <figcaption class="chat-image-description"><a href="" style="text-decoration: none;" rel="noreferrer">微信群</a></figcaption>
+        <figcaption style="text-align: center;""><a href="" style="text-decoration: none;" rel="noreferrer">微信群</a></figcaption>
     </figure>
     <figure>
         <img height="200" width="200" src="./public/img/Telegram.png"/>
