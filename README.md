@@ -20,11 +20,11 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 <div style="display: flex;" align="center">
     <figure style="flex-shrink: 0;">
         <img height="200" width="200" src="./public/img/wechat.png"/>
-        <figcaption align="center">微信群</figcaption>
+        <figcaption>微信群</figcaption>
     </figure>
     <figure style="flex-shrink: 0;">
         <img height="200" width="200" src="./public/img/Telegram.png"/>
-        <figcaption align="center"><a href="https://t.me/Mojo_CN" style="text-decoration: none;" target="_blank">Telegram</a></figcaption>
+        <figcaption><a href="https://t.me/Mojo_CN" style="text-decoration: none;" target="_blank">Telegram</a></figcaption>
     </figure>
 </div>
 
