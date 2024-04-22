@@ -40,11 +40,17 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
     </figure>
 </div>
 
-
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=shadowqcom/mojo_CN&type=Date)](https://star-history.com/#shadowqcom/mojo_CN&Date)
 
+
+## 感谢贡献者
+<div align="center">
+    <a href="https://github.com/shadowqcom/mojo_CN/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=shadowqcom/mojo_CN" />
+    </a>
+</div>
 
 ## 感谢贡献者
 <div align="center">
