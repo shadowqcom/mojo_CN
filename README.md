@@ -24,7 +24,7 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
     </figure>
     <figure>
         <img height="200" width="200" src="./public/img/Telegram.png"/>
-        <figcaption style="text-align: center;"><a href="https://t.me/Mojo_CN" style="text-decoration: none;" rel="noreferrer">Telegram</a></figcaption>
+        <figcaption><a href="https://t.me/Mojo_CN" style="text-decoration: none;" rel="noreferrer">Telegram</a></figcaption>
     </figure>
 </div>
 
