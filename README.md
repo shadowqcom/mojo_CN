@@ -15,10 +15,16 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 ## 开发者交流群
 ⚡欢迎各位开发者加群 ~~摸鱼~~ 交流。
 
-### Wechat  &    [Telegram](https://t.me/Mojo_CN)
+### Wechat  &    Telegram
 <div id="wechat" align="center">
-<img height="200" width="200" src="./public/img/wechat.png"/>
-<img height="200" width="200" src="./public/img/Telegram.png"/>
+    <figure>
+        <img height="200" width="200" src="./public/img/wechat.png"/>
+        <figcaption class="chat-image-description"><a href="" style="text-decoration: none;" rel="noreferrer">微信群</a></figcaption>
+    </figure>
+    <figure>
+        <img height="200" width="200" src="./public/img/Telegram.png"/>
+        <figcaption style="text-align: center;"><a href="https://t.me/Mojo_CN" style="text-decoration: none;" rel="noreferrer">Telegram</a></figcaption>
+    </figure>
 </div>
 
 ### QQ
