@@ -20,11 +20,11 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 <div style="display: flex; align-items: center;">
     <figure>
         <img height="200" width="200" src="./public/img/wechat.png"/>
-        <figcaption style="text-align: center;"><a href="" style="text-decoration: none;" rel="noreferrer">微信群</a></figcaption>
+        <figcaption style="text-align: center;">微信群</figcaption>
     </figure>
     <figure>
         <img height="200" width="200" src="./public/img/Telegram.png"/>
-        <figcaption style="text-align: center;"><a href="https://t.me/Mojo_CN" style="text-decoration: none;" rel="noreferrer">Telegram</a></figcaption>
+        <figcaption style="text-align: center;"><a href="https://t.me/Mojo_CN" style="text-decoration: none;" target="_blank">Telegram</a></figcaption>
     </figure>
 </div>
 
@@ -32,11 +32,11 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 <div style="display: flex; align-items: center;">
     <figure>
         <img height="200" width="200" src="./public/img/qq.png"/>
-        <figcaption style="text-align: center;"><a href="https://qm.qq.com/q/nn0pFzgIRG" style="text-decoration: none;" rel="noreferrer">777214484</a></figcaption>
+        <figcaption style="text-align: center;"><a href="https://qm.qq.com/q/nn0pFzgIRG" style="text-decoration: none;" target="_blank">777214484</a></figcaption>
     </figure>
     <figure>
         <img height="200" width="200" src="./public/img/qq2.png"/>
-        <figcaption style="text-align: center;"><a href="https://qm.qq.com/q/IgJFnFPDGy" style="text-decoration: none;" rel="noreferrer">925241368</a></figcaption>
+        <figcaption style="text-align: center;"><a href="https://qm.qq.com/q/IgJFnFPDGy" style="text-decoration: none;" target="_blank">925241368</a></figcaption>
     </figure>
 </div>
 
@@ -44,13 +44,6 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 
 [![Star History Chart](https://api.star-history.com/svg?repos=shadowqcom/mojo_CN&type=Date)](https://star-history.com/#shadowqcom/mojo_CN&Date)
 
-
-## 感谢贡献者
-<div align="center">
-    <a href="https://github.com/shadowqcom/mojo_CN/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=shadowqcom/mojo_CN" />
-    </a>
-</div>
 
 ## 感谢贡献者
 <div align="center">
