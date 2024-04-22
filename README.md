@@ -13,32 +13,22 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 
 
 ## 开发者交流群
-
 ⚡欢迎各位开发者加群 ~~摸鱼~~ 交流。
 
-### Wechat      &       Telegram
-<div style="display: flex;" align="center">
-    <figure style="flex-shrink: 0;">
-        <img height="200" width="200" src="./public/img/wechat.png"/>
-        <figcaption>微信群</figcaption>
-    </figure>
-    <figure style="flex-shrink: 0;">
-        <img height="200" width="200" src="./public/img/Telegram.png"/>
-        <figcaption><a href="https://t.me/Mojo_CN" style="text-decoration: none;" target="_blank">Telegram</a></figcaption>
-    </figure>
+### Wechat  &    [Telegram](https://t.me/Mojo_CN)
+<div id="wechat" align="center">
+<img height="200" width="200" src="./public/img/wechat.png"/>
+<img height="200" width="200" src="./public/img/Telegram.png"/>
 </div>
 
 ### QQ
-<div style="display: flex;" align="center">
-    <figure>
-        <img height="200" width="200" src="./public/img/qq.png"/>
-        <figcaption style="text-align: center;"><a href="https://qm.qq.com/q/nn0pFzgIRG" style="text-decoration: none;" target="_blank">777214484</a></figcaption>
-    </figure>
-    <figure>
-        <img height="200" width="200" src="./public/img/qq2.png"/>
-        <figcaption style="text-align: center;"><a href="https://qm.qq.com/q/IgJFnFPDGy" style="text-decoration: none;" target="_blank">925241368</a></figcaption>
-    </figure>
+[777214484](https://qm.qq.com/q/nn0pFzgIRG)  
+[925241368](https://qm.qq.com/q/IgJFnFPDGy)
+<div id="qq" align="center">
+<img height="200" width="200" src="./public/img/qq.png"/>   
+<img height="200" width="200" src="./public/img/qq2.png"/>
 </div>
+
 
 ## Star History
 
@@ -46,7 +36,7 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 
 
 ## 感谢贡献者
-<div>
+<div align="center">
     <a href="https://github.com/shadowqcom/mojo_CN/graphs/contributors">
     <img src="https://contrib.rocks/image?repo=shadowqcom/mojo_CN" />
     </a>
