@@ -1,43 +1,36 @@
 ---
 layout: home
-
+title: "Mojo官网  Mojo社区"
 hero:
+  title: "Mojo官网"
   name: "Mojo"
-  text: "AI开发人员的新语言"
-  tagline: Mojo 结合了 Python 的可用性和 C/C++ 的性能，Mojo被设计为Python的超集。
+  text: "AI开发人员的编程语言"
+  tagline: Mojo 将 Python 的可用性与 C 的性能相结合，解锁了 AI 硬件无与伦比的可编程性和 AI 模型的可扩展性。
   actions:
     - theme: brand
-      text: 开始使用
-      link: /docs/start
+      text: 快速开始
+      link: /mojo/manual/
     - theme: alt
-      text: 加入群聊
-      link: /docs/chat
+      text: 社区
+      link: https://dev.mojocn.org
+    - theme: alt
+      text: 用户群
+      link: /mojo/chat
+
   image:
     src: /img/mojofire.png
     alt: mojo
 
 features:
   - icon: 🎉
-    title: Mojo 作为 Python 家族的一员
-    details: Mojo语言有崇高的目标 - 与Python生态系统完全兼容，可预测低级性能和低级控制，我们需要能够将代码子集部署到加速器。
-
-  - icon: ✨
-    title: Mojo与Python的兼容性
-    details: Mojo已经支持Python的许多核心功能，包括async/await，错误处理，variadics等，但是目前仍然还不够成熟，所以今天它并不是最佳兼容。
+    title: 实用性和可编程性
+    details: 用一种语言写下所有内容，使用Python或者直接操作底层硬件，编写与各种低级AI硬件交互的程序，无需C++或CUDA。。
 
   - icon: ⚡
-    title: 与 Python 的差异
-    details: 系统编程能力：例如 Mojo 支持 let 和声明 var；并行处理能力：Mojo 利用 MLIR 实现向量、线程和 AI 硬件单元的并行处理。
+    title: 提升Python性能
+    details: 充分利用硬件的全部性能，包括多个核心、矢量单元和特殊加速器单元，使用全球最先进的编译器和异构运行时。实现与C++和CUDA相媲美的性能。
 
-  - icon: 🔥
-    title: 用.🔥作为文件后缀
-    details: mojo代码文件除了可以用.mojo作为后缀，还可以用.🔥 ，没错就是Emoji表情。
-
-  - icon: 📦
-    title: 用.📦作为包的后缀
-    details: 同样的，Mojo的包文件可以用.mojopkg作为后缀，也可以使用.📦 。
-
-  - icon: 🧑‍💻
-    title: 中文社区建设中
-    details: Mojo中文网正在开发建设中文社区，目前群用户累计1500+ 。
+  - icon: ✨
+    title: 访问整个Python生态系统
+    details: 与Python生态系统实现真正的互操作性，无缝地混合使用诸如Numpy和Matplotlib等任意库与您的自定义代码和Mojo代码。
 ---
