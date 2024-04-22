@@ -1,6 +1,5 @@
 .idea
 /node_modules
 */dist
-*.txt
 /dist
 .vitepress/cache
