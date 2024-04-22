@@ -1,8 +1,8 @@
-# sort
+# sort[排序](https://mojocn.org/mojo/reference/algorithm/sort.html#sort)
 
-Implements sorting functions.
+实现排序功能。
 
-You can import these APIs from the `algorithm` package. For example:
+您可以从包中导入这些 API。例如：`algorithm`
 
 ```
 from algorithm.sort import sort
@@ -10,69 +10,79 @@ from algorithm.sort import sort
 
 ## `partition`
 
-`partition[type: AnyRegType, cmp_fn: fn[AnyRegType]($0, $0, /) capturing -> Bool](buff: Pointer[*"type", 0], k: Int, size: Int)`
+```
+partition[type: AnyRegType, cmp_fn: fn[AnyRegType]($0, $0, /) capturing -> Bool](buff: Pointer[*"type", 0], k: Int, size: Int)
+```
 
-Partition the input vector inplace such that first k elements are the largest (or smallest if cmp\_fn is <= operator) elements. The ordering of the first k elements is undefined.
+对输入向量进行就地分区，使前 k 个元素是最大(如果cmp_fn 是 <= 运算符，则为最小)元素。前 k 个元素的顺序是未定义的。
 
-**Parameters:**
+**参数：**
 
-- ​**type** (`AnyRegType`): DType of the underlying data.
-- ​**cmp\_fn** (`fn[AnyRegType]($0, $0, /) capturing -> Bool`): Comparison functor of type, type) capturing -> Bool type.
+- **type** ()：基础数据的 DType。`AnyRegType`
+- **cmp_fn** ()：类型、类型)捕获 -> Bool 类型的比较函子。`fn[AnyRegType]($0, $0, /) capturing -> Bool`
 
-**Args:**
+**参数：**
 
-- ​**buff** (`Pointer[*"type", 0]`): Input buffer.
-- ​**k** (`Int`): Index of the partition element.
-- ​**size** (`Int`): The length of the buffer.
+- **buff** ()：输入缓冲区。`Pointer[*"type", 0]`
+- **k** ()：分区元素的索引。`Int`
+- **size** ()：缓冲区的长度。`Int`
 
 ## `sort`
 
-`sort(inout buff: Pointer[Int, 0], len: Int)`
+```
+sort(inout buff: Pointer[Int, 0], len: Int)
+```
 
-Sort the vector inplace.
+对向量进行就地排序。
 
-The function doesn't return anything, the vector is updated inplace.
+该函数不返回任何内容，向量就地更新。
 
-**Args:**
+**参数：**
 
-- ​**buff** (`Pointer[Int, 0]`): Input buffer.
-- ​**len** (`Int`): The length of the buffer.
+- **buff** ()：输入缓冲区。`Pointer[Int, 0]`
+- **len** ()：缓冲区的长度。`Int`
 
-`sort[type: DType](inout buff: Pointer[SIMD[type, 1], 0], len: Int)`
+```
+sort[type: DType](inout buff: Pointer[SIMD[type, 1], 0], len: Int)
+```
 
-Sort the vector inplace.
+对向量进行就地排序。
 
-The function doesn't return anything, the vector is updated inplace.
+该函数不返回任何内容，向量就地更新。
 
-**Parameters:**
+**参数：**
 
-- ​**type** (`DType`): DType of the underlying data.
+- **type** ()：基础数据的 DType。`DType`
 
-**Args:**
+**参数：**
 
-- ​**buff** (`Pointer[SIMD[type, 1], 0]`): Input buffer.
-- ​**len** (`Int`): The length of the buffer.
+- **buff** ()：输入缓冲区。`Pointer[SIMD[type, 1], 0]`
+- **len** ()：缓冲区的长度。`Int`
 
-`sort(inout v: List[Int])`
+```
+sort(inout v: List[Int])
+```
 
-Sort the vector inplace.
+对向量进行就地排序。
 
-The function doesn't return anything, the vector is updated inplace.
+该函数不返回任何内容，向量就地更新。
 
-**Args:**
+**参数：**
 
-- ​**v** (`List[Int]`): Input integer vector to sort.
+- **v** ()：输入要排序的整数向量。`List[Int]`
 
-`sort[type: DType](inout v: List[SIMD[type, 1]])`
+```
+sort[type: DType](inout v: List[SIMD[type, 1]])
+```
 
-Sort the vector inplace.
+对向量进行就地排序。
 
-The function doesn't return anything, the vector is updated inplace.
+该函数不返回任何内容，向量就地更新。
 
-**Parameters:**
+**参数：**
 
-- ​**type** (`DType`): DType of the underlying data.
+- **type** ()：基础数据的 DType。`DType`
 
-**Args:**
+**参数：**
 
-- ​**v** (`List[SIMD[type, 1]]`): Input vector to sort.
+- **v** ()：要排序的输入向量。`List[SIMD[type, 1]]`

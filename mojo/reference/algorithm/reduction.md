@@ -1,404 +1,542 @@
 # reduction
 
-Implements SIMD reductions.
+实现 SIMD reductions。
 
-You can import these APIs from the `algorithm` package. For example:
+您可以从包中导入这些 API。例如：`algorithm`
 
-```
+```python
 from algorithm import map_reduce
 ```
 
 ## `map_reduce`
 
-`map_reduce[simd_width: Int, size: Dim, type: DType, acc_type: DType, input_gen_fn: fn[DType, Int](Int, /) capturing -> SIMD[$0, $1], reduce_vec_to_vec_fn: fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2], reduce_vec_to_scalar_fn: fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1]](dst: Buffer[type, size, 0], init: SIMD[acc_type, 1]) -> SIMD[acc_type, 1]`
+```python
+map_reduce[
+        simd_width: Int, 
+        size: Dim, 
+        type: DType, 
+        acc_type: DType, 
+        input_gen_fn: fn[DType, Int](Int, /) capturing -> SIMD[$0, $1], 
+        reduce_vec_to_vec_fn: fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2], 
+        reduce_vec_to_scalar_fn: fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1]
+    ]
+    (dst: Buffer[type, size, 0], init: SIMD[acc_type, 1]) -> SIMD[acc_type, 1]
+```
+将调用input_gen_fn的结果存储在 dst 中，同时使用自定义归并函数归并结果。
 
-Stores the result of calling input\_gen\_fn in dst and simultaneously reduce the result using a custom reduction function.
+**参数：**
 
-**Parameters:**
+- **simd_width** ：计算的向量宽度。`Int`
+- **size** ：缓冲区大小。`Dim`
+- **type** ：缓冲区元素 dtype。`DType`
+- **acc_type** ：归并累加器的 dtype。`DType`
+- **input_gen_fn** ：生成要reduction的输入的函数。`fn[DType, Int](Int, /) capturing -> SIMD[$0, $1]`
+- **reduce_vec_to_vec_fn** ：映射函数。此函数用于组合累积两个输入数据块：例如，我们加载两个元素向量，并需要将它们简化为单个向量。`fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2]``8xfloat32``8xfloat32`
+- **reduce_vec_to_scalar_fn** ：归并函数。此函数用于将向量简化为标量。例如，当我们得到向量并希望将其简化为标量时。`fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1]``8xfloat32``float32`
 
-- ​**simd\_width** (`Int`): The vector width for the computation.
-- ​**size** (`Dim`): The buffer size.
-- ​**type** (`DType`): The buffer elements dtype.
-- ​**acc\_type** (`DType`): The dtype of the reduction accumulator.
-- ​**input\_gen\_fn** (`fn[DType, Int](Int, /) capturing -> SIMD[$0, $1]`): A function that generates inputs to reduce.
-- ​**reduce\_vec\_to\_vec\_fn** (`fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2]`): A mapping function. This function is used to combine (accumulate) two chunks of input data: e.g. we load two `8xfloat32` vectors of elements and need to reduce them into a single `8xfloat32` vector.
-- ​**reduce\_vec\_to\_scalar\_fn** (`fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1]`): A reduction function. This function is used to reduce a vector to a scalar. E.g. when we got `8xfloat32` vector and want to reduce it to an `float32` scalar.
+**参数：**
 
-**Args:**
+- **dst** ：输出缓冲区。`Buffer[type, size, 0]`
+- **init** ：要在累加器中使用的初始值。`SIMD[acc_type, 1]`
 
-- ​**dst** (`Buffer[type, size, 0]`): The output buffer.
-- ​**init** (`SIMD[acc_type, 1]`): The initial value to use in accumulator.
+**返回：**
 
-**Returns:**
-
-The computed reduction value.
+计算出的归并值。
 
 ## `reduce`
+```python
+reduce[
+    reduce_fn: fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2], 
+    src: DType, 
+    src: Dim, 
+    src: AddressSpace, 
+    init: DType
+    ](src: Buffer[src, src, src], init: SIMD[init, 1]) -> SIMD[init, 1]
+```
 
-`reduce[reduce_fn: fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2], src: DType, src: Dim, src: AddressSpace, init: DType](src: Buffer[src, src, src], init: SIMD[init, 1]) -> SIMD[init, 1]`
+计算缓冲区元素的自定义归并。
 
-Computes a custom reduction of buffer elements.
+**参数：**
 
-**Parameters:**
+- **reduce_fn** ：实现约简的 lambda。`fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2]`
 
-- ​**reduce\_fn** (`fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2]`): The lambda implementing the reduction.
+**参数：**
 
-**Args:**
+- **src** ：输入缓冲区。`Buffer[src, src, src]`
+- **init** ：要在累加器中使用的初始值。`SIMD[init, 1]`
 
-- ​**src** (`Buffer[src, src, src]`): The input buffer.
-- ​**init** (`SIMD[init, 1]`): The initial value to use in accumulator.
+**返回：**
 
-**Returns:**
+计算出的归并值。
 
-The computed reduction value.
+```python
+reduce[
+        map_fn: fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2], 
+        reduce_fn: fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1], 
+        reduce_axis: Int, 
+        src: DType, 
+        src: Int, 
+        src: DimList, 
+        src: AddressSpace, 
+        dst: DType, 
+        dst: Int, 
+        dst: DimList, 
+        dst: AddressSpace
+    ](src: NDBuffer[src, src, src, src], dst: NDBuffer[dst, dst, dst, dst], init: SIMD[dst, 1])
+```
 
-`reduce[map_fn: fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2], reduce_fn: fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1], reduce_axis: Int, src: DType, src: Int, src: DimList, src: AddressSpace, dst: DType, dst: Int, dst: DimList, dst: AddressSpace](src: NDBuffer[src, src, src, src], dst: NDBuffer[dst, dst, dst, dst], init: SIMD[dst, 1])`
+在 NDBuffer src 的reduce_axis上执行归并，并将结果存储在 NDBuffer dst 中。
 
-Performs a reduction across reduce\_axis of an NDBuffer (src) and stores the result in an NDBuffer (dst).
+首先，src 被重塑为 3D 张量。在不失去普遍性的情况下，这三个 轴将被称为 [H，W，C]，其中要归并的轴是 W， 归并轴之前的轴被装入 H，而归并轴被打包到C.中，即具有dims [D1， D2， ...， Di， ...， Dn]的张量 跨轴 i 的缩减被打包成一个带有 dims [H， W， C] 的 3D 张量， 其中 H=prodD1,...,Di-1，W = Di，C = prodDi+1,...,Dn。
 
-First src is reshaped into a 3D tensor. Without loss of generality, the three axes will be referred to as \[H,W,C\], where the axis to reduce across is W, the axes before the reduce axis are packed into H, and the axes after the reduce axis are packed into C. i.e. a tensor with dims \[D1, D2, ..., Di, ..., Dn\] reducing across axis i gets packed into a 3D tensor with dims \[H, W, C\], where H=prod(D1,...,Di-1), W = Di, and C = prod(Di+1,...,Dn).
+**参数：**
 
-**Parameters:**
+- **map_fn** ：映射函数。当合并累积两个输入数据块时，会使用此函数：例如，我们加载两个 8xfloat32 向量的元素，并需要将它们简化为单个 8xfloat32 向量。`fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2]`
+- **reduce_fn** ：约简函数。此函数用于将向量简化为标量。例如，当我们得到 8xfloat32 向量并希望将其归并到 1xfloat32 时。`fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1]`
+- **reduce_axis** ：要缩小的轴。`Int`
 
-- ​**map\_fn** (`fn[DType, DType, Int](SIMD[$0, $2], SIMD[$1, $2], /) capturing -> SIMD[$0, $2]`): A mapping function. This function is used when to combine (accumulate) two chunks of input data: e.g. we load two 8xfloat32 vectors of elements and need to reduce them to a single 8xfloat32 vector.
-- ​**reduce\_fn** (`fn[DType, Int](SIMD[$0, $1], /) -> SIMD[$0, 1]`): A reduction function. This function is used to reduce a vector to a scalar. E.g. when we got 8xfloat32 vector and want to reduce it to 1xfloat32.
-- ​**reduce\_axis** (`Int`): The axis to reduce across.
+**参数：**
 
-**Args:**
+- **src** ：输入缓冲区。`NDBuffer[src, src, src, src]`
+- **dst** ：输出缓冲区。`NDBuffer[dst, dst, dst, dst]`
+- **init** ：要在累加器中使用的初始值。`SIMD[dst, 1]`
 
-- ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
-- ​**dst** (`NDBuffer[dst, dst, dst, dst]`): The output buffer.
-- ​**init** (`SIMD[dst, 1]`): The initial value to use in accumulator.
+
 
 ## `reduce_boolean`
 
-`reduce_boolean[reduce_fn: fn[DType, Int](SIMD[$0, $1], /) capturing -> Bool, continue_fn: fn(Bool, /) capturing -> Bool, src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src], init: Bool) -> Bool`
+```
+reduce_boolean[
+    reduce_fn: fn[DType, Int](SIMD[$0, $1], /) capturing -> Bool, 
+    continue_fn: fn(Bool, /) capturing -> Bool, 
+    src: DType, 
+    src: Dim, 
+    src: AddressSpace
+    ](src: Buffer[src, src, src], init: Bool) -> Bool
+```
+计算缓冲元素的布尔值归并。如果`continue_fn`返回 False，则将提前退出归并。
 
-Computes a bool reduction of buffer elements. The reduction will early exit if the `continue_fn` returns False.
+**参数：**
 
-**Parameters:**
+- **reduce_fn** ：布尔约简函数。此函数用于将向量简化为标量。例如，当我们得到向量并希望将其简化为 .`fn[DType, Int](SIMD[$0, $1], /) capturing -> Bool``8xfloat32``bool`
+- **continue_fn** ：一个函数，指示我们是否要继续处理其余的迭代。这将获取reduce_fn的结果，并返回 True 以继续处理，并返回 False 以提前退出。`fn(Bool, /) capturing -> Bool`
 
-- ​**reduce\_fn** (`fn[DType, Int](SIMD[$0, $1], /) capturing -> Bool`): A boolean reduction function. This function is used to reduce a vector to a scalar. E.g. when we got `8xfloat32` vector and want to reduce it to a `bool`.
-- ​**continue\_fn** (`fn(Bool, /) capturing -> Bool`): A function to indicate whether we want to continue processing the rest of the iterations. This takes the result of the reduce\_fn and returns True to continue processing and False to early exit.
+**参数：**
 
-**Args:**
+- **src** ：输入缓冲区。`Buffer[src, src, src]`
+- **init** ：要使用的初始值。`Bool`
 
-- ​**src** (`Buffer[src, src, src]`): The input buffer.
-- ​**init** (`Bool`): The initial value to use.
+**返回：**
 
-**Returns:**
-
-The computed reduction value.
+计算出的还原值。
 
 ## `max`
 
 `max[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
-Computes the max element in a buffer.
+计算缓冲区中的 max 元素。
+
+**参数：**
+
+- **src** ：缓冲区。`Buffer[src, src, src]`
+
+**返回：**
+
+缓冲区元素的最大值。
 
 **Args:**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
+- **src** (`Buffer[src, src, src]`): The buffer.
 
-**Returns:**
 
-The maximum of the buffer elements.
 
 `max[reduce_axis: Int, src: DType, src: Int, src: DimList, src: AddressSpace, dst: DimList](src: NDBuffer[src, src, src, src], dst: NDBuffer[src, src, dst, 0])`
 
-Computes the max across reduce\_axis of an NDBuffer.
+计算 NDBuffer reduce_axis的最大值。
 
-**Parameters:**
+**参数：**
 
-- ​**reduce\_axis** (`Int`): The axis to reduce across.
+- **reduce_axis** ：要缩小的轴。`Int`
 
-**Args:**
+**参数：**
 
-- ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
-- ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
+- **src** ：输入缓冲区。`NDBuffer[src, src, src, src]`
+- **dst** ：输出缓冲区。`NDBuffer[src, src, dst, 0]`
+
+
 
 ## `min`
 
 `min[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
-Computes the min element in a buffer.
+计算缓冲区中的 min 元素。
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
+- **src** ：缓冲区。`Buffer[src, src, src]`
 
-**Returns:**
+**返回：**
 
-The minimum of the buffer elements.
+缓冲区元素的最小值。
+
+
 
 `min[reduce_axis: Int, src: DType, src: Int, src: DimList, src: AddressSpace, dst: DimList](src: NDBuffer[src, src, src, src], dst: NDBuffer[src, src, dst, 0])`
 
-Computes the min across reduce\_axis of an NDBuffer.
+计算 NDBuffer reduce_axis的最小值。
 
-**Parameters:**
+**参数：**
 
-- ​**reduce\_axis** (`Int`): The axis to reduce across.
+- **reduce_axis** ：要归并的轴。`Int`
 
-**Args:**
+**参数：**
 
-- ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
-- ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
+- **src** ：输入缓冲区。`NDBuffer[src, src, src, src]`
+- **dst** ：输出缓冲区。`NDBuffer[src, src, dst, 0]`
 
 ## `sum`
 
 `sum[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
-Computes the sum of buffer elements.
+计算缓冲区元素的总和。
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
+- **src** ：缓冲区。`Buffer[src, src, src]`
 
-**Returns:**
+**返回：**
 
-The sum of the buffer elements.
+缓冲区元素的总和。
+
+
 
 `sum[reduce_axis: Int, src: DType, src: Int, src: DimList, src: AddressSpace, dst: DimList](src: NDBuffer[src, src, src, src], dst: NDBuffer[src, src, dst, 0])`
 
-Computes the sum across reduce\_axis of an NDBuffer.
+计算 NDBuffer 的 reduce_axis 的总和。
 
-**Parameters:**
+**参数：**
 
-- ​**reduce\_axis** (`Int`): The axis to reduce across.
+- **reduce_axis** ：要缩小的轴。`Int`
 
-**Args:**
+**参数：**
 
-- ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
-- ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
+- **src** ：输入缓冲区。`NDBuffer[src, src, src, src]`
+- **dst** ：输出缓冲区。`NDBuffer[src, src, dst, 0]`
 
 ## `product`
 
 `product[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
-Computes the product of the buffer elements.
+计算缓冲区元素的乘积。
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
+- **src** ：缓冲区。`Buffer[src, src, src]`
 
-**Returns:**
+**返回：**
 
-The product of the buffer elements.
+缓冲元素的乘积。
 
 `product[reduce_axis: Int, src: DType, src: Int, src: DimList, src: AddressSpace, dst: DimList](src: NDBuffer[src, src, src, src], dst: NDBuffer[src, src, dst, 0])`
 
-Computes the product across reduce\_axis of an NDBuffer.
+计算 NDBuffer reduce_axis的乘积。
 
-**Parameters:**
+**参数：**
 
-- ​**reduce\_axis** (`Int`): The axis to reduce across.
+- **reduce_axis** ：要归并的轴。`Int`
 
-**Args:**
+**参数：**
 
-- ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
-- ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
+- **src** ：输入缓冲区。`NDBuffer[src, src, src, src]`
+
+- **dst** ：输出缓冲区。`NDBuffer[src, src, dst, 0]`
+
+  
 
 ## `mean`
 
 `mean[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> SIMD[src, 1]`
 
-Computes the mean value of the elements in a buffer.
+计算缓冲区中元素的平均值。
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer of elements for which the mean is computed.
+- **src** ：计算均值的元素的缓冲区。`Buffer[src, src, src]`
 
-**Returns:**
+**返回：**
 
-The mean value of the elements in the given buffer.
+给定缓冲区中元素的平均值。
+
+
 
 `mean[reduce_axis: Int, src: DType, src: Int, src: DimList, src: AddressSpace, dst: DimList](src: NDBuffer[src, src, src, src], dst: NDBuffer[src, src, dst, 0])`
 
-Computes the mean across reduce\_axis of an NDBuffer.
+计算 NDBuffer reduce_axis的平均值。
 
-**Parameters:**
+**参数：**
 
-- ​**reduce\_axis** (`Int`): The axis to reduce across.
+- **reduce_axis** ：要缩小的轴。`Int`
 
-**Args:**
+**参数：**
 
-- ​**src** (`NDBuffer[src, src, src, src]`): The input buffer.
-- ​**dst** (`NDBuffer[src, src, dst, 0]`): The output buffer.
+- **src** ：输入缓冲区。`NDBuffer[src, src, src, src]`
+- **dst** ：输出缓冲区。`NDBuffer[src, src, dst, 0]`
 
-`mean[type: DType, input_fn: fn[Int, Int](StaticIntTuple[$1], /) capturing -> SIMD[type, $0], output_fn: fn[Int, Int](StaticIntTuple[$1], SIMD[type, $0], /) capturing -> None, single_thread_blocking_override: Bool, target: StringLiteral, input_shape: Int](input_shape: StaticIntTuple[input_shape], reduce_dim: Int, output_shape: StaticIntTuple[input_shape])`
+```python
+mean[
+        type: DType, 
+        input_fn: fn[Int, Int](StaticIntTuple[$1], /) capturing -> SIMD[type, $0], 
+        output_fn: fn[Int, Int](StaticIntTuple[$1], SIMD[type, $0], /) capturing -> None, 
+        single_thread_blocking_override: Bool, 
+        target: StringLiteral, 
+        input_shape: Int
+    ](input_shape: StaticIntTuple[input_shape], reduce_dim: Int, output_shape: StaticIntTuple[input_shape])
+```
 
-Computes the mean across the input and output shape.
+计算输入和输出形状的平均值。
 
-This performs the mean computation on the domain specified by `input_shape`, storing the results using the`input_0_fn`. The results' domain is `output_shape` which are stored using the `output_0_fn`.
+这将对 指定的域执行平均计算， 使用 存储结果。结果的域是使用 .`input_shape`,`input_0_fn`,`output_shape`,`output_0_fn`
 
-**Parameters:**
+**参数：**
 
-- ​**type** (`DType`): The type of the input and output.
-- ​**input\_fn** (`fn[Int, Int](StaticIntTuple[$1], /) capturing -> SIMD[type, $0]`): The function to load the input.
-- ​**output\_fn** (`fn[Int, Int](StaticIntTuple[$1], SIMD[type, $0], /) capturing -> None`): The function to store the output.
-- ​**single\_thread\_blocking\_override** (`Bool`): If True, then the operation is run synchronously using a single thread.
-- ​**target** (`StringLiteral`): The target to run on.
+- **type** ：输入和输出的类型。`DType`
+- **input_fn** ：加载输入的函数。`fn[Int, Int](StaticIntTuple[$1], /) capturing -> SIMD[type, $0]`
+- **output_fn** ：存储输出的函数。`fn[Int, Int](StaticIntTuple[$1], SIMD[type, $0], /) capturing -> None`
+- **single_thread_blocking_override** ：如果为 True，则使用单个线程同步运行操作。`Bool`
+- **target** ：要运行的目标。`StringLiteral`
 
-**Args:**
+**参数：**
 
-- ​**input\_shape** (`StaticIntTuple[input_shape]`): The input shape.
-- ​**reduce\_dim** (`Int`): The axis to perform the mean on.
-- ​**output\_shape** (`StaticIntTuple[input_shape]`): The output shape.
+- **input_shape** ：输入形状。`StaticIntTuple[input_shape]`
+- **reduce_dim** ：要执行平均值的轴。`Int`
+- **output_shape** ：输出形状。`StaticIntTuple[input_shape]`
 
 ## `variance`
 
 `variance[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src], mean_value: SIMD[src, 1], correction: Int) -> SIMD[src, 1]`
 
-Given a mean, computes the variance of elements in a buffer.
+给定平均值，计算缓冲区中元素的方差。
 
-The mean value is used to avoid a second pass over the data:
+平均值用于避免对数据进行第二次传递：
 
 ```
 variance(x) = sum((x - E(x))^2) / (size - correction)
 ```
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
-- ​**mean\_value** (`SIMD[src, 1]`): The mean value of the buffer.
-- ​**correction** (`Int`): Normalize variance by size - correction.
+- **src** ：缓冲区。`Buffer[src, src, src]`
+- **mean_value** ：缓冲区的平均值。`SIMD[src, 1]`
+- **校正** ：按大小归一化方差 - 校正。`Int`
 
-**Returns:**
+**返回：**
 
-The variance value of the elements in a buffer.
+缓冲区中元素的方差值。
+
+
 
 `variance[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src], correction: Int) -> SIMD[src, 1]`
 
-Computes the variance value of the elements in a buffer.
+计算缓冲区中元素的方差值。
 
 ```
 variance(x) = sum((x - E(x))^2) / (size - correction)
 ```
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
-- ​**correction** (`Int`): Normalize variance by size - correction (Default=1).
+- **src** ：缓冲区。`Buffer[src, src, src]`
+- **更正** ：按大小归一化方差 - 校正 Default=1。`Int`
 
-**Returns:**
+**返回：**
 
-The variance value of the elements in a buffer.
+缓冲区中元素的方差值。
+
+
 
 ## `all_true`
 
 `all_true[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> Bool`
 
-Returns True if all the elements in a buffer are True and False otherwise.
+如果缓冲区中的所有元素均为 True，则返回 True，否则返回 False。
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
+- **src** ：缓冲区。`Buffer[src, src, src]`
 
-**Returns:**
+**返回：**
 
-True if all of the elements of the buffer are True and False otherwise.
+如果缓冲区的所有元素均为 True，则为 True，否则为 False。
+
+
 
 ## `any_true`
 
 `any_true[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> Bool`
 
-Returns True if any the elements in a buffer are True and False otherwise.
+如果缓冲区中的任意元素为 True，则返回 True，否则返回 False。
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
+- **src** ：缓冲区。`Buffer[src, src, src]`
 
-**Returns:**
+**返回：**
 
-True if any of the elements of the buffer are True and False otherwise.
+如果缓冲区的任何元素为 True，则为 True，否则为 False。
+
+
 
 ## `none_true`
 
 `none_true[src: DType, src: Dim, src: AddressSpace](src: Buffer[src, src, src]) -> Bool`
 
-Returns True if none of the elements in a buffer are True and False otherwise.
+如果缓冲区中没有一个元素为 True，则返回 True，否则返回 False。
 
-**Args:**
+**参数：**
 
-- ​**src** (`Buffer[src, src, src]`): The buffer.
+- **src** ：缓冲区。`Buffer[src, src, src]`
 
-**Returns:**
+**返回：**
 
-True if none of the elements of the buffer are True and False otherwise.
+如果缓冲区的所有元素均不为 True，则为 True，否则为 False。
+
+
 
 ## `argmax`
 
-`argmax[input: DType, input: Int, input: DimList, input: AddressSpace, output: DType, output: Int, output: DimList, output: AddressSpace](input: NDBuffer[input, input, input, input], axis: Int, output: NDBuffer[output, output, output, output])`
+```python
+argmax[
+    input: DType, 
+    input: Int, 
+    input: DimList, 
+    input: AddressSpace, 
+    output: DType, 
+    output: Int, 
+    output: DimList, 
+    output: AddressSpace
+    ](input: NDBuffer[input, input, input, input], axis: Int, output: NDBuffer[output, output, output, output])
+```
 
-Finds the indices of the maximum element along the specified axis.
+沿指定轴查找最大元素的索引。
 
-**Args:**
+**参数：**
 
-- ​**input** (`NDBuffer[input, input, input, input]`): The input tensor.
-- ​**axis** (`Int`): The axis.
-- ​**output** (`NDBuffer[output, output, output, output]`): The output tensor.
+- **input**：输入张量。`NDBuffer[input, input, input, input]`
+- **axis** ：轴。`Int`
+- **output**：输出张量。`NDBuffer[output, output, output, output]`
 
-`argmax[input: DType, input: Int, input: DimList, input: AddressSpace, axis_buf: DType, axis_buf: Int, axis_buf: DimList, axis_buf: AddressSpace, output: DType, output: Int, output: DimList, output: AddressSpace](input: NDBuffer[input, input, input, input], axis_buf: NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf], output: NDBuffer[output, output, output, output])`
 
-Finds the indices of the maximum element along the specified axis.
 
-**Args:**
+```python
+argmax[
+    input: DType, 
+    input: Int, 
+    input: DimList, 
+    input: AddressSpace, 
+    axis_buf: DType, 
+    axis_buf: Int, 
+    axis_buf: DimList, 
+    axis_buf: AddressSpace, 
+    output: DType, 
+    output: Int, 
+    output: DimList, 
+    output: AddressSpace
+](input: NDBuffer[input, input, input, input], axis_buf: NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf], output: NDBuffer[output, output, output, output])
+```
 
-- ​**input** (`NDBuffer[input, input, input, input]`): The input tensor.
-- ​**axis\_buf** (`NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf]`): The axis tensor.
-- ​**output** (`NDBuffer[output, output, output, output]`): The axis tensor.
+沿指定轴查找最大元素的索引。
+
+**参数：**
+
+- **input**：输入张量。`NDBuffer[input, input, input, input]`
+- **axis_buf** ：轴张量。`NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf]`
+- **output** ：轴张量。`NDBuffer[output, output, output, output]`
 
 ## `argmin`
 
-`argmin[input: DType, input: Int, input: DimList, input: AddressSpace, output: DType, output: Int, output: DimList, output: AddressSpace](input: NDBuffer[input, input, input, input], axis: Int, output: NDBuffer[output, output, output, output])`
+```
+argmin[
+    input: DType, 
+    input: Int, 
+    input: DimList, 
+    input: AddressSpace, 
+    output: DType, 
+    output: Int, 
+    output: DimList,
+    output: AddressSpace
+](input: NDBuffer[input, input, input, input], axis: Int, output: NDBuffer[output, output, output, output])
+```
 
-Finds the indices of the maximum element along the specified axis.
+沿指定轴查找最小元素的索引。
 
-**Args:**
+**参数：**
 
-- ​**input** (`NDBuffer[input, input, input, input]`): The input tensor.
-- ​**axis** (`Int`): The axis.
-- ​**output** (`NDBuffer[output, output, output, output]`): The output tensor.
+- **input**：输入张量。`NDBuffer[input, input, input, input]`
+- **axis** ：轴。`Int`
+- **output**：输出张量。`NDBuffer[output, output, output, output]`
 
-`argmin[input: DType, input: Int, input: DimList, input: AddressSpace, axis_buf: DType, axis_buf: Int, axis_buf: DimList, axis_buf: AddressSpace, output: DType, output: Int, output: DimList, output: AddressSpace](input: NDBuffer[input, input, input, input], axis_buf: NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf], output: NDBuffer[output, output, output, output])`
 
-Finds the indices of the minimum element along the specified axis.
 
-**Args:**
+```
+argmin[
+    input: DType, 
+    input: Int, 
+    input: DimList, 
+    input: AddressSpace, 
+    axis_buf: DType, 
+    axis_buf: Int, 
+    axis_buf: DimList, 
+    axis_buf: AddressSpace, 
+    output: DType, 
+    output: Int, 
+    output: DimList, 
+    output: AddressSpace
+](input: NDBuffer[input, input, input, input], axis_buf: NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf], output: NDBuffer[output, output, output, output])
+```
 
-- ​**input** (`NDBuffer[input, input, input, input]`): The input tensor.
-- ​**axis\_buf** (`NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf]`): The axis tensor.
-- ​**output** (`NDBuffer[output, output, output, output]`): The axis tensor.
+沿指定轴查找最小元素的索引。
+
+**参数：**
+
+- **input**：输入张量。`NDBuffer[input, input, input, input]`
+- **axis_buf** ：轴张量。`NDBuffer[axis_buf, axis_buf, axis_buf, axis_buf]`
+- **output** ：轴张量。`NDBuffer[output, output, output, output]`
+
+
 
 ## `reduce_shape`
 
-`reduce_shape[input_rank: Int, input_type: DType, axis_type: DType, single_thread_blocking_override: Bool](input_buf: NDBuffer[input_type, input_rank, create_unknown[stdlib::builtin::int::Int][input_rank](), 0], axis_buf: NDBuffer[axis_type, 1, create_unknown[stdlib::builtin::int::Int][1](), 0]) -> StaticIntTuple[input_rank]`
+```
+reduce_shape[input_rank: Int, input_type: DType, axis_type: DType, single_thread_blocking_override: Bool](input_buf: NDBuffer[input_type, input_rank, create_unknown[stdlib::builtin::int::Int][input_rank](), 0], axis_buf: NDBuffer[axis_type, 1, create_unknown[stdlib::builtin::int::Int][1](), 0]) -> StaticIntTuple[input_rank]
+```
 
-Compute the output shape of a `pad` operation, and assert the inputs are compatible.
+计算操作的输出形状，并断言输入兼容。`pad`
 
-**Parameters:**
+**参数：**
 
-- ​**input\_rank** (`Int`): Input\_rank of the input tensor.
-- ​**input\_type** (`DType`): Type of the input tensor.
-- ​**axis\_type** (`DType`): Type of the axis tensor.
-- ​**single\_thread\_blocking\_override** (`Bool`): If True, then the operation is run synchronously using a single thread.
+- **input_rank** ：输入张量的Input_rank。`Int`
+- **input_type** ：输入张量的类型。`DType`
+- **axis_type** ：轴张量的类型。`DType`
+- **single_thread_blocking_override** ：如果为 True，则使用单个线程同步运行操作。`Bool`
 
-**Args:**
+**参数：**
 
-- ​**input\_buf** (`NDBuffer[input_type, input_rank, create_unknown[stdlib::builtin::int::Int][input_rank](), 0]`): The input tensor.
-- ​**axis\_buf** (`NDBuffer[axis_type, 1, create_unknown[stdlib::builtin::int::Int][1](), 0]`): The axis tensor.
+- **input_buf** ：输入张量。`NDBuffer[input_type, input_rank, create_unknown[stdlib::builtin::int::Int][input_rank](), 0]`
+- **axis_buf** ：轴张量。`NDBuffer[axis_type, 1, create_unknown[stdlib::builtin::int::Int][1](), 0]`
 
-**Returns:**
+**返回：**
 
-The output shape.
+输出形状。
+
+
 
 ## `cumsum`
 
 `cumsum[dst: DType, dst: Dim, dst: AddressSpace](dst: Buffer[dst, dst, dst], src: Buffer[dst, dst, dst])`
 
-Computes the cumulative sum of all elements in a buffer. dst\[i\] = src\[i\] + src\[i-1\] + ... + src\[0\].
+计算缓冲区中所有元素的累积总和。dst[i] = src[i] + src[i-1] + ... + src[0]。
 
-**Args:**
+**参数：**
 
-- ​**dst** (`Buffer[dst, dst, dst]`): The buffer that stores the result of cumulative sum operation.
-- ​**src** (`Buffer[dst, dst, dst]`): The buffer of elements for which the cumulative sum is computed.
+- **dst**：存储累积求和运算结果的缓冲区。`Buffer[dst, dst, dst]`
+- **src** ：计算累积总和的元素的缓冲区。`Buffer[dst, dst, dst]`
