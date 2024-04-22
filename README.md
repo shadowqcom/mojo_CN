@@ -17,19 +17,19 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 ⚡欢迎各位开发者加群 ~~摸鱼~~ 交流。
 
 ### Wechat      &       Telegram
-<div style="display: flex; align-items: center;">
+<div style="display: flex;" align="center">
     <figure>
         <img height="200" width="200" src="./public/img/wechat.png"/>
-        <figcaption style="text-align: center;">微信群</figcaption>
+        <figcaption align="center">微信群</figcaption>
     </figure>
     <figure>
         <img height="200" width="200" src="./public/img/Telegram.png"/>
-        <figcaption style="text-align: center;"><a href="https://t.me/Mojo_CN" style="text-decoration: none;" target="_blank">Telegram</a></figcaption>
+        <figcaption align="center"><a href="https://t.me/Mojo_CN" style="text-decoration: none;" target="_blank">Telegram</a></figcaption>
     </figure>
 </div>
 
 ### QQ
-<div style="display: flex; align-items: center;">
+<div style="display: flex;" align="center">
     <figure>
         <img height="200" width="200" src="./public/img/qq.png"/>
         <figcaption style="text-align: center;"><a href="https://qm.qq.com/q/nn0pFzgIRG" style="text-decoration: none;" target="_blank">777214484</a></figcaption>
@@ -46,7 +46,7 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 
 
 ## 感谢贡献者
-<div align="center">
+<div>
     <a href="https://github.com/shadowqcom/mojo_CN/graphs/contributors">
     <img src="https://contrib.rocks/image?repo=shadowqcom/mojo_CN" />
     </a>
