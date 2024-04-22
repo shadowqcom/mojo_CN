@@ -1,4 +1,4 @@
-# sort[排序](https://mojocn.org/mojo/reference/algorithm/sort.html#sort)
+# sort排序
 
 实现排序功能。
 
@@ -19,7 +19,7 @@ partition[type: AnyRegType, cmp_fn: fn[AnyRegType]($0, $0, /) capturing -> Bool]
 **参数：**
 
 - **type** ()：基础数据的 DType。`AnyRegType`
-- **cmp_fn** ()：类型、类型)捕获 -> Bool 类型的比较函子。`fn[AnyRegType]($0, $0, /) capturing -> Bool`
+- **cmp_fn** ()：类型、类型  捕获 -> Bool 类型的比较函子。`fn[AnyRegType]($0, $0, /) capturing -> Bool`
 
 **参数：**
 
