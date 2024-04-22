@@ -364,7 +364,7 @@ export default defineConfig({
     ],
     
     footer: {
-      message: 'Mojo中文网',
+      message: 'Mojo中文网 | Mojo官网 | Mojo社区',
       copyright: `Copyright &copy; ${new Date().getFullYear()} MojoCN. All Rights Reserved. 影象限 版权所有`
     },
   },
