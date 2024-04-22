@@ -17,7 +17,7 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 ⚡欢迎各位开发者加群 ~~摸鱼~~ 交流。
 
 ### Wechat      &       Telegram
-<div id="wechat" style="display: flex;  align-items: center;">
+<div style="display: flex; align-items: center;">
     <figure>
         <img height="200" width="200" src="./public/img/wechat.png"/>
         <figcaption style="text-align: center;"><a href="" style="text-decoration: none;" rel="noreferrer">微信群</a></figcaption>
@@ -29,7 +29,7 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。
 </div>
 
 ### QQ
-<div id="qq" style="display: flex;  align-items: center;">
+<div style="display: flex; align-items: center;">
     <figure>
         <img height="200" width="200" src="./public/img/qq.png"/>
         <figcaption style="text-align: center;"><a href="https://qm.qq.com/q/nn0pFzgIRG" style="text-decoration: none;" rel="noreferrer">777214484</a></figcaption>
