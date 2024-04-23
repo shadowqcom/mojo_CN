@@ -130,6 +130,12 @@ export default defineConfig({
               { text: '调试', link: '/mojo/manual/tools/debugging' },
               ]
             },
+            {text: '版本变化',
+            collapsed: false,
+            items: [
+              { text: '变更日志', link: '/mojo/manual/changelog-released' },
+              ]
+            },
           ],
         },
         {
