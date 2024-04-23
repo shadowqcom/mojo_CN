@@ -1,19 +1,4 @@
-## Update Mojo
-
-If you don't have Mojo yet, see the [get started
-guide](/mojo/manual/getstarted/getmojo).
-
-To see your Mojo version, run this:
-
-```sh
-mojo --version
-```
-
-To update Mojo, first update `modular`, and then run this:
-
-```sh
-modular update mojo
-```
+# Changelog
 
 ## v24.2 (2024-03-28)
 
