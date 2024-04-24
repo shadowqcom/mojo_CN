@@ -1,337 +1,450 @@
-# dict
+# dict字典
 
-Defines `Dict`, a collection that stores key-value pairs.
 
-Dict provides an efficient, O(1) amortized average-time complexity for insert, lookup, and removal of dictionary elements. Its implementation closely mirrors Python's `dict` implementation:
 
-- Performance and size are heavily optimized for small dictionaries, but can scale to large dictionaries.
-    
-- Insertion order is implicitly preserved. Iteration over keys, values, and items have a deterministic order based on insertion.
-    
+定义 ，存储键值对的集合。`Dict`
 
-Key elements must implement the `KeyElement` trait, which encompasses Movable, Hashable, and EqualityComparable. It also includes CollectionElement and Copyable until we push references through the standard library types.
+Dict 为字典元素的插入、查找和删除提供了高效的 O（1） 摊销平均时间复杂度。它的实现与 Python 的实现非常相似：`dict`
 
-Value elements must be CollectionElements for a similar reason. Both key and value types must always be Movable so we can resize the dictionary as it grows.
+- 性能和大小针对小型词典进行了大量优化，但可以扩展到大型词典。
+- 插入顺序被隐式保留。对键、值和项的迭代具有基于插入的确定性顺序。
 
-See the `Dict` docs for more details.
+关键元素必须实现`KeyElement`该特征，其中包括 Movable、Hashable 和 EqualityComparable。它还包括 CollectionElement 和 Copyable，直到我们通过标准库类型推送引用。
+
+出于类似原因，Value 元素必须是 CollectionElements。键和值类型都必须始终是 Movable，以便我们可以随着字典的增长而调整字典的大小。
+
+有关更多详细信息，请参阅文档。`Dict`
 
 ## `DictEntry`
 
-Store a key-value pair entry inside a dictionary.
 
-**Parameters:**
 
-- ​**K** (`KeyElement`): The key type of the dict. Must be Hashable+EqualityComparable.
-- ​**V** (`CollectionElement`): The value type of the dict.
+将键值对条目存储在字典中。
 
-**Fields:**
+**参数：**
 
-- ​**hash** (`Int`): `key.__hash__()`, stored so hashing isn't re-computed during dict lookup.
+- **K** （`KeyElement`）：字典的键类型。必须是 Hashable+EqualityComparable。
+- **V** （`CollectionElement`）：字典的值类型。
 
-- ​**key** (`K`): The unique key for the entry.
+**属性：**
 
-- ​**value** (`V`): The value associated with the key.
+- **hash** （`Int`）：，因此在字典查找期间不会重新计算哈希。`key.__hash__()`
+- **key** （`K`）：条目的唯一键。
+- **value** （`V`）：与键关联的值。
 
-**Implemented traits:**
+**实现的特征：**
 
-`AnyType`, `CollectionElement`, `Copyable`, `Movable`
+```
+AnyType`,`CollectionElement`,`Copyable`,`Movable
+```
 
-**Methods:**
+**方法：**
 
 ### `__init__`
+```
+__init__(inout self: Self, owned key: K, owned value: V)
+```
 
-`__init__(inout self: Self, owned key: K, owned value: V)`
+从键和值创建条目，计算哈希值。
 
-Create an entry from a key and value, computing the hash.
+**参数：**
 
-**Args:**
-
-- ​**key** (`K`): The key of the entry.
-- ​**value** (`V`): The value of the entry.
+- **key** （`K`）：条目的键。
+- **value** （`V`）：条目的值。
 
 ## `Dict`
 
-A container that stores key-value pairs.
 
-The key type and value type must be specified statically, unlike a Python dictionary, which can accept arbitrary key and value types.
 
-The key type must implement the `KeyElement` trait, which encompasses `Movable`, `Hashable`, and `EqualityComparable`. It also includes `CollectionElement` and `Copyable` until we have references.
+存储键值对的容器。
 
-The value type must implement the `CollectionElement` trait.
+键类型和值类型必须静态指定，这与 Python 字典不同，Python 字典可以接受任意键和值类型。
 
-Usage:
+键类型必须实现`KeyElement`包含`Movable` 、`Hashable` 和`EqualityComparable` 的特征。它还包括`CollectionElement`和`Copyable`直到我们有引用。
+
+值类型必须实现`CollectionElement`特征。
+
+用法：
+```python
+from collections import Dict
+
+var d = Dict[String, Int]()
+d["a"] = 1
+d["b"] = 2
+print(len(d))      # prints 2
+print(d["a"])      # prints 1
+print(d.pop("b"))  # prints 2
+print(len(d))      # prints 1
+```
+
+
+
+**参数：**
+
+- **K** （`KeyElement`）：字典键的类型。必须是 Hashable 和 EqualityTropable，这样我们才能在地图中找到键。
+- **V** （`CollectionElement`）：字典的值类型。当前必须是 CollectionElement。
+
+**别名：**
+
+- `EMPTY = -1`
+- `REMOVED = -2`
+
+**属性：**
+
+- **size** （`Int`）：当前存储在字典中的元素数。
+
+**实现的特征：**
 
 ```
-from collections import Dictvar d = Dict[String, Int]()d["a"] = 1d["b"] = 2print(len(d))      # prints 2print(d["a"])      # prints 1print(d.pop("b"))  # prints 2print(len(d))      # prints 1
+AnyType`,`CollectionElement`, `Copyable`, `Movable`, `Sized
 ```
 
-**Parameters:**
-
-- ​**K** (`KeyElement`): The type of the dictionary key. Must be Hashable and EqualityComparable so we can find the key in the map.
-- ​**V** (`CollectionElement`): The value type of the dictionary. Currently must be CollectionElement.
-
-**Aliases:**
-
-- ​`EMPTY = -1`
-
-- ​`REMOVED = -2`
-
-**Fields:**
-
-- ​**size** (`Int`): The number of elements currently stored in the dict.
-
-**Implemented traits:**
-
-`AnyType`, `CollectionElement`, `Copyable`, `Movable`, `Sized`
-
-**Methods:**
+**方法：**
 
 ### `__init__`
 
-`__init__(inout self: Self)`
 
-Initialize an empty dictiontary.
 
-`__init__(inout self: Self, existing: Self)`
+```
+__init__(inout self: Self)
+```
 
-Copy an existing dictiontary.
+初始化一个空字典。
 
-**Args:**
+```
+__init__(inout self: Self, existing: Self)
+```
 
-- ​**existing** (`Self`): The existing dict.
+复制现有词典。
+
+**参数：**
+
+- **existing** （）：现有字典。`Self`
 
 ### `__copyinit__`
 
-`__copyinit__(inout self: Self, existing: Self)`
 
-Copy an existing dictiontary.
 
-**Args:**
+```
+__copyinit__(inout self: Self, existing: Self)
+```
 
-- ​**existing** (`Self`): The existing dict.
+复制现有词典。
+
+**参数：**
+
+- **existing** （）：现有字典。`Self`
 
 ### `__moveinit__`
 
-`__moveinit__(inout self: Self, owned existing: Self)`
 
-Move data of an existing dict into a new one.
 
-**Args:**
+```
+__moveinit__(inout self: Self, owned existing: Self)
+```
 
-- ​**existing** (`Self`): The existing dict.
+将现有字典的数据移动到新字典中。
+
+**参数：**
+
+- **existing** （）：现有字典。`Self`
 
 ### `__getitem__`
 
-`__getitem__(self: Self, key: K) -> V`
 
-Retrieve a value out of the dictionary.
 
-Raises: "KeyError" if the key isn't present.
+```
+__getitem__(self: Self, key: K) -> V
+```
 
-**Args:**
+从字典中检索值。
 
-- ​**key** (`K`): The key to retrieve.
+引发：“KeyError”（如果密钥不存在）。
 
-**Returns:**
+**参数：**
 
-The value associated with the key, if it's present.
+- **key** （`K`）：要检索的密钥。
+
+**返回：**
+
+与键关联的值（如果存在）。
 
 ### `__setitem__`
 
-`__setitem__(inout self: Self, key: K, value: V)`
 
-Set a value in the dictionary by key.
 
-**Args:**
+```
+__setitem__(inout self: Self, key: K, value: V)
+```
 
-- ​**key** (`K`): The key to associate with the specified value.
-- ​**value** (`V`): The data to store in the dictionary.
+按键在字典中设置值。
+
+**参数：**
+
+- **key** （`K`）：要与指定值关联的键。
+- **value** （`V`）：要存储在字典中的数据。
 
 ### `__contains__`
 
-`__contains__(self: Self, key: K) -> Bool`
 
-Check if a given value is in the dictionary or not.
 
-**Args:**
+```
+__contains__(self: Self, key: K) -> Bool
+```
 
-- ​**key** (`K`): The key to check.
+检查给定值是否在字典中。
 
-**Returns:**
+**参数：**
 
-True if there key exists in the dictionary, False otherwise.
+- **key** （`K`）：要检查的密钥。
+
+**返回：**
+
+如果字典中存在键，则为 True，否则为 False。
 
 ### `__len__`
 
-`__len__(self: Self) -> Int`
 
-The number of elements currenly stored in the dictionary.
+
+```
+__len__(self: Self) -> Int
+```
+
+当前存储在字典中的元素数。
 
 ### `find`
 
-`find(self: Self, key: K) -> Optional[V]`
 
-Find a value in the dictionary by key.
 
-**Args:**
+```
+find(self: Self, key: K) -> Optional[V]
+```
 
-- ​**key** (`K`): The key to search for in the dictionary.
+按键在字典中查找值。
 
-**Returns:**
+**参数：**
 
-An optional value containing a copy of the value if it was present, otherwise an empty Optional.
+- **key** （`K`）：要在字典中搜索的键。
+
+**返回：**
+
+一个可选值，其中包含该值的副本（如果存在），否则为空的 Optional。
 
 ### `pop`
 
-`pop(inout self: Self, key: K, owned default: Optional[V]) -> V`
 
-Remove a value from the dictionary by key.
 
-Raises: "KeyError" if the key was not present in the dictionary and no default value was provided.
+```
+pop(inout self: Self, key: K, owned default: Optional[V]) -> V
+```
 
-**Args:**
+按键从字典中删除值。
 
-- ​**key** (`K`): The key to remove from the dictionary.
-- ​**default** (`Optional[V]`): Optionally provide a default value to return if the key was not found instead of raising.
+引发：“KeyError”，如果字典中不存在该键，并且未提供默认值。
 
-**Returns:**
+**参数：**
 
-The value associated with the key, if it was in the dictionary. If it wasn't, return the provided default value instead.
+- **key** （）：要从字典中删除的键。`K`
+- **default** （）：（可选）提供默认值，以便在未找到键时返回，而不是引发。`Optional[V]`
+
+**返回：**
+
+与键关联的值（如果该键在字典中）。如果不是，请改为返回提供的默认值。
 
 ### `__iter__`
 
-`__iter__[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_dict::_Dict<:trait<_stdlib::_collections::_dict::_KeyElement> K, :trait<_stdlib::_builtin::_value::_CollectionElement> V>, mut=mutability, self_life>) -> _DictKeyIter[K, V, mutability, self_life]`
 
-Iterate over the dict's keys as immutable references.
 
-**Parameters:**
+```cpp
+__iter__[mutability: i1, self_life: lifetime<mutability>](
+    self: !lit.ref<_stdlib::_collections::_dict::_Dict<
+                    :trait<_stdlib::_collections::_dict::_KeyElement> K, 
+                    :trait<_stdlib::_builtin::_value::_CollectionElement> V >, 
+                    mut=mutability, 
+                    self_life>
+                    ) -> _DictKeyIter[K, V, mutability, self_life]
+```
 
-- ​**mutability** (`i1`): Whether the dict is mutable.
-- ​**self\_life** (`lifetime<mutability>`): The dict's lifetime.
+将 dict 的键作为不可变引用进行迭代。
 
-**Returns:**
+**参数：**
 
-An iterator of immutable references to the dictionary keys.
+- **可变性** （`i1`）：字典是否可变。
+- **self_life** （`lifetime<mutability>`）：字典的生存期。
+
+**返回：**
+
+对字典键的不可变引用的迭代器。
 
 ### `keys`
 
-`keys[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_dict::_Dict<:trait<_stdlib::_collections::_dict::_KeyElement> K, :trait<_stdlib::_builtin::_value::_CollectionElement> V>, mut=mutability, self_life>) -> _DictKeyIter[K, V, mutability, self_life]`
+```
+keys[mutability: i1, self_life: lifetime<mutability>](
+    self: !lit.ref<_stdlib::_collections::_dict::_Dict<
+        :trait<_stdlib::_collections::_dict::_KeyElement> K, 
+        :trait<_stdlib::_builtin::_value::_CollectionElement> V>, 
+        mut=mutability, self_life>
+        ) -> _DictKeyIter[K, V, mutability, self_life]
+```
 
-Iterate over the dict's keys as immutable references.
+将 dict 的键作为不可变引用进行迭代。
 
-**Parameters:**
+**参数：**
 
-- ​**mutability** (`i1`): Whether the dict is mutable.
-- ​**self\_life** (`lifetime<mutability>`): The dict's lifetime.
+- **可变性** （`i1`）：字典是否可变。
+- **self_life** （`lifetime<mutability>`）：字典的生存期。
 
-**Returns:**
+**返回：**
 
-An iterator of immutable references to the dictionary keys.
+对字典键的不可变引用的迭代器。
 
 ### `values`
 
-`values[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_dict::_Dict<:trait<_stdlib::_collections::_dict::_KeyElement> K, :trait<_stdlib::_builtin::_value::_CollectionElement> V>, mut=mutability, self_life>) -> _DictValueIter[K, V, mutability, self_life]`
+```cpp
+values[mutability: i1, self_life: lifetime<mutability>](
+    self: !lit.ref<_stdlib::_collections::_dict::_Dict<
+        :trait<_stdlib::_collections::_dict::_KeyElement> K, 
+        :trait<_stdlib::_builtin::_value::_CollectionElement> V>, 
+        mut=mutability, self_life>
+        ) -> _DictValueIter[K, V, mutability, self_life]
+```
 
-Iterate over the dict's values as references.
+循环访问 dict 的值作为引用。
 
-**Parameters:**
+**参数：**
 
-- ​**mutability** (`i1`): Whether the dict is mutable.
-- ​**self\_life** (`lifetime<mutability>`): The dict's lifetime.
+- **可变性** （`i1`）：字典是否可变。
+- **self_life** （`lifetime<mutability>`）：字典的生存期。
 
-**Returns:**
+**返回：**
 
-An iterator of references to the dictionary values.
+对字典值的引用的迭代器。
 
 ### `items`
 
-`items[mutability: i1, self_life: lifetime<mutability>](self: !lit.ref<_stdlib::_collections::_dict::_Dict<:trait<_stdlib::_collections::_dict::_KeyElement> K, :trait<_stdlib::_builtin::_value::_CollectionElement> V>, mut=mutability, self_life>) -> _DictEntryIter[K, V, mutability, self_life]`
+```cpp
+items[mutability: i1, self_life: lifetime<mutability>](
+    self: !lit.ref<_stdlib::_collections::_dict::_Dict<
+        :trait<_stdlib::_collections::_dict::_KeyElement> K, 
+        :trait<_stdlib::_builtin::_value::_CollectionElement> V>, 
+        mut=mutability, self_life>
+        ) -> _DictEntryIter[K, V, mutability, self_life]
+```
 
-Iterate over the dict's entries as immutable references.
+将字典的条目作为不可变引用进行迭代。
 
-These can't yet be unpacked like Python dict items, but you can access the key and value as attributes ie.
+这些还不能像 Python dict 项目那样解压缩，但您可以将键和值作为属性访问，即。
 
 ```
-for e in dict.items():    print(e[].key, e[].value)
+for e in dict.items():    
+    print(e[].key, e[].value)
 ```
 
-**Parameters:**
 
-- ​**mutability** (`i1`): Whether the dict is mutable.
-- ​**self\_life** (`lifetime<mutability>`): The dict's lifetime.
 
-**Returns:**
+**参数：**
 
-An iterator of immutable references to the dictionary entries.
+- **可变性** （`i1`）：字典是否可变。
+- **self_life** （`lifetime<mutability>`）：字典的生存期。
+
+**返回：**
+
+对字典条目的不可变引用的迭代器。
 
 ## `KeyElement`
 
-A trait composition for types which implement all requirements of dictionary keys. Dict keys must minimally be Movable, Hashable, and EqualityComparable for a hash map. Until we have references they must also be copyable.
 
-**Implemented traits:**
 
-`AnyType`, `CollectionElement`, `Copyable`, `EqualityComparable`, `Hashable`, `Movable`
+实现字典键所有要求的类型的特征组合。对于哈希映射，Dict 键必须至少为 Movable、Hashable 和 EqualityComparable。在我们有参考文献之前，它们也必须是可复制的。
 
-**Methods:**
+**实现的特征：**
+
+```
+AnyType`, `CollectionElement`, `Copyable`, `EqualityComparable`, `Hashable`, `Movable
+```
+
+**方法：**
 
 ### `__copyinit__`
 
-`__copyinit__(inout self: T, existing: T, /)`
+```
+__copyinit__(inout self: T, existing: T, /)
+```
 
-Create a new instance of the value by copying an existing one.
+通过复制现有值创建值的新实例。
 
-**Args:**
+**参数：**
 
-- ​**existing** (`T`): The value to copy.
+- **existing** （`T`）：要复制的值。
 
 ### `__moveinit__`
 
-`__moveinit__(inout self: T, owned existing: T, /)`
 
-Create a new instance of the value by moving the value of another.
 
-**Args:**
+```
+__moveinit__(inout self: T, owned existing: T, /)
+```
 
-- ​**existing** (`T`): The value to move.
+通过移动另一个值的值来创建该值的新实例。
+
+**参数：**
+
+- **existing** （`T`）：要移动的值。
 
 ### `__del__`
 
-`__del__(owned self: T, /)`
 
-Destroy the contained value.
 
-The destructor receives an owned value and is expected to perform any actions needed to end the lifetime of the object. In the simplest case, this is nothing, and the language treats the object as being dead at the end of this function.
+```
+__del__(owned self: T, /)
+```
+
+销毁包含的值。
+
+析构函数接收拥有的值，并应执行结束对象生存期所需的任何操作。在最简单的情况下，这什么都不是，并且语言在此函数结束时将对象视为死的。
 
 ### `__eq__`
 
-`__eq__(self: T, other: T) -> Bool`
 
-Define whether two instances of the object are equal to each other.
 
-**Args:**
+```
+__eq__(self: T, other: T) -> Bool
+```
 
-- ​**other** (`T`): Another instance of the same type.
+定义对象的两个实例是否彼此相等。
 
-**Returns:**
+**参数：**
 
-True if the instances are equal according to the type's definition of equality, False otherwise.
+- **other** （`T`）：另一个相同类型的实例。
+
+**返回：**
+
+如果实例根据类型的相等定义相等，则为 True，否则为 False。
 
 ### `__ne__`
 
-`__ne__(self: T, other: T) -> Bool`
 
-Define whether two instances of the object are not equal to each other.
 
-**Args:**
+```
+__ne__(self: T, other: T) -> Bool
+```
 
-- ​**other** (`T`): Another instance of the same type.
+定义对象的两个实例是否彼此不相等。
 
-**Returns:**
+**参数：**
 
-True if the instances are not equal according to the type's definition of equality, False otherwise.
+- **other** （`T`）：另一个相同类型的实例。
+
+**返回：**
+
+如果实例根据类型的相等定义不相等，则为 True，否则为 False。
 
 ### `__hash__`
 
-`__hash__(self: T) -> Int`
 
-Return a 64-bit hash of the type's data.
+
+```
+__hash__(self: T) -> Int
+```
+
+返回类型数据的 64 位哈希值。
