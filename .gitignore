@@ -1,6 +1,7 @@
 .idea
-/node_modules
+.DS_Store
+*.log
 */dist
-*.txt
 /dist
 .vitepress/cache
+/node_modules

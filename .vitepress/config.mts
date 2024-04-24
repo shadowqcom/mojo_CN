@@ -130,6 +130,12 @@ export default defineConfig({
               { text: '调试', link: '/mojo/manual/tools/debugging' },
               ]
             },
+            {text: '版本变化',
+            collapsed: false,
+            items: [
+              { text: '变更日志', link: '/mojo/manual/changelog-released' },
+              ]
+            },
           ],
         },
         {
@@ -364,7 +370,7 @@ export default defineConfig({
     ],
     
     footer: {
-      message: 'Mojo中文网',
+      message: 'Mojo中文网 | Mojo官网 | Mojo社区',
       copyright: `Copyright &copy; ${new Date().getFullYear()} MojoCN. All Rights Reserved. 影象限 版权所有`
     },
   },

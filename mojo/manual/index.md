@@ -11,3 +11,10 @@ Mojo旨在解决其他任何语言都无法解决的各种人工智能开发挑�
 ## 翻译说明
 Mojo中文网使用Mojo官方原版文件进行翻译，无修改和额外内容。
 翻译工具：GPT-3.5-Turbo
+
+## 感谢参与翻译的贡献者
+<div>
+    <a href="https://github.com/shadowqcom/mojo_CN/graphs/contributors" target="_blank">
+    <img src="https://contrib.rocks/image?repo=shadowqcom/mojo_CN" />
+    </a>
+</div>
