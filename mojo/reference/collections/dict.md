@@ -4,7 +4,7 @@
 
 定义 ，存储键值对的集合。`Dict`
 
-Dict 为字典元素的插入、查找和删除提供了高效的 O（1） 摊销平均时间复杂度。它的实现与 Python 的实现非常相似：`dict`
+Dict 为字典元素的插入、查找和删除提供了高效的 O(1) 摊销平均时间复杂度。它的实现与 Python 的实现非常相似：`dict`
 
 - 性能和大小针对小型词典进行了大量优化，但可以扩展到大型词典。
 - 插入顺序被隐式保留。对键、值和项的迭代具有基于插入的确定性顺序。
@@ -23,14 +23,14 @@ Dict 为字典元素的插入、查找和删除提供了高效的 O（1） 摊�
 
 **参数：**
 
-- **K** （`KeyElement`）：字典的键类型。必须是 Hashable+EqualityComparable。
-- **V** （`CollectionElement`）：字典的值类型。
+- **K** (`KeyElement`)：字典的键类型。必须是 Hashable+EqualityComparable。
+- **V** (`CollectionElement`)：字典的值类型。
 
 **属性：**
 
-- **hash** （`Int`）：，因此在字典查找期间不会重新计算哈希。`key.__hash__()`
-- **key** （`K`）：条目的唯一键。
-- **value** （`V`）：与键关联的值。
+- **hash** (`Int`)：，因此在字典查找期间不会重新计算哈希。`key.__hash__()`
+- **key** (`K`)：条目的唯一键。
+- **value** (`V`)：与键关联的值。
 
 **实现的特征：**
 
@@ -49,8 +49,8 @@ __init__(inout self: Self, owned key: K, owned value: V)
 
 **参数：**
 
-- **key** （`K`）：条目的键。
-- **value** （`V`）：条目的值。
+- **key** (`K`)：条目的键。
+- **value** (`V`)：条目的值。
 
 ## `Dict`
 
@@ -81,8 +81,8 @@ print(len(d))      # prints 1
 
 **参数：**
 
-- **K** （`KeyElement`）：字典键的类型。必须是 Hashable 和 EqualityTropable，这样我们才能在地图中找到键。
-- **V** （`CollectionElement`）：字典的值类型。当前必须是 CollectionElement。
+- **K** (`KeyElement`)：字典键的类型。必须是 Hashable 和 EqualityTropable，这样我们才能在地图中找到键。
+- **V** (`CollectionElement`)：字典的值类型。当前必须是 CollectionElement。
 
 **别名：**
 
@@ -91,7 +91,7 @@ print(len(d))      # prints 1
 
 **属性：**
 
-- **size** （`Int`）：当前存储在字典中的元素数。
+- **size** (`Int`)：当前存储在字典中的元素数。
 
 **实现的特征：**
 
@@ -119,7 +119,7 @@ __init__(inout self: Self, existing: Self)
 
 **参数：**
 
-- **existing** （）：现有字典。`Self`
+- **existing** ()：现有字典。`Self`
 
 ### `__copyinit__`
 
@@ -133,7 +133,7 @@ __copyinit__(inout self: Self, existing: Self)
 
 **参数：**
 
-- **existing** （）：现有字典。`Self`
+- **existing** ()：现有字典。`Self`
 
 ### `__moveinit__`
 
@@ -147,7 +147,7 @@ __moveinit__(inout self: Self, owned existing: Self)
 
 **参数：**
 
-- **existing** （）：现有字典。`Self`
+- **existing** ()：现有字典。`Self`
 
 ### `__getitem__`
 
@@ -159,15 +159,15 @@ __getitem__(self: Self, key: K) -> V
 
 从字典中检索值。
 
-引发：“KeyError”（如果密钥不存在）。
+引发：“KeyError”(如果密钥不存在)。
 
 **参数：**
 
-- **key** （`K`）：要检索的密钥。
+- **key** (`K`)：要检索的密钥。
 
 **返回：**
 
-与键关联的值（如果存在）。
+与键关联的值(如果存在)。
 
 ### `__setitem__`
 
@@ -181,8 +181,8 @@ __setitem__(inout self: Self, key: K, value: V)
 
 **参数：**
 
-- **key** （`K`）：要与指定值关联的键。
-- **value** （`V`）：要存储在字典中的数据。
+- **key** (`K`)：要与指定值关联的键。
+- **value** (`V`)：要存储在字典中的数据。
 
 ### `__contains__`
 
@@ -196,7 +196,7 @@ __contains__(self: Self, key: K) -> Bool
 
 **参数：**
 
-- **key** （`K`）：要检查的密钥。
+- **key** (`K`)：要检查的密钥。
 
 **返回：**
 
@@ -224,11 +224,11 @@ find(self: Self, key: K) -> Optional[V]
 
 **参数：**
 
-- **key** （`K`）：要在字典中搜索的键。
+- **key** (`K`)：要在字典中搜索的键。
 
 **返回：**
 
-一个可选值，其中包含该值的副本（如果存在），否则为空的 Optional。
+一个可选值，其中包含该值的副本(如果存在)，否则为空的 Optional。
 
 ### `pop`
 
@@ -244,12 +244,12 @@ pop(inout self: Self, key: K, owned default: Optional[V]) -> V
 
 **参数：**
 
-- **key** （）：要从字典中删除的键。`K`
-- **default** （）：（可选）提供默认值，以便在未找到键时返回，而不是引发。`Optional[V]`
+- **key** ()：要从字典中删除的键。`K`
+- **default** ()：(可选)提供默认值，以便在未找到键时返回，而不是引发。`Optional[V]`
 
 **返回：**
 
-与键关联的值（如果该键在字典中）。如果不是，请改为返回提供的默认值。
+与键关联的值(如果该键在字典中)。如果不是，请改为返回提供的默认值。
 
 ### `__iter__`
 
@@ -269,8 +269,8 @@ __iter__[mutability: i1, self_life: lifetime<mutability>](
 
 **参数：**
 
-- **可变性** （`i1`）：字典是否可变。
-- **self_life** （`lifetime<mutability>`）：字典的生存期。
+- **可变性** (`i1`)：字典是否可变。
+- **self_life** (`lifetime<mutability>`)：字典的生存期。
 
 **返回：**
 
@@ -291,8 +291,8 @@ keys[mutability: i1, self_life: lifetime<mutability>](
 
 **参数：**
 
-- **可变性** （`i1`）：字典是否可变。
-- **self_life** （`lifetime<mutability>`）：字典的生存期。
+- **可变性** (`i1`)：字典是否可变。
+- **self_life** (`lifetime<mutability>`)：字典的生存期。
 
 **返回：**
 
@@ -313,8 +313,8 @@ values[mutability: i1, self_life: lifetime<mutability>](
 
 **参数：**
 
-- **可变性** （`i1`）：字典是否可变。
-- **self_life** （`lifetime<mutability>`）：字典的生存期。
+- **可变性** (`i1`)：字典是否可变。
+- **self_life** (`lifetime<mutability>`)：字典的生存期。
 
 **返回：**
 
@@ -344,8 +344,8 @@ for e in dict.items():
 
 **参数：**
 
-- **可变性** （`i1`）：字典是否可变。
-- **self_life** （`lifetime<mutability>`）：字典的生存期。
+- **可变性** (`i1`)：字典是否可变。
+- **self_life** (`lifetime<mutability>`)：字典的生存期。
 
 **返回：**
 
@@ -375,7 +375,7 @@ __copyinit__(inout self: T, existing: T, /)
 
 **参数：**
 
-- **existing** （`T`）：要复制的值。
+- **existing** (`T`)：要复制的值。
 
 ### `__moveinit__`
 
@@ -389,7 +389,7 @@ __moveinit__(inout self: T, owned existing: T, /)
 
 **参数：**
 
-- **existing** （`T`）：要移动的值。
+- **existing** (`T`)：要移动的值。
 
 ### `__del__`
 
@@ -415,7 +415,7 @@ __eq__(self: T, other: T) -> Bool
 
 **参数：**
 
-- **other** （`T`）：另一个相同类型的实例。
+- **other** (`T`)：另一个相同类型的实例。
 
 **返回：**
 
@@ -433,7 +433,7 @@ __ne__(self: T, other: T) -> Bool
 
 **参数：**
 
-- **other** （`T`）：另一个相同类型的实例。
+- **other** (`T`)：另一个相同类型的实例。
 
 **返回：**
 
