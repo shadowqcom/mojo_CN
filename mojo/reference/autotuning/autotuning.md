@@ -1,26 +1,28 @@
-# autotuning
+# autotuning自动调谐
 
-Implements the autotune functionality.
-
-You can import these APIs from the `autotune` package. For example:
+实现自动调谐功能。
+您可以从包中导入这些 API。例如：`autotune`
 
 ```
 from autotune import cost_of
 ```
 
+
+
 ## `cost_of`
+```
+cost_of[fn_type: AnyRegType, func: fn_type]() -> Int
+```
 
-`cost_of[fn_type: AnyRegType, func: fn_type]() -> Int`
+计算函数中的操作数。
 
-Count the number of operations in a function.
+此函数采用函数引用，并通过计算函数中的 MLIR 操作数来估计调用函数的“成本”。
 
-This function takes a function reference and estimates the "cost" of invoking the function by counting the number of MLIR operations in the function after elaboration.
+**参数：**
 
-**Parameters:**
+- **fn_type** ()：函数的签名类型。`AnyRegType`
+- **func** ()：要计算的函数。`fn_type`
 
-- ​**fn\_type** (`AnyRegType`): The signature type of the function.
-- ​**func** (`fn_type`): The function to evaluate.
+**返回：**
 
-**Returns:**
-
-The number of post-elaboration operations in the function.
+函数中细化后操作的数目。
