@@ -1,23 +1,31 @@
 # base64
 
-Provides functions for base64 encoding strings.
 
-You can import these APIs from the `base64` package. For example:
+
+提供 base64 编码字符串的函数。
+
+您可以从包中导入这些 API。例如：`base64`
 
 ```
 from base64 import b64encode
 ```
 
+
+
 ## `b64encode`
 
-`b64encode(str: String) -> String`
 
-Performs base64 encoding on the input string.
 
-**Args:**
+```
+b64encode(str: String) -> String
+```
 
-- ​**str** (`String`): The input string.
+对输入字符串执行 base64 编码。
 
-**Returns:**
+**参数：**
 
-Base64 encoding of the input string.
+- **str** ()：输入字符串。`String`
+
+**返回：**
+
+输入字符串的 Base64 编码。
