@@ -141,13 +141,14 @@ struct SIMD[type: DType, size: Int]:
 因此，您可以像这样创建和使用SIMD向量：
 
 ```mojo
-var vector = SIMDDType.int16, 4
+var vector = SIMD[DType.int16, 4](1, 2, 3, 4)
 vector = vector * vector
 for i in range(4):
     print(vector[i], sep=" ", end="")
 ```
-
-    1  4  9  16
+```
+ 1  4  9  16
+```
 
 正如您所见，一个简单的算术运算符`*`应用于一对SIMD向量的对应元素。
 
@@ -253,11 +254,14 @@ print('bigger_vec2 类型:', bigger_vec2.element_type, '长度:', len(bigger_vec
 ```mojo
 from math import sqrt
 
-fn rsqrtdt: DType, width: Int -> SIMD[dt, width]:
+fn rsqrt[dt: DType, width: Int](x: SIMD[dt, width]) -> SIMD[dt, width]:
     return 1 / sqrt(x)
 
-var v = SIMDDType.float16, 4
+var v = SIMD[DType.float16, 4](42)
 print(rsqrt(v))
+```
+```
+[0.154296875、0.154296875、0.154296875、0.154296875]
 ```
 
 请注意，`x`参数实际上是基于函数参数的`SIMD`类型。运行时程序可以使用参数的值，因为参数在运行时程序需要它们之前在编译时已解析（但是编译时参数表达式不能使用运行时值）。
