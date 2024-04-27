@@ -1,10 +1,9 @@
 ---
 layout: home
-title: "Mojo官网  Mojo社区"
+title: "Mojo：面向AI开发者的编程语言 | Mojo官网  Mojo社区"
 hero:
-  title: "Mojo官网"
   name: "Mojo"
-  text: "AI开发人员的编程语言"
+  text: "AI开发者的编程语言"
   tagline: Mojo 将 Python 的可用性与 C 的性能相结合，解锁了 AI 硬件无与伦比的可编程性和 AI 模型的可扩展性。
   actions:
     - theme: brand
