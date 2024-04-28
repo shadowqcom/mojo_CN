@@ -15,15 +15,15 @@ from collections import List
 
 **参数：**
 
-- **T** （`CollectionElement`）：元素的类型。
+- **T** (`CollectionElement`)：元素的类型。
 
 **领域：**
 
-- **data** （`AnyPointer[T]`）：列表的基础存储。
+- **data** (`AnyPointer[T]`)：列表的基础存储。
 
-- **size** （`Int`）：列表中的元素数。
+- **size** (`Int`)：列表中的元素数。
 
-- **capacity** （`Int`）：无需调整列表大小即可放入列表的元素数量。
+- **capacity** (`Int`)：无需调整列表大小即可放入列表的元素数量。
 
 **实现的特征：**
 
@@ -47,7 +47,7 @@ __init__(inout self: Self, existing: Self)
 
 **参数：**
 
-- **existing** （`Self`）：要复制的列表。
+- **existing** (`Self`)：要复制的列表。
 
 ```
 __init__(inout self: Self, *, capacity: Int)
@@ -57,7 +57,7 @@ __init__(inout self: Self, *, capacity: Int)
 
 **参数：**
 
-- **capacity** （`Int`）：列表请求的容量。
+- **capacity** (`Int`)：列表请求的容量。
 
 ```
 __init__(inout self: Self, *values: T)
@@ -67,7 +67,7 @@ __init__(inout self: Self, *values: T)
 
 **参数：**
 
-- **values** （`*T`）：要填充列表的值。
+- **values** (`*T`)：要填充列表的值。
 
 ### `__copyinit__`
 ```
@@ -78,7 +78,7 @@ __copyinit__(inout self: Self, existing: Self)
 
 **参数：**
 
-- **existing** （）：要复制的列表。`Self`
+- **existing** ()：要复制的列表。`Self`
 
 ### `__moveinit__`
 ```
@@ -89,7 +89,7 @@ __moveinit__(inout self: Self, owned existing: Self)
 
 **参数：**
 
-- **existing** （`Self`）：现有列表。
+- **existing** (`Self`)：现有列表。
 
 ### `__del__`
 ```
@@ -107,7 +107,7 @@ __getitem__(self: Self, span: Slice) -> Self
 
 **参数：**
 
-- **span** （`Slice`）：指定新列表位置的切片。
+- **span** (`Slice`)：指定新列表位置的切片。
 
 **返回：**
 
@@ -119,11 +119,11 @@ __getitem__(self: Self, i: Int) -> T
 
 获取给定索引处的 list 元素的副本。
 
-FIXME（lifetimes）：这应该返回一个引用，而不是一个副本！
+FIXME(lifetimes)：这应该返回一个引用，而不是一个副本！
 
 **参数：**
 
-- **i** （`Int`）：元素的索引。
+- **i** (`Int`)：元素的索引。
 
 **返回：**
 
@@ -138,8 +138,8 @@ __setitem__(inout self: Self, i: Int, owned value: T)
 
 **参数：**
 
-- **i** （`Int`）：元素的索引。
-- **value** （`T`）：要分配的值。
+- **i** (`Int`)：元素的索引。
+- **value** (`T`)：要分配的值。
 
 ### `__len__`
 ```
@@ -161,7 +161,7 @@ append(inout self: Self, owned value: T)
 
 **参数：**
 
-- **value** （`T`）：要追加的值。
+- **value** (`T`)：要追加的值。
 
 ### `extend`
 ```
@@ -172,7 +172,7 @@ extend(inout self: Self, owned other: Self)
 
 **参数：**
 
-- **other** （`Self`）：将按此列表末尾添加其元素的列表。
+- **other** (`Self`)：将按此列表末尾添加其元素的列表。
 
 ### `pop_back`
 ```
@@ -196,7 +196,7 @@ reserve(inout self: Self, new_capacity: Int)
 
 **参数：**
 
-- **new_capacity** （`Int`）：新容量。
+- **new_capacity** (`Int`)：新容量。
 
 ### `resize`
 ```
@@ -209,8 +209,8 @@ resize(inout self: Self, new_size: Int, value: T)
 
 **参数：**
 
-- **new_size** （`Int`）：新大小。
-- **value** （`T`）：用于填充新元素的值。
+- **new_size** (`Int`)：新大小。
+- **value** (`T`)：用于填充新元素的值。
 
 ### `reverse`
 ```
