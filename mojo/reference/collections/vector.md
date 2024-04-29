@@ -1,143 +1,154 @@
-# vector
+# 向量
 
-Defines InlinedFixedVector.
+定义 InlinedFixedVector。
 
-You can import these APIs from the `collections` package. For example:
+您可以从`collections`包中导入这些 API。例如：
 
-```
+```mojo
 from collections.vector import InlinedFixedVector
 ```
 
+
+
 ## `InlinedFixedVector`
 
-A dynamically-allocated vector with small-vector optimization and a fixed maximum capacity.
+具有小向量优化和固定最大容量的动态分配向量。
 
-The `InlinedFixedVector` does not resize or implement bounds checks. It is initialized with both a small-vector size (specified at compile time) and a maximum capacity (specified at runtime).
+不调整大小或实现边界检查。是的 使用小向量大小(在编译时指定)和 最大容量(在运行时指定)。`InlinedFixedVector`
 
-The first `size` elements are stored in the statically-allocated small vector storage. Any remaining elements are stored in dynamically-allocated storage.
+第一个元素存储在静态分配的 small 矢量存储。任何剩余的元素都存储在动态分配的 存储。`size`
 
-When it is deallocated, it frees its memory.
+当它被释放时，它会释放其内存。
 
-TODO: It should call its element destructors once we have traits.
+TODO：一旦我们有了特征，它就应该调用它的元素析构函数。
 
-This data structure is useful for applications where the number of required elements is not known at compile time, but once known at runtime, is guaranteed to be equal to or less than a certain capacity.
+此数据结构对于需要数量的应用程序非常有用 元素在编译时是未知的，但一旦在运行时知道，就是 保证等于或小于一定容量。
 
-**Parameters:**
+**参数：**
 
-- ​**type** (`AnyRegType`): The type of the elements.
-- ​**size** (`Int`): The statically-known small-vector size.
+- **type** (`AnyRegType`)：元素的类型。
+- **size** (`Int`)：静态已知的小向量大小。
 
-**Aliases:**
+**别名：**
 
-- ​`static_size = size`
+- `static_size = size`
 
-- ​`static_data_type = StaticTuple[*"type", size]`
+- `static_data_type = StaticTuple[*"type", size]`
 
-**Fields:**
+**属性：**
 
-- ​**static\_data** (`StaticTuple[*"type", size]`): The underlying static storage, used for small vectors.
+- **static_data** (`StaticTuple[*"type", size]`)：底层静态存储，用于小向量。
 
-- ​**dynamic\_data** (`Pointer[*"type", 0]`): The underlying dynamic storage, used to grow large vectors.
+- **dynamic_data** (`Pointer[*"type", 0]`)：底层动态存储，用于生长大型向量。
 
-- ​**current\_size** (`Int`): The number of elements in the vector.
+- **current_size** (`Int`)：向量中的元素数。
 
-- ​**capacity** (`Int`): The maximum number of elements that can fit in the vector.
+- **capacity** (`Int`)：矢量中可以容纳的最大元素数。
 
-**Implemented traits:**
+**实现的特征：**
 
-`AnyType`, `Sized`
+`AnyType`,`Sized`
 
-**Methods:**
+**方法：**
 
 ### `__init__`
+```
+__init__(inout self: Self, capacity: Int)
+```
 
-`__init__(inout self: Self, capacity: Int)`
+具有给定容量的构造。`InlinedFixedVector`
 
-Constructs `InlinedFixedVector` with the given capacity.
+动态分配的部分是 。`capacity - size`
 
-The dynamically allocated portion is `capacity - size`.
+**参数：**
 
-**Args:**
-
-- ​**capacity** (`Int`): The requested maximum capacity of the vector.
+- **capacity** (`Int`)：请求的向量最大容量。
 
 ### `__copyinit__`
+```
+__copyinit__(inout self: Self, existing: Self)
+```
 
-`__copyinit__(inout self: Self, existing: Self)`
+创建浅拷贝(不复制基础元素)。
 
-Creates a shallow copy (doesn't copy the underlying elements).
+**参数：**
 
-**Args:**
-
-- ​**existing** (`Self`): The `InlinedFixedVector` to copy.
+- **existing** ()：要复制的。`Self``InlinedFixedVector`
 
 ### `__getitem__`
+```
+__getitem__(self: Self, i: Int) -> *"type"
+```
 
-`__getitem__(self: Self, i: Int) -> *"type"`
+获取给定索引处的向量元素。
 
-Gets a vector element at the given index.
+**参数：**
 
-**Args:**
+- **i** (`Int`)：元素的索引。
 
-- ​**i** (`Int`): The index of the element.
+**返回：**
 
-**Returns:**
-
-The element at the given index.
+给定索引处的元素。
 
 ### `__setitem__`
+```
+__setitem__(inout self: Self, i: Int, *value: "type")
+```
 
-`__setitem__(inout self: Self, i: Int, *value: "type")`
+在给定索引处设置向量元素。
 
-Sets a vector element at the given index.
+**参数：**
 
-**Args:**
-
-- ​**i** (`Int`): The index of the element.
-- ​**value** (`*"type"`): The value to assign.
+- **i** (`Int`)：元素的索引。
+- **value** (`*"type"`)：要分配的值。
 
 ### `deepcopy`
+```
+deepcopy(self: Self) -> Self
+```
 
-`deepcopy(self: Self) -> Self`
+创建此矢量的深层副本。
 
-Creates a deep copy of this vector.
+**返回：**
 
-**Returns:**
-
-The created copy of this vector.
+此向量的创建副本。
 
 ### `append`
+```
+append(inout self: Self, *value: "type")
+```
 
-`append(inout self: Self, *value: "type")`
+将值追加到此向量。
 
-Appends a value to this vector.
+**参数：**
 
-**Args:**
-
-- ​**value** (`*"type"`): The value to append.
+- **value** (`*"type"`)：要追加的值。
 
 ### `__len__`
+```
+__len__(self: Self) -> Int
+```
 
-`__len__(self: Self) -> Int`
+获取向量中的元素数。
 
-Gets the number of elements in the vector.
+**返回：**
 
-**Returns:**
-
-The number of elements in the vector.
+向量中的元素数。
 
 ### `clear`
+```
+clear(inout self: Self)
+```
 
-`clear(inout self: Self)`
-
-Clears the elements in the vector.
+清除矢量中的元素。
 
 ### `__iter__`
+```
+__iter__(inout self: Self) -> _VecIter[*"type", InlinedFixedVector[*"type", size], _deref_iter_impl[*"type", size]]
+```
 
-`__iter__(inout self: Self) -> _VecIter[*"type", InlinedFixedVector[*"type", size], _deref_iter_impl[*"type", size]]`
+遍历向量。
 
-Iterate over the vector.
+**返回：**
 
-**Returns:**
-
-An iterator to the start of the vector.
+向量起点的迭代器。

@@ -1,339 +1,389 @@
-# optional
+Optional
+======================
+定义 Optional，一种类型，对可能存在或不存在的值进行建模。
 
-Defines Optional, a type modeling a value which may or may not be present.
+可选值可以被视为类型安全的可为 null 模式。 您的值可以取值或`None` ，您需要检查 并显式提取值以将其取出。
 
-Optional values can be thought of as a type-safe nullable pattern. Your value can take on a value or `None`, and you need to check and explicitly extract the value to get it out.
-
+```mojo
+from collections.optional import Optional
+var a = Optional(1)
+var b = Optional[Int](None)
+if a:
+    print(a.value())  # prints 1
+if b:  # b is False, so no print
+    print(b.value())
+var c = a.or_else(2)
+var d = b.or_else(2)
+print(c.value())  # prints 1
+print(d.value())  # prints 2
 ```
-from collections.optional import Optionalvar a = Optional(1)var b = Optional[Int](None)if a:    print(a.value())  # prints 1if b:  # b is False, so no print    print(b.value())var c = a.or_else(2)var d = b.or_else(2)print(c.value())  # prints 1print(d.value())  # prints 2
-```
+
+
 
 ## `Optional`
 
-A type modeling a value which may or may not be present.
+对可能存在也可能不存在的值进行建模的类型。
 
-Optional values can be thought of as a type-safe nullable pattern. Your value can take on a value or `None`, and you need to check and explicitly extract the value to get it out.
+可选值可以被视为类型安全的可为 null 模式。 您的值可以取值或 `None`，您需要检查 并显式提取值以将其取出。
 
-Currently T is required to be a `CollectionElement` so we can implement copy/move for Optional and allow it to be used in collections itself.
+目前 T 需要是一个`CollectionElement`，这样我们才能实现 Optional 复制/移动，并允许它在集合本身中使用。
 
+```mojo
+from collections.optional import Optional
+var a = Optional(1)
+var b = Optional[Int](None)
+if a:
+    print(a.value())  # prints 1
+if b:  # b is False, so no print
+    print(b.value())
+var c = a.or_else(2)
+var d = b.or_else(2)
+print(c.value())  # prints 1
+print(d.value())  # prints 2
 ```
-from collections.optional import Optionalvar a = Optional(1)var b = Optional[Int](None)if a:    print(a.value())  # prints 1if b:  # b is False, so no print    print(b.value())var c = a.or_else(2)var d = b.or_else(2)print(c.value())  # prints 1print(d.value())  # prints 2
-```
 
-**Parameters:**
 
-- ​**T** (`CollectionElement`): The type of value stored in the Optional.
 
-**Implemented traits:**
+**参数：**
+
+- **T** (`CollectionElement`)：存储在 Optional.
+
+**实现的特征：**
 
 `AnyType`, `Boolable`, `CollectionElement`, `Copyable`, `Movable`
 
-**Methods:**
+**方法：**
 
 ### `__init__`
+```
+__init__(inout self: Self)
+```
 
-`__init__(inout self: Self)`
+构造一个空的 Optional。
 
-Construct an empty Optional.
+```
+__init__(inout self: Self, owned value: T)
+```
 
-`__init__(inout self: Self, owned value: T)`
+构造一个包含值的 Optional。
 
-Construct an Optional containing a value.
+**参数：**
 
-**Args:**
+- **value** (`T`)：要存储在可选 中的值。
 
-- ​**value** (`T`): The value to store in the optional.
+```
+__init__(inout self: Self, value: None)
+```
 
-`__init__(inout self: Self, value: None)`
+构造一个空的 Optional。
 
-Construct an empty Optional.
+**参数：**
 
-**Args:**
-
-- ​**value** (`None`): Must be exactly `None`.
+- **value** (`None`)：必须正好是`None` 。
 
 ### `__bool__`
+```
+__bool__(self: Self) -> Bool
+```
 
-`__bool__(self: Self) -> Bool`
+如果 Optional 具有值，则返回 true。
 
-Return true if the Optional has a value.
+**返回：**
 
-**Returns:**
-
-True if the optional has a value and False otherwise.
+如果可选值为 True，否则为 False。
 
 ### `__invert__`
+```
+__invert__(self: Self) -> Bool
+```
 
-`__invert__(self: Self) -> Bool`
+如果可选项具有值，则返回 False。
 
-Return False if the optional has a value.
+**返回：**
 
-**Returns:**
-
-False if the optional has a value and True otherwise.
+如果可选值为 False，则为 True，否则为 True。
 
 ### `__and__`
+```
+__and__[type: Boolable](self: Self, *other: "type") -> Bool
+```
 
-`__and__[type: Boolable](self: Self, *other: "type") -> Bool`
+如果 self 具有一个值，而另一个值强制为 True，则返回 true。
 
-Return true if self has a value and the other value is coercible to True.
+**参数：**
 
-**Parameters:**
+- **type** (`Boolable`)：强制到 Bool 的类型。
 
-- ​**type** (`Boolable`): Type coercible to Bool.
+**参数：**
 
-**Args:**
+- **other** (`*"type"`)：要比较的值。
 
-- ​**other** (`*"type"`): Value to compare to.
+**返回：**
 
-**Returns:**
-
-True if both inputs are True after boolean coercion.
+如果布尔强制后两个输入均为 True，则为 True。
 
 ### `__or__`
+```
+__or__[type: Boolable](self: Self, *other: "type") -> Bool
+```
 
-`__or__[type: Boolable](self: Self, *other: "type") -> Bool`
+如果 self 具有值或其他值强制为 True，则返回 true。
 
-Return true if self has a value or the other value is coercible to True.
+**参数：**
 
-**Parameters:**
+- **type** (`Boolable`)：强制到 Bool 的类型。
 
-- ​**type** (`Boolable`): Type coercible to Bool.
+**参数：**
 
-**Args:**
+- **other** (`*"type"`)：要比较的值。
 
-- ​**other** (`*"type"`): Value to compare to.
+**返回：**
 
-**Returns:**
-
-True if either inputs is True after boolean coercion.
+如果任一输入在布尔强制后为 True，则为 True。
 
 ### `__rand__`
+```
+__rand__[type: Boolable](self: Self, *other: "type") -> Bool
+```
 
-`__rand__[type: Boolable](self: Self, *other: "type") -> Bool`
+如果 self 具有一个值，而另一个值强制为 True，则返回 true。
 
-Return true if self has a value and the other value is coercible to True.
+**参数：**
 
-**Parameters:**
+- **type** (`Boolable`)：强制到 Bool 的类型。
 
-- ​**type** (`Boolable`): Type coercible to Bool.
+**参数：**
 
-**Args:**
+- **other** (`*"type"`)：要比较的值。
 
-- ​**other** (`*"type"`): Value to compare to.
+**返回：**
 
-**Returns:**
-
-True if both inputs are True after boolean coercion.
+如果布尔强制后两个输入均为 True，则为 True。
 
 ### `__ror__`
+```
+__ror__[type: Boolable](self: Self, *other: "type") -> Bool
+```
 
-`__ror__[type: Boolable](self: Self, *other: "type") -> Bool`
+如果 self 具有值或其他值强制为 True，则返回 true。
 
-Return true if self has a value or the other value is coercible to True.
+**参数：**
 
-**Parameters:**
+- **type** (`Boolable`)：强制到 Bool 的类型。
 
-- ​**type** (`Boolable`): Type coercible to Bool.
+**参数：**
 
-**Args:**
+- **other** (`*"type"`)：要比较的值。
 
-- ​**other** (`*"type"`): Value to compare to.
+**返回：**
 
-**Returns:**
-
-True if either inputs is True after boolean coercion.
+如果任一输入在布尔强制后为 True，则为 True。
 
 ### `value`
+```
+value(self: Self) -> T
+```
 
-`value(self: Self) -> T`
+不安全地从“可选”中检索值。
 
-Unsafely retrieve the value out of the Optional.
+此函数当前创建副本。一旦我们有了生命 我们将能够让它返回一个引用。
 
-This function currently creates a copy. Once we have lifetimes we'll be able to have it return a reference.
+这不会检查可选项是否包含值。 如果你在没有先用 **bool**() 验证可选的情况下调用它 例如。无论是否知道它包含一个 值(例如 `if my_option:`，使用`or_else` )，您将得到垃圾不安全的数据。
 
-This doesn't check to see if the optional contains a value. If you call this without first verifying the optional with **bool**() eg. by `if my_option:` or without otherwise knowing that it contains a value (for instance with `or_else`), you'll get garbage unsafe data out.
+**返回：**
 
-**Returns:**
-
-The contained data of the option as a T value.
+以 T 值形式包含的选项数据。
 
 ### `take`
+```
+take(owned self: Self) -> T
+```
 
-`take(owned self: Self) -> T`
+不安全地将值移出“可选”。
 
-Unsafely move the value out of the Optional.
+调用方对新值拥有所有权，可选值为 摧毁。
 
-The caller takes ownership over the new value, and the Optional is destroyed.
+这不会检查可选项是否包含值。 如果你在没有先用 **bool**() 验证可选的情况下调用它 例如。无论是否知道它包含一个 值(例如`if my_option:`，使用`or_else` )，您将得到垃圾不安全的数据。
 
-This doesn't check to see if the optional contains a value. If you call this without first verifying the optional with **bool**() eg. by `if my_option:` or without otherwise knowing that it contains a value (for instance with `or_else`), you'll get garbage unsafe data out.
+**返回：**
 
-**Returns:**
-
-The contained data of the option as an owned T value.
+期权的包含数据作为拥有的 T 值。
 
 ### `or_else`
+```
+or_else(self: Self, default: T) -> T
+```
 
-`or_else(self: Self, default: T) -> T`
+返回 Optional 中包含的基础值，如果 Optional 的基础值不存在，则返回默认值。
 
-Return the underlying value contained in the Optional or a default value if the Optional's underlying value is not present.
+**参数：**
 
-**Args:**
+- **default** (`T`)：不存在值时要使用的新值。
 
-- ​**default** (`T`): The new value to use if no value was present.
+**返回：**
 
-**Returns:**
-
-The underlying value contained in the Optional or a default value.
+包含在“可选”或默认值中的基础值。
 
 ## `OptionalReg`
 
-A register-passable optional type.
+寄存器可传递的可选类型。
 
-This struct optionally contains a value. It only works with trivial register passable types at the moment.
+此结构(可选)包含一个值。它仅适用于琐碎的寄存器 目前尚可的类型。
 
-**Parameters:**
+**参数：**
 
-- ​**T** (`AnyRegType`): The type of value stored in the Optional.
+- **T** (`AnyRegType`)：存储在 Optional.
 
-**Implemented traits:**
+**实现的特征：**
 
 `AnyType`, `Boolable`
 
-**Methods:**
+**方法：**
 
 ### `__init__`
+```
+__init__() -> Self
+```
 
-`__init__() -> Self`
+创建一个不带值的可选项。
 
-Create an optional without a value.
+**返回：**
 
-**Returns:**
+可选的。
 
-The optional.
+```
+__init__(value: T) -> Self
+```
 
-`__init__(value: T) -> Self`
+创建一个具有值的可选项。
 
-Create an optional with a value.
+**参数：**
 
-**Args:**
+- **value** (`T`)：值。
 
-- ​**value** (`T`): The value.
+**返回：**
 
-**Returns:**
+可选的。
 
-The optional.
+```
+__init__(value: None) -> Self
+```
 
-`__init__(value: None) -> Self`
+创建一个不带 None 文本值的可选项。
 
-Create an optional without a value from a None literal.
+**参数：**
 
-**Args:**
+- **value** (`None`)：无值。
 
-- ​**value** (`None`): The None value.
+**返回：**
 
-**Returns:**
-
-The optional without a value.
+不带值的可选项。
 
 ### `__bool__`
+```
+__bool__(self: Self) -> Bool
+```
 
-`__bool__(self: Self) -> Bool`
+如果 optional 具有值，则返回 true。
 
-Return true if the optional has a value.
+**返回：**
 
-**Returns:**
-
-True if the optional has a valu and False otherwise.
+如果可选项具有 vau，则为 True，否则为 False。
 
 ### `__invert__`
+```
+__invert__(self: Self) -> Bool
+```
 
-`__invert__(self: Self) -> Bool`
+如果可选项具有值，则返回 False。
 
-Return False if the optional has a value.
+**返回：**
 
-**Returns:**
-
-False if the optional has a value and True otherwise.
+如果可选值为 False，则为 True，否则为 True。
 
 ### `__and__`
+```
+__and__[type: Boolable](self: Self, *other: "type") -> Bool
+```
 
-`__and__[type: Boolable](self: Self, *other: "type") -> Bool`
+如果 self 具有一个值，而另一个值强制为 True，则返回 true。
 
-Return true if self has a value and the other value is coercible to True.
+**参数：**
 
-**Parameters:**
+- **type** (`Boolable`)：强制到 Bool 的类型。
 
-- ​**type** (`Boolable`): Type coercible to Bool.
+**参数：**
 
-**Args:**
+- **other** (`*"type"`)：要比较的值。
 
-- ​**other** (`*"type"`): Value to compare to.
+**返回：**
 
-**Returns:**
-
-True if both inputs are True after boolean coercion.
+如果布尔强制后两个输入均为 True，则为 True。
 
 ### `__or__`
+```
+__or__[type: Boolable](self: Self, *other: "type") -> Bool
+```
 
-`__or__[type: Boolable](self: Self, *other: "type") -> Bool`
+如果 self 具有值或其他值强制为 True，则返回 true。
 
-Return true if self has a value or the other value is coercible to True.
+**参数：**
 
-**Parameters:**
+- **type** (`Boolable`)：强制到 Bool 的类型。
 
-- ​**type** (`Boolable`): Type coercible to Bool.
+**参数：**
 
-**Args:**
+- **other** (`*"type"`)：要比较的值。
 
-- ​**other** (`*"type"`): Value to compare to.
+**返回：**
 
-**Returns:**
-
-True if either inputs is True after boolean coercion.
+如果任一输入在布尔强制后为 True，则为 True。
 
 ### `__rand__`
+```
+__rand__[type: Boolable](self: Self, *other: "type") -> Bool
+```
 
-`__rand__[type: Boolable](self: Self, *other: "type") -> Bool`
+如果 self 具有一个值，而另一个值强制为 True，则返回 true。
 
-Return true if self has a value and the other value is coercible to True.
+**参数：**
 
-**Parameters:**
+- **type** (`Boolable`)：强制到 Bool 的类型。
 
-- ​**type** (`Boolable`): Type coercible to Bool.
+**参数：**
 
-**Args:**
+- **other** (`*"type"`)：要比较的值。
 
-- ​**other** (`*"type"`): Value to compare to.
+**返回：**
 
-**Returns:**
-
-True if both inputs are True after boolean coercion.
+如果布尔强制后两个输入均为 True，则为 True。
 
 ### `__ror__`
+```
+__ror__[type: Boolable](self: Self, *other: "type") -> Bool
+```
 
-`__ror__[type: Boolable](self: Self, *other: "type") -> Bool`
+如果 self 具有值或其他值强制为 True，则返回 true。
 
-Return true if self has a value or the other value is coercible to True.
+**参数：**
 
-**Parameters:**
+- **type** (`Boolable`)：强制到 Bool 的类型。
 
-- ​**type** (`Boolable`): Type coercible to Bool.
+**参数：**
 
-**Args:**
+- **other** (`*"type"`)：要比较的值。
 
-- ​**other** (`*"type"`): Value to compare to.
+**返回：**
 
-**Returns:**
-
-True if either inputs is True after boolean coercion.
+如果任一输入在布尔强制后为 True，则为 True。
 
 ### `value`
+```
+value(self: Self) -> T
+```
 
-`value(self: Self) -> T`
+获取可选值。
 
-Get the optional value.
+**返回：**
 
-**Returns:**
-
-The contained value.
+包含的值。
