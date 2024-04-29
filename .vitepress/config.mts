@@ -65,7 +65,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '手册', link: '/mojo/manual/' },
       { text: '参考', link: '/mojo/reference/' },
-      { text: '社区', link: 'https://dev.mojocn.org/' },
+      { text: '社区', link: 'https://github.com/shadowqcom/mojo_dev' },
       // { text: '布道师', link: '/mojo/guide' },
       // { text: '关于', link: '/mojo/about' }
     ],
@@ -144,7 +144,7 @@ export default defineConfig({
             { text: '加入群聊', link: '/mojo/chat' },
             { text: '赞助我们', link: '/mojo/sponsor'},
             { text: '布道师计划', link: '/mojo/guide'},
-            { text: '开发者社区', link: 'https://dev.mojocn.org/'},
+            { text: '开发者社区', link: 'https://github.com/shadowqcom/mojo_dev'},
           ],
         }
       ],
@@ -336,7 +336,7 @@ export default defineConfig({
             { text: '加入群聊', link: '/mojo/chat' },
             { text: '赞助我们', link: '/mojo/sponsor'},
             { text: '布道师计划', link: '/mojo/guide'},
-            { text: '开发者社区', link: 'https://dev.mojocn.org/'},
+            { text: '开发者社区', link: 'https://github.com/shadowqcom/mojo_dev'},
           ],
         }
       ],
@@ -359,7 +359,7 @@ export default defineConfig({
             { text: '赞助我们', link: '/mojo/sponsor'},
             { text: '布道师计划', link: '/mojo/guide'},
             { text: '线上交流会', link: '/mojo/meeting'},
-            { text: '开发者社区', link: 'https://dev.mojocn.org/'},
+            { text: '开发者社区', link: 'https://github.com/shadowqcom/mojo_dev'},
           ],
         }
       ],

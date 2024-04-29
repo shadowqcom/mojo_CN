@@ -11,7 +11,7 @@ hero:
       link: /mojo/manual/
     - theme: alt
       text: 社区
-      link: https://dev.mojocn.org
+      link: https://github.com/shadowqcom/mojo_dev
     - theme: alt
       text: 用户群
       link: /mojo/chat
