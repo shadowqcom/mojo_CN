@@ -5,7 +5,7 @@ set(集合)
 ## `Set`
 设置的数据类型。
 
-O（1） 平均大小写摊销添加、删除和成员资格检查。
+O(1) 平均大小写摊销添加、删除和成员资格检查。
 
 ```mojo
 from collections import Set
@@ -28,7 +28,7 @@ print(len(set))  # 1
 
 **参数：**
 
-- **T** （`KeyElement`）：集合的元素类型。必须实现 KeyElement。
+- **T** (`KeyElement`)：集合的元素类型。必须实现 KeyElement。
 
 **实现的特征：**
 
@@ -45,7 +45,7 @@ __init__(inout self: Self, *ts: T)
 
 **参数：**
 
-- **ts** （`*T`）：要添加到集合中的元素的可变性。
+- **ts** (`*T`)：要添加到集合中的元素的可变性。
 
 ```
 __init__(inout self: Self, elements: Self)
@@ -55,7 +55,7 @@ __init__(inout self: Self, elements: Self)
 
 **参数：**
 
-- **elements** （`Self`）：要复制的现有集合。
+- **elements** (`Self`)：要复制的现有集合。
 
 ```
 __init__(inout self: Self, elements: List[T])
@@ -65,7 +65,7 @@ __init__(inout self: Self, elements: List[T])
 
 **参数：**
 
-- **elements** （`List[T]`）：要添加到集合中的元素的向量。
+- **elements** (`List[T]`)：要添加到集合中的元素的向量。
 
 ### `__moveinit__`
 ```
@@ -76,7 +76,7 @@ __moveinit__(inout self: Self, owned other: Self)
 
 **参数：**
 
-- **other** （`Self`）：要从中移动的现有 Set 实例。
+- **other** (`Self`)：要从中移动的现有 Set 实例。
 
 ### `__bool__`
 ```
@@ -98,7 +98,7 @@ __eq__(self: Self, other: Self) -> Bool
 
 **参数：**
 
-- **other** （`Self`）：另一个要检查相等性的 Set 实例。
+- **other** (`Self`)：另一个要检查相等性的 Set 实例。
 
 **返回：**
 
@@ -113,7 +113,7 @@ __ne__(self: Self, other: Self) -> Bool
 
 **参数：**
 
-- **other** （`Self`）：另一个要检查相等性的 Set 实例。
+- **other** (`Self`)：另一个要检查相等性的 Set 实例。
 
 **返回：**
 
@@ -128,7 +128,7 @@ __contains__(self: Self, t: T) -> Bool
 
 **参数：**
 
-- **t** （`T`）：用于检查集合中成员身份的元素。
+- **t** (`T`)：用于检查集合中成员身份的元素。
 
 **返回：**
 
@@ -143,7 +143,7 @@ __sub__(self: Self, other: Self) -> Self
 
 **参数：**
 
-- **other** （`Self`）：另一个要从这个实例中减去的 Set 实例。
+- **other** (`Self`)：另一个要从这个实例中减去的 Set 实例。
 
 **返回：**
 
@@ -158,7 +158,7 @@ __and__(self: Self, other: Self) -> Self
 
 **参数：**
 
-- **other** （`Self`）：与此实例相交的另一个 Set 实例。
+- **other** (`Self`)：与此实例相交的另一个 Set 实例。
 
 **返回：**
 
@@ -173,7 +173,7 @@ __or__(self: Self, other: Self) -> Self
 
 **参数：**
 
-- **other** （`Self`）：另一个要与此实例联合的 Set 实例。
+- **other** (`Self`)：另一个要与此实例联合的 Set 实例。
 
 **返回：**
 
@@ -190,7 +190,7 @@ __isub__(inout self: Self, other: Self)
 
 **参数：**
 
-- **other** （`Self`）：另一个要从这个实例中减去的 Set 实例。
+- **other** (`Self`)：另一个要从这个实例中减去的 Set 实例。
 
 ### `__iand__`
 ```
@@ -203,7 +203,7 @@ __iand__(inout self: Self, other: Self)
 
 **参数：**
 
-- **other** （`Self`）：与此实例相交的另一个 Set 实例。
+- **other** (`Self`)：与此实例相交的另一个 Set 实例。
 
 ### `__ior__`
 ```
@@ -216,7 +216,7 @@ __ior__(inout self: Self, other: Self)
 
 **参数：**
 
-- **other** （`Self`）：另一个要与此实例联合的 Set 实例。
+- **other** (`Self`)：另一个要与此实例联合的 Set 实例。
 
 ### `__len__`
 ```
@@ -236,7 +236,7 @@ __hash__(self: Self) -> Int
 
 集合中元素的哈希值。
 
-哈希值与顺序无关，因此 s1 == s2 -> 哈希 （s1） == 哈希 （s2）。
+哈希值与顺序无关，因此 s1 == s2 -> 哈希 (s1) == 哈希 (s2)。
 
 **返回：**
 
@@ -262,7 +262,7 @@ add(inout self: Self, t: T)
 
 **参数：**
 
-- **t** （`T`）：要添加到集合中的元素。
+- **t** (`T`)：要添加到集合中的元素。
 
 ### `remove`
 ```
@@ -275,7 +275,7 @@ remove(inout self: Self, t: T)
 
 **参数：**
 
-- **t** （`T`）：要从集合中删除的元素。
+- **t** (`T`)：要从集合中删除的元素。
 
 ### `pop`
 ```
@@ -301,7 +301,7 @@ union(self: Self, other: Self) -> Self
 
 **参数：**
 
-- **other** （`Self`）：另一个要与此实例联合的 Set 实例。
+- **other** (`Self`)：另一个要与此实例联合的 Set 实例。
 
 **返回：**
 
@@ -316,7 +316,7 @@ intersection(self: Self, other: Self) -> Self
 
 **参数：**
 
-- **other** （`Self`）：与此实例相交的另一个 Set 实例。
+- **other** (`Self`)：与此实例相交的另一个 Set 实例。
 
 **返回：**
 
@@ -333,4 +333,4 @@ remove_all(inout self: Self, other: Self)
 
 **参数：**
 
-- **other** （`Self`）：另一个要从这个实例中减去的 Set 实例。
+- **other** (`Self`)：另一个要从这个实例中减去的 Set 实例。
