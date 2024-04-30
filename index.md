@@ -41,26 +41,42 @@ features:
 
 <br><br>
 
-<p align="center" style="font-size: 24px;">快速开始</p>
+<p style="font-weight: 600; font-size: 20px; padding: 0 24px;">下载&安装</p>
+<span style="color:#6A737D; font-size: 14px; padding: 0 24px;">1.安装modular命令行工具:</span>
 
-<div style="width: 50%; margin: 10px auto;">
-  <span style="color:#6A737D; font-size: 14px; margin: 10px auto;">1.安装modular命令行工具:</span>
-</div>
-<div class="language-sh vp-adaptive-theme" style="width: 50%; margin: 10px auto;">
-<button title="Copy Code" class="copy"></button><span class="lang">sh</span>
-<pre class="shiki shiki-themes github-light github-dark vp-code"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">curl</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> -s</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> https://get.modular.com</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> |</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> sh</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> -</span></span></code></pre>
-</div>
-<div style="width: 50%; margin: 10px auto;">
-  <span style="color:#6A737D; font-size: 14px; margin: 10px auto;">2.登录modular帐户:</span>
-</div>
-<div class="language-sh vp-adaptive-theme" style="width: 50%; margin: 10px auto;">
-  <button title="Copy Code" class="copy"></button><span class="lang">sh</span>
-  <pre class="shiki shiki-themes github-light github-dark vp-code"><code><span class="line"></span><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">modular</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> auth</span></span></code></pre>
-</div>
-<div style="width: 50%; margin: 10px auto;">
-  <span style="color:#6A737D; font-size: 14px; margin: 10px auto;">3.安装 Mojo SDK:</span>
-</div>
-<div class="language-sh vp-adaptive-theme" style="width: 50%; margin: 10px auto;">
-  <button title="Copy Code" class="copy"></button><span class="lang">sh</span>
-  <pre class="shiki shiki-themes github-light github-dark vp-code"><code><span class="line"></span><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">modular</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> install</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> mojo</span></span></code></pre>
-</div>
+```sh
+curl -s https://get.modular.com | sh -
+```
+
+<span style="color:#6A737D; font-size: 14px; padding: 0 24px;">2.登录modular帐户:</span>
+
+```sh
+modular auth
+```
+
+
+<span style="color:#6A737D; font-size: 14px; padding: 0 24px;">3.安装 Mojo SDK:</span>
+
+```sh
+modular install mojo
+```
+
+<p style="font-weight: 600; font-size: 20px; padding: 0 24px;">Hello, world!</p>
+
+::: code-group
+
+```mojo [Mojo REPL]
+print("Hello, world!")
+```
+
+```mojo [hello.mojo]
+fn main():
+    print("Hello, world!")
+```
+```sh [mojo build]
+# 编译
+mojo build hello.mojo
+
+# 执行
+./hello
+:::

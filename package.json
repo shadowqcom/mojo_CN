@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "build:mpa": "vitepress build --mpa",
     "preview": "vitepress preview"
   }
 }

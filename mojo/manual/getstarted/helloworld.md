@@ -22,10 +22,10 @@ mojo --version
 
 ```mojo
 $ mojo
-欢迎使用Mojo！🔥
+Welcome to Mojo! 🔥
 
-表达式以空行为分隔。
-输入`:quit`退出REPL，输入`:mojo help repl`获取更多帮助。
+Expressions are delimited by a blank line.
+Type `:quit` to exit the REPL and `:mojo help repl` for further assistance.
 
 1> print("Hello, world!")
 2.
