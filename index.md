@@ -32,18 +32,35 @@ features:
   - icon: ✨
     title: 访问整个Python生态系统
     details: 与Python生态系统实现真正的互操作性，无缝地混合使用诸如Numpy和Matplotlib等任意库与您的自定义代码和Mojo代码。
+
+  - icon: 🛞
+    title: 用Mojo写个Mojo社区
+    details: 造个轮子，也许有用呢。
+    link: https://github.com/shadowqcom/mojo_dev
 ---
 
 <br><br>
 
+<p align="center" style="font-size: 24px;">快速开始</p>
 
-```sh
-# 1.安装modular命令行工具:
-curl -s https://get.modular.com | sh -
-
-# 2.登录modular帐户:
-modular auth
-
-# 3.安装 Mojo SDK:
-modular install mojo
-```
+<div style="width: 50%; margin: 10px auto;">
+  <span style="color:#6A737D; font-size: 14px; margin: 10px auto;">1.安装modular命令行工具:</span>
+</div>
+<div class="language-sh vp-adaptive-theme" style="width: 50%; margin: 10px auto;">
+<button title="Copy Code" class="copy"></button><span class="lang">sh</span>
+<pre class="shiki shiki-themes github-light github-dark vp-code"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">curl</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> -s</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> https://get.modular.com</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> |</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> sh</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> -</span></span></code></pre>
+</div>
+<div style="width: 50%; margin: 10px auto;">
+  <span style="color:#6A737D; font-size: 14px; margin: 10px auto;">2.登录modular帐户:</span>
+</div>
+<div class="language-sh vp-adaptive-theme" style="width: 50%; margin: 10px auto;">
+  <button title="Copy Code" class="copy"></button><span class="lang">sh</span>
+  <pre class="shiki shiki-themes github-light github-dark vp-code"><code><span class="line"></span><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">modular</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> auth</span></span></code></pre>
+</div>
+<div style="width: 50%; margin: 10px auto;">
+  <span style="color:#6A737D; font-size: 14px; margin: 10px auto;">3.安装 Mojo SDK:</span>
+</div>
+<div class="language-sh vp-adaptive-theme" style="width: 50%; margin: 10px auto;">
+  <button title="Copy Code" class="copy"></button><span class="lang">sh</span>
+  <pre class="shiki shiki-themes github-light github-dark vp-code"><code><span class="line"></span><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">modular</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> install</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> mojo</span></span></code></pre>
+</div>

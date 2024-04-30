@@ -5,3 +5,4 @@
 /dist
 .vitepress/cache
 /node_modules
+/ssl

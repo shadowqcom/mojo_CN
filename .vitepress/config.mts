@@ -55,7 +55,8 @@ export default defineConfig({
 
   themeConfig: {
     editLink: {
-      pattern: 'https://github.com/shadowqcom/mojo_CN/tree/main/:path'
+      pattern: 'https://github.com/shadowqcom/mojo_CN/tree/main/:path',
+      text: '前往GitHub编辑此页'
     },
     search: {
       provider: 'local'
