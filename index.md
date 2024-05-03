@@ -17,7 +17,7 @@ hero:
       link: /mojo/chat
 
   image:
-    src: /img/mojo_Llama2.png
+    src: /img/6633770580be0d7ed44edf04_mojo243.jpeg
     alt: mojo
 
 features:
@@ -48,14 +48,7 @@ features:
 curl -s https://get.modular.com | sh -
 ```
 
-<span style="color:#6A737D; font-size: 14px; padding: 0 24px;">2.登录modular帐户:</span>
-
-```sh
-modular auth
-```
-
-
-<span style="color:#6A737D; font-size: 14px; padding: 0 24px;">3.安装 Mojo SDK:</span>
+<span style="color:#6A737D; font-size: 14px; padding: 0 24px;">2.安装 Mojo SDK:</span>
 
 ```sh
 modular install mojo

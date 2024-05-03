@@ -1,81 +1,74 @@
 # 获取Mojo SDK
-我们还发布了一个[适用于Visual Studio Code的Mojo扩展](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)，以提供一流的开发者体验，包括代码补全、快速修复和Mojo API的悬停帮助等功能。
+我们布了一个适用于[Visual Studio Code 的 Mojo 扩展](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)，以提供一流的开发者体验，包括代码补全、快速修复和Mojo API的悬停帮助等功能。
+![https://docs.modular.com/assets/images/mojo-vscode-39e1aceb5a854d32330e825ecb16e4a2.png](https://docs.modular.com/assets/images/mojo-vscode-39e1aceb5a854d32330e825ecb16e4a2.png)
 
 ## 系统要求
 
-要使用Mojo SDK，您需要满足以下规格的系统：
+要使用 Mojo SDK，您需要一个满足以下规范的系统：
 
 Linux：
 
 - Ubuntu 20.04/22.04 LTS
-- x86-64 CPU（带有[SSE4.2或更新版本](https://www.intel.com/content/www/us/en/support/articles/000057621/processors.html)）
-  或 AWS Graviton2/3 CPU
-- 最低8 GiB RAM
+- x86-64 CPU（带有 [SSE4.2 或更高版本](https://www.intel.com/content/www/us/en/support/articles/000057621/processors.html)）或 AWS Graviton2/3 CPU
+- 至少 8 GiB RAM
 - Python 3.8 - 3.11
 - g++ 或 clang++ C++ 编译器
 
-Mac：
+苹果：
 
-- 苹果芯片（M1或M2处理器）
-- macOS Monterey (12) 或更高版本
+- Apple 芯片（M1 或 M2 处理器）
+- macOS 蒙特利 (12) 或更高版本
 - Python 3.8 - 3.11
-- Xcode 的命令行工具，或者 Xcode
+- Xcode 的命令行工具或 Xcode
 
-Windows 支持将在将来的版本中添加。
+未来版本中将添加对 Windows 的支持。
 
 ## 安装Mojo
 
 1. 打开终端并安装`modular`命令行工具：
 
-    ```sh
-    curl -s https://get.modular.com | sh -
-    ```
+```sh
+curl -s https://get.modular.com | sh -
+```
 
-2. 然后使用以下命令登录到您的Modular帐户：
+2. 现在您可以安装Mojo SDK：
 
-    ```sh
-    modular auth
-    ```
+```sh
+modular install mojo
+```
 
-3. 现在您可以安装Mojo SDK：
+::: warning nightly
+如果您想要前沿（不太稳定）版本，请安装夜间构建：
+```sh
+modular install nightly/mojo
+```
+:::
 
-    ```sh
-    modular install mojo
-    ```
+3. 设置环境变量以便访问`mojo`命令行界面：
+::: code-group
 
-4. 设置环境变量以便访问`mojo`命令行界面：
+```sh [Bash]
+MOJO_PATH=$(modular config mojo.path) \
+  && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
+  && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
+  && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> "$BASHRC" \
+  && source "$BASHRC"
 
-    <Tabs>
-      <TabItem value="bash" label="Bash">
+```
 
-      如果您使用的是Bash，请运行以下命令：
+```sh [ZSH]
+MOJO_PATH=$(modular config mojo.path) \
+  && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> ~/.zshrc \
+  && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> ~/.zshrc \
+  && source ~/.zshrc
+```
+:::
 
-      ```sh
-      MOJO_PATH=$(modular config mojo.path) \
-        && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
-        && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
-        && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> "$BASHRC" \
-        && source "$BASHRC"
-      ```
-
-      </TabItem>
-      <TabItem value="zsh" label="ZSH">
-
-      如果您使用的是ZSH，请运行以下命令：
-
-      ```sh
-      MOJO_PATH=$(modular config mojo.path) \
-        && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> ~/.zshrc \
-        && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> ~/.zshrc \
-        && source ~/.zshrc
-      ```
-
-      </TabItem>
-    </Tabs>
 
 接下来，开始使用**Hello, world!**
 
 如果在安装过程中遇到问题，请查看我们的已知问题。
+
 
 ### 更新Mojo
 
@@ -101,9 +94,7 @@ Linux：
 
 ```sh
 sudo apt update
-```
 
-```sh
 sudo apt install modular
 ```
 
@@ -111,9 +102,7 @@ Mac：
 
 ```sh
 brew update
-```
 
-```sh
 brew upgrade modular
 ```
 
