@@ -1,0 +1,15 @@
+/* footer.module.css */
+
+  .footer {
+    text-align: left;
+  }
+
+  .footer p {
+    font-size: 0.85rem;
+    color: #4b5563;
+  }
+
+  .footer span {
+    font-size: 0.85rem;
+    color: #4b5563;
+  }

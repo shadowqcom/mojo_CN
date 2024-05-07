@@ -1,0 +1,138 @@
+/* index.module.css */  
+
+.background {
+    position: absolute;
+    right: 10%;
+    transform: translateY(25%);
+    width: 40rem;
+    height: 32rem;
+    background: radial-gradient(farthest-corner at 50% 50%, #d769ff50, #ddd9a230);
+    filter: blur(3rem);
+    border-radius: 50%;
+}
+
+.bady {  
+    max-width: 70rem;  
+    margin: auto;  
+    padding-bottom: 5rem;
+}  
+  
+.main {
+    position: relative;
+    display: flex;  
+    flex-direction: column;  
+    text-align: center;  
+    margin:auto 2rem auto 2rem;  
+}
+  
+.main h1 {  
+    font-size: 3.25rem;  
+    letter-spacing: 0.3rem;  
+    margin-top: 3rem;  
+    margin-bottom: 1rem;  
+    font-weight: 800;  
+    min-width: 400px;  
+    color: transparent; /* 将文字颜色设为透明 */
+    background-image: linear-gradient(120deg, #bd34fe, #41d1ff); /* 渐变色 */
+    -webkit-background-clip: text; /* 使用背景色填充文字 */
+    background-clip: text;
+    --tw-text-opacity:1;  
+}  
+.main h2 {  
+    font-size: 3.25rem;  
+    letter-spacing: 0.3rem;  
+    line-height: 1;  
+    margin-bottom: 3rem;  
+    font-weight: 400;  
+    min-width: 400px;  
+    color:#334155;  
+    --tw-text-opacity:1;  
+}  
+  
+.main p {  
+    font-size: 1.125rem; 
+    color: #718096;  
+    margin: 2rem auto;
+    text-align: left;
+}
+
+.main button {
+    margin: 3rem auto;
+    padding: 1rem 2rem;
+    border-radius: 5px;
+    border: none;
+    background: #334155;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.main button:hover {
+    background: #565f7d;
+}
+  
+.cardcombination {  
+    display: flex;  
+    flex-wrap: wrap;   
+    justify-content: center;
+    margin: 5rem auto;
+}  
+  
+.card {  
+    flex-basis: calc(33.33% - 2rem);   
+    margin: 1rem auto 1rem;  
+    text-align: left;  
+}  
+  
+@media (max-width: 768px) {  
+    .card {  
+        flex-basis: calc(50% - 2rem);  
+        margin: 0 1rem 2rem 1rem;  
+    }  
+}  
+  
+@media (max-width: 480px) {  
+    .card {  
+        flex-basis: 100%;  
+        margin: 0 1rem 2rem 1rem;  
+    }  
+}  
+  
+.card span {  
+    width: 3rem;  
+    height: 3rem;  
+    font-size: 24px;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    background: #f6f6f7;  
+    border-radius: 6px;  
+    margin-bottom: .75rem;  
+}  
+  
+.card h3 {  
+    font-size: 1.25rem;  
+    line-height: 1.75rem;  
+    font-weight: 700;  
+    margin-bottom: .25rem;
+    color: #3c3c43;
+}  
+  
+.card p {  
+    font-size: 1rem;  
+    line-height: 1.5rem;  
+    text-align:left;
+    color: #666666;
+}
+
+.indexcode {
+    margin: auto; 
+    max-width: 42rem;
+}
+
+.indexcode p {
+    text-align: center;
+    font-size: 1.125rem;  
+    color: #4b5563;  
+    margin-bottom: 2rem;
+}

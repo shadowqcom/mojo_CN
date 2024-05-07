@@ -1,0 +1,41 @@
+{
+  "index": {
+    "type": "page",
+    "title": "Mojo",
+    "display": "hidden",
+    "theme": {
+      "layout": "raw"
+    }
+  },
+  "404": {
+    "type": "page",
+    "theme": {
+      "timestamp": false,
+      "typesetting": "article"
+    }
+  },
+  
+  "manual": {
+    "title": "手册",
+    "type": "page"
+  },
+  "reference": {
+    "title": "参考",
+    "type": "page"
+  },
+  "chat": {
+    "type": "page",
+    "title": "用户群",
+    "href": "/other/chat",
+    "newWindow": false
+  },
+  "dev": {
+    "type": "page",
+    "title": "开发者社区",
+    "href": "https://dev.mojocn.org",
+    "newWindow": true
+  },
+  "other": {
+    "type":"hide"
+  }
+}

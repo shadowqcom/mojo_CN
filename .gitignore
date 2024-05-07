@@ -1,4 +1,8 @@
 .idea
+.next
+.env
+.env.*
+*.swp
 .DS_Store
 *.log
 */dist
