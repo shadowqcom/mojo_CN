@@ -17,21 +17,22 @@
   
   "manual": {
     "title": "手册",
-    "type": "page"
+    "type": "page",
+    "newWindow": false
   },
   "reference": {
     "title": "参考",
-    "type": "page"
+    "type": "page",
+    "newWindow": false
   },
   "chat": {
-    "type": "page",
     "title": "用户群",
-    "href": "/other/chat",
+    "type": "page",
     "newWindow": false
   },
   "dev": {
-    "type": "page",
     "title": "开发者社区",
+    "type": "page",
     "href": "https://dev.mojocn.org",
     "newWindow": true
   },

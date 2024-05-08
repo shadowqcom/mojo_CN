@@ -3,7 +3,6 @@
 *-env*
 .DS_Store
 *.log
-*lock.json
 /ssl
 /dist
 /node_modules
