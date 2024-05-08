@@ -30,8 +30,7 @@
     letter-spacing: 0.3rem;  
     margin-top: 3rem;  
     margin-bottom: 1rem;  
-    font-weight: 800;  
-    min-width: 400px;  
+    font-weight: 800;   
     color: transparent; /* 将文字颜色设为透明 */
     background-image: linear-gradient(120deg, #bd34fe, #41d1ff); /* 渐变色 */
     -webkit-background-clip: text; /* 使用背景色填充文字 */
@@ -43,8 +42,7 @@
     letter-spacing: 0.3rem;  
     line-height: 1;  
     margin-bottom: 3rem;  
-    font-weight: 400;  
-    min-width: 400px;  
+    font-weight: 400;   
     color:#334155;  
     --tw-text-opacity:1;  
 }  
