@@ -3,7 +3,7 @@
 </p>
 
 # 欢迎来到 Mojo_CN
-Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发者。  
+Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发 者。  
 本项目由Mojo中文网发起，旨在学习Mojo语言和翻译Mojo文档，致力于让更多开发者参与交流。
 
 - [Mojo中文网](https://mojocn.org/)
