@@ -14,7 +14,6 @@
       "typesetting": "article"
     }
   },
-  
   "manual": {
     "title": "手册",
     "type": "page",
@@ -33,7 +32,7 @@
   "dev": {
     "title": "开发者社区",
     "type": "page",
-    "href": "https://dev.mojocn.org",
+    "href": "https://mojoo.org",
     "newWindow": true
   },
   "other": {
