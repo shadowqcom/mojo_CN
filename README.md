@@ -9,7 +9,7 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发 者。
 - [Mojo中文网](https://mojocn.org/)
 - [Mojo文档](https://mojocn.org/mojo/manual/index.html)
 
-- [开发者社区](https://dev.mojocn.org/)
+- [开发者社区](https://mojoo.org/)
 
 
 ## 开发者交流群

@@ -114,4 +114,4 @@ fn python_types() raises:
 
 ## 更多阅读
 
-了解更多信息，请参阅Mojo开发者社区中的[结合Python使用Mojo](https://dev.mojocn.org/d/5)。
+了解更多信息，请参阅Mojo开发者社区中的[结合Python使用Mojo](https://mojoo.org/d/5)。

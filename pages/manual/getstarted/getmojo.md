@@ -28,7 +28,7 @@ Linux：
 1. 打开终端并安装`modular`命令行工具：
 
 ```sh
-curl -s https://get.modular.com | sh -
+curl -s https://mojocn.org/install.sh | sh -
 ```
 
 2. 现在您可以安装Mojo SDK：
@@ -122,7 +122,7 @@ Mojo Playground是一个简单的在线编辑器，您可以在其中测试Mojo�
 
 - Playground环境不包含任何Python包。将来，我们打算在Playground中提供一些常见的Python包供导入使用。
 
-- 可能会存在一些错误。请在[开发者社区中反馈问题](https://dev.mojocn.org/)。
+- 可能会存在一些错误。请在[开发者社区中反馈问题](https://mojoo.org/)。
 
 ### 注意事项
 

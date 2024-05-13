@@ -20,4 +20,4 @@ return new_struct ^
 
 Unlike an instance method, a static method doesn't take an implicit `self` argument. It's not attached to a specific instance of a struct, so it can't access instance data.
 
-For more information see the documentation on [Mojo开发者社区](https://dev.mojocn.org).
+For more information see the documentation on [Mojo开发者社区](https://mojoo.org).
