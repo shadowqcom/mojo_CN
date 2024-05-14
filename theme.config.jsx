@@ -36,8 +36,8 @@ export default {
   head: (
     <>
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta property="og:title" content="Mojo中文网，Mojo官网，Mojo社区，开发者社区" />
-      <meta property="og:description" content="Mojo编程语言中文网官网，AI编程语言Mojo中文网，AI开发人员的新语言，Mojo 结合了 Python 的可用性和 C 的性能。" />
+      <meta property="og:title" content="Mojo中文网，Mojo官网，Mojo社区，开发者社区，AI编程语言Mojo中文网，mojo中文文档，mojo中文教程,MojoCN,Mojoo" />
+      <meta property="og:description" content="Mojo编程语言中文网官网，AI编程语言Mojo中文网，AI开发人员的新语言，Mojo 结合了 Python 的可用性和 C 的性能，解锁了 AI 硬件无与伦比的可编程性和 AI 模型的可扩展性。" />
     </>
   ),
   footer: {
