@@ -4,7 +4,7 @@
 
 在开始之前，请确保设置了`MODULAR_HOME`和`PATH`环境变量，如安装过程所述，以便您可以运行`mojo`命令：
 
-```mojo
+```sh
 mojo --version
 ```
 
@@ -20,7 +20,7 @@ mojo --version
 
 就是这样！例如：
 
-```mojo
+```sh
 $ mojo
 Welcome to Mojo! 🔥
 
@@ -51,15 +51,15 @@ REPL主要用于短期实验，因为代码不会被保存。因此，当您想�
 
 2. 现在使用`mojo`命令运行它：
 
-    ```sh
-    mojo hello.mojo
-    ```
+```sh
+mojo hello.mojo
+```
 
-    它应该立即打印出消息：
+它应该立即打印出消息：
 
-    ```mojo
-    Hello, world!
-    ```
+```mojo
+Hello, world!
+```
 
 如果这对您不起作用，请仔细检查您的代码是否与步骤1中的代码完全相同，并确保您正确安装了Mojo。
 
@@ -69,17 +69,17 @@ REPL主要用于短期实验，因为代码不会被保存。因此，当您想�
 
 1. 使用`build`命令创建一个可执行文件：
 
-    ```sh
-    mojo build hello.mojo
-    ```
+```sh
+mojo build hello.mojo
+```
 
-    可执行文件的名称与`.mojo`文件相同，但您可以使用`-o`选项进行更改。
+可执行文件的名称与`.mojo`文件相同，但您可以使用`-o`选项进行更改。
 
 2. 然后运行可执行文件：
 
-    ```sh
-    ./hello
-    ```
+```sh
+./hello
+```
 
 这将创建一个静态编译的二进制文件，因此它包含运行所需的所有代码和库。
 

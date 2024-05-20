@@ -1,3 +1,31 @@
 {
-  "index": "Mojo标准库"
+  "index": "Mojo标准库",
+  "algorithm": "algorithm",
+  "autotuning":"autotuning",
+  "base64":"base64",
+  "benchmark":"benchmark",
+  "buffer":"buffer",
+  "builtin":"builtin",
+  "collections":"collections",
+  "complex":"complex",
+  "math":"math",
+  "memory":"memory",
+  "os":"os",
+  "pathlib":"pathlib",
+  "python":"python",
+  "random":"random",
+  "stat":"stat",
+  "sys":"sys",
+  "tensor":"tensor",
+  "testing":"testing",
+  "time":"time",
+  "utils":"utils",
+  "---": {
+    "type": "separator"
+  },
+  "decorators":"Decorators",
+  "----": {
+    "type": "separator"
+  },
+  "mojocli":"Mojocli"
 }

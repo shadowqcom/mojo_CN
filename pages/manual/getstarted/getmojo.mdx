@@ -1,3 +1,10 @@
+---
+title: 安装Mojo 获取Mojo SDK
+---
+
+import { Tabs, Callout } from 'nextra/components'
+
+
 # 获取Mojo SDK
 我们布了一个适用于[Visual Studio Code 的 Mojo 扩展](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)，以提供一流的开发者体验，包括代码补全、快速修复和Mojo API的悬停帮助等功能。
 ![https://docs.modular.com/assets/images/mojo-vscode-39e1aceb5a854d32330e825ecb16e4a2.png](https://docs.modular.com/assets/images/mojo-vscode-39e1aceb5a854d32330e825ecb16e4a2.png)
@@ -28,7 +35,7 @@ Linux：
 1. 打开终端并安装`modular`命令行工具：
 
 ```sh
-curl -s https://mojocn.org/install.sh | sh -
+curl -s https://mojocn.org/get.sh | sh -
 ```
 
 2. 现在您可以安装Mojo SDK：
@@ -37,35 +44,37 @@ curl -s https://mojocn.org/install.sh | sh -
 modular install mojo
 ```
 
-::: warning nightly
+<Callout>
 如果您想要前沿（不太稳定）版本，请安装夜间构建：
 ```sh
 modular install nightly/mojo
 ```
-:::
+</Callout>
+
 
 3. 设置环境变量以便访问`mojo`命令行界面：
-::: code-group
+<Tabs items={['Bash', 'ZSH']}>
+  <Tabs.Tab>
+    ```sh [Bash]
+    MOJO_PATH=$(modular config mojo.path) \
+      && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
+      && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
+      && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> "$BASHRC" \
+      && source "$BASHRC"
+    ```
+</Tabs.Tab>
+<Tabs.Tab>
+  ```sh [ZSH]
+  MOJO_PATH=$(modular config mojo.path) \
+    && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> ~/.zshrc \
+    && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> ~/.zshrc \
+    && source ~/.zshrc
+  ```
+</Tabs.Tab>
+</Tabs>
 
-```sh [Bash]
-MOJO_PATH=$(modular config mojo.path) \
-  && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
-  && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
-  && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> "$BASHRC" \
-  && source "$BASHRC"
 
-```
-
-```sh [ZSH]
-MOJO_PATH=$(modular config mojo.path) \
-  && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> ~/.zshrc \
-  && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> ~/.zshrc \
-  && source ~/.zshrc
-```
-:::
-
-
-接下来，开始使用**Hello, world!**
+接下来，开始使用[**Hello, world!**](/manual/getstarted/helloworld)
 
 如果在安装过程中遇到问题，请查看我们的已知问题。
 
