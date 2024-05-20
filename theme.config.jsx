@@ -21,7 +21,15 @@ export default {
       </svg>
     )
   },
-  docsRepositoryBase: 'https://github.com/shadowqcom/mojo_CN',
+  docsRepositoryBase: 'https://github.com/shadowqcom/mojo_CN/blob/main/',
+  feedback: {
+    content: '反馈此页问题',
+    labels: 'feedback',
+    docsRepositoryBase: 'https://github.com/shadowqcom/mojo_CN/'
+  },
+  editLink: {
+    text: '在GitHub编辑此页面'
+  },
   sidebar: {
     defaultMenuCollapseLevel: 1, // 默认折叠菜单
   },
