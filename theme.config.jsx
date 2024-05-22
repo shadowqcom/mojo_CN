@@ -1,5 +1,3 @@
-import { useRouter } from 'next/router'
-import { useConfig } from 'nextra-theme-docs'
 import ClientInfo from './src/clientinfo';
 import styles from './src/footer.module.css';
 
@@ -8,18 +6,6 @@ export default {
   faviconGlyph: '🔥',
   project: {
     link: 'https://github.com/shadowqcom/mojo_CN'
-  },
-  chat: {
-    link: '/chat',
-    icon: (
-      <svg width="26" height="26" viewBox="0 0 48 48" fill="currentColor">
-        <path d="M44 8H4V38H19L24 43L29 38H44V8Z"/>
-        <path d="M21 15L20 32" stroke="#FFF" stroke-width="4" stroke-linecap="round"/>
-        <path d="M28 15L27 32" stroke="#FFF" stroke-width="4" stroke-linecap="round"/>
-        <path d="M33 20L16 20" stroke="#FFF" stroke-width="4" stroke-linecap="round"/>
-        <path d="M32 27L15 27" stroke="#FFF" stroke-width="4" stroke-linecap="round"/>
-      </svg>
-    )
   },
   docsRepositoryBase: 'https://github.com/shadowqcom/mojo_CN/blob/main/',
   feedback: {

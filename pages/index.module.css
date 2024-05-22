@@ -1,16 +1,5 @@
 /* index.module.css */  
 
-/* .background {
-    position: absolute;
-    right: 10%;
-    transform: translateY(25%);
-    width: 40rem;
-    height: 32rem;
-    background: radial-gradient(farthest-corner at 50% 50%, #d769ff50, #ddd9a230);
-    filter: blur(3rem);
-    border-radius: 50%;
-} */
-
 .bady {  
     max-width: 70rem;  
     margin: auto;  
