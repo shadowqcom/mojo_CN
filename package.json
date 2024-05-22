@@ -9,10 +9,13 @@
   "scripts": {
     "dev": "next",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "postbuild": "next-sitemap"
   },
+
   "devDependencies": {
     "@types/node": "latest",
+    "next-sitemap": "^4.2.3",
     "typescript": "latest"
   }
 }
