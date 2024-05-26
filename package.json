@@ -5,11 +5,12 @@
     "nextra": "latest",
     "nextra-theme-docs": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "sharp": "^0.33.4"
   },
   "scripts": {
     "dev": "next",
-    "build": "next build && node ./src/indexnow.js",
+    "build": "next build && node src/indexnow.js",
     "start": "next start",
     "postbuild": "next-sitemap"
   },

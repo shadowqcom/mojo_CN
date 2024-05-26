@@ -22,7 +22,6 @@ const data = {
   keyLocation: 'https://mojocn.org/003706cf9d51402fa7e8e5851cbe6b88.txt',
   urlList
 };
-console.log(data);
 
 axios.post('https://api.indexnow.org/IndexNow', data)
   .then(response => {
