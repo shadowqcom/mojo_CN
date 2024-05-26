@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "axios": "^1.7.2",
     "next": "latest",
     "nextra": "latest",
     "nextra-theme-docs": "latest",
@@ -8,11 +9,10 @@
   },
   "scripts": {
     "dev": "next",
-    "build": "next build",
+    "build": "next build && node ./src/indexnow.js",
     "start": "next start",
     "postbuild": "next-sitemap"
   },
-
   "devDependencies": {
     "@types/node": "latest",
     "next-sitemap": "^4.2.3",
