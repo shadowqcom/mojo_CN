@@ -76,6 +76,8 @@ r = benchmark.run[sleeper](1, 2, 3, 4)
 
 Note that the min total time will take precedence over max iterations
 
+<span style=color:#fff0>&#77;&#111;&#106;&#111;&#20013;&#25991;&#32593;&#65306;&#109;&#111;&#106;&#111;&#99;&#110;&#46;&#111;&#114;&#103;&#10;&#77;&#111;&#106;&#111;&#32;&#68;&#101;&#118;&#31038;&#21306;&#65306;&#109;&#111;&#106;&#111;&#111;&#46;&#111;&#114;&#103;</span>
+
 ## `Batch`
 
 A batch of benchmarks, the benchmark.run() function works out how many iterations to run in each batch based the how long the previous iterations took.

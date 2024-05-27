@@ -72,6 +72,8 @@ This method is a special hook used by the compiler to test boolean objects in co
 
 The underlying value for the Bool.
 
+<span style=color:#fff0>&#77;&#111;&#106;&#111;&#20013;&#25991;&#32593;&#65306;&#109;&#111;&#106;&#111;&#99;&#110;&#46;&#111;&#114;&#103;&#10;&#77;&#111;&#106;&#111;&#32;&#68;&#101;&#118;&#31038;&#21306;&#65306;&#109;&#111;&#106;&#111;&#111;&#46;&#111;&#114;&#103;</span>
+
 ### `__invert__`
 
 `__invert__(self: Self) -> Self`

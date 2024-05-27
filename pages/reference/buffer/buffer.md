@@ -214,6 +214,8 @@ Returns the size of the Buffer in bytes.
 
 The size of the Buffer in bytes.
 
+<span style=color:#fff0>&#77;&#111;&#106;&#111;&#20013;&#25991;&#32593;&#65306;&#109;&#111;&#106;&#111;&#99;&#110;&#46;&#111;&#114;&#103;&#10;&#77;&#111;&#106;&#111;&#32;&#68;&#101;&#118;&#31038;&#21306;&#65306;&#109;&#111;&#106;&#111;&#111;&#46;&#111;&#114;&#103;</span>
+
 ### `zero`
 
 `zero(self: Self)`
@@ -731,6 +733,8 @@ The buffer must be contiguous or width must be 1.
 
 The simd value starting at the `idx` position and ending at `idx+width`.
 
+<span style=color:#fff0>&#77;&#111;&#106;&#111;&#20013;&#25991;&#32593;&#65306;&#109;&#111;&#106;&#111;&#99;&#110;&#46;&#111;&#114;&#103;&#10;&#77;&#111;&#106;&#111;&#32;&#68;&#101;&#118;&#31038;&#21306;&#65306;&#109;&#111;&#106;&#111;&#111;&#46;&#111;&#114;&#103;</span>
+
 ### `store`
 
 `store[width: Int, alignment: Int](self: Self, idx: StaticIntTuple[rank], val: SIMD[type, width])`
@@ -1087,6 +1091,8 @@ Gets a static tuple representing the buffer shape.
 **Returns:**
 
 A static tuple of size 'Rank' filled with buffer shapes.
+
+<span style=color:#fff0>&#77;&#111;&#106;&#111;&#20013;&#25991;&#32593;&#65306;&#109;&#111;&#106;&#111;&#99;&#110;&#46;&#111;&#114;&#103;&#10;&#77;&#111;&#106;&#111;&#32;&#68;&#101;&#118;&#31038;&#21306;&#65306;&#109;&#111;&#106;&#111;&#111;&#46;&#111;&#114;&#103;</span>
 
 ### `dim`
 

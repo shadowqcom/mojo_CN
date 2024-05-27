@@ -27,6 +27,14 @@ export default {
       titleTemplate: '%s – Mojo'
     }
   },
+  banner: {
+    key: 'Mojo社区',
+    text: (
+      <a href="https://mojoo.org" target="_blank">
+        🎉  Modular官方推荐的Mojo社区   →
+      </a>
+    )
+  },
   head: (
     <>
       <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml"></link>

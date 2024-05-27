@@ -63,6 +63,8 @@ Get a list element at the given index.
 
 The element at the given index.
 
+<span style=color:#fff0>&#77;&#111;&#106;&#111;&#20013;&#25991;&#32593;&#65306;&#109;&#111;&#106;&#111;&#99;&#110;&#46;&#111;&#114;&#103;&#10;&#77;&#111;&#106;&#111;&#32;&#68;&#101;&#118;&#31038;&#21306;&#65306;&#109;&#111;&#106;&#111;&#111;&#46;&#111;&#114;&#103;</span>
+
 ## `VariadicList`
 
 A utility class to access variadic function arguments. Provides a "list" view of the function argument so that the size of the argument list and each individual argument can be accessed.
@@ -178,6 +180,8 @@ A utility class to access variadic function arguments of memory-only types that 
 `AnyType`, `Sized`
 
 **Methods:**
+
+<span style=color:#fff0>&#77;&#111;&#106;&#111;&#20013;&#25991;&#32593;&#65306;&#109;&#111;&#106;&#111;&#99;&#110;&#46;&#111;&#114;&#103;&#10;&#77;&#111;&#106;&#111;&#32;&#68;&#101;&#118;&#31038;&#21306;&#65306;&#109;&#111;&#106;&#111;&#111;&#46;&#111;&#114;&#103;</span>
 
 ### `__init__`
 
