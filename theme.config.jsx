@@ -30,7 +30,7 @@ export default {
   banner: {
     key: 'Mojo社区',
     text: (
-      <a href="https://mojoo.org" target="_blank">
+      <a href="https://mojoo.org/d/196" target="_blank">
         🎉  Modular官方推荐的Mojo社区   →
       </a>
     )
