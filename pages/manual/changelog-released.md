@@ -1,29 +1,4 @@
----
-title: Mojo🔥 changelog
-sidebar_label: Changelog
-description: A history of significant Mojo changes.
-toc_max_heading_level: 2
----
-
-This is a running list of significant changes for the Mojo language and tools.
-It doesn't include all internal implementation changes.
-
-## Update Mojo
-
-If you don't have Mojo yet, see the [get started
-guide](/mojo/manual/get-started).
-
-To see your Mojo version, run this:
-
-```sh
-mojo --version
-```
-
-To update Mojo, first [update `modular`](/cli/#description), and then run this:
-
-```sh
-modular update mojo
-```
+# Changelog
 
 ## v24.4 (2024-06-07)
 
