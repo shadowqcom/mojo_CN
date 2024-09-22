@@ -5,139 +5,195 @@ title: 安装Mojo 获取Mojo SDK
 import { Tabs, Callout } from 'nextra/components'
 
 
-# 获取Mojo SDK
-我们还发布了一个适用于[Visual Studio Code 的 Mojo 扩展](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)，以提供一流的开发者体验，包括代码补全、快速修复和Mojo API的悬停帮助等功能。
-![https://docs.modular.com/assets/images/mojo-vscode-39e1aceb5a854d32330e825ecb16e4a2.png](https://docs.modular.com/assets/images/mojo-vscode-39e1aceb5a854d32330e825ecb16e4a2.png)
+# 开始使用 Mojo🔥
+在此页面上，我们将向您展示如何使用 Mojo 创建经典的“Hello world”入门程序。如果您更愿意了解如何编写 Mojo 代码，请参阅 Mojo 简介。
 
-## 系统要求
+安装 Mojo 即表示您了解并同意我们的软件许可。
 
-要使用 Mojo SDK，您需要一个满足以下规范的系统：
+## 1、创建新项目
+要创建新的 Mojo 项目，我们将使用 Magic — 基于 conda 的虚拟环境管理器和包管理器。
 
-Linux：
-
-- Ubuntu 20.04/22.04 LTS
-- x86-64 CPU（带有 [SSE4.2 或更高版本](https://www.intel.com/content/www/us/en/support/articles/000057621/processors.html)）或 AWS Graviton2/3 CPU
-- 至少 8 GiB RAM
-- Python 3.8 - 3.11
-- g++ 或 clang++ C++ 编译器
-
-苹果：
-
-- Apple 芯片（M1 或 M2 处理器）
-- macOS 蒙特利 (12) 或更高版本
-- Python 3.8 - 3.11
-- Xcode 的命令行工具或 Xcode
-
-未来版本中将添加对 Windows 的支持。
-
-## 安装Mojo
-
-1. 打开终端并安装`modular`命令行工具：
-
-```sh
-curl -s https://mojocn.org/get.sh | sh -
-```
-
-2. 现在您可以安装Mojo SDK：
-
-```sh
-modular install mojo
-```
-
-<Callout>
-如果您想要前沿（不太稳定）版本，请安装夜间构建：
-```sh
-modular install nightly/mojo
-```
-</Callout>
-
-
-3. 设置环境变量以便访问`mojo`命令行界面：
-<Tabs items={['Bash', 'ZSH']}>
-  <Tabs.Tab>
-    ```sh [Bash]
-    MOJO_PATH=$(modular config mojo.path) \
-      && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
-      && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
-      && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> "$BASHRC" \
-      && source "$BASHRC"
-    ```
-</Tabs.Tab>
-<Tabs.Tab>
-  ```sh [ZSH]
-  MOJO_PATH=$(modular config mojo.path) \
-    && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> ~/.zshrc \
-    && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> ~/.zshrc \
-    && source ~/.zshrc
+  1.使用以下命令在 macOS 或 Ubuntu Linux 上安装 Magic：
+  ```bash
+  curl -ssL https://magic.modular.com | bash
   ```
-</Tabs.Tab>
-</Tabs>
+  然后运行终端中打印的源命令。
+  
+  2.创建一个名为“hello-world”的Mojo项目：
+  ```bash
+  magic init hello-world --format mojoproject
+  ```
+  这将创建一个名为 hello-world 的目录并安装 Mojo 项目依赖项 - Mojo 项目的唯一依赖项是 max 包（Mojo 与 MAX 捆绑在一起）。
 
+  3.在项目虚拟环境中启动一个shell：
+  ```bash
+  cd hello-world && magic shell
+  ```
+  就是这样！ magic shell 命令激活虚拟环境，因此您现在可以开始使用 Mojo。例如，您可以像这样检查您的 Mojo 版本：
+  ```bash
+  mojo --version
+  ```
 
-接下来，开始使用[**Hello, world!**](/manual/getstarted/helloworld)
+  <Callout>
+  安装 Mojo 夜间版本:  
+  要安装最新的夜间版本，请在初始化项目时指定 max-nightly 频道：
 
-如果在安装过程中遇到问题，请查看我们的已知问题。
+    ```sh
+    magic init hello-world-nightly --format mojoproject \
+      -c conda-forge -c https://conda.modular.com/max-nightly
+    ```
 
+    ```sh
+    cd hello-world-nightly && magic shell
+    ```
+  </Callout>
 
-### 更新Mojo
+  ## 2、在 REPL 中运行代码
+  首先，让我们使用 Mojo [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)，它允许您在命令提示符中编写和运行 Mojo 代码：
 
-Mojo仍在不断发展，我们将定期发布Mojo语言和SDK工具的更新。有关每个版本的信息，请参阅Mojo更改日志。
+1. 要启动 REPL 会话，请键入`mojo`并按<kbd>Enter</kbd>。
+    
+2. 输入`print("Hello, world!")`并按<kbd>Enter</kbd>两次（需要一个空行来表示表达式的结束）。
+    
+    结果如下：
+    
+```mojo
+  $ mojo
+  Welcome to Mojo! 🔥
 
-要检查您当前的Mojo版本，请使用`--version`选项：
+  Expressions are delimited by a blank line.
+  Type `:quit` to exit the REPL and `:mojo help repl` for further assistance.  
 
-```sh
-mojo --version
+    1> print("Hello world")  
+  Hello world
+```
+    
+3. 要退出 REPL，请键入`:quit`并按<kbd>Enter</kbd>，或者按<kbd>Ctrl</kbd>\+ <kbd>D</kbd>。
+    
+
+您可以在 REPL 中编写任意多的代码。您可以按<kbd>Enter</kbd>开始新行并继续编写代码，当您希望 Mojo 评估代码时，请按<kbd>Enter</kbd>两次。如果有要打印的内容，Mojo 会将其打印出来，然后将提示返回给您。
+
+REPL 主要用于短时间的实验，因为代码不会被保存。所以当你想写一个真正的程序时，你需要在`.mojo`源文件中写代码。
+
+## 3、运行 Mojo 文件
+现在让我们在 Mojo 源文件中编写代码并使用以下 `mojo`命令运行它：
+
+1. 创建一个名为`hello.mojo`（或`hello.🔥`）的文件并添加以下代码：
+    
+    ```
+    fn main():    print("Hello, world!")
+    ```
+    
+    这就是您所需要的。保存文件并返回到您的终端。
+    
+2. 现在使用以下命令运行它`mojo`：
+    
+    ```
+    mojo hello.mojo
+    ```
+    
+    ```
+    Hello, world!
+    ```
+
+## 4、构建可执行二进制文件
+最后，让我们构建并运行相同的代码作为可执行文件：
+
+1. 使用以下命令创建可执行文件`build`：
+    
+    ```
+    mojo build hello.mojo
+    ```
+    
+    可执行文件使用与文件相同的名称`.mojo`，但您可以使用选项进行更改`-o`。
+    
+2. 然后运行可执行文件：
+    
+    ```
+    ./hello
+    ```
+    
+    ```
+    Hello, world!
+    ```
+    
+
+该`build`命令创建一个静态编译的二进制文件，因此它包含运行所需的所有代码和库。
+
+您现在只需键入以下内容即可停用虚拟环境`exit`：
+
+```
+exit
 ```
 
-要升级到最新的Mojo版本，请使用`modular update`命令：
+现在让我们尝试运行现有的代码示例。
 
-```sh
-modular update mojo
+
+## 5、运行来自 GitHub 的示例
+我们在 GitHub 上的 Mojo 代码示例包含一个 Magic 配置文件，因此您可以简单地克隆 repo 并使用 运行代码`magic`。例如：
+
+1. 克隆 Mojo 仓库：
+    
+    ```
+    git clone https://github.com/modularml/mojo.git
+    ```
+    
+    仅当您安装了夜间版本时，才签出夜间分支：
+    
+    ```
+    git checkout nightly
+    ```
+    
+2. 导航至示例：
+    
+    ```
+    cd mojo/examples
+    ```
+    
+3. 运行一些代码：
+    
+    ```
+    magic run mojo hello_interop.mojo
+    ```
+    
+    ```
+    Hello Mojo 🔥!963Hello from Python!I can even print a numpy array:  [1 2 3]
+    ```
+
+## 6、安装 VS Code 扩展（可选）
+为了通过代码完成、快速修复和悬停帮助等功能提供一流的开发人员体验，我们为 Visual Studio Code 创建了 [Mojo 扩展](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)。
+
+![](https://docs.modular.com/assets/images/mojo-vscode-39e1aceb5a854d32330e825ecb16e4a2.png)
+
+## 更新Mojo
+要更新项目中的 Mojo 版本，请使用`magic add` 并指定`max`包版本。
+
+例如，如果您想始终使用最新版本的 Mojo，您可以使用通配符`*`作为版本，然后简单运行`magic update`（必须`magic add`在项目路径内运行）：
+
+```
+cd hello-world
 ```
 
-### 更新Modular CLI
-
-我们也可能发布`modular`工具的更新。运行以下命令在您的系统上更新CLI。
-
-Linux：
-
-```sh
-sudo apt update
-
-sudo apt install modular
+```
+magic add max
 ```
 
-Mac：
-
-```sh
-brew update
-
-brew upgrade modular
+```
+magic update
 ```
 
-## 在Mojo Playground中进行开发
 
-除了下载Mojo SDK，您还可以在我们的在线Playground中尝试Mojo。
+虽然通配符选项允许`magic update`始终安装最新版本，但它也会`magic.lock`使用您安装的明确版本更新项目中的文件。这可确保初始化项目的任何其他人也获得相同的软件包版本（直到您 `magic update`再次运行）。
 
-### 预期效果
+要更具体地说明软件包版本，可以使用任何[Python 软件包版本说明符](https://packaging.python.org/en/latest/specifications/version-specifiers/#id5)。例如：
 
-Mojo Playground是一个简单的在线编辑器，您可以在其中测试Mojo代码。
+```
+magic add "max~=24.4"
+```
 
-- 我们提供了一些代码示例，以展示Mojo的基础知识和功能。
-
-- 这是一个在线沙盒，不适用于基准测试。
-
-- 您可以下载您的代码或将其共享为gist，但在Playground本身中没有保存代码的机制。在切换代码示例时，任何更改都将丢失（以及在服务器刷新或更新时）。如果您想保存某些内容，请将其保存到本地！
-
-- Playground环境不包含任何Python包。将来，我们打算在Playground中提供一些常见的Python包供导入使用。
-
-- 可能会存在一些错误。请在[开发者社区中反馈问题](https://mojoo.org/)。
-
-### 注意事项
-
-- Mojo环境无法访问网络，您无法安装任何Mojo或Python包。您只能访问Mojo和Mojo标准库。
-
-- 有关Mojo尚不支持或存在问题的常见列表，请参阅Mojo路线图和注意事项。
+```
+magic add "max>=24.4,<24.5"
+```
 
 {/* mdx */}
 <span style={{color: '#fff0'}}>&#77;&#111;&#106;&#111;&#20013;&#25991;&#32593;&#65306;&#109;&#111;&#106;&#111;&#99;&#110;&#46;&#111;&#114;&#103;&#10;&#77;&#111;&#106;&#111;&#32;&#68;&#101;&#118;&#31038;&#21306;&#65306;&#109;&#111;&#106;&#111;&#111;&#46;&#111;&#114;&#103;</span>
