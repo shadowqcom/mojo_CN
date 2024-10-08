@@ -32,7 +32,7 @@ Mojo 是一种新的编程语言，我们是国内第一批 Mojo 开发 者。
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=shadowqcom/mojo_CN&type=Date)](https://star-history.com/#shadowqcom/mojo_CN&Date)
+[![Stargazers over time](https://starchart.cc/shadowqcom/mojo_CN.svg?variant=adaptive)](https://starchart.cc/shadowqcom/mojo_CN)
 
 
 ## 感谢贡献者
