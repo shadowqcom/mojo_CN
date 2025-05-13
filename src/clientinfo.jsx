@@ -6,18 +6,6 @@ const ClientInfo = () => {
   const [pingTime, setPingTime] = useState('Pending...');
 
   useEffect(() => {
-    // 获取IP地址
-    const fetchIPAddress = async () => {
-      try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipResponse.json();
-        setIpAddress(ipData.ip);
-      } catch (error) {
-        console.error('Error fetching IP address:', error);
-        setIpAddress('Error');
-      }
-    };
-
     // 页面加载时间
     const startTime = performance.now();
     const onLoad = () => {
@@ -41,7 +29,6 @@ const ClientInfo = () => {
       }
     };
 
-    fetchIPAddress();
     pingCloudflare();
 
     // 清理事件监听器
@@ -52,7 +39,6 @@ const ClientInfo = () => {
 
   return (
     <div>
-      <p>Client ip：{ipAddress}</p>
       <p>CDN time：{pingTime} ms</p>
       <p>Loading time：{loadTime} ms</p>
     </div>

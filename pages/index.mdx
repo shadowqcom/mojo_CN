@@ -1,5 +1,5 @@
 ---
-title: Mojo：面向AI开发者的编程语言 | Mojo官网  Mojo社区
+title: Mojo：面向AI开发者的编程语言 | 强大的CPU和GPU编程 | Mojo官网  Mojo社区
 ---
 
 import styles from './index.module.css'
@@ -8,31 +8,56 @@ import styles from './index.module.css'
 <div className={styles.bady}>
     <div className={styles.main}>
         <h1>Mojo</h1>
-        <h2>AI开发者的编程语言</h2> 
-        <p>Mojo 将 Python 的可用性与 C 的性能相结合，解锁了 AI 硬件无与伦比的可编程性和 AI 模型的可扩展性。</p>
+        <h2>强大的 CPU 和 GPU 编程</h2> 
+        <p>Mojo 是一种具有 Python 风格的编程语言，无需 CUDA 可实现极快的 CPU+GPU 执行。搭配MAX使用，以实现极快的 AI 推理。</p>
         <button><a href="/manual/getstarted/getmojo">阅读文档</a></button>
         <div className={styles.cardcombination}>
             <div className={styles.card}>
               <span role="img" aria-label="emoji">🎉</span>
-              <h3>用一种语言写下所有内容</h3>
-              <p>用一种语言写下所有内容，使用Python或者直接操作底层硬件，编写与各种低级AI硬件交互的程序，无需C++或CUDA。</p>
+              <h3>同时编写 CPU+GPU 代码</h3>
+              <p>使用与 OpenAI 兼容的 REST API，在 GPU 和 CPU 上提供行业领先的性能，从 Hugging Face 提供 500+ AI 模型。</p>
             </div>
             <div className={styles.card}>
               <span role="img" aria-label="emoji">⚡</span>
-              <h3>提升Python性能</h3>
-              <p >充分利用硬件性能，包括多核心、矢量单元和特殊加速器单元，使用全球最先进的编译器和异构运行时。实现与C++和CUDA相媲美的性能。</p>
+              <h3>Python风格的GPU代码</h3>
+              <p >结合 C++、Rust 和 CUDA 最佳特性的 Python风格 GPU 代码。</p>
             </div>
             <div className={styles.card}>
-              <span role="img" aria-label="emoji">✨</span>
+              <span role="img" aria-label="emoji">📦</span>
               <h3>访问整个Python生态系统</h3>
               <p>与Python生态系统实现真正的互操作性，无缝地混合使用诸如Numpy和Matplotlib等任意库与您的自定义代码和Mojo代码。</p>
+            </div>
+            <div className={styles.card}>
+              <span role="img" aria-label="emoji">💾</span>
+              <h3>高级内存安全</h3>
+              <p>Mojo 使用所有权内存模型，以赋予开发者对内存生命周期的完全和安全控制。</p>
+            </div>
+            <div className={styles.card}>
+              <span role="img" aria-label="emoji">🛠</span>
+              <h3>编译时参数化</h3>
+              <p>编写与硬件无关的内核，并通过编译时元编程减少样板代码。</p>
+            </div>
+            <div className={styles.card}>
+              <span role="img" aria-label="emoji">🗂</span>
+              <h3>泛化类型</h3>
+              <p>通过将常见特性分配给不同数据类型来重用通用算法。</p>
             </div>
         </div>
     </div>
 
     {/* 代码块 */}
     <div className={styles.indexcode}>
-      <p>简单两步，安装Mojo并init你的第一个项目：</p>
+      <p>现在可以更简单地安装Mojo</p>
+      <pre className="nx-bg-primary-700/5 nx-mb-4 nx-overflow-x-auto nx-rounded-xl nx-subpixel-antialiased dark:nx-bg-primary-300/10 nx-text-[.9em] contrast-more:nx-border contrast-more:nx-border-primary-900/20 contrast-more:nx-contrast-150 contrast-more:dark:nx-border-primary-100/40 nx-py-4">
+        <code>
+          <span className="line">
+          <span style={{ color: 'var(--shiki-token-function)' }}>pip </span>
+          <span style={{ color: 'var(--shiki-token-string)' }}>install </span>
+          <span style={{ color: 'var(--shiki-token-keyword)' }}>modular </span>
+          </span>
+        </code>
+      </pre>
+      <p>或者采用原生安装方式</p>
       <pre className="nx-bg-primary-700/5 nx-mb-4 nx-overflow-x-auto nx-rounded-xl nx-subpixel-antialiased dark:nx-bg-primary-300/10 nx-text-[.9em] contrast-more:nx-border contrast-more:nx-border-primary-900/20 contrast-more:nx-contrast-150 contrast-more:dark:nx-border-primary-100/40 nx-py-4">
         <code>
           <span className="line">
@@ -41,17 +66,6 @@ import styles from './index.module.css'
           <span style={{ color: 'var(--shiki-token-string)' }}>https://mojocn.org/magic </span>
           <span style={{ color: 'var(--shiki-token-keyword)' }}>| </span>
           <span style={{ color: 'var(--shiki-token-function)' }}>bash</span>
-          </span>
-        </code>
-      </pre>
-      <pre className="nx-bg-primary-700/5 nx-mb-4 nx-overflow-x-auto nx-rounded-xl nx-subpixel-antialiased dark:nx-bg-primary-300/10 nx-text-[.9em] contrast-more:nx-border contrast-more:nx-border-primary-900/20 contrast-more:nx-contrast-150 contrast-more:dark:nx-border-primary-100/40 nx-py-4">
-        <code>
-          <span className="line">
-            <span style={{ color: 'var(--shiki-token-function)' }}>magic </span>
-            <span style={{ color: 'var(--shiki-token-string)' }}>init </span>
-            <span style={{ color: 'var(--shiki-token-string)' }}>hello-world </span>
-            <span style={{ color: 'var(--shiki-token-string)' }}>--format </span>
-            <span style={{ color: 'var(--shiki-token-string)' }}>mojoproject</span>
           </span>
         </code>
       </pre>
