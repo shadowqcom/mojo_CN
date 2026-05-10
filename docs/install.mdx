@@ -1,0 +1,113 @@
+---
+title: 安装 Mojo
+hide_table_of_contents: true
+description: 你可以使用 pixi、uv、conda、pip 或其他 Python/Conda 包管理器安装 Mojo。
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import ConditionalVersionDocs from '@site/src/components/ConditionalVersionDocs'
+import VersionSubheader from '@site/src/components/VersionSubheader';
+
+<VersionSubheader />
+
+Mojo 的安装方式与 Python 或 Conda 包完全相同，支持 macOS 和 Linux 系统（请参阅[系统要求](/docs/requirements/)）。
+
+<ConditionalVersionDocs version="nightly">
+
+<Tabs groupId="install">
+<TabItem value="uv" label="uv">
+
+    ```sh
+    uv pip install mojo \
+      --index https://whl.modular.com/nightly/simple/ \
+      --prerelease allow
+    ```
+
+或者将 Mojo 添加到项目中：
+
+    ```sh
+    uv init hello-world
+    cd hello-world
+    uv add mojo \
+      --index https://whl.modular.com/nightly/simple/ \
+      --prerelease allow
+    ```
+
+</TabItem>
+<TabItem value="pixi" label="pixi">
+
+    ```sh
+    pixi init hello-world \
+      -c https://conda.modular.com/max-nightly/ -c conda-forge
+    cd hello-world
+    pixi add mojo
+    ```
+
+</TabItem>
+</Tabs>
+
+</ConditionalVersionDocs>
+
+<ConditionalVersionDocs version="stable">
+
+<Tabs groupId="install">
+<TabItem value="uv" label="uv">
+
+    ```sh
+    uv pip install mojo
+    ```
+
+或者将 Mojo 添加到项目中：
+
+    ```sh
+    uv init hello-world
+    cd hello-world
+    uv add mojo
+    ```
+
+</TabItem>
+<TabItem value="pixi" label="pixi">
+
+    ```sh
+    pixi init hello-world \
+      -c https://conda.modular.com/max/ -c conda-forge
+    cd hello-world
+    pixi add mojo
+    ```
+
+</TabItem>
+</Tabs>
+
+</ConditionalVersionDocs>
+
+## 获取 VS Code 扩展
+
+要获得语法高亮、代码补全和调试支持，请从以下位置安装 Mojo 扩展：
+
+- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)
+- [Open VSX Registry](https://open-vsx.org/extension/modular-mojotools/vscode-mojo)
+
+## 获取 Mojo 技能
+
+Mojo 智能体技能可以让你的 AI 编程助手与最新的语言更新和最佳实践保持同步。
+
+安装方式：
+
+```sh
+npx skills add modular/skills
+```
+
+## 开始使用
+
+import ListingCard from '@site/src/components/Listing/ListingCard';
+import ListingCards from '@site/src/components/Listing/ListingCards';
+
+<ListingCards className="docs-desktop:!grid-cols-2">
+  <ListingCard title="快速入门"
+    url="/docs/manual/quickstart"
+    description="通过简单的代码示例快速学习 Mojo 编程基础" />
+  <ListingCard title="初学者教程"
+    url="/docs/manual/get-started/"
+    description="通过构建生命游戏深入理解 Mojo" />
+</ListingCards>

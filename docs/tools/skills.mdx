@@ -1,0 +1,104 @@
+---
+title: Mojo AI 技能
+sidebar_position: 6
+description: >
+  用于 Mojo 和 MAX 项目开发的官方 AI 智能体技能。
+  遵循智能体技能标准，为 AI 编程智能体编码最佳实践。
+---
+
+Mojo 非常适合智能体编程，因为它具有简洁的语言语法，你的智能体可以在编译时捕获大多数编码错误。为了让你的 token 使用更加高效，我们的 Mojo 技能确保你从一开始就生成最新且符合习惯的 Mojo 代码。
+
+许多 AI 模型是在旧版本的 Mojo 和 MAX 上训练的。它们的更新速度跟不上语言的演进，因此经常生成无法编译或反映过时用法的代码。
+
+为了获得最佳结果，智能体需要准确、最新的上下文。Mojo 智能体技能设计得紧凑且专注，只提供避免常见代码生成问题所需的最重要指导。这保持了较低的 token 使用量，并为相关上下文留出更多空间。
+
+[Modular 技能](https://github.com/modular/skills/tree/main)提供关于 Mojo 语法、开发模式和工作流程的最新指导，使 AI 编程智能体能够生成符合当今语言的现代化、可工作的代码。
+
+## 你可以做什么
+
+- 无需手动设置即可启动新的 Mojo 或 MAX 项目
+  （"我想启动一个新的 Mojo 项目用于图像增强"）
+- 生成现代 Mojo 语法
+  （"编写一个围绕中心应用变换的函数"）
+- 使用有效模式编写 GPU 代码
+  （"将此 CPU 函数转换为在 GPU 上运行"）
+- 正确使用 Python 互操作
+  （"更新此 Mojo 代码以使用 NumPy"）
+- 从 CUDA、Python 或 C++ 移植代码
+  （"将此 CUDA 函数转换为 Mojo"）
+
+你描述目标。系统处理语言。
+
+## 安装
+
+**安装所有技能**：
+
+```text
+npx skills add modular/skills
+```
+
+**安装特定技能**：
+
+```text
+npx skills add modular/skills --skill mojo-syntax
+```
+
+**更新技能**：
+
+```text
+npx skills update
+```
+
+### 手动安装
+
+**HTTPS：**
+
+```text
+git clone https://github.com/modular/skills.git
+```
+
+**SSH：**
+
+```text
+git clone git@github.com:modular/skills.git
+```
+
+**CLI：**
+
+```text
+gh repo clone modular/skills
+```
+
+### 配置
+
+将单个技能文件复制或符号链接到你的智能体配置目录。
+
+## 工作原理
+
+技能遵循[智能体技能标准](https://agentskills.io/specification)。每个技能都是独立的，由意图触发，并结构化以供 AI 智能体可靠使用。
+
+运行时：
+
+1. 智能体解释你的请求。
+2. 它选择正确的技能（例如 `mojo-syntax` 或 `mojo-gpu-fundamentals`）。
+3. 技能指导生成符合当前 Mojo 和 MAX 模式的代码。
+
+这不是提示。这是受控的代码生成。
+
+## 常见问题
+
+**技能是否始终与最新的 Mojo 保持同步？**
+
+技能会定期更新以跟踪 Mojo 和 MAX 的变化，但语言变化和技能更新之间会有延迟。
+
+**我可以选择与已安装 Mojo 版本匹配的技能版本吗？**
+
+目前不可以。技能不按 Mojo 版本进行版本控制，因此技能指导与你的安装版本之间可能存在不匹配。我们建议安装最新版本的 Mojo 以最小化此风险。
+
+**我必须安装所有技能吗？**
+
+不。只安装你需要的。
+
+**技能有许可证吗？**
+
+有。它们在 Apache 2.0 许可证下提供。

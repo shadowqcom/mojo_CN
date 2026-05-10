@@ -1,0 +1,346 @@
+---
+title: Mojo 快速入门
+description: 快速上手 Mojo 编程语言
+sidebar_label: 快速入门
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import ConditionalVersionDocs from '@site/src/components/ConditionalVersionDocs'
+import Tooltip from '@site/src/components/Tooltip/tooltip';
+
+export const tooltipNightly = (<Tooltip
+  parent="每夜版"
+  content="要获取稳定版，请在网站页眉中切换版本。"
+/>);
+export const tooltipStable = (<Tooltip
+  parent="稳定版"
+  content="要获取每夜版，请在网站页眉中切换版本。"
+/>);
+
+本页面通过代码示例快速教你 Mojo 的语法。
+
+关于语言特性的更多解释，请参阅 [Mojo 入门教程](/docs/manual/get-started)或 [Mojo 语言基础](/docs/manual/basics)。
+
+:::note[系统要求]
+
+你可以使用 Mac、Linux 或 Windows（WSL）。详情请参阅[系统要求](/docs/requirements/)。
+
+:::
+
+## 项目设置
+
+你可以使用任何 Python 或 Conda 包管理器安装 Mojo，但我们推荐使用 `pixi` 或 `uv`。
+
+<ConditionalVersionDocs version="nightly">
+
+使用以下命令安装{tooltipNightly}：
+
+<Tabs groupId="install">
+<TabItem value="uv" label="uv">
+
+1. 如有需要，安装 `uv`：
+
+    ```sh
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+
+2. 创建项目并安装 Mojo：
+
+    ```bash
+    uv init temperature-analyzer && cd temperature-analyzer
+    uv venv && source .venv/bin/activate
+    uv add mojo  --index https://whl.modular.com/nightly/simple/ \
+      --prerelease allow    ```
+
+</TabItem>
+
+<TabItem value="pixi" label="pixi">
+1. 如有需要，安装 `pixi`：
+
+    ```sh
+    curl -fsSL https://pixi.sh/install.sh | sh
+    ```
+
+2. 创建项目并安装 Mojo：
+
+    ```bash
+    pixi init temperature-analyzer \
+    -c https://conda.modular.com/max-nightly/ -c conda-forge
+    cd temperature-analyzer
+    pixi add mojo
+    pixi shell
+    ```
+
+</TabItem>
+</Tabs>
+
+</ConditionalVersionDocs>
+
+<ConditionalVersionDocs version="stable">
+
+使用以下命令安装{tooltipStable}：
+
+<Tabs groupId="install">
+<TabItem value="uv" label="uv">
+
+    ```sh
+    uv init temperature-analyzer && cd temperature-analyzer
+    uv venv && source .venv/bin/activate
+    uv add mojo
+    ```
+
+</TabItem>
+<TabItem value="pixi" label="pixi">
+
+    ```sh
+    pixi init temperature-analyzer \
+    -c https://conda.modular.com/max/  -c conda-forge
+    cd temperature-analyzer
+    pixi add mojo
+    pixi shell
+    ```
+
+</TabItem>
+</Tabs>
+
+</ConditionalVersionDocs>
+
+## Hello Mojo
+
+在你喜欢的 IDE 或编辑器中创建 `analyzer.mojo` 文件。
+
+在 `analyzer.mojo` 中添加：
+
+```mojo
+def main():
+    print("温度分析器")
+```
+
+运行它：
+
+```bash
+mojo analyzer.mojo
+```
+
+要点：
+
+- 如果看到"温度分析器"，说明你的设置正常工作。
+- 所有 Mojo 可执行程序都使用 `main()` 作为入口点。
+
+## 变量和数据
+
+更新你的文件，添加温度数据：
+
+```mojo
+def main():
+    print("温度分析器")
+
+    # 方括号告诉 Mojo 在编译时 `List` 的类型
+    var temps: List[Float64] = [20.5, 22.3, 19.8, 25.1]
+
+    print("记录了", len(temps), "个温度数据")
+```
+
+## 循环
+
+打印每个温度。在 `main()` 中的 print 语句后添加：
+
+```mojo
+def main():
+    # ... 已有代码 ...
+
+    for index in range(len(temps)):  # 范围是 [0, len(temps))
+        print("  第{}天: {}°C".format(index + 1, temps[index]))
+```
+
+要点：
+
+- 天数偏移 1 是因为范围使用从零开始的索引。
+
+## 函数
+
+在 `main()` 上方添加此函数来计算平均温度：
+
+```mojo
+def calculate_average(temps: List[Float64]) -> Float64:
+    var total: Float64 = 0.0
+    for index in range(len(temps)):
+        total += temps[index]
+    return total / Float64(len(temps))
+
+def main():
+    # ... 已有代码 ...
+```
+
+在 `main()` 末尾添加调用函数的代码：
+
+```mojo
+    var avg = calculate_average(temps)
+    print("平均值: {}°C".format(avg))
+```
+
+## 条件语句
+
+对平均温度进行分类。在 `main()` 末尾添加：
+
+```mojo
+    if avg > 25.0:
+        print("状态: 炎热的一周")
+    elif avg > 20.0:
+        print("状态: 舒适的一周")
+    else:
+        print("状态: 凉爽的一周")
+```
+
+## 抛出错误
+
+通过更新 `calculate_average` 来处理空数据。现在函数可以抛出错误了。
+
+```mojo
+def calculate_average(temps: List[Float64]) raises -> Float64:
+    if len(temps) == 0:  # 空的温度列表
+        raise Error("没有温度数据")
+
+    var total: Float64 = 0.0
+    for index in range(len(temps)):
+        total += temps[index]
+    return total / Float64(len(temps))
+```
+
+变化：
+
+- 在返回箭头前添加 `raises`。
+- 添加空列表检查。
+- 如果为空则抛出 `Error`。
+
+## 处理错误
+
+在 `main()` 中，用 `try-except` 包装你的代码以处理错误：
+
+```mojo
+    try:
+        var avg = calculate_average(temps)
+        print("平均值: {}°C".format(avg))
+
+        if avg > 25.0:
+            print("状态: 炎热的一周")
+        elif avg > 20.0:
+            print("状态: 舒适的一周")
+        else:
+            print("状态: 凉爽的一周")
+    except e:
+        print("错误:", e)
+```
+
+要测试错误，将 `temps` 替换为 `List[Float64]()`。
+确认你的应用程序输出"没有温度数据"错误。
+
+## Python 集成
+
+使用 Python 的 numpy 添加统计功能。首先安装它：
+
+<Tabs groupId="install">
+
+<TabItem value="uv" label="uv" default>
+```bash
+uv pip install numpy
+```
+</TabItem>
+
+<TabItem value="pixi" label="pixi">
+```bash
+pixi add numpy
+```
+</TabItem>
+
+<TabItem value="pip" label="pip">
+```bash
+pip install numpy
+```
+</TabItem>
+
+<TabItem value="conda" label="conda">
+```bash
+conda install numpy
+```
+</TabItem>
+
+</Tabs>
+
+然后，在文件顶部添加以下导入：
+
+```mojo
+from std.python import Python, PythonObject
+```
+
+现在，在 `main()` 的 `try` 块末尾计算 Python 统计数据：
+
+```mojo
+        var np = Python.import_module("numpy")
+        var pytemps: PythonObject = [20.5, 22.3, 19.8, 25.1]
+        print("温度标准差:", np.std(pytemps))
+```
+
+## 完整代码
+
+你的完整 `analyzer.mojo`：
+
+```mojo
+from std.python import Python, PythonObject
+
+def calculate_average(temps: List[Float64]) raises -> Float64:
+    if len(temps) == 0:
+        raise Error("没有温度数据")
+
+    var total: Float64 = 0.0
+    for index in range(len(temps)):
+        total += temps[index]
+    return total / Float64(len(temps))
+
+def main():
+    print("温度分析器")
+    var temps: List[Float64] = [20.5, 22.3, 19.8, 25.1]
+    print("记录了", len(temps), "个温度数据")
+
+    for index in range(len(temps)):
+        print("  第{}天: {}°C".format(index + 1, temps[index]))
+
+    try:
+        var avg = calculate_average(temps)
+        print("平均值: {}°C".format(avg))
+
+        if avg > 25.0:
+            print("状态: 炎热的一周")
+        elif avg > 20.0:
+            print("状态: 舒适的一周")
+        else:
+            print("状态: 凉爽的一周")
+
+        var np = Python.import_module("numpy")
+        var pytemps: PythonObject = [20.5, 22.3, 19.8, 25.1]
+        print("温度标准差:", np.std(pytemps))
+        _ = pytemps^ # 允许 Python 对象释放
+    except e:
+        print("错误:", e)
+```
+
+## 你学到了什么
+
+Mojo 变量、列表、循环、函数、条件语句、错误处理和 Python 集成，全部在一个可运行的程序中。
+
+## 在 AI 编程助手中使用 Mojo
+
+如果你使用 AI 编程助手，`mojo-syntax` 技能可以让你与最新的每夜版语言发布保持同步。随时跟进 Mojo 的快速开发：
+
+```bash
+npx skills add modular/skills
+```
+
+这将安装所有四个 [Mojo 智能体技能](/docs/tools/skills)，包括 `mojo-syntax`。
+
+## 继续学习
+
+**构建更大的项目：** [教程：生命游戏](/docs/manual/get-started)
+**语言指南：** [Mojo 手册](/docs/manual)
+**API 文档：** [标准库](/docs/std)

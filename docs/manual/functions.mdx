@@ -1,0 +1,610 @@
+---
+title: 函数
+sidebar_position: 2
+description: Mojo 函数介绍。
+---
+
+Mojo 使用 `def` 关键字定义函数。在 [`struct`](/docs/manual/structs/) 内部声明的函数称为"方法"，但它们具有与这里描述的"函数"相同的特性。
+
+:::caution
+
+`fn` 关键字自 Mojo v26.2 起已弃用。所有函数声明都应使用 `def`。`fn` 关键字将在未来版本中移除。
+
+:::
+
+## 函数结构
+
+Mojo 函数包含以下元素：
+
+<pre>
+<strong>def</strong> <var>函数名</var><strong>[
+&#8203;    </strong><var>参数 ...</var><strong>
+](
+&#8203;    </strong><var>实参 ...</var><strong>
+) -&gt;</strong> <var>返回值类型</var>:
+&#8203;    <var>函数体</var>
+</pre>
+
+函数可以包含：
+
+- 参数：函数可以选择性地接受一个或多个用于元编程的编译时_参数_值。
+- 实参：函数也可以选择性地接受一个或多个运行时_实参_。
+- 返回值：函数可以选择性地返回一个值。
+- 函数体：调用函数时执行的语句。函数定义必须包含函数体。
+
+所有可选部分都可以省略，因此最简单的函数如下：
+
+```mojo
+def do_nothing():
+    pass
+```
+
+如果函数不接受参数，可以省略方括号，但圆括号始终是必需的。
+
+虽然不能省略函数体，但可以使用 `pass` 语句定义一个什么都不做的函数。
+
+### 实参和参数
+
+函数接受两种输入：_实参_和_参数_。实参在许多其他语言中都很常见：它们是传递给函数的运行时值。
+
+```mojo
+def add(a: Int, b: Int) -> Int:
+    return a+b
+```
+
+另一方面，参数可以看作是一个编译时变量，它成为运行时常量。例如，考虑以下带参数的函数：
+
+```mojo
+def add_tensors[rank: Int](a: MyTensor[rank], b: MyTensor[rank]) -> MyTensor[rank]:
+    # ...
+```
+
+在这种情况下，`rank` 值需要以可以在编译时确定的方式指定，例如字面量或表达式。
+
+当编译使用此代码的程序时，编译器会为程序中使用的每个唯一 `rank` 值生成一个唯一的函数版本，其中 `rank` 在每个特化版本中被视为常量。
+
+这种"参数"的用法可能与你熟悉的其他语言不同，在其他语言中"parameter"和"argument"经常互换使用。在 Mojo 中，"parameter"和"参数表达式"指的是编译时值，而"argument"和"表达式"指的是运行时值。
+
+默认情况下，实参和参数都可以按位置或按关键字指定。这些形式也可以在同一个函数调用中混合使用。
+
+```mojo
+# 按位置
+x = add(5, 7)      # 按位置，a=5 且 b=7
+# 按关键字
+y = add(b=3, a=9)
+# 混合
+z = add(5, b=7)    # 按位置，a=5
+```
+
+关于实参的更多信息，请参阅本页的[函数实参](#函数实参)。关于参数的更多信息，请参阅[参数化：编译时元编程](/docs/manual/parameters/)。
+
+## 函数要求
+
+函数有以下要求：
+
+- 必须声明每个函数参数和实参的类型。
+
+- 如果函数不返回值，可以省略返回类型或声明 `None` 作为返回类型。
+
+  ```mojo
+  # 以下函数定义是等价的
+
+  def greet(name: String):
+    print("你好，", name)
+
+  def greet(name: String) -> None:
+    print("你好，", name)
+  ```
+
+- 如果函数返回值，必须使用 <code><strong>-></strong> <var>类型</var></code> 语法声明返回类型，或在实参列表中提供[命名结果](#命名结果)。
+
+  ```mojo
+  # 以下函数定义是等价的
+
+  def incr(a: Int) -> Int:
+    return a + 1
+
+  def incr(a: Int, out b: Int):
+    b = a + 1
+  ```
+
+  更多信息请参阅本页的[返回值](#返回值)部分。
+
+## 函数实参
+
+:::note[实参列表中的 / 和 *]
+
+你可能会在实参位置看到以下字符：斜杠（`/`）和/或星号（`*`）。例如：
+
+```mojo
+def myfunc(pos_only, /, pos_or_keyword, *, keyword_only):
+```
+
+`/` **之前**的实参只能按位置传递。`*` **之后**的实参只能按关键字传递。详情请参阅[仅位置参数和仅关键字参数](#仅位置参数和仅关键字参数)
+
+你可能还会看到实参名称前缀有一个或两个星号（`*`）：
+
+```mojo
+def myfunc2(*names, **attributes):
+```
+
+实参名称前缀单个星号字符，如 `*names`，标识一个[可变实参](#可变实参)，而实参名称前缀双星号，如 `**attributes`，标识一个[可变仅关键字实参](#可变关键字实参)。
+
+:::
+
+### 可选实参
+
+可选实参是包含默认值的实参，例如这里的 `exp` 实参：
+
+```mojo
+def my_pow(base: Int, exp: Int = 2) -> Int:
+    return base ** exp
+
+def use_defaults():
+    # 使用 `exp` 的默认值
+    var z = my_pow(3)
+    print(z)
+```
+
+但是，不能为使用 [`mut`](/docs/manual/values/ownership/#mutable-arguments-mut) 实参约定声明的实参定义默认值。
+
+任何可选实参必须出现在任何必需实参之后。稍后讨论的[仅关键字实参](#仅位置参数和仅关键字参数)也可以是必需的或可选的。
+
+### 关键字实参
+
+调用函数时也可以使用关键字实参。关键字实参使用 <code><var>实参名</var> = <var>实参值</var></code> 格式指定。可以按任意顺序传递关键字实参：
+
+```mojo
+def my_pow(base: Int, exp: Int = 2) -> Int:
+    return base ** exp
+
+def use_keywords():
+    # 使用关键字实参名称（顺序颠倒）
+    var z = my_pow(exp=3, base=2)
+    print(z)
+```
+
+### 可变实参
+
+可变实参允许函数接受可变数量的实参。要定义接受可变实参的函数，使用可变实参语法 <code>*<var>实参名</var></code>：
+
+```mojo
+def sum(*values: Int) -> Int:
+  var sum: Int = 0
+  for value in values:
+    sum = sum + value
+  return sum
+```
+
+这里的可变实参 `values` 是一个占位符，接受任意数量的传递位置实参。
+
+可以在可变实参之前定义零个或多个实参。调用函数时，任何剩余的位置实参都会分配给可变实参，因此在可变实参**之后**声明的任何实参只能通过关键字指定（参见[仅位置参数和仅关键字参数](#仅位置参数和仅关键字参数)）。
+
+可变实参可分为两类：
+
+- 同质可变实参，所有传递的实参都是相同类型——例如都是 `Int` 或都是 `String`。
+- 异质可变实参，可以接受一组不同实参类型。
+
+以下部分描述如何使用同质和异质可变实参。
+
+:::note[可变参数]
+
+Mojo 也支持可变_参数_，但有一些限制——详情请参阅[可变参数](/docs/manual/parameters/#variadic-parameters)。
+
+:::
+
+#### 同质可变实参
+
+定义同质可变实参（所有实参必须是相同类型）时，使用 <code>*<var>实参名</var>: <var>实参类型</var></code>：
+
+```mojo
+def greet(*names: String):
+    ...
+```
+
+在函数体内，可变实参作为可迭代列表可用。具体来说，该类型名为 [`VariadicList`](/docs/std/builtin/variadics/VariadicList/)。以下是一个简单示例：
+
+```mojo
+def sum(*values: Int) -> Int:
+  var sum: Int = 0
+  for value in values:
+    sum = sum+value
+  return sum
+```
+
+使用 `for..in` 循环直接迭代此列表目前会生成对元素的引用，对于 `mut` 可变列表可以是可变的。如果要修改列表元素，使用 `ref` 绑定模式捕获可变引用：
+
+```mojo
+def make_worldly(mut *strs: String):
+    for ref i in strs:
+        i += " world"
+```
+
+也可以直接使用整数索引列表：
+
+```mojo
+def make_worldly(mut *strs: String):
+    for i in range(len(strs)):
+        strs[i] += " world"
+```
+
+#### 异质可变实参
+
+实现异质可变实参（每个实参类型可能不同）比同质可变实参更复杂。要处理多种实参类型，函数必须是[泛型](/docs/manual/generics/)的，这需要使用 [trait](/docs/manual/traits/) 和[参数](/docs/manual/parameters/)。如果你还没有使用过这些特性，语法可能看起来有点陌生。
+
+带异质可变实参的函数签名如下：
+
+```mojo
+def count_many_things[*ArgTypes: Intable](*args: *ArgTypes):
+    ...
+```
+
+参数列表 `[*ArgTypes: Intable]` 指定函数接受一个 `ArgTypes` 参数，它是一个类型列表，所有类型都符合 [`Intable`](/docs/std/builtin/int/Intable/) trait。`*ArgTypes` 中的星号表示 `ArgTypes` 是一个**可变类型参数**（类型列表）。
+
+实参列表 `(*args: *ArgTypes)` 有熟悉的 `*args` 用于可变实参，但不是单一类型，其类型定义为可变类型列表 `*ArgTypes`。`*args` 中的星号表示**可变实参**，`*ArgTypes` 中的星号指的是可变类型参数。
+
+这意味着 `args` 中的每个实参在 `ArgTypes` 中都有对应的类型，所以 <code>args[<var>n</var>]</code> 的类型是 <code>ArgTypes[<var>n</var>]</code>。
+
+在函数内部，`args` 变成 [`VariadicPack`](/docs/std/builtin/variadics/VariadicPack/)，因为语法 `*args: *ArgTypes` 创建了异质可变实参。这意味着 `args` 中的每个元素可以是不同类型，需要不同的内存量。要迭代 `VariadicPack`，编译器必须知道每个元素的类型，所以必须使用 [`comptime for` 循环](/docs/manual/metaprogramming/comptime-evaluation/#comptime-for)：
+
+```mojo
+def count_many_things[*ArgTypes: Intable](*args: *ArgTypes) -> Int:
+    var total = 0
+
+    comptime for i in range(args.__len__()):
+        total += Int(args[i])
+
+    return total
+
+def main():
+    print(count_many_things(5, 11.7, 12))
+```
+
+```output
+28
+```
+
+注意调用 `count_many_things()` 时，实际上不需要传递实参类型列表。只需传递实参，Mojo 会自动生成 `ArgTypes` 列表。
+
+#### 可变关键字实参
+
+Mojo 函数也支持可变关键字实参（`**kwargs`）。可变关键字实参允许用户传递任意数量的关键字实参。要定义接受可变关键字实参的函数，使用可变关键字实参语法 <code>**<var>关键字实参名</var></code>：
+
+```mojo
+def print_nicely(**kwargs: Int):
+    for item in kwargs.items():
+        print(item.key, "=", item.value)
+
+# 打印：
+# `a = 7`
+# `y = 8`
+print_nicely(a=7, y=8)
+```
+
+在此示例中，实参名 `kwargs` 是一个占位符，接受任意数量的关键字实参。在函数体内，可以将实参作为关键字和实参值的字典访问（具体来说是 [`OwnedKwargsDict`](/docs/std/collections/dict/OwnedKwargsDict/) 的实例）。
+
+目前有一些限制：
+
+- 可变关键字实参始终被隐式视为使用 `var` [实参约定](/docs/manual/values/ownership#argument-conventions)声明，不能以其他方式声明：
+
+  ```mojo
+  # 尚不支持。
+  def read_var_kwargs(read **kwargs: Int): ...
+  ```
+
+- 所有可变关键字实参必须具有相同类型，这决定了实参字典的类型。例如，如果实参是 `**kwargs: Float64`，则实参字典将是 `OwnedKwargsDict[Float64]`。
+
+- 实参类型必须符合 [`Copyable`](/docs/std/builtin/value/Copyable/) trait。
+
+- 尚不支持字典解包：
+
+  ```mojo
+  def takes_dict(d: Dict[String, Int]):
+    print_nicely(**d)  # 尚不支持。
+  ```
+
+- 尚不支持可变关键字_参数_：
+
+  ```mojo
+  # 尚不支持。
+  def var_kwparams[**kwparams: Int](): ...
+  ```
+
+### 仅位置参数和仅关键字参数
+
+定义函数时，可以限制某些实参只能作为位置实参传递，或只能作为关键字实参传递。
+
+要定义仅位置实参，在实参列表中添加斜杠字符（`/`）。`/` 之前的任何实参都是仅位置的：它们不能作为关键字实参传递。例如：
+
+```mojo
+def min(a: Int, b: Int, /) -> Int:
+    return a if a < b else b
+```
+
+这个 `min()` 函数可以用 `min(1, 2)` 调用，但不能使用关键字调用，如 `min(a=1, b=2)`。
+
+你可能希望编写仅位置实参函数的几个原因：
+
+- 实参名称对调用者没有意义。
+- 你希望以后能够更改实参名称而不破坏向后兼容性。
+
+例如，在 `min()` 函数中，实参名称没有添加任何实际信息，没有理由通过关键字指定实参。
+
+关于仅位置实参的更多信息，请参阅 [PEP 570 – Python 仅位置参数](https://peps.python.org/pep-0570/)。
+
+仅关键字实参是仅位置实参的反面：它们只能通过关键字指定。如果函数接受可变实参，在可变实参_之后_定义的任何实参都被视为仅关键字实参。例如：
+
+```mojo
+def sort(*values: Float64, ascending: Bool = True): ...
+```
+
+在此示例中，用户可以传递任意数量的 `Float64` 值，可选地后跟关键字 `ascending` 实参：
+
+```mojo
+var a = sort(1.1, 6.5, 4.3, ascending=False)
+```
+
+如果函数不接受可变实参，可以在实参列表中添加单个星号（`*`）来分隔仅关键字实参：
+
+```mojo
+def kw_only_args(a1: Int, a2: Int, *, double: Bool) -> Int:
+    var product = a1 * a2
+    if double:
+        return product * 2
+    else:
+        return product
+```
+
+仅关键字实参通常有默认值，但这不是必需的。如果仅关键字实参没有默认值，它是一个_必需仅关键字实参_。它必须被指定，并且必须通过关键字指定。
+
+任何必需仅关键字实参必须出现在任何可选仅关键字实参之前的签名中。也就是说，实参在函数签名中按以下顺序出现：
+
+- 必需位置实参。
+- 可选位置实参。
+- 可变实参。
+- 必需仅关键字实参。
+- 可选仅关键字实参。
+- 可变关键字实参。
+
+关于仅关键字实参的更多信息，请参阅 [PEP 3102 – 仅关键字实参](https://peps.python.org/pep-3102/)。
+
+## 重载函数
+
+所有函数声明都必须指定实参类型，所以如果你想让函数处理不同的数据类型，需要实现函数的单独版本，每个版本指定不同的实参类型。这称为函数"重载"。
+
+例如，这是一个重载的 `add()` 函数，可以接受 `Int` 或 `String` 类型：
+
+```mojo
+def add(x: Int, y: Int) -> Int:
+    return x + y
+
+def add(x: String, y: String) -> String:
+    return x + y
+```
+
+如果向 `add()` 函数传递 `Int` 或 `String` 以外的任何内容，将得到编译器错误。也就是说，除非 `Int` 或 `String` 可以隐式地将类型转换为自己的类型。例如，`String` 包含其构造函数（`__init__()`）的重载版本，支持从 `StringLiteral` 值进行[隐式转换](/docs/manual/lifecycle/life/#constructors-and-implicit-conversion)。因此，你也可以将 `StringLiteral` 传递给期望 `String` 的函数。
+
+解析重载函数调用时，Mojo 编译器尝试每个候选函数并使用有效的那个（如果只有一个版本有效），或者选择最接近的匹配（如果可以确定接近匹配），或者报告调用不明确（如果无法确定选择哪一个）。关于 Mojo 如何选择最佳候选的详细信息，请参阅[重载解析](#重载解析)。
+
+如果编译器无法确定使用哪个函数，可以通过将值显式转换为支持的实参类型来解决歧义。例如，以下代码调用重载的 `foo()` 函数，但两个实现都接受支持从 `String` [隐式转换](/docs/manual/lifecycle/life#constructors-and-implicit-conversion)的实参。因此，对 `foo("Hello")` 的调用是不明确的，会产生编译器错误。可以通过将值转换为你真正想要的类型来修复：
+
+```mojo
+struct MyString:
+    @implicit
+    def __init__(out self, string: String):
+        pass
+
+struct YourString:
+    @implicit
+    def __init__(out self, string: String):
+        pass
+
+def foo(name: MyString):
+    print("MyString")
+
+def foo(name: YourString):
+    print("YourString")
+
+def call_foo():
+    # foo("Hello") # 错误：对 'foo' 的调用不明确 ... 此调用不明确，因为两个 `foo` 函数都匹配它
+    foo(MyString("Hello"))
+```
+
+:::note[重载集]
+"重载集"是共享相同名称但具有不同签名的函数重载集合。
+
+- 重载集不能通过导入、别名或参数扩展。
+- 如果在 Mojo 模块中定义函数，它会隐藏你之前导入的任何重载集。
+:::
+
+### 重载解析
+
+解析重载函数时，Mojo 不考虑返回类型或调用点的其他上下文信息——它只考虑参数和实参类型以及函数是实例方法还是静态方法。
+
+重载解析逻辑按优先顺序根据以下规则筛选候选：
+
+1. 需要最少隐式转换的候选（在实参和参数中）。
+2. 没有可变实参的候选。
+3. 没有可变参数的候选。
+4. 具有最短参数签名的候选。
+5. 非 `@staticmethod` 候选（优先于 `@staticmethod` 候选，如果可用）。
+
+如果应用这些规则后仍有多个候选，重载解析失败。例如：
+
+```mojo
+struct MyInt(TrivialRegisterPassable):
+    """一个可隐式转换为 `Int` 的类型。"""
+    var value: Int
+
+    @implicit
+    def __init__(out self, _a: Int):
+        self.value = _a
+
+def foo[x: MyInt, a: Int]():
+    print("foo[x: MyInt, a: Int]()")
+
+def foo[x: MyInt, y: MyInt]():
+    print("foo[x: MyInt, y: MyInt]()")
+
+def bar[a: Int](b: Int):
+    print("bar[a: Int](b: Int)")
+
+def bar[a: Int](*b: Int):
+    print("bar[a: Int](*b: Int)")
+
+def bar[*a: Int](b: Int):
+    print("bar[*a: Int](b: Int)")
+
+def parameter_overloads[a: Int, b: Int, x: MyInt]():
+    # 调用 `foo[x: MyInt, a: Int]()` 因为它不需要隐式转换，
+    # 而 `foo[x: MyInt, y: MyInt]()` 需要一次。
+    foo[x, a]()
+
+    # 调用 `bar[a: Int](b: Int)` 因为它没有可变实参或参数。
+    bar[a](b)
+
+    # 调用 `bar[*a: Int](b: Int)` 因为它有可变参数。
+    bar[a, a, a](b)
+
+parameter_overloads[1, 2, MyInt(3)]()
+
+struct MyStruct:
+    def __init__(out self):
+        pass
+
+    def foo(mut self):
+        print("调用实例方法")
+
+    @staticmethod
+    def foo():
+        print("调用静态方法")
+
+def test_static_overload():
+    var a = MyStruct()
+    # `foo(mut self)` 优先于静态方法。
+    a.foo()
+```
+
+```output
+foo[x: MyInt, a: Int]()
+bar[a: Int](b: Int)
+bar[*a: Int](b: Int)
+```
+
+## 返回值
+
+返回值类型使用 <code><strong>-></strong> <var>类型</var></code> 语法在签名中声明。值使用 `return` 关键字传递，它结束函数并将标识的值（如果有）返回给调用者。
+
+```mojo
+def get_greeting() -> String:
+    return "你好"
+```
+
+默认情况下，值作为拥有值返回给调用者。与实参一样，返回值可以[隐式转换](/docs/manual/lifecycle/life#constructors-and-implicit-conversion)为命名的返回类型。例如，前面的示例使用字符串字面量 `"你好"` 调用 `return`，它被隐式转换为 `String`。
+
+:::note[返回引用]
+
+函数也可以使用 `ref` 返回值返回可变或不可变引用。详情请参阅[生命周期、起源和引用](/docs/manual/values/lifetimes/)。
+
+:::
+
+### 命名结果
+
+命名函数结果允许函数返回无法移动或复制的值。命名结果语法允许你使用 `out` 实参约定指定一个命名的、未初始化的变量返回给调用者：
+
+```mojo
+def get_name_tag(var name: String, out name_tag: NameTag):
+    name_tag = NameTag(name^)
+```
+
+`out` 实参约定标识函数必须初始化的未初始化变量。（这与[结构体构造函数](/docs/manual/lifecycle/life/#constructor)中使用的 `out` 约定相同。）命名结果的 `out` 实参可以出现在实参列表的任何位置，但按照惯例，它应该是列表中的最后一个实参。
+
+函数只能声明一个返回值，无论是使用 `out` 实参还是使用标准的 <code><strong>-></strong> <var>类型</var></code> 语法。
+
+具有命名结果实参的函数不需要包含显式 `return` 语句，如上所示。如果函数在没有 `return` 的情况下终止，或在没有值的 `return` 语句处终止，`out` 实参的值将返回给调用者。如果它包含带值的 `return` 语句，该值将照常返回给调用者。
+
+函数使用命名结果这一事实对调用者是透明的。也就是说，这两个签名对调用者来说是可互换的：
+
+```mojo
+def get_name_tag(var name: String) -> NameTag:
+    ...
+def get_name_tag(var name: String, out name_tag: NameTag):
+    ...
+```
+
+在这两种情况下，调用如下：
+
+```mojo
+tag = get_name_tag("Judith")
+```
+
+因为返回值被分配给这个特殊的 `out` 变量，所以返回时不需要移动或复制它。这意味着你可以创建一个返回不可移动或不可复制类型的函数，并且需要多个步骤来初始化：
+
+```mojo
+struct ImmovableObject:
+    var name: String
+
+    def __init__(out self, var name: String):
+        self.name = name^
+
+def create_immovable_object(var name: String, out obj: ImmovableObject):
+    obj = ImmovableObject(name^)
+    obj.name += "!"
+    # obj 被隐式返回
+
+def main():
+    my_obj = create_immovable_object("Blob")
+```
+
+相比之下，以下使用标准返回值的函数不起作用：
+
+```mojo
+def create_immovable_object2(var name: String) -> ImmovableObject:
+    obj = ImmovableObject(name^)
+    obj.name += "!"
+    return obj^ # 错误：ImmovableObject 不可复制或移动
+```
+
+因为 `create_immovable_object2` 使用局部变量在构造过程中存储对象，返回调用需要将其移动或复制到调用者。如果新创建的值立即返回，这不是问题：
+
+```mojo
+def create_immovable_object3(var name: String) -> ImmovableObject:
+    return ImmovableObject(name^) # 正确
+```
+
+## 抛出和非抛出函数
+
+默认情况下，当函数抛出错误时，函数立即终止，错误传播到调用函数。如果调用函数不处理错误，它会继续向上传播调用栈。
+
+```mojo
+def raises_error() raises:
+    raise Error("发生错误。")
+```
+
+Mojo 函数默认是_非抛出_的。要声明函数可以将错误传播给其调用者，在函数签名中添加 `raises` 关键字。调用抛出函数的非抛出函数**必须处理任何可能的错误。**
+
+```mojo
+# 此函数无法编译
+def unhandled_error():
+    raises_error()   # 错误：无法在非抛出上下文中调用抛出函数
+
+# 显式处理错误
+def handle_error():
+    try:
+        raises_error()
+    except e:
+        print("处理了一个错误：", e)
+
+# 显式传播错误
+def propagate_error() raises:
+    raises_error()
+```
+
+以上所有示例都使用内置的 `Error` 类型。Mojo 还支持_类型化错误_，你可以指定函数可以抛出的自定义错误类型：
+
+```mojo
+def validate(value: Int) raises ValidationError -> Int:
+    ...
+```
+
+更多信息请参阅[错误、错误处理和上下文管理器](/docs/manual/errors/)。

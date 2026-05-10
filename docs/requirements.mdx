@@ -1,0 +1,396 @@
+---
+title: 系统要求
+description: >-
+  Mojo 的操作系统、硬件、软件和 GPU 兼容性要求。
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Mojo 可以在 Mac、Linux 和 Windows（通过 WSL）上运行。使用 Mojo 编程不需要 GPU —— GPU 支持是可选的。
+
+有关安装说明，请参阅[安装指南](/install/)。
+
+## 操作系统
+
+<Tabs groupId="os">
+<TabItem value="linux" label="Linux">
+
+- Ubuntu 22.04 LTS 或更高版本
+- x86-64 CPU（支持 [SSE4.2 或更高版本](https://www.intel.com/content/www/us/en/support/articles/000057621/processors.html)）或 ARM64（AWS Graviton2/3）
+- glibc 2.34 或更高版本
+
+:::note
+
+Mojo 预计可以在满足 glibc 要求的其他 Linux 发行版上运行，但我们仅在 Ubuntu 上进行测试。如果您的系统具有较旧的 glibc 版本，请在具有兼容基础镜像（如 Ubuntu 22.04）的容器中运行 Mojo。
+
+:::
+
+</TabItem>
+<TabItem value="mac" label="Mac">
+
+- macOS Sequoia (15) 或更高版本
+- Apple silicon（M1-M5 处理器）
+
+</TabItem>
+<TabItem value="windows" label="Windows">
+
+Mojo 不原生支持 Windows。您可以使用 [Windows with WSL](https://learn.microsoft.com/en-us/windows/wsl/install) 和兼容的 Ubuntu 版本（请参阅 Linux 要求）来运行 Mojo。
+
+</TabItem>
+</Tabs>
+
+## 硬件
+
+- **CPU：** x86-64（Intel/AMD，支持 SSE4.2）或 Linux 上的 ARM64；macOS 上的 Apple silicon
+- **RAM：** 最少 8 GB
+- **GPU：** 可选。Mojo 支持 NVIDIA、AMD 和 Apple silicon 的 GPU 编程。有关支持的硬件和驱动程序要求，请参阅下方的 [GPU 兼容性](#gpu-兼容性)。
+
+## 软件
+
+- Python 3.10-3.14
+- Linux 上的 C++ 编译器（`g++` 或 `clang++`）
+- macOS 上的 Xcode 或 Xcode Command Line Tools 16 或更高版本
+
+## GPU 兼容性
+
+Mojo 支持 NVIDIA、AMD 和 Apple silicon GPU 的 GPU 编程。本节介绍哪些 GPU 可以与 Mojo 配合使用以及每个供应商所需的软件。
+
+我们将 GPU 兼容性分为两个级别：
+
+- **持续测试：** 在 Modular 的 CI 中每个版本都会运行。高度确信 GPU 代码能够正确编译和执行。
+- **已知兼容：** 已由 Modular 或社区成员确认可以工作，但未持续测试。这些 GPU 与已测试的 GPU 共享架构，应该可以正常工作。
+
+### NVIDIA GPU
+
+#### 软件要求
+
+- NVIDIA GPU 驱动程序 580 或更高版本
+
+  使用 [`nvidia-smi`](https://developer.nvidia.com/system-management-interface) 检查您的驱动程序版本。有关更新，请参阅 [NVIDIA 驱动程序文档](https://www.nvidia.com/en-us/drivers/)。
+
+- **旧版驱动程序：** 如果您使用的是低于 580 的 NVIDIA 驱动程序（在某些云提供商上很常见），请将 `MODULAR_NVPTX_COMPILER_PATH` 环境变量设置为指向 CUDA Toolkit 安装中的系统 `ptxas` 二进制文件：
+
+  ```bash
+  export MODULAR_NVPTX_COMPILER_PATH=/usr/local/cuda/bin/ptxas
+  ```
+
+  这将绕过捆绑编译器的驱动程序版本检查，并允许 Mojo 使用现有驱动程序编译 GPU 代码。
+
+#### 硬件兼容性
+
+<table>
+  <thead>
+    <tr>
+      <th>GPU</th>
+      <th>架构</th>
+      <th>架构目标</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colSpan="3"><strong>持续测试</strong></td>
+    </tr>
+    <tr>
+      <td>B200</td>
+      <td>Blackwell</td>
+      <td><code>sm_100</code></td>
+    </tr>
+    <tr>
+      <td>H100</td>
+      <td>Hopper</td>
+      <td><code>sm_90</code></td>
+    </tr>
+    <tr>
+      <td colSpan="3"><strong>已知兼容</strong></td>
+    </tr>
+    <tr>
+      <td>B300</td>
+      <td>Blackwell</td>
+      <td><code>sm_103</code></td>
+    </tr>
+    <tr>
+      <td>B100</td>
+      <td>Blackwell</td>
+      <td><code>sm_100</code></td>
+    </tr>
+    <tr>
+      <td>DGX Spark</td>
+      <td>Blackwell</td>
+      <td><code>sm_121</code></td>
+    </tr>
+    <tr>
+      <td>H200</td>
+      <td>Hopper</td>
+      <td><code>sm_90</code></td>
+    </tr>
+    <tr>
+      <td>L4</td>
+      <td>Ada Lovelace</td>
+      <td><code>sm_89</code></td>
+    </tr>
+    <tr>
+      <td>L40</td>
+      <td>Ada Lovelace</td>
+      <td><code>sm_89</code></td>
+    </tr>
+    <tr>
+      <td>RTX 50XX 系列</td>
+      <td>Blackwell</td>
+      <td><code>sm_120</code></td>
+    </tr>
+    <tr>
+      <td>RTX 40XX 系列</td>
+      <td>Ada Lovelace</td>
+      <td><code>sm_89</code></td>
+    </tr>
+    <tr>
+      <td>A100</td>
+      <td>Ampere</td>
+      <td><code>sm_80</code></td>
+    </tr>
+    <tr>
+      <td>A10</td>
+      <td>Ampere</td>
+      <td><code>sm_86</code></td>
+    </tr>
+    <tr>
+      <td>RTX 30XX 系列</td>
+      <td>Ampere</td>
+      <td><code>sm_86</code></td>
+    </tr>
+    <tr>
+      <td>Jetson Orin / Orin Nano</td>
+      <td>Ampere</td>
+      <td><code>sm_87</code></td>
+    </tr>
+    <tr>
+      <td>Jetson Thor</td>
+      <td>Blackwell</td>
+      <td><code>sm_110</code></td>
+    </tr>
+    <tr>
+      <td>T4</td>
+      <td>Turing</td>
+      <td><code>sm_75</code></td>
+    </tr>
+    <tr>
+      <td>RTX 20XX 系列</td>
+      <td>Turing</td>
+      <td><code>sm_75</code></td>
+    </tr>
+  </tbody>
+</table>
+
+**Pre-Turing NVIDIA GPU：** Pre-Turing GPU（如 Pascal 代的 GTX 10XX 和 Tesla P100）开箱即用不受支持。要在这些 GPU 上使用 Mojo，请将 `MODULAR_NVPTX_COMPILER_PATH` 环境变量设置为指向与您的硬件和驱动程序版本兼容的系统 `ptxas` 二进制文件。
+
+### AMD GPU
+
+#### 软件要求
+
+- AMD GPU 驱动程序 6.3.3 或更高版本（MI355X 需要 ROCm 7.0 或更高版本）
+
+  - 对于数据中心 GPU（Instinct 系列），请参阅 [Ubuntu 原生安装指南](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/install/install-methods/package-manager/package-manager-ubuntu.html)。
+  - 对于 Ubuntu 上的 Radeon GPU，请参阅 [Radeon 软件 Linux 安装指南](https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/native_linux/install-radeon.html)。
+  - 对于 WSL 上的 Radeon GPU，请参阅 [Radeon 软件 WSL 安装指南](https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/wsl/install-radeon.html)。
+
+#### 硬件兼容性
+
+<table>
+  <thead>
+    <tr>
+      <th>GPU</th>
+      <th>架构</th>
+      <th>架构目标</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colSpan="3"><strong>持续测试</strong></td>
+    </tr>
+    <tr>
+      <td>MI355X</td>
+      <td>CDNA4</td>
+      <td><code>gfx950</code></td>
+    </tr>
+    <tr>
+      <td>MI300X</td>
+      <td>CDNA3</td>
+      <td><code>gfx942</code></td>
+    </tr>
+    <tr>
+      <td colSpan="3"><strong>已知兼容</strong></td>
+    </tr>
+    <tr>
+      <td>MI325X</td>
+      <td>CDNA3</td>
+      <td><code>gfx942</code></td>
+    </tr>
+    <tr>
+      <td>MI250X</td>
+      <td>CDNA2</td>
+      <td><code>gfx90a</code></td>
+    </tr>
+    <tr>
+      <td>Radeon RX 9070</td>
+      <td>RDNA4</td>
+      <td><code>gfx1201</code></td>
+    </tr>
+    <tr>
+      <td>Radeon RX 9060</td>
+      <td>RDNA4</td>
+      <td><code>gfx1200</code></td>
+    </tr>
+    <tr>
+      <td>Radeon 880M</td>
+      <td>RDNA3.5</td>
+      <td><code>gfx1150</code></td>
+    </tr>
+    <tr>
+      <td>Radeon 860M</td>
+      <td>RDNA3.5</td>
+      <td><code>gfx1152</code></td>
+    </tr>
+    <tr>
+      <td>Radeon 8060S</td>
+      <td>RDNA3.5</td>
+      <td><code>gfx1151</code></td>
+    </tr>
+    <tr>
+      <td>Radeon RX 7900</td>
+      <td>RDNA3</td>
+      <td><code>gfx1100</code></td>
+    </tr>
+    <tr>
+      <td>Radeon RX 7800 / 7700</td>
+      <td>RDNA3</td>
+      <td><code>gfx1101</code></td>
+    </tr>
+    <tr>
+      <td>Radeon RX 7600</td>
+      <td>RDNA3</td>
+      <td><code>gfx1102</code></td>
+    </tr>
+    <tr>
+      <td>Radeon 780M</td>
+      <td>RDNA3</td>
+      <td><code>gfx1103</code></td>
+    </tr>
+  </tbody>
+</table>
+
+### Apple silicon GPU
+
+#### 软件要求
+
+- macOS Sequoia (15) 或更高版本
+- Xcode 16 或更高版本
+- 升级 macOS 或 Xcode 后，您可能需要安装 Metal 工具链：
+
+  ```bash
+  xcodebuild -downloadComponent MetalToolchain
+  ```
+
+#### 硬件兼容性
+
+<table>
+  <thead>
+    <tr>
+      <th>芯片</th>
+      <th>支持级别</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>M5</td>
+      <td>已知兼容</td>
+    </tr>
+    <tr>
+      <td>M4</td>
+      <td>已知兼容</td>
+    </tr>
+    <tr>
+      <td>M3</td>
+      <td>已知兼容</td>
+    </tr>
+    <tr>
+      <td>M2</td>
+      <td>已知兼容</td>
+    </tr>
+    <tr>
+      <td>M1</td>
+      <td>已知兼容</td>
+    </tr>
+  </tbody>
+</table>
+
+## GPU 检测故障排除
+
+### Mojo 查找的内容
+
+当 Mojo 需要 GPU 时，运行时会按以下顺序尝试加载特定供应商的驱动程序库：
+
+1. **NVIDIA** (CUDA)：加载 `libcuda.so.1` 和 `libnvidia-ml.so.1`
+2. **AMD** (HIP)：加载 `libamdhip64.so`
+3. **Apple** (Metal)：使用 Metal 框架（内置于 macOS 中）
+
+如果 Mojo 无法加载这些库中的任何一个，它将回退到 CPU 执行。
+
+### 验证 GPU 访问
+
+使用 `--target-accelerator` 标志为特定 GPU 架构编译：
+
+```bash
+mojo build --target-accelerator=sm_90 my_kernel.mojo
+```
+
+要检查系统 GPU 在运行时是否可访问，请尝试一个最小的 GPU 程序：
+
+```mojo title="check_gpu.mojo"
+from gpu.host import DeviceContext
+
+def main():
+    var ctx = DeviceContext()
+    print("GPU:", ctx.name())
+```
+
+```bash
+mojo check_gpu.mojo
+```
+
+如果 Mojo 找不到 GPU，这将引发一个错误，解释它尝试了什么。
+
+### 常见问题
+
+**尽管 `nvidia-smi` 显示 GPU，但未检测到 GPU：**
+
+- 验证 NVIDIA 驱动程序版本是否为 580 或更高版本（`nvidia-smi` 在右上角显示版本）。如果您的驱动程序较旧，请按照上述 [NVIDIA 软件要求](#软件要求) 部分中的说明设置 `MODULAR_NVPTX_COMPILER_PATH`。
+- 确保 `libcuda.so.1` 在您的库路径上。在大多数系统上，NVIDIA 驱动程序安装程序将其放置在 `/usr/lib/x86_64-linux-gnu/` 或 `/usr/lib64/`。
+- 如果使用容器，请确保您正在传递 GPU 访问权限（例如，`docker run --gpus all`）。
+- 设置 `MLRT_CUDA_DEBUG=1` 以获取 CUDA 检测过程的详细日志。
+
+**未检测到 AMD GPU：**
+
+- 验证您是否安装了 ROCm/HIP 以及 `libamdhip64.so` 是否可用。
+- 检查您的 ROCm 版本：`apt show rocm-libs 2>/dev/null | grep Version` 或 `rocm-smi --showdriverversion`。
+- 确保您的用户在 `render` 和 `video` 组中：`sudo usermod -aG render,video $USER`（然后注销并重新登录）。
+
+**未检测到 Apple GPU 或 Metal 工具链错误：**
+
+- 确保您使用的是 macOS Sequoia (15) 或更高版本：`sw_vers`。
+- 安装 Metal 工具链：`xcodebuild -downloadComponent MetalToolchain`。
+- 验证您是否有 Xcode Command Line Tools：`xcode-select --install`。
+
+**Pre-Turing NVIDIA GPU 错误：**
+
+- 将 `MODULAR_NVPTX_COMPILER_PATH` 设置为兼容的系统 `ptxas` 二进制文件。例如：`export MODULAR_NVPTX_COMPILER_PATH=/usr/local/cuda/bin/ptxas`。
+
+**WSL：未检测到 GPU 或驱动程序不匹配：**
+
+- 确保您遵循 GPU 供应商的 WSL 特定安装说明，而不是原生 Linux 说明。
+- 对于 WSL 上的 NVIDIA，GPU 驱动程序应安装在 Windows 主机上，而不是 WSL 内部。WSL 会自动使主机驱动程序可用。
+- 对于 WSL 上的 AMD，请参阅 [Radeon 软件 WSL 安装指南](https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/wsl/install-radeon.html)。
+
+---
+
+如果您的 GPU 可以与 Mojo 配合使用但未在此处列出，请在 [Modular 社区论坛](https://forum.modular.com) 上告诉我们或 [提交 GitHub 问题](https://github.com/modular/modular/issues)。

@@ -1,0 +1,347 @@
+---
+title: 编译目标
+sidebar_position: 1
+description: >
+  为与开发机器不同的架构、CPU 或 GPU 构建 Mojo 代码。
+---
+
+{/*  This page must be hand-tested; it cannot be verified in CI.
+     Test plan: mojo/docs/code/tools/README-Cross-Compile-Testing.md
+     Test script: mojo/docs/code/tools/test_cross_compile.sh  */}
+
+Mojo 可以为各种目标编译代码，从本地机器到其他 CPU、操作系统和 GPU。你可以检查编译器支持的内容，选择目标配置，并为该目标生成代码。
+
+*编译目标*描述程序运行的位置和方式。它们定义了代码生成期间使用的平台、CPU、功能和可选加速器，适用于原生编译和交叉编译工作流程，包括启用 GPU 的（*异构构建*）。
+
+Mojo 命令行编译器让你可以检查当前平台、选择目标配置并为该目标生成代码。使用它为你的系统构建或针对其他 CPU、操作系统和加速器。
+
+:::caution[开发中]
+交叉编译支持仍在开发中。你可以查询目标、交叉编译到目标文件和汇编，以及针对 GPU 架构。生成完全链接的交叉编译可执行文件需要目标平台的外部链接器。有关当前可用功能的详细信息，请参阅[输出选项](#emit-options)。
+:::
+
+## 查询系统和可用目标
+
+在设置编译或交叉编译标志之前，检查编译器支持哪些目标以及在系统上检测到什么。这些命令列出可用目标并显示编译器如何配置当前机器。
+
+使用这些命令来理解和选择目标的组件，包括目标三元组（架构、供应商、操作系统）、CPU、功能和加速器。
+
+:::note
+目标三元组是标识目标平台的字符串。它列出架构、供应商和操作系统。
+:::
+
+### 有效目标
+
+有效目标是你不设置目标标志时编译器为当前系统使用的配置。
+
+打印系统的完整目标配置：
+
+```sh
+mojo build --print-effective-target
+```
+
+Apple M4 MacBook Pro 上的示例输出。此示例中的功能已截断以节省空间：
+
+```output
+Effective target configuration:
+  --target-triple arm64-apple-darwin25.3.0
+  --target-cpu apple-m4
+  --target-features +aes,+bf16,+complxnum,+crc,+dotprod,+fp-armv8,...
+  --target-accelerator metal:4
+```
+
+此输出显示重现主机配置的标志。使用它来查看不设置目标标志时编译器的假设。
+
+### 支持的目标
+
+列出编译器可以为其生成代码的目标架构。在选择目标或组合目标三元组之前，使用此命令查看哪些架构可用。
+
+```sh
+mojo build --print-supported-targets
+```
+
+例如：
+
+```output
+Registered Targets:
+  arm64 - ARM64 (little endian)
+  arm64_32 - ARM64 (little endian ILP32)
+  aarch64 - AArch64 (little endian)
+  aarch64_32 - AArch64 (little endian ILP32)
+  aarch64_be - AArch64 (big endian)
+  r600 - AMD GPUs HD2XXX-HD6XXX
+  amdgcn - AMD GCN GPUs
+  hexagon - Hexagon
+  ...
+```
+
+### 支持的目标 CPU
+
+列出给定目标三元组的有效 CPU 名称。设置 `--target-triple` 以选择目标三元组并缩小结果范围。
+
+```sh
+mojo build --print-supported-cpus \
+           --target-triple=aarch64-apple-macosx
+```
+
+例如：
+
+```output
+Available CPUs for target aarch64-apple-macosx:
+  a64fx
+  ampere1
+  apple-a10
+  apple-a11
+  apple-m1
+  apple-m4
+  ...
+```
+
+### 支持的加速器
+
+列出编译器可以针对的 GPU 和加速器架构。
+
+```sh
+mojo build --print-supported-accelerators
+```
+
+```output
+Supported GPU and Accelerator Architectures:
+
+NVIDIA (CUDA):
+  sm_52       - Maxwell (GTX 970)
+  sm_60       - Pascal (Tesla P100)
+  sm_90       - Hopper (H100)
+  ...
+
+AMD (ROCm/HIP):
+  gfx942      - CDNA3 (MI300X)
+  mi300x      - (alias) -> gfx942
+  ...
+
+Apple Silicon GPU:
+  apple-m1    - Apple M1
+  apple-m2    - Apple M2
+  ...
+
+Other:
+  cuda        - Generic CUDA
+```
+
+## Mojo 如何描述构建目标
+
+当编译器生成机器代码时，它需要关于目标硬件的一些关键细节：
+
+- **架构**定义基础指令集，如 x86-64 或 AArch64。
+- **CPU 型号**添加处理器特定的行为，可能启用基础之外的指令。
+- **功能集**控制可以启用或禁用的单个硬件功能，如 AVX-512 或 Neon。
+
+对于 GPU 和加速器目标，还有一个细节适用：
+
+- **加速器架构**标识要为其生成设备代码的 GPU 或其他加速器。
+
+如果不显式设置这些，编译器使用主机系统。
+
+### 目标三元组
+
+目标三元组标识你正在编译的平台。它在单个值中列出架构、供应商和操作系统：
+
+```text
+x86_64-unknown-linux-gnu
+aarch64-apple-macosx
+```
+
+三元组设置整体执行环境和二进制约定。它是交叉编译的起点，与下一节描述的两组标志都兼容。
+
+## 设置目标的两种方式
+
+Mojo 提供两组标志来指定目标硬件。它们通过不同的接口达到相同的结果，你不能在一个命令中混合使用它们。这些是 Mojo 目标标志和 GCC/Clang 兼容标志。
+
+### Mojo 目标标志
+
+这些标志让你直接设置三元组、CPU 和功能。
+
+| 标志                   | 用途                         |
+|------------------------|------------------------------|
+| `--target-triple`      | 平台（架构 + 供应商 + 操作系统）|
+| `--target-cpu`         | 特定处理器型号                |
+| `--target-features`    | 单个功能开关                  |
+| `--target-accelerator` | GPU 或加速器架构              |
+
+:::note
+使用 Mojo 目标标志进行交叉编译时，将 `--target-cpu` 与 `--target-triple` 一起设置。CPU 默认为主机处理器，这对于目标架构可能无效。在交叉编译到不同架构时省略 `--target-cpu` 会产生错误，如 `failed to create target info: unknown target CPU 'apple-m4'`。
+:::
+
+例如：
+
+```sh
+mojo build --target-triple aarch64-unknown-linux-gnu \
+           --target-cpu cortex-a72 \
+           --emit object -o myapp.o myapp.mojo
+```
+
+使用 `--target-features` 启用或禁用单个硬件扩展。
+
+```sh
+mojo build --target-triple x86_64-unknown-linux-gnu \
+           --target-cpu x86-64-v3 \
+           --target-features "+avx512f" \
+           --emit object -o myapp.o myapp.mojo
+```
+
+### GCC/Clang 兼容标志
+
+Mojo 支持 GCC 和 Clang 中使用的相同 `--march`、`--mcpu` 和 `--mtune` 标志。这些标志遵循 GCC 手册中记录的行为，工作方式与 `clang` 中相同。
+
+| 标志      | 用途                                          |
+|-----------|-----------------------------------------------|
+| `--march` | 要为其生成代码的架构或 CPU 子类型             |
+| `--mcpu`  | CPU 型号（设置架构和调优）                    |
+| `--mtune` | 特定处理器的优化提示                          |
+
+例如：
+
+```sh
+mojo build --target-triple x86_64-unknown-linux-gnu \
+           --mcpu=haswell \
+           --emit object -o myapp.o myapp.mojo
+```
+
+**`--march`** 控制编译器可以使用哪些指令。使用 `--march=skylake-avx512` 编译的代码可以使用 AVX-512 指令，但不会在缺少这些指令的硬件上运行。
+
+**`--mcpu`** 从单个 CPU 名称设置架构和调优。
+
+**`--mtune`** 指导优化而不更改编译器使用的指令。它告诉编译器优先选择在给定处理器上运行更快的指令序列。代码仍然可以在具有相同指令支持的其他处理器上正确运行。
+
+{/*  Ticket: MOCO-3686  */}
+:::note[已知问题]
+当使用 `--mcpu` 或 `--march` 从不同架构的主机进行交叉编译时，编译器可能会打印关于无法识别功能的警告。这些警告是无害的——编译器会忽略不支持的功能，输出是正确的。这将在未来版本中修复。
+:::
+
+`--march` 标志支持内联添加功能的扩展语法：
+
+```sh
+mojo build --target-triple x86_64-unknown-linux-gnu \
+           --march=x86-64-v3+avx512f \
+           --emit asm -o myapp.s myapp.mojo
+```
+
+:::caution[架构特定行为]
+`--march` 和 `--mcpu` 之间的确切关系因目标架构而异，匹配 GCC/Clang 约定：
+
+- **x86**：`--march` 或 `--mcpu` 指定 CPU 子类型，如 `skylake-avx512`。使用 `--mcpu=generic` 时，`--march` 被视为架构基线。
+- **AArch64**：`--march` 设置基础架构（如 `armv8.2-a`），`--mcpu` 设置特定 CPU（如 `neoverse-n1`）。如果只设置架构，CPU 默认为 `generic`。
+- **ARM**：`--march` 设置基础架构，`--mcpu` 设置特定 CPU。如果只设置架构，则使用该架构的默认 CPU。
+:::
+
+### ⚠️ 不要混合两个系列
+Mojo 编译器在这些标志系列之间强制执行明确的分离。在同一命令中使用 `--target-cpu` 或 `--target-features` 与 `--march` 或 `--mcpu` 会产生错误：
+
+```sh
+# 这会失败：
+mojo build --target-cpu=haswell --mcpu=skylake myapp.mojo
+```
+
+错误：
+
+```output
+error: --target-cpu cannot be used with --march or --mcpu;
+use either --target-cpu/--target-features or --march/--mcpu/--mtune
+```
+
+选择一个系列并一致使用。两者为相同硬件产生相同结果。
+
+### 共享标志
+
+两个标志与两个系列都兼容：
+
+- `--target-triple` 始终有效，通常用于交叉编译，无论你使用哪个系列。
+- `--target-accelerator` 始终有效，用于针对任一系列的 GPU。
+
+## GPU 和加速器目标
+
+Mojo 支持*异构构建*，在单次构建中为 CPU 生成主机代码，为 GPU 生成设备代码。使用 `--target-accelerator` 指定 GPU 架构：
+
+```sh
+mojo build --target-accelerator=sm_90 myapp.mojo
+```
+
+对于 NVIDIA 和 AMD 目标，使用前缀选择平台：
+
+```sh
+mojo build --target-accelerator=nvidia:sm_90 myapp.mojo   # NVIDIA H100
+mojo build --target-accelerator=amdgpu:gfx942 myapp.mojo  # AMD MI300X
+```
+
+当使用 `--emit asm` 与 GPU 目标时，编译器为每个内核生成单独的文件，与主机汇编一起：NVIDIA 为 `.ptx`，AMD 为 `.amdgcn`，Metal 为 `.ll`。
+
+## 实践中的交叉编译
+
+### 为其他平台生成目标文件
+
+```sh
+mojo build --target-triple aarch64-unknown-linux-gnu \
+           --target-cpu cortex-a72 \
+           --emit object -o myapp.o myapp.mojo
+```
+
+这为目标平台生成目标文件。使用该平台的工具链链接它。
+
+### 生成汇编以供检查或外部工具链使用
+
+```sh
+mojo build --target-triple x86_64-unknown-linux-gnu \
+           --emit asm -o myapp.s myapp.mojo
+```
+
+这为目标平台生成汇编。用于检查或传递给外部工具链进行进一步处理。
+
+### 针对特定 CPU 进行调优
+
+```sh
+mojo build --target-triple x86_64-unknown-linux-gnu \
+           --march=x86-64 --mcpu=haswell --mtune=skylake \
+           --emit object -o myapp.o myapp.mojo
+```
+
+这为 Haswell 指令集生成代码并针对 Skylake 进行优化。
+
+### GPU 内核编译
+
+```sh
+mojo build --target-accelerator=nvidia:sm_90 myapp.mojo
+```
+
+这为指定的加速器编译 GPU 内核并将其包含在主机构建中。
+
+:::caution[运行时依赖]
+交叉编译的二进制文件不包含外部库。这包括 Python 库、C 库和 Modular 运行时库。目标环境必须提供程序所需的所有运行时依赖。
+:::
+
+## 输出选项
+
+`--emit` 标志控制 `mojo build` 产生的输出。这些选项对于交叉编译至关重要，因为你还不能使用 Mojo 编译器生成链接的可执行文件。
+
+| 值               | 输出                        | 状态   |
+|------------------|-----------------------------|--------|
+| `exe`（默认）    | 可执行二进制文件            | 原生   |
+| `shared-lib`     | 共享（动态）库              | 原生   |
+| `object`         | 目标文件（实验性）          | 两者   |
+| `llvm`           | 未优化的 LLVM IR            | 两者   |
+| `llvm-bitcode`   | 未优化的 LLVM IR 位码       | 两者   |
+| `asm`            | 汇编（+ GPU 附带文件）      | 两者   |
+
+### 当前可用功能
+
+不需要链接的输出适用于任何支持的目标：
+
+- `--emit object` — 为目标生成可重定位目标文件
+- `--emit asm` — 为目标生成汇编
+- `--emit llvm` — 为目标生成配置的 LLVM IR
+- `--emit llvm-bitcode` — 为目标生成 LLVM 位码
+
+需要链接的输出需要目标平台的链接器，Mojo 不提供，目前不可用：
+
+- `--emit exe` — 交叉编译时在链接步骤失败
+- `--emit shared-lib` — 交叉编译时在链接步骤失败
+
+要生成交叉编译的可执行文件或共享库，请生成目标文件并使用目标平台的工具链链接它。
