@@ -1,22 +1,16 @@
 ---
 title: "runtime"
 sidebar_label: "runtime"
-description: "Runtime services: async execution and program tracing.  The `runtime` package provides infrastructure for asynchronous task execution and program profiling. It includes low-level concurrency primitive"
+description: "运行时服务：异步执行和程序追踪。`runtime` 包提供异步任务执行和程序分析的基础设施。"
 ---
 
 # runtime
 
-Runtime services: async execution and program tracing.
+运行时服务：异步执行和程序追踪。
 
-The `runtime` package provides infrastructure for asynchronous task execution
-and program profiling. It includes low-level concurrency primitives for
-managing async coroutines, task groups, and parallel execution. The package
-also offers tracing utilities for performance analysis and debugging through
-various profiling backends.
+`runtime` 包提供异步任务执行和程序分析的基础设施。它包括用于管理异步协程、任务组和并行执行的低级并发原语。该包还通过各种分析后端提供用于性能分析和调试的追踪工具。
 
-Use this package for implementing async patterns, managing concurrent
-execution, or when you need detailed profiling and performance analysis of your
-Mojo programs.
+使用此包实现异步模式、管理并发执行，或当您需要对 Mojo 程序进行详细分析和性能分析时。
 
 ## 模块
 

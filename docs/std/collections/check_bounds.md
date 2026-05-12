@@ -1,12 +1,12 @@
 ---
 title: "check_bounds"
 sidebar_label: "check_bounds"
-description: "Contains a bounds check which is on by default for CPU and off by default for GPU."
+description: "包含边界检查，默认情况下在 CPU 上启用，在 GPU 上禁用。"
 ---
 
 # check_bounds
 
-Contains a bounds check which is on by default for CPU and off by default for GPU.
+包含边界检查，默认情况下在 CPU 上启用，在 GPU 上禁用。
 
 ## 函数
 

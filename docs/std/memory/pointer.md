@@ -1,14 +1,14 @@
 ---
 title: "pointer"
 sidebar_label: "pointer"
-description: "Implements the Pointer type.  You can import these APIs from the `memory` package. For example:  ```mojo from std.memory import Pointer ```"
+description: "实现 Pointer 类型。您可以从 `memory` 包导入这些 API。例如：```mojo from std.memory import Pointer ```"
 ---
 
 # pointer
 
-Implements the Pointer type.
+实现 Pointer 类型。
 
-You can import these APIs from the `memory` package. For example:
+您可以从 `memory` 包导入这些 API。例如：
 
 ```mojo
 from std.memory import Pointer

@@ -1,154 +1,114 @@
 ---
-title: Compile-time evaluation
-sidebar_label: Compile-time evaluation
-description: When and how code is executed at compile time.
+title: 编译时求值
+sidebar_label: 编译时求值
+description: 何时以及如何在编译时执行代码。
 ---
 
-To understand Mojo's metaprogramming, you need to understand how Mojo runs
-code at compile time. Several things can trigger compile-time code execution:
+要理解 Mojo 的元编程，您需要了解 Mojo 如何在编译时运行代码。有几个事项可以触发编译时代码执行：
 
-- Assigning an expression to a `comptime` value.
-- Evaluating a `comptime` conditional or loop.
-- Assigning an expression to a compile-time parameter.
-- And a few less common cases, all identified with the `comptime` keyword.
+- 将表达式赋值给 `comptime` 值。
+- 求值 `comptime` 条件或循环。
+- 将表达式赋值给编译时参数。
+- 以及一些不太常见的情况，所有这些都用 `comptime` 关键字标识。
 
-Here are some examples:
+这里有一些示例：
 
 ```mojo
 comptime SIZE = 1024 // 32
 ```
 
-Here the expression `1024 // 32` invokes the `IntLiteral.__floordiv__()` method.
-Since it occurs in a `comptime` assignment, the method must be run at compile
-time.
+在这里，表达式 `1024 // 32` 调用了 `IntLiteral.__floordiv__()` 方法。由于它出现在 `comptime` 赋值中，该方法必须在编译时运行。
 
 ```mojo
 comptime for i in range(4):
    print(i)
 ```
 
-Here the `range(4)` function needs to run to produce an iterator for the
-`comptime for` statement.
+在这里，`range(4)` 函数需要运行以生成 `comptime for` 语句的迭代器。
 
 ```mojo
 var array = InlineArray[Int, get_array_size()]()
 ```
 
-In this example, the `get_array_size()` function needs to run at compile time to
-determine the `size` parameter, which forms part of the type of `array`. (For
-example, if `get_array_size()` returns 32, the type of the `array` variable is
-`InlineArray[Int, 32]`.)
+在这个示例中，`get_array_size()` 函数需要在编译时运行以确定 `size` 参数，这是 `array` 类型的一部分。（例如，如果 `get_array_size()` 返回 32，则 `array` 变量的类型是 `InlineArray[Int, 32]`。）
 
-When the compiler encounters a function call in a compile-time context, the
-compiler runs the function separately, as if it was a small separate program.
-This is similar in concept to how C++ evaluates a `constexpr`. (For a slightly
-deeper look at this process, see
-[How the compiler runs code](#how-the-compiler-runs-code).)
+当编译器在编译时上下文中遇到函数调用时，编译器会单独运行该函数，就像它是一个小的独立程序一样。这在概念上类似于 C++ 如何求值 `constexpr`。（对于这个过程的更深入了解，请参阅[编译器如何运行代码](#how-the-compiler-runs-code)。）
 
-While most code can run at compile time, Mojo won't run code that depends on
-the execution environment. The following are examples of code that Mojo won't
-run at compile time:
+虽然大多数代码可以在编译时运行，但 Mojo 不会运行依赖于执行环境的代码。以下是一些 Mojo 不会在编译时运行的代码示例：
 
-- File I/O.
-- Foreign function calls (for example, to external libraries).
-- Functions that can
-  [raise errors](/docs/manual/functions/#raising-and-non-raising-functions).
+- 文件 I/O。
+- 外部函数调用（例如，到外部库）。
+- 可以[引发错误](/docs/manual/functions/#raising-and-non-raising-functions)的函数。
 
-In addition, the compiler can't run functions on the GPU. Compile-time functions
-in GPU code are actually run on the CPU.
+此外，编译器无法在 GPU 上运行函数。GPU 代码中的编译时函数实际上是在 CPU 上运行的。
 
-When running code, the compiler can allocate memory and instantiate types that
-allocate memory, such as strings and collections. With some limitations, it can
-pass compile-time values on to run-time code, a process called
-_materialization_. For more information, see the section on
-[materialization](/docs/manual/metaprogramming/materialization/).
+在运行代码时，编译器可以分配内存和实例化那些分配内存的类型，如字符串和集合。有一些限制，它可以传递编译时值给运行时代码，这个过程称为*实例化*。有关更多信息，请参阅关于[实例化](/docs/manual/metaprogramming/materialization/)的章节。
 
-## `comptime` values
+## `comptime` 值
 
-It is very common to want to _name_ compile-time values. Whereas `var` defines a
-runtime value, we need a way to define a named compile-time constant. For this,
-Mojo uses a `comptime` declaration. At its simplest, `comptime` can be used to
-define a constant value:
+想要*命名*编译时值是非常常见的。与 `var` 定义运行时值不同，我们需要一种方式来定义命名的编译时常量。为此，Mojo 使用 `comptime` 声明。在最简单的形式中，`comptime` 可以用于定义常量值：
 
 ```mojo
 comptime rows = 512
 ```
 
-A `comptime` value is always evaluated at compile time, so you can use
-`comptime` to force a function to run at compile time. You can use this to
-calculate constant values based on information available at compile time, such
-as hardware parameters.
+`comptime` 值总是在编译时求值，因此您可以使用 `comptime` 强制函数在编译时运行。您可以用它根据编译时可用信息（如硬件参数）计算常量值。
 
 ```mojo
 comptime block_size = _calculate_block_size()
 ```
 
-Types are another common use for `comptime` values. Because types are
-compile-time expressions, you can use a `comptime` value as a shorthand (a type
-alias or "typedef") for a parameterized type:
+类型是 `comptime` 值的另一个常见用例。由于类型是编译时表达式，您可以将 `comptime` 值用作参数化类型的简写（类型别名或 "typedef"）：
 
 ```mojo
 comptime Float16 = SIMD[DType.float16, 1]
 comptime UInt8 = SIMD[DType.uint8, 1]
 
-var x: Float16 = 0  # Float16 works like a "typedef"
+var x: Float16 = 0  # Float16 就像 "typedef"
 ```
 
-(These aliases and others are actually defined in the
-[`simd` module](/docs/std/builtin/simd/#comptime-values).)
+（这些别名和其他别名实际上是在 [`simd` 模块](/docs/std/builtin/simd/#comptime-values)中定义的。）
 
-You can also parameterize a `comptime` value to express more complicated
-relationships. For details, see
-[Parameterized `comptime` values](/docs/manual/parameters/#parameterized-comptime-values).
+您还可以参数化 `comptime` 值以表达更复杂的关系。有关详细信息，请参阅[参数化 `comptime` 值](/docs/manual/parameters/#parameterized-comptime-values)。
 
-### Compile-time scope
+### 编译时作用域
 
-Like `var` variables, `comptime` values obey scope, and you can use local
-`comptime` values within functions as you'd expect. Unlike `var` variables,
-`comptime` values can be defined at the module level, outside of any function.
+与 `var` 变量一样，`comptime` 值遵守作用域，您可以在函数中按预期使用局部 `comptime` 值。与 `var` 变量不同，`comptime` 值可以在函数之外的模块级别定义。
 
-The following constructs create a new compile-time scope:
+以下构造创建一个新的编译时作用域：
 
-- Functions. The body of a function creates a new compile-time scope.
-- Compile-time flow control. Each branch of a compile-time conditional creates
-  its own scope. The body of a `comptime for` loop also creates its own scope.
+- 函数。函数体创建一个新的编译时作用域。
+- 编译时流控制。编译时条件的每个分支创建自己的作用域。`comptime for` 循环的体也创建自己的作用域。
 
-You can only assign a `comptime` value to a given identifier once in a given
-scope.
+您只能在给定作用域中将 `comptime` 值分配给给定标识符一次。
 
 ```mojo
 comptime VALUE = 10
 
 
 def scope_me():
-    print(VALUE)  # prints 10
+    print(VALUE)  # 打印 10
     comptime VALUE = 20
-    # comptime VALUE = 30  # error: invalid redeclaration of VALUE
+    # comptime VALUE = 30  # 错误：VALUE 的无效重声明
     comptime if True:
         comptime VALUE = 40
-        print(VALUE)  # prints 40
-    print(VALUE)  # prints 20
+        print(VALUE)  # 打印 40
+    print(VALUE)  # 打印 20
 ```
 
-## Compile-time flow control
+## 编译时流控制
 
-One of the simplest things you can do with metaprogramming is using compile-time
-flow control to conditionalize or repeat code. Some sample uses include:
+使用元编程可以做的最简单的事情之一是使用编译时流控制来条件化或重复代码。一些示例用途包括：
 
-- Conditionalizing platform-specific code (CPU vs. GPU, Linux vs. macOS) without
-  runtime overhead.
-- Unrolling loops to eliminate runtime branches.
-- Handling different data types in generic code.
+- 条件化平台特定代码（CPU 对比 GPU，Linux 对比 macOS）而无需运行时开销。
+- 展开循环以消除运行时分支。
+- 在泛型代码中处理不同的数据类型。
 
-Unlike run-time flow control constructs, compile-time flow control constructs
-are evaluated once, at compile time, and determine what code is actually
-compiled.
+与运行时流控制构造不同，编译时流控制构造在编译时求值一次，并确定实际编译哪些代码。
 
-### Compile-time conditionals
-You can add the `comptime` keyword to any `if` condition that's based on a valid
-compile-time expression (an expression that can be evaluated at compile time).
-This ensures that only the live branch of the `if` statement is compiled into
-the program, which can reduce your final binary size. For example:
+### 编译时条件
+
+您可以在任何基于有效编译时表达式（即可在编译时求值的表达式）的 `if` 条件上添加 `comptime` 关键字。这确保只有 `if` 语句的活跃分支被编译到程序中，这可以减少您的最终二进制文件大小。例如：
 
 ```mojo
 from std.sys import has_accelerator
@@ -160,33 +120,24 @@ def main():
         run_on_cpu()
 ```
 
-In this example, if no accelerator is available, the `run_on_gpu()` function is
-never called, or even compiled.
+在这个示例中，如果没有加速器可用，`run_on_gpu()` 函数永远不会被调用，甚至不会被编译。
 
-The `comptime if` statement can include `elif` and `else` branches just like a
-standard `if` statement.
+`comptime if` 语句可以像标准 `if` 语句一样包含 `elif` 和 `else` 分支。
 
-### Compile-time loop unrolling
-You can add the `comptime` keyword to a `for` loop to create a loop that's
-fully unrolled at compile time. You should generally use this only for loops
-with small loop bodies and low iteration counts.
+### 编译时循环展开
 
-The loop sequence must be a valid compile-time expression (that is, an
-expression that can be evaluated at compile time). For example, if you use
-`for i in range(LIMIT)`, the expression `range(LIMIT)` defines the loop
-sequence. This is a valid compile-time expression if `LIMIT` is a parameter,
-`comptime` value, or integer literal.
+您可以在 `for` 循环上添加 `comptime` 关键字以创建一个在编译时完全展开的循环。您通常应该只将此用于循环体小且迭代次数少的循环。
 
-The compiler fully unrolls the loop by replacing the `for` loop with
-`LIMIT` copies of the loop body. The induction variable is replaced with a
-compile-time constant value for each "iteration." For example:
+循环序列必须是有效的编译时表达式（即可以在编译时求值的表达式）。例如，如果您使用 `for i in range(LIMIT)`，表达式 `range(LIMIT)` 定义了循环序列。如果 `LIMIT` 是参数、`comptime` 值或整数字面量，这是一个有效的编译时表达式。
+
+编译器通过用 `LIMIT` 个循环体副本替换 `for` 循环来完全展开循环。归纳变量被替换为每个"迭代"的编译时常量值。例如：
 
 ```mojo
 comptime for i in range(1, 5):
     b[i-1] = a[i] + a[i-1]
 ```
 
-This is effectively unrolled to the following run-time code:
+这实际上展开为以下运行时代码：
 
 ```mojo
 b[0] = a[1] + a[0]
@@ -195,46 +146,20 @@ b[2] = a[3] + a[2]
 b[3] = a[4] + a[3]
 ```
 
-This unrolled loop compiles to branchless machine code, unlike a normal `for`
-loop, which includes a bounds test at every iteration. This can be especially
-important on GPU, to avoid
-[thread divergence](/docs/manual/gpu/block-and-warp/#warp-level-synchronization).
+与包含每次迭代的边界测试的正常 `for` 循环不同，此展开的循环编译为无分支机器代码。这在 GPU 上特别重要，以避免[线程分歧](/docs/manual/gpu/block-and-warp/#warp-level-synchronization)。
 
-The `comptime for` construct unrolls at the beginning of compilation, which can
-greatly expand both the code size and the compilation time.
+`comptime for` 构造在编译开始时展开，这会大大扩展代码大小和编译时间。
 
-## How the compiler runs code
+## 编译器如何运行代码
 
-The process of evaluating compile-time code involves three components of the
-compiler:
+求值编译时代码的过程涉及编译器的三个组件：
 
-- Parser. Parses the code into an intermediate representation (IR) and performs
-  type checking.
-- Interpreter. Runs code at compile time.
-- Elaborator. Substitutes concrete values for compile-time parameters and
-  produces concrete versions of parameterized functions and structs.
+- 解析器。将代码解析为中间表示（IR）并执行类型检查。
+- 解释器。在编译时运行代码。
+- 详化器。用编译时参数的具体值替换编译时参数，并生成参数化函数和结构体的具体版本。
 
-When the parser turns code into IR, it also replaces some very simple `comptime`
-expressions with their values, a process called _constant folding_. For example,
-the compiler can constant fold the expression `2 + 3` to `5`. Standard library
-functions that are marked `@always_inline("builtin")` are constant foldable.
-Compile-time expressions that can't be constant folded persist and are evaluated
-in the elaborator.
+当解析器将代码转换为 IR 时，它还会用它们的值替换一些非常简单的 `comptime` 表达式，这个过程称为_常量折叠_。例如，编译器可以将表达式 `2 + 3` 常量折叠为 `5`。标记为 `@always_inline("builtin")` 的标准库函数是可常量折叠的。无法常量折叠的编译时表达式会保留下来并在详化器中求值。
 
-When the elaborator encounters a function call in a compile-time context, it
-invokes the interpreter to run the function. The interpreter then checks whether
-the function being called has already been _elaborated_ to produce a concrete,
-executable function. If not, the interpreter adds that function to the
-elaborator's work queue, and waits until it's done. Finally, the interpreter
-runs the concrete function—almost like it was a small separate program—and
-passes the return value back to the elaborator, which integrates it into the
-parsed IR.
+当详化器在编译时上下文中遇到函数调用时，它会调用解释器来运行该函数。解释器然后检查被调用的函数是否已经_详化_以生成具体可执行函数。如果没有，解释器将该函数添加到详化器的工作队列中，并等待它完成。最后，解释器运行具体函数——几乎就像它是一个小的独立程序一样——并将返回值传递回详化器，它将其集成到已解析的 IR 中。
 
-When reading code, it's important to remember that when a function is being
-interpreted at compile time, the function has been concretized: compile-time
-conditionals have been processed, and compile-time constraints and assertions
-have been tested. This sometimes _appears_ to contradict the expectation that
-your code runs in the order it appears in the function. For example, if your
-function includes a compile-time assertion that fails, compilation fails before
-the interpreter enters the function, so no part of the function is
-evaluated—even code that occurs _before_ the assertion.
+在读取代码时，重要的是要记住，当函数在编译时被解释时，函数已经被具体化：编译时条件已经被处理，编译时约束和断言已经被测试。这有时_看起来_与您的代码按其在函数中出现的顺序运行的期望相矛盾。例如，如果您的函数包含一个失败的编译时断言，编译会在解释器进入函数之前失败，因此函数的任何部分都不会被求值——甚至断言_之前_出现的代码。

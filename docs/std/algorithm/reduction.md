@@ -1,14 +1,14 @@
 ---
 title: "reduction"
 sidebar_label: "reduction"
-description: "Implements SIMD reductions.  You can import these APIs from the `algorithm` package. For example:  ```mojo from std.algorithm import map_reduce ```"
+description: "实现 SIMD 归约操作。您可以从 `algorithm` 包导入这些 API。例如：```mojo from std.algorithm import map_reduce ```"
 ---
 
 # reduction
 
-Implements SIMD reductions.
+实现 SIMD 归约操作。
 
-You can import these APIs from the `algorithm` package. For example:
+您可以从 `algorithm` 包导入这些 API。例如：
 
 ```mojo
 from std.algorithm import map_reduce

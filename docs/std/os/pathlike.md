@@ -1,14 +1,14 @@
 ---
 title: "pathlike"
 sidebar_label: "pathlike"
-description: "Implements the `PathLike` trait.  You can import the trait from the `os` package. For example:  ```mojo from std.os import PathLike ```"
+description: "实现 `PathLike` trait。您可以从 `os` 包导入此 trait。例如：```mojo from std.os import PathLike ```"
 ---
 
 # pathlike
 
-Implements the `PathLike` trait.
+实现 `PathLike` trait。
 
-You can import the trait from the `os` package. For example:
+您可以从 `os` 包导入此 trait。例如：
 
 ```mojo
 from std.os import PathLike

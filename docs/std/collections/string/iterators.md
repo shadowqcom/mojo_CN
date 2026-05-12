@@ -1,13 +1,12 @@
 ---
 title: "iterators"
 sidebar_label: "iterators"
-description: "Implements the iterators and related utilities for efficient string operations."
+description: "实现迭代器及相关工具，用于高效的字符串操作。"
 ---
 
 # iterators
 
-Implements the iterators and related utilities for efficient string
-operations.
+实现迭代器及相关工具，用于高效的字符串操作。
 
 ## 类型
 

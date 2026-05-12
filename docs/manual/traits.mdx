@@ -1,24 +1,17 @@
 ---
-title: Traits
-description: Define shared behavior for types.
+title: 特征
+description: 为类型定义共享行为。
 ---
 
-A *trait* is a set of requirements that a type must implement. You can think of
-it as a contract: a type that *conforms* to a trait guarantees that it
-implements all of the features of the trait.
+*特征（trait）* 是一个类型必须实现的一组要求。你可以把它看作是一种契约：一个*遵循*（conforms to）特征的类型保证它实现了该特征的所有功能。
 
-Traits are similar to Java *interfaces*, C++ *concepts*, Swift *protocols*, and
-Rust *traits*. If you're familiar with any of those features, Mojo traits solve
-the same basic problem.
+特征类似于 Java 的*接口*、C++ 的*概念*、Swift 的*协议*和 Rust 的*特征*。如果你熟悉这些特性中的任何一个，Mojo 的特征解决的是同样的基本问题。
 
-You've probably already seen some traits, like `Copyable` and `Movable`, used in
-example code. This section describes how traits work, how to use existing
-traits, and how to define your own traits.
+你可能已经在示例代码中见过一些特征，比如 `Copyable` 和 `Movable`。本节将描述特征的工作原理、如何使用现有特征，以及如何定义自己的特征。
 
-## Background
+## 背景
 
-In dynamically-typed languages like Python, you don't need to explicitly declare
-that two classes are similar. This is easiest to show by example:
+在 Python 这样的动态类型语言中，你不需要显式声明两个类是相似的。这最好通过示例来说明：
 
 ```python title="🐍 Python"
 class Duck:
@@ -39,16 +32,9 @@ make_it_quack(Duck())
 make_it_quack(StealthCow())
 ```
 
-The `Duck` and `StealthCow` classes aren't related in any way, but they both
-define a `quack()` method, so they work the same in the `make_it_quack()`
-function. This works because Python uses dynamic dispatch—it identifies the
-methods to call at runtime. So `make_it_quack()` doesn't care what types
-you're passing it, only the fact that they implement the `quack()` method.
+`Duck` 和 `StealthCow` 类没有任何关联，但它们都定义了 `quack()` 方法，所以它们在 `make_it_quack()` 函数中的工作方式相同。这是因为 Python 使用动态分发——它在运行时识别要调用的方法。所以 `make_it_quack()` 不关心你传递给它的是什么类型，只关心它们实现了 `quack()` 方法这一事实。
 
-In a statically-typed environment, this approach doesn't work:
-Mojo functions require you to
-specify the type of each argument. If you wanted to write this example in Mojo
-*without* traits, you'd need to write a function overload for each input type.
+在静态类型环境中，这种方法行不通：Mojo 函数要求你指定每个参数的类型。如果你想在 Mojo 中编写这个示例*而不使用*特征，你需要为每种输入类型编写一个函数重载。
 
 ```mojo title="🔥 Mojo"
 @fieldwise_init
@@ -76,28 +62,21 @@ Quack
 Moo!
 ```
 
-This isn't too bad with only two types. But the more types you want to
-support, the less practical this approach is.
+只有两种类型时这还不算太糟。但是你想要支持的类型越多，这种方法就越不实用。
 
-You might notice that the Mojo versions of `make_it_quack()` don't include the
-`try/except` statement. We don't need it because Mojo's static type checking
-ensures that you can only pass instances of `Duck` or `StealthCow` into the
-`make_it_quack()` function.
+你可能会注意到 Mojo 版本的 `make_it_quack()` 没有包含 `try/except` 语句。我们不需要它，因为 Mojo 的静态类型检查确保你只能将 `Duck` 或 `StealthCow` 的实例传递给 `make_it_quack()` 函数。
 
-## Using traits
+## 使用特征
 
-Traits solve this problem by letting you define a shared set of *behaviors* that
-types can implement. Then you can write a function that depends on the trait,
-rather than individual types. As an example, let's update the `make_it_quack()`
-example using traits. This will involve three steps:
+特征通过让你定义一组类型可以实现的共享*行为*来解决这个问题。然后你可以编写依赖于特征而不是单个类型的函数。作为一个例子，让我们使用特征更新 `make_it_quack()` 示例。这将涉及三个步骤：
 
-1. Defining a new `Quackable` trait.
-2. Adding the trait to the `Duck` and `StealthCow` structs.
-3. Updating the `make_it_quack()` function to depend on the trait.
+1. 定义一个新的 `Quackable` 特征。
+2. 将特征添加到 `Duck` 和 `StealthCow` 结构体中。
+3. 更新 `make_it_quack()` 函数以依赖于该特征。
 
-### Defining a trait
+### 定义特征
 
-The first step is defining a trait that requires a `quack()` method:
+第一步是定义一个需要 `quack()` 方法的特征：
 
 ```mojo
 trait Quackable:
@@ -105,17 +84,9 @@ trait Quackable:
         ...
 ```
 
-A trait looks a lot like a struct, except it's introduced by the `trait`
-keyword. Note that the `quack()` method signature is followed by three dots
-(`...`). This indicates it isn't implemented within the trait. In this
-example, `quack` is a *required method* and must be implemented by
-any conforming struct.
+特征看起来很像结构体，只是它由 `trait` 关键字引入。注意 `quack()` 方法签名后面跟着三个点（`...`）。这表示它没有在特征内实现。在这个例子中，`quack` 是一个*必需方法*，必须由任何遵循该特征的结构体实现。
 
-A trait can supply a default implementation, so conforming structs
-don't need to implement the method themselves. You can provide a full
-implementation or use the `pass` keyword. Using `pass` creates a
-no-op method that does nothing. In your conforming struct, you
-can choose to override this default implementation:
+特征可以提供默认实现，这样遵循的结构体就不需要自己实现该方法。你可以提供完整的实现或使用 `pass` 关键字。使用 `pass` 会创建一个什么都不做的空操作方法。在你的遵循结构体中，你可以选择覆盖这个默认实现：
 
 ```mojo
 trait Quackable:
@@ -123,23 +94,15 @@ trait Quackable:
         pass
 ```
 
-For more information, see
-[Default method implementations](#default-method-implementations).
+更多信息请参阅[默认方法实现](#default-method-implementations)。
 
-A trait can also include `comptime` members—compile-time constant values that
-must be defined by conforming structs. `comptime` members are useful for writing
-traits that describe generic types. For more information, see
-[`comptime` members for generics](#comptime-members-for-generics).
+特征还可以包含 `comptime` 成员——必须由遵循结构体定义的编译时常量值。`comptime` 成员对于编写描述泛型类型的特征很有用。更多信息请参阅[泛型的 `comptime` 成员](#comptime-members-for-generics)。
 
-### Adding traits to structs
+### 将特征添加到结构体
 
-Next, we need some structs that conform to the `Quackable` trait. Since the
-`Duck` and `StealthCow` structs above already implement the `quack()` method,
-all we need to do is add the `Quackable` trait to the traits it conforms to
-(in parenthesis, after the struct name).
+接下来，我们需要一些遵循 `Quackable` 特征的结构体。由于上面的 `Duck` 和 `StealthCow` 结构体已经实现了 `quack()` 方法，我们需要做的就是将 `Quackable` 特征添加到它遵循的特征列表中（在结构体名称后的括号内）。
 
-(If you're familiar with Python, this looks just like Python's inheritance
-syntax.)
+（如果你熟悉 Python，这看起来就像 Python 的继承语法。）
 
 ```mojo
 @fieldwise_init
@@ -153,47 +116,38 @@ struct StealthCow(Copyable, Quackable):
         print("Moo!")
 ```
 
-The struct needs to implement any methods that are declared in the trait. The
-compiler enforces conformance: if a struct says it conforms to a trait, it must
-implement everything required by the trait, or the code won't compile.
+结构体需要实现特征中声明的任何方法。编译器强制执行遵循性：如果一个结构体说它遵循某个特征，它必须实现该特征要求的所有内容，否则代码将无法编译。
 
-### Using a trait as a type bound
+### 使用特征作为类型约束
 
-Finally, you can define a function that takes a `Quackable` like this:
+最后，你可以定义一个接受 `Quackable` 的函数，如下所示：
 
 ```mojo
 def make_it_quack[DuckType: Quackable](maybe_a_duck: DuckType):
     maybe_a_duck.quack()
 ```
 
-Or using the shorthand form:
+或使用简写形式：
 
 ```mojo
 def make_it_quack2(maybe_a_duck: Some[Quackable]):
     maybe_a_duck.quack()
 ```
 
-This syntax may look a little unfamiliar if you haven't dealt with Mojo
-[parameters](/docs/manual/parameters/) before. What the first signature means is
-that `maybe_a_duck` is an argument of type `DuckType`, where `DuckType` is a
-type that must conform to the `Quackable` trait. `Quackable` is called the *type
-bound* for `DuckType`.
+如果你之前没有接触过 Mojo [参数](/docs/manual/parameters/)，这个语法可能看起来有点陌生。第一个签名的意思是 `maybe_a_duck` 是 `DuckType` 类型的参数，其中 `DuckType` 是一个必须遵循 `Quackable` 特征的类型。`Quackable` 被称为 `DuckType` 的*类型约束*（type bound）。
 
-The `Some[Quackable]` form expresses the same idea: the type of `maybe_a_duck`
-is some concrete type that conforms to the trait `Quackable`.
+`Some[Quackable]` 形式表达了同样的想法：`maybe_a_duck` 的类型是某个遵循 `Quackable` 特征的具体类型。
 
-Both forms work the same, except that the first form explicitly names the type
-value. This can be useful, for example, if you want to take two values of the
-same type:
+两种形式的工作方式相同，只是第一种形式显式命名了类型值。这可能很有用，例如，如果你想接受两个相同类型的值：
 
 ```mojo
 def take_two_quackers[DuckType: Quackable](quacker1: DuckType, quacker2: DuckType):
     pass
 ```
 
-### Putting it all together
+### 整合在一起
 
-Using the function is simple enough:
+使用该函数很简单：
 
 ```mojo
 make_it_quack(Duck())
@@ -205,19 +159,13 @@ Quack
 Moo!
 ```
 
-Note that you don't need the square brackets when you call `make_it_quack()`:
-the compiler infers the type of the argument, and ensures the type has the
-required trait.
+注意调用 `make_it_quack()` 时不需要方括号：编译器会推断参数的类型，并确保该类型具有所需的特征。
 
-One limitation of traits is that you can't add traits to existing types. For
-example, if you define a new `Numeric` trait, you can't add it to the standard
-library `Float64` and `Int` types. However, the standard library already
-includes quite a few traits, and we'll be adding more over time.
+特征的一个限制是你不能向现有类型添加特征。例如，如果你定义了一个新的 `Numeric` 特征，你不能将它添加到标准库的 `Float64` 和 `Int` 类型中。但是，标准库已经包含了很多特征，我们将来会添加更多。
 
-### Traits can require static methods
+### 特征可以要求静态方法
 
-In addition to regular instance methods, traits can specify required static
-methods.
+除了常规实例方法外，特征还可以指定必需的静态方法。
 
 ```mojo
 trait HasStaticMethod:
@@ -228,16 +176,11 @@ def fun_with_traits[type: HasStaticMethod]():
     type.do_stuff()
 ```
 
-## Default method implementations
+## 默认方法实现
 
-Often, some or all of the structs that conform to a given trait can use the same
-implementation for a given required method. In this case, the trait can include
-a *default implementation*. A conforming struct can still define its own version
-of the method, overriding the default implementation. But if the struct doesn't
-define its own version, it automatically inherits the default implementation.
+通常，遵循给定特征的部分或全部结构体可以为给定的必需方法使用相同的实现。在这种情况下，特征可以包含*默认实现*。遵循的结构体仍然可以定义自己的方法版本，覆盖默认实现。但如果结构体没有定义自己的版本，它会自动继承默认实现。
 
-Defining a default implementation for a trait looks the same as writing a method
-for a struct:
+为特征定义默认实现看起来与为结构体编写方法相同：
 
 ```mojo
 trait DefaultQuackable:
@@ -250,29 +193,18 @@ struct DefaultDuck(Copyable, DefaultQuackable):
     pass
 ```
 
-When looking at the API doc for a standard library trait, you'll see methods
-that you *must* implement listed as *required methods*, and methods that have
-default implementations listed as *provided methods*.
+在查看标准库特征的 API 文档时，你会看到*必须*实现的方法列为*必需方法*，有默认实现的方法列为*提供方法*。
 
-The
-[`Equatable`](/docs/std/builtin/comparable/Equatable/)
-trait is a good example of the use case for default implementations. The trait
-includes two methods: `__eq__()` (corresponding to the `==` operator) and
-`__ne__()` (corresponding to the `!=` operator). Every type that conforms to
-`Equatable` needs to define the `__eq__()` method for itself, but the
-trait supplies a default implementation for `__ne__()`. Given an `__eq__()`
-method, the definition of `__ne__()` is trivial for most types:
+[`Equatable`](/docs/std/builtin/comparable/Equatable/) 特征是默认实现用例的一个好例子。该特征包含两个方法：`__eq__()`（对应 `==` 运算符）和 `__ne__()`（对应 `!=` 运算符）。每个遵循 `Equatable` 的类型都需要自己定义 `__eq__()` 方法，但该特征为 `__ne__()` 提供了默认实现。给定一个 `__eq__()` 方法，大多数类型的 `__ne__()` 定义都很简单：
 
 ```mojo
 def __ne__(self, other: Self) -> Bool:
     return not self.__eq__(other)
 ```
 
-## Trait compositions
+## 特征组合
 
-You can compose traits using the `&` sigil. This lets you define new traits
-that are simple combinations of other traits. You can use a trait composition
-anywhere that you'd use a single trait:
+你可以使用 `&` 符号组合特征。这让你可以定义简单组合其他特征的新特征。你可以在任何使用单个特征的地方使用特征组合：
 
 ```mojo
 trait Flyable:
@@ -291,69 +223,51 @@ struct FlyingDuck(Copyable, Quackable, Flyable):
         print("Whoosh!")
 ```
 
-You can also use the `comptime` keyword to create a shorthand name for a
-trait composition:
+你也可以使用 `comptime` 关键字为特征组合创建简写名称：
 
 ```mojo
 comptime DuckLike = Quackable & Flyable
 
 struct ToyDuck(DuckLike):
-    # ... implementation omitted
+    # ... 实现省略
 ```
 
-You can also compose traits using [refinement](#trait-refinement), by defining
-a new, empty trait like this:
+你还可以使用[细化](#trait-refinement)来组合特征，通过定义一个新的空特征，如下所示：
 
 ```mojo
 trait DuckTrait(Quackable, Flyable):
     pass
 ```
 
-However, this is less flexible than using a trait composition and not
-recommended. The difference is that using the `trait` keyword defines a new,
-named trait. For a struct to conform to this trait, you need to *explicitly*
-include it in the struct's signature. On the other hand, the `DuckLike`
-`comptime` value represents a composition of two separate traits, `Quackable`
-and `Flyable`, and anything that conforms to those two traits conforms to
-`DuckLike`. For example, consider the `FlyingDuck` type shown above:
+但是，这不如使用特征组合灵活，不推荐使用。区别在于使用 `trait` 关键字定义了一个新的命名特征。对于一个结构体要遵循这个特征，你需要在其签名中*显式*包含它。另一方面，`DuckLike` `comptime` 值表示两个独立特征 `Quackable` 和 `Flyable` 的组合，任何遵循这两个特征的事物都遵循 `DuckLike`。例如，考虑上面显示的 `FlyingDuck` 类型：
 
 ```mojo
 struct FlyingDuck(Copyable, Quackable, Flyable):
-    # ... etc
+    # ... 等等
 ```
 
-Because `FlyingDuck` conforms to both `Quackable` and `Flyable`, it also
-conforms to the `DuckLike` trait composition. But it *doesn't*
-conform to `DuckTrait`, since it doesn't include `DuckTrait` in its list of
-traits.
+因为 `FlyingDuck` 同时遵循 `Quackable` 和 `Flyable`，它也遵循 `DuckLike` 特征组合。但它*不*遵循 `DuckTrait`，因为它的特征列表中没有包含 `DuckTrait`。
 
 <a id="trait-inheritance"></a>
 
-## Trait refinement
-Traits *refine* other traits. A trait that refines another trait includes all
-of the requirements declared by the original trait. For example:
+## 特征细化
+
+特征可以*细化*（refine）其他特征。一个细化另一个特征的特征包含原始特征声明的所有要求。例如：
 
 ```mojo
 trait Animal:
     def make_sound(self):
         ...
 
-# Bird refines Animal
+# Bird 细化了 Animal
 trait Bird(Animal):
     def fly(self):
         ...
 ```
 
-Since `Bird` refines `Animal`, a struct that conforms to the `Bird` trait
-must implement **both** `make_sound()` and `fly()`. And since every `Bird`
-conforms to `Animal`, a struct that conforms to `Bird` can be passed to any
-function that requires an `Animal`.
+由于 `Bird` 细化了 `Animal`，遵循 `Bird` 特征的结构体必须实现 `make_sound()` 和 `fly()` **两个**方法。而且由于每个 `Bird` 都遵循 `Animal`，遵循 `Bird` 的结构体可以传递给任何需要 `Animal` 的函数。
 
-You can define a trait as a refinement of multiple traits by listing
-them in parentheses. This can be either a comma-separated list of
-traits or a trait composition. For example, you might define a
-NamedAnimal trait that combines the requirements of the Animal trait
-and a new Named trait:
+你可以通过在括号中列出多个特征来定义一个细化多个特征的特征。这可以是逗号分隔的特征列表或特征组合。例如，你可能定义一个 NamedAnimal 特征，它结合了 Animal 特征和一个新的 Named 特征的要求：
 
 ```mojo
 trait Named:
@@ -365,32 +279,19 @@ trait NamedAnimal(Animal, Named):
         ...
 ```
 
-Refinement is useful when you're creating a new trait that adds additional
-requirements. If you simply want to express the union of two or more traits,
-use a simple trait composition instead:
+当你创建一个添加额外要求的新特征时，细化很有用。如果你只是想表达两个或多个特征的并集，请使用简单的特征组合：
 
 ```mojo
 comptime NamedAnimal = Animal & Named
 ```
 
-## Traits and lifecycle methods
+## 特征与生命周期方法
 
-Traits can specify required
-[lifecycle methods](/docs/manual/lifecycle/#lifecycles-and-lifetimes), including
-constructors, copy constructors and move constructors.
+特征可以指定必需的[生命周期方法](/docs/manual/lifecycle/#lifecycles-and-lifetimes)，包括构造函数、拷贝构造函数和移动构造函数。
 
-For example, the following code creates a `MassProducible` trait. A
-`MassProducible` type has a default (no-argument) constructor and can be moved.
-It uses two built-in traits:
-[`Defaultable`](/docs/std/builtin/value/Defaultable/), which requires a default
-(no-argument) constructor, and
-[`Movable`](/docs/std/builtin/value/Movable/),
-which requires the type to have a [move
-constructor](/docs/manual/lifecycle/life#move-constructor).
+例如，以下代码创建了一个 `MassProducible` 特征。一个 `MassProducible` 类型有一个默认（无参数）构造函数并且可以被移动。它使用两个内置特征：[`Defaultable`](/docs/std/builtin/value/Defaultable/)，它要求一个默认（无参数）构造函数，以及 [`Movable`](/docs/std/builtin/value/Movable/)，它要求该类型有一个[移动构造函数](/docs/manual/lifecycle/life#move-constructor)。
 
-The `factory[]()` function returns a newly-constructed instance of a
-`MassProducible` type. The following example shows the definitions of
-the `Defaultable` and `Movable` traits in comments for reference:
+`factory[]()` 函数返回一个新构造的 `MassProducible` 类型实例。以下示例在注释中显示了 `Defaultable` 和 `Movable` 特征的定义以供参考：
 
 ```mojo
 # trait Defaultable
@@ -416,61 +317,41 @@ struct Thing(MassProducible):
 var thing = factory[Thing]()
 ```
 
-### Register passable types and the RegisterPassable trait
-"Register passable" tells Mojo that a type should be passed in machine
-registers such as a CPU register. This means the type is always passed
-by value. For data types like an integer or floating-point number, this
-is much more efficient than storing values in stack memory.
+### 寄存器可传递类型与 RegisterPassable 特征
 
-Mojo supports two forms of register passable types.
+"寄存器可传递"告诉 Mojo 一个类型应该在机器寄存器（如 CPU 寄存器）中传递。这意味着该类型总是按值传递。对于整数或浮点数等数据类型，这比将值存储在栈内存中效率更高。
 
-The standard *register passable type* has the following capabilities
-and restrictions:
+Mojo 支持两种形式的寄存器可传递类型。
 
-- They have normal lifecycles and can implement or override lifecycle
-  methods.
-- Every field must either be register passable or trivially register
-  passable.
-- The type must be
-  [`Movable`](/docs/manual/lifecycle/life/#move-constructor).
-- Their self pointer is neither stable nor predictable. They can move
-  in memory at any time so they aren't suitable for types that rely on
-  pointer identity.
-- When used as arguments or results, they can be exposed directly to C
-  and C++ through foreign function interfaces (FFI) and don't need to be
-  passed by pointer.
-- They can't override the default move constructor. This guarantees
-  moves are always side-effect-free.
+标准的*寄存器可传递类型*具有以下能力和限制：
 
-You can create custom register-passable types by conforming a type
-to the `RegisterPassable` trait.
+- 它们有正常的生命周期，可以实现或覆盖生命周期方法。
+- 每个字段必须是寄存器可传递的或平凡寄存器可传递的。
+- 该类型必须是 [`Movable`](/docs/manual/lifecycle/life/#move-constructor)。
+- 它们的 self 指针既不稳定也不可预测。它们可以随时在内存中移动，因此不适合依赖指针标识的类型。
+- 当用作参数或结果时，它们可以通过外部函数接口（FFI）直接暴露给 C 和 C++，不需要通过指针传递。
+- 它们不能覆盖默认的移动构造函数。这保证了移动总是无副作用的。
 
-Trivial register types are typically data types. They include:
+你可以通过让类型遵循 `RegisterPassable` 特征来创建自定义的寄存器可传递类型。
 
-- *Arithmetic types*. This includes types such as `Int`, `Int32`,
-  `Bool`, `Float64` etc.
-- *Pointers*. The address value is trivial, not the data being pointed
-  to.
-- *Arrays of other trivial types*. `SIMD` is a good example.
+平凡寄存器类型通常是数据类型。它们包括：
 
-These types are provided by Mojo's standard library.
+- *算术类型*。这包括 `Int`、`Int32`、`Bool`、`Float64` 等类型。
+- *指针*。地址值是平凡的，而不是被指向的数据。
+- *其他平凡类型的数组*。`SIMD` 是一个很好的例子。
 
-A *trivially register passable type* has the following capabilities
-and restrictions:
+这些类型由 Mojo 的标准库提供。
 
-- They do not use lifecycle methods.
-- Every field must be trivially register passable.
-- The type must be
-  [`Copyable`](/docs/manual/lifecycle/life/#copy-constructor).
-- They use a special trivial (no-op) destructor. They are _trivially
-  movable_ (via `Copyable`, which refines `Movable`), _trivially
-  copyable_, and *trivially destructible*.
+*平凡寄存器可传递类型*具有以下能力和限制：
 
-## Built-in traits
+- 它们不使用生命周期方法。
+- 每个字段必须是平凡寄存器可传递的。
+- 该类型必须是 [`Copyable`](/docs/manual/lifecycle/life/#copy-constructor)。
+- 它们使用特殊的平凡（空操作）析构函数。它们是*平凡可移动的*（通过 `Copyable`，它细化了 `Movable`）、*平凡可复制的*和*平凡可析构的*。
 
-The Mojo standard library includes many traits. They're implemented
-by a number of standard library types, and you can also implement these on your
-own types. These standard library traits include:
+## 内置特征
+
+Mojo 标准库包含许多特征。它们由许多标准库类型实现，你也可以在自己的类型上实现这些特征。这些标准库特征包括：
 
 - [`Absable`](/docs/std/math/math/Absable/)
 - [`AnyType`](/docs/std/builtin/anytype/AnyType/)
@@ -492,18 +373,13 @@ own types. These standard library traits include:
 - [`Writable`](/docs/std/format/Writable/)
 - [`Writer`](/docs/std/format/Writer/)
 
-The API reference docs linked above include usage examples for each trait. The
-following sections discuss a few of these traits.
+上面链接的 API 参考文档包含每个特征的使用示例。以下部分讨论其中一些特征。
 
-### The `Sized` trait
+### `Sized` 特征
 
-The [`Sized`](/docs/std/builtin/len/Sized/) trait identifies types that
-have a measurable length, like strings and arrays.
+[`Sized`](/docs/std/builtin/len/Sized/) 特征标识具有可测量长度的类型，如字符串和数组。
 
-Specifically, `Sized` requires a type to implement the `__len__()` method.
-This trait is used by the built-in [`len()`](/docs/std/builtin/len/len/)
-function. For example, if you're writing a custom list type, you could
-implement this trait so your type works with `len()`:
+具体来说，`Sized` 要求类型实现 `__len__()` 方法。这个特征被内置的 [`len()`](/docs/std/builtin/len/len/) 函数使用。例如，如果你正在编写一个自定义列表类型，你可以实现这个特征，使你的类型与 `len()` 一起工作：
 
 ```mojo
 struct MyList(Copyable, Sized):
@@ -523,15 +399,11 @@ print(len(MyList()))
 0
 ```
 
-### The `Intable` and `IntableRaising` traits
+### `Intable` 和 `IntableRaising` 特征
 
-The [`Intable`](/docs/std/builtin/int/Intable/) trait identifies a type that
-can be converted to `Int`. The
-[`IntableRaising`](/docs/std/builtin/int/IntableRaising/) trait describes a
-type can be converted to an `Int`, but the conversion might raise an error.
+[`Intable`](/docs/std/builtin/int/Intable/) 特征标识一个可以转换为 `Int` 的类型。[`IntableRaising`](/docs/std/builtin/int/IntableRaising/) 特征描述一个可以转换为 `Int` 的类型，但转换可能会引发错误。
 
-Both of these traits require the type to implement the `__int__()` method. For
-example:
+这两个特征都要求类型实现 `__int__()` 方法。例如：
 
 ```mojo
 @fieldwise_init
@@ -549,23 +421,17 @@ print(Int(value) == 42)
 True
 ```
 
-### The `Writable` trait
+### `Writable` 特征
 
-Any type that conforms to
-[`Writable`](/docs/std/format/Writable/) gets a default implementation
-that formats its fields using reflection. Add the trait and you can
-print your type:
+任何遵循 [`Writable`](/docs/std/format/Writable/) 的类型都会获得一个默认实现，该实现使用反射格式化其字段。添加该特征，你就可以打印你的类型：
 
 ```mojo
 struct SomeType(Writable):
 ```
 
-[`print()`](/docs/std/io/io/print/) requires its arguments to
-conform to `Writable`. This uses stream-based writing and avoids
-unnecessary `String` allocations.
+[`print()`](/docs/std/io/io/print/) 要求其参数遵循 `Writable`。这使用基于流的写入，避免了不必要的 `String` 分配。
 
-Override `write_to()` to control the output format. Write a sequence
-of `Writable` values that make up the representation:
+覆盖 `write_to()` 以控制输出格式。编写一系列组成表示的 `Writable` 值：
 
 ```mojo
 @fieldwise_init
@@ -573,7 +439,7 @@ struct Point(Writable):
     var x: Float64
     var y: Float64
 
-    # Overrides default implementation from Writable conformance
+    # 覆盖 Writable 遵循性的默认实现
     def write_to(self, mut writer: Some[Writer]):
         writer.write(t"Point({self.x}, {self.y})")
 
@@ -583,58 +449,41 @@ var p = Point(1.5, 2.7)
 print(p)  # Point(1.5, 2.7)
 ```
 
-The `Writer` trait only accepts valid UTF-8 text. You can't write
-arbitrary bytes. This guarantees that types like `String` can
-implement `Writer` without risking corruption.
+`Writer` 特征只接受有效的 UTF-8 文本。你不能写入任意字节。这保证了像 `String` 这样的类型可以实现 `Writer` 而不会有损坏的风险。
 
-`Writable` provides
-[`write_repr_to()`](/docs/std/format/Writable/#write_repr_to), which
-produces a debugging-specific string representation of a value.
+`Writable` 提供了 [`write_repr_to()`](/docs/std/format/Writable/#write_repr_to)，它产生一个特定于调试的值的字符串表示。
 
-`write_repr_to()` has a default implementation based on reflection.
-Override it only when your type needs a custom debug representation:
+`write_repr_to()` 有一个基于反射的默认实现。只有当你的类型需要自定义调试表示时才覆盖它：
 
 ```mojo
-# Another method. Overrides default implementation from Writable conformance
+# 另一个方法。覆盖 Writable 遵循性的默认实现
 def write_repr_to(self, mut writer: Some[Writer]):
     writer.write(t"{self.x} : {self.y}")
 
 print(repr(p))  # 1.5 : 2.7
 ```
 
-### Lifetime management traits
+### 生命周期管理特征
 
-Mojo provides two core traits for managing value lifetimes:
+Mojo 提供了两个核心特征来管理值生命周期：
 
-- [`AnyType`](/docs/std/builtin/anytype/AnyType/): The base trait that all types
-extend. Types conforming only to `AnyType` may require explicit destruction.
+- [`AnyType`](/docs/std/builtin/anytype/AnyType/)：所有类型扩展的基础特征。仅遵循 `AnyType` 的类型可能需要显式销毁。
 
-- [`ImplicitlyDestructible`](/docs/std/builtin/anytype/ImplicitlyDestructible/):
-Types that can be automatically destroyed by calling `__del__()` when their
-lifetime ends.
+- [`ImplicitlyDestructible`](/docs/std/builtin/anytype/ImplicitlyDestructible/)：当生命周期结束时可以通过调用 `__del__()` 自动销毁的类型。
 
-For detailed information about value destruction, explicit destruction with the
-`@explicit_destroy` decorator, and when to use each approach, see [Death of a
-value](/docs/manual/lifecycle/death).
+有关值销毁、使用 `@explicit_destroy` 装饰器的显式销毁以及何时使用每种方法的详细信息，请参阅[值的消亡](/docs/manual/lifecycle/death)。
 
-## Generic structs with traits
+## 带特征的泛型结构体
 
-You can also use traits when defining a generic container. A generic container
-is a container (for example, an array or hashmap) that can hold different data
-types. In a dynamic language like Python it's easy to add different types of
-items to a container. But in a statically-typed environment, the compiler needs
-to be able to identify the types at compile time. For example, if the container
-needs to copy a value, the compiler needs to verify that the type can be copied.
+在定义泛型容器时也可以使用特征。泛型容器是一个可以保存不同数据类型的容器（例如，数组或哈希表）。在 Python 这样的动态语言中，很容易向容器添加不同类型的项。但在静态类型环境中，编译器需要能够在编译时识别类型。例如，如果容器需要复制一个值，编译器需要验证该类型可以被复制。
 
-The [`List`](/docs/std/collections/list/) type is an example of a
-generic container. A single `List` can only hold a single type of data.
-The list elements must conform to the `Copyable` trait:
+[`List`](/docs/std/collections/list/) 类型是泛型容器的一个例子。单个 `List` 只能保存单一类型的数据。列表元素必须遵循 `Copyable` 特征：
 
 ```mojo
 struct List[T: Copyable]:
 ```
 
-For example, you can create a list of integer values like this:
+例如，你可以像这样创建一个整数值列表：
 
 ```mojo
 var list: List[Int]
@@ -647,31 +496,20 @@ for i in range(len(list)):
 1 2 3 4
 ```
 
-You can use traits to define requirements for elements that are stored in a
-container. For example, `List` requires elements that can be moved and
-copied. To store a struct in a `List`, the struct needs to conform to
-the `Copyable` trait, which requires a
-[copy constructor](/docs/manual/lifecycle/life/#copy-constructor) and a
-[move constructor](/docs/manual/lifecycle/life/#move-constructor).
+你可以使用特征来定义存储在容器中的元素的要求。例如，`List` 要求元素可以被移动和复制。要在 `List` 中存储结构体，该结构体需要遵循 `Copyable` 特征，这需要一个[拷贝构造函数](/docs/manual/lifecycle/life/#copy-constructor)和一个[移动构造函数](/docs/manual/lifecycle/life/#move-constructor)。
 
-Building generic containers is an advanced topic. For an introduction, see the
-section on
-[parameterized structs](/docs/manual/parameters/#parameterized-structs).
+构建泛型容器是一个高级主题。有关介绍，请参阅[参数化结构体](/docs/manual/parameters/#parameterized-structs)部分。
 
-### `comptime` members for generics
+### 泛型的 `comptime` 成员
 
-In addition to methods, a trait can include `comptime` members, which must be
-defined by any conforming struct. For example:
+除了方法之外，特征还可以包含 `comptime` 成员，这些成员必须由任何遵循的结构体定义。例如：
 
 ```mojo
 trait Repeater:
     comptime count: Int
 ```
 
-An implementing struct must define a concrete constant value for the `comptime`
-member, using any compile-time parameter value. For example, it can use a
-literal constant or a compile-time expression, including one that uses the
-struct's parameters.
+实现结构体必须为 `comptime` 成员定义一个具体的常量值，可以使用任何编译时参数值。例如，它可以使用字面量常量或编译时表达式，包括使用结构体参数的表达式。
 
 ```mojo
 struct Doublespeak(Repeater):
@@ -681,24 +519,17 @@ struct Multispeak[verbosity: Int](Repeater):
     comptime count: Int = Self.verbosity * 2 + 1
 ```
 
-The `Doublespeak` struct has a constant value for `count`, but the `Multispeak`
-struct lets the user set the value using a parameter:
+`Doublespeak` 结构体有一个 `count` 的常量值，但 `Multispeak` 结构体让用户使用参数设置该值：
 
 ```mojo
 repeater = Multispeak[12]()
 ```
 
-Note that the field is named `count`, and the `Multispeak` parameter is named
-`verbosity`. Parameters and `comptime` members are in the same namespace, so the
-parameter can't have the same name as the `comptime` member.
+注意字段名为 `count`，而 `Multispeak` 参数名为 `verbosity`。参数和 `comptime` 成员在同一个命名空间中，所以参数不能与 `comptime` 成员同名。
 
-`comptime` members are most useful for writing traits for generic types. For
-example, imagine that you want to write a trait that describes a generic stack
-data structure that stores elements that conform to the `Copyable`
-trait.
+`comptime` 成员对于为泛型类型编写特征最有用。例如，假设你想编写一个描述存储遵循 `Copyable` 特征的元素的泛型栈数据结构的特征。
 
-By adding the element type as a `comptime` member on the trait, you can specify
-generic methods on the trait:
+通过将元素类型作为特征上的 `comptime` 成员添加，你可以在特征上指定泛型方法：
 
 ```mojo
 trait Stacklike:
@@ -711,12 +542,11 @@ trait Stacklike:
         ...
 ```
 
-The following struct implements the `Stacklike` trait using a `List` as the
-underlying storage:
+以下结构体使用 `List` 作为底层存储来实现 `Stacklike` 特征：
 
 ```mojo
 struct MyStack[type: Copyable & ImplicitlyDestructible](Stacklike):
-    """A simple Stack built using a List."""
+    """一个使用 List 构建的简单栈。"""
     comptime EltType = Self.type
     comptime list_type = List[Self.EltType]
 
@@ -749,15 +579,9 @@ struct MyStack[type: Copyable & ImplicitlyDestructible](Stacklike):
      if appropriate.
 */}
 
-The `MyStack` type adds a `dump()` method that prints the contents of the stack.
-Because a struct that conforms to `Copyable` is not necessarily
-printable, `MyStack` uses
-conditional conformance to
-define a `dump()` method that works as long as the element type is
-[writable](/docs/std/format/Writable/).
+`MyStack` 类型添加了一个 `dump()` 方法，用于打印栈的内容。因为遵循 `Copyable` 的结构体不一定是可打印的，`MyStack` 使用条件遵循来定义一个 `dump()` 方法，只要元素类型是[可写的](/docs/std/format/Writable/)就可以工作。
 
-The following code exercises this new trait by defining a generic method,
-`add_to_stack()` that adds an item to any `Stacklike` type.
+以下代码通过定义一个泛型方法 `add_to_stack()` 来练习这个新特征，该方法向任何 `Stacklike` 类型添加一个项。
 
 ```mojo
 def add_to_stack[S: Stacklike](mut stack: S, var item: S.EltType):

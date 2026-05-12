@@ -1,129 +1,75 @@
 ---
-title: '@doc_hidden'
-description: Hides declarations from generated documentation.
-codeTitle: true
+title: '@doc_hidden 装饰器'
+sidebar_label: '@doc_hidden'
+sidebar_position: 7
+description: >
+  @doc_hidden 装饰器参考。从生成的文档中隐藏函数或结构体。
 ---
 
-The `@doc_hidden` [decorator](/docs/reference/decorators/) marks a declaration
-as hidden from documentation generation. It allows you to exclude internal
-implementation details, special methods, or other code from appearing in
-published API documentation while keeping them accessible in your source code.
+{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
 
-This decorator is particularly useful when you need to maintain internal APIs,
-helper methods, or alternative constructors that exist for implementation
-purposes but shouldn't be part of your library's public documentation.
+`@doc_hidden` 装饰器从生成的文档中隐藏函数或结构体。代码仍然可用，但不会出现在公共 API 文档中。
 
-API members with names starting and ending with double underscores ("dunder"
-members) are always treated as public and included in documentation unless they
-are decorated with `@doc_hidden`.
-
-Mojo treats any other API names starting with a single or double underscore (`_`
-or `__`) as internal and omits them from the generated documentation—no need for
-`@doc_hidden`.
-
-The `@doc_hidden` decorator only affects documentation generation. Hidden
-declarations are fully accessible in source code and can be accessed like any
-other declaration. The same is true of internal declarations that start with
-underscores—they are internal _by convention_, there are no access
-restrictions.
-
-## When to use `@doc_hidden`
-
-Use `@doc_hidden` to hide:
-
-- **Alternative constructors and dunder methods**: Hide alternative `__init__()`
-  methods or other dunder methods that users don't need to call directly. The
-  `@doc_hidden` decorator is especially useful for dunder methods, since they're
-  public by default and you can't hide them by renaming them.
-- **Internal methods**: Hide private or internal helper methods that are
-  implementation details.
-- **Deprecated internals**: Hide old internal APIs that remain for backward
-  compatibility but shouldn't appear in new documentation. See also
-  [`@deprecated`](/docs/reference/decorators/deprecated/).
-
-## Usage
-
-Apply `@doc_hidden` just above any declaration you want to exclude from
-generated documentation:
+## 语法
 
 ```mojo
-struct Calculator:
-    """A simple calculator struct demonstrating @doc_hidden."""
-
-    var value: Int
-
-    def __init__(out self, initial_value: Int = 0):
-        """Creates a new Calculator with an initial value.
-
-        Args:
-            initial_value: The starting value for the calculator. Defaults to 0.
-        """
-        self.value = initial_value
-
-    @doc_hidden
-    def __init__(out self):
-        """Internal initializer that should not appear in public documentation.
-
-        This constructor exists for implementation purposes but users should
-        prefer the constructor that takes an initial value.
-        """
-        self.value = 0
-
-    def add(mut self, amount: Int):
-        """Adds a value to the calculator.
-
-        Args:
-            amount: The value to add.
-        """
-        self.value += amount
+@doc_hidden
 ```
 
-The no-argument `__init__()` constructor in this example uses `@doc_hidden`. It
-works in code but won't show up in the generated documentation.
+## 用法
 
-## What can be hidden
+### 隐藏函数
 
-You can apply `@doc_hidden` to most APIs:
+```mojo
+@doc_hidden
+def internal_helper():
+    pass
+```
 
-- **Functions and methods**
+### 隐藏结构体
 
-  Hide any function or method overload, including
-  constructors (`__init__()`) and other special methods:
+```mojo
+@doc_hidden
+struct InternalType:
+    pass
+```
 
-  ```mojo
-  struct Point:
-      @doc_hidden
-      def __init__(out self):
-          pass
-  ```
+## 示例
 
-  The `@doc_hidden` decorator only hides the overload immediately following the
-  decorator. So the same function can have both
-  documented overloads and hidden overloads.
+```mojo
+struct PublicAPI:
+    def public_method(self):
+        pass
 
-- **Entire structs**
+    @doc_hidden
+    def _internal_helper(self):
+        pass
 
-  Hide helper or internal structs.
+@doc_hidden
+def _private_implementation():
+    pass
 
-  ```mojo
-  @doc_hidden
-  struct InternalHelper:
-      pass
-  ```
+def public_function():
+    _private_implementation()
+```
 
-- <strong>`comptime` values and members</strong>
+## 适用场景
 
-  ```mojo
-  @doc_hidden
-  comptime INTERNAL_CONSTANT = 42
-  ```
+- 内部实现细节
+- 私有辅助函数
+- 实验性功能
+- 不稳定的 API
 
-- **Struct fields**
+## 与私有成员对比
 
-  ```mojo
-  struct PublicStruct:
-      @doc_hidden
-      var implementation_detail: Int
+| 特性         | `@doc_hidden` | 私有成员       |
+|--------------|---------------|----------------|
+| 可访问性     | 公开可访问    | 仅内部可访问   |
+| 文档可见性   | 隐藏          | 隐藏           |
+| 用途         | 隐藏实现细节  | 强制封装       |
 
-      pass
-  ```
+## 注意事项
+
+- `@doc_hidden` 不限制访问，只是隐藏文档
+- 代码仍然可以被调用
+- 与 `pub` 修饰符一起使用时，代码公开但文档隐藏

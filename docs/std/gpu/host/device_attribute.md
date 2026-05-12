@@ -1,25 +1,19 @@
 ---
 title: "device_attribute"
 sidebar_label: "device_attribute"
-description: "This module defines GPU device attributes that can be queried from CUDA-compatible devices.  The module provides the `DeviceAttribute` struct which encapsulates the various device properties and capab"
+description: "此模块定义可以从 CUDA 兼容设备查询的 GPU 设备属性。该模块提供 `DeviceAttribute` 结构体，封装了可以通过 CUDA 驱动 API 查询的各种设备属性和功能。"
 ---
 
 # device_attribute
 
-This module defines GPU device attributes that can be queried from CUDA-compatible devices.
+此模块定义可以从 CUDA 兼容设备查询的 GPU 设备属性。
 
-The module provides the `DeviceAttribute` struct which encapsulates the various device
-properties and capabilities that can be queried through the CUDA driver API. Each attribute
-is represented as a constant with a corresponding integer value that maps to the CUDA
-driver's attribute enumeration.
+该模块提供 `DeviceAttribute` 结构体，封装了可以通过 CUDA 驱动 API 查询的各种设备属性和功能。每个属性表示为一个常量，具有映射到 CUDA 驱动属性枚举的相应整数值。
 
-These attributes allow applications to query specific hardware capabilities and limitations
-of GPU devices, such as maximum thread counts, memory sizes, compute capabilities, and
-supported features.
+这些属性允许应用程序查询 GPU 设备的特定硬件功能和限制，例如最大线程数、内存大小、计算能力和支持的功能。
 
 :::note
-See the [`DeviceContext`](/docs/std/gpu/host/device_context/DeviceContext/) page
-for examples that retrieve `DeviceAttribute` values.
+有关检索 `DeviceAttribute` 值的示例，请参阅 [`DeviceContext`](/docs/std/gpu/host/device_context/DeviceContext/) 页面。
 :::
 
 ## 类型

@@ -1,12 +1,13 @@
 ---
 title: "string"
+slug: string
 sidebar_label: "string"
-description: "Implements the core `String` type and related utilities."
+description: "实现核心 `String` 类型及相关工具。"
 ---
 
 # string
 
-Implements the core `String` type and related utilities.
+实现核心 `String` 类型及相关工具。
 
 ## 类型
 

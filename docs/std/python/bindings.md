@@ -1,19 +1,14 @@
 ---
 title: "bindings"
 sidebar_label: "bindings"
-description: "Provides infrastructure for creating Python bindings to Mojo code.  This module implements the core machinery for exposing Mojo functions and types to Python through CPython's C API. It includes build"
+description: "提供为 Mojo 代码创建 Python 绑定的基础设施。此模块实现通过 CPython C API 将 Mojo 函数和类型暴露给 Python 的核心机制。"
 ---
 
 # bindings
 
-Provides infrastructure for creating Python bindings to Mojo code.
+提供为 Mojo 代码创建 Python 绑定的基础设施。
 
-This module implements the core machinery for exposing Mojo functions and types
-to Python through CPython's C API. It includes builder types for constructing
-Python modules and type objects, wrapper functions for converting between Mojo
-and Python calling conventions, and utilities for argument validation and type
-conversion. This enables seamless bidirectional interoperability between Mojo
-and Python code.
+此模块实现通过 CPython C API 将 Mojo 函数和类型暴露给 Python 的核心机制。它包括用于构建 Python 模块和类型对象的构建器类型、用于在 Mojo 和 Python 调用约定之间转换的包装函数，以及用于参数验证和类型转换的工具。这实现了 Mojo 和 Python 代码之间的无缝双向互操作性。
 
 ## 类型
 

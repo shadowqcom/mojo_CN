@@ -1,23 +1,16 @@
 ---
 title: "io"
 sidebar_label: "io"
-description: "Core I/O operations: console input/output, file handling, writing traits.  The `io` package provides fundamental input/output functionality for reading from and writing to various sources including th"
+description: "核心 I/O 操作：控制台输入/输出、文件处理、写入 trait。`io` 包提供基本的输入/输出功能，用于从各种来源（包括控制台、文件和自定义流）读取和写入数据。"
 ---
 
 # io
 
-Core I/O operations: console input/output, file handling, writing traits.
+核心 I/O 操作：控制台输入/输出、文件处理、写入 trait。
 
-The `io` package provides fundamental input/output functionality for reading
-from and writing to various sources including the console, files, and custom
-streams. It defines the core traits for the I/O system (`Writer` and
-`Writable`) that enable formatted output across different backends, along with
-concrete implementations for file operations and standard streams.
+`io` 包提供基本的输入/输出功能，用于从各种来源（包括控制台、文件和自定义流）读取和写入数据。它定义了 I/O 系统的核心 trait（`Writer` 和 `Writable`），支持跨不同后端的格式化输出，以及文件操作和标准流的具体实现。
 
-Use this package for console interaction, file operations, implementing custom
-output formatting for your types, or building I/O abstractions. Most programs
-use `print()` and file operations from this package, while library authors
-implement `Writable` to enable their types to work with any `Writer`.
+使用此包进行控制台交互、文件操作、为您的类型实现自定义输出格式，或构建 I/O 抽象。大多数程序使用此包中的 `print()` 和文件操作，而库作者实现 `Writable` 以使其类型能够与任何 `Writer` 配合使用。
 
 ## 模块
 

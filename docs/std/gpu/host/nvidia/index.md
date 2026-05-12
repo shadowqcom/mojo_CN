@@ -1,12 +1,12 @@
 ---
 title: "gpu/host/nvidia"
 sidebar_label: "gpu/host/nvidia"
-description: "Implements the tma package."
+description: "实现 tma 包。"
 ---
 
 # gpu/host/nvidia
 
-Implements the tma package.
+实现 tma 包。
 
 ## 模块
 

@@ -1,12 +1,12 @@
 ---
 title: "variant"
 sidebar_label: "variant"
-description: "Defines a Variant type."
+description: "定义 Variant 类型。"
 ---
 
 # variant
 
-Defines a Variant type.
+定义 Variant 类型。
 
 ## 类型
 

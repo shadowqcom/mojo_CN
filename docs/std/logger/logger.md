@@ -1,35 +1,33 @@
 ---
 title: "logger"
+slug: logger
 sidebar_label: "logger"
-description: "Provides logging functionality with different severity levels.  This module implements a simple logging system with configurable severity levels: `NOTSET`, `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CR"
+description: "提供具有不同严重级别的日志功能。此模块实现了一个简单的日志系统，具有可配置的严重级别：`NOTSET`、`DEBUG`、`INFO`、`WARNING`、`ERROR` 和 `CRITICAL`。"
 ---
 
 # logger
 
-Provides logging functionality with different severity levels.
+提供具有不同严重级别的日志功能。
 
-This module implements a simple logging system with configurable severity
-levels: `NOTSET`, `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`. The
-logging level can be set via the LOGGING_LEVEL environment variable.
+此模块实现了一个简单的日志系统，具有可配置的严重级别：`NOTSET`、`DEBUG`、`INFO`、`WARNING`、`ERROR` 和 `CRITICAL`。日志级别可以通过 LOGGING_LEVEL 环境变量设置。
 
-The main components are:
+主要组件包括：
 
-- `Level`: An enum-like struct defining the available logging levels
-- `Logger`: A struct that handles logging messages with different severity levels
+- `Level`：一个类似枚举的结构体，定义可用的日志级别
+- `Logger`：一个处理不同严重级别日志消息的结构体
 
-Example:
+示例：
 
 ```mojo
 from std.logger import Logger
 
-var logger = Logger()  # Uses default level from LOGGING_LEVEL env var
+var logger = Logger()  # 使用 LOGGING_LEVEL 环境变量的默认级别
 logger.info("Starting process")
 logger.debug("Debug information")
 logger.error("An error occurred")
 ```
 
-The logger can be configured to write to different file descriptors (default
-stdout). Messages below the configured level will be silently ignored.
+日志记录器可以配置为写入不同的文件描述符（默认为 stdout）。低于配置级别的消息将被静默忽略。
 
 ## 类型
 

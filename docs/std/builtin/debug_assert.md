@@ -1,14 +1,14 @@
 ---
 title: "debug_assert"
 sidebar_label: "debug_assert"
-description: "Implements run-time assertions.  These are Mojo built-ins, so you don't need to import them."
+description: "实现运行时断言。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # debug_assert
 
-Implements run-time assertions.
+实现运行时断言。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 函数
 

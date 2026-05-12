@@ -1,14 +1,14 @@
 ---
 title: "unsafe"
 sidebar_label: "unsafe"
-description: "Provides utility functions for unsafe manipulation of SIMD values.  You can import these APIs from the `memory` package. For example:  ```mojo from std.memory import bitcast ```"
+description: "提供 SIMD 值不安全操作的工具函数。您可以从 `memory` 包导入这些 API。例如：```mojo from std.memory import bitcast ```"
 ---
 
 # unsafe
 
-Provides utility functions for unsafe manipulation of SIMD values.
+提供 SIMD 值不安全操作的工具函数。
 
-You can import these APIs from the `memory` package. For example:
+您可以从 `memory` 包导入这些 API。例如：
 
 ```mojo
 from std.memory import bitcast

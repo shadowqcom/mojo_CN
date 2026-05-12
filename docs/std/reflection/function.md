@@ -1,16 +1,14 @@
 ---
 title: "function"
 sidebar_label: "function"
-description: "Compile-time reflection over function values.  `reflect_fn[func]` is a `comptime` alias for the `ReflectedFn[func]` handle type, exposing function introspection through static methods. This is the fun"
+description: "对函数值的编译时反射。`reflect_fn[func]` 是 `ReflectedFn[func]` 句柄类型的 `comptime` 别名，通过静态方法公开函数内省。"
 ---
 
 # function
 
-Compile-time reflection over function values.
+对函数值的编译时反射。
 
-`reflect_fn[func]` is a `comptime` alias for the `ReflectedFn[func]` handle
-type, exposing function introspection through static methods. This is the
-function-side counterpart to `reflect[T]` / `Reflected[T]` for types.
+`reflect_fn[func]` 是 `ReflectedFn[func]` 句柄类型的 `comptime` 别名，通过静态方法公开函数内省。这是类型 `reflect[T]` / `Reflected[T]` 的函数端对应功能。
 
 ```mojo
 from std.reflection import reflect_fn
@@ -20,7 +18,7 @@ def my_func(x: Int) -> Int:
 
 def main():
     print(reflect_fn[my_func].display_name())   # "my_func"
-    print(reflect_fn[my_func].linkage_name())   # mangled symbol name
+    print(reflect_fn[my_func].linkage_name())   # 修饰后的符号名
 ```
 
 ## 类型

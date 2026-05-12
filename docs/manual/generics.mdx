@@ -1,27 +1,19 @@
 ---
-title: Generics
-description: Write code that builds and runs across many types using generics.
+title: 泛型
+description: 使用泛型编写可跨多种类型构建和运行的代码。
 ---
 
-Type generics let you write code once and use it across many types
-without duplicating logic. You don't need separate implementations or
-type checks for each case. Mojo generates specialized versions for each
-type you use.
+类型泛型让你只需编写一次代码，就可以在多种类型上使用，无需重复逻辑。你不需要为每种情况单独实现或进行类型检查。Mojo 会为你使用的每种类型生成专用版本。
 
-Most languages stop there, and their generics only parameterize over
-types. Mojo also supports value generics. Its parameter system accepts
-both types and compile-time values using the same `[]` syntax.
+大多数语言到此为止，它们的泛型只对类型进行参数化。Mojo 还支持值泛型。它的参数系统使用相同的 `[]` 语法接受类型和编译时值。
 
-Mojo distinguishes compile-time parameters from runtime arguments in its
-syntax. Parameters go in square brackets `[]` and resolve at compile
-time. Arguments go in parentheses `()` and resolve at runtime.
+Mojo 在语法上区分编译时参数和运行时参数。参数放在方括号 `[]` 中，在编译时解析。参数放在圆括号 `()` 中，在运行时解析。
 
-You see this distinction at every definition and call site, so you always
-know what the compiler specializes and what gets passed at runtime.
+你在每个定义和调用点都能看到这种区别，所以你始终知道编译器特化了什么，以及运行时传递了什么。
 
 ```mojo
-# T is a type parameter, threshold is a value parameter
-# Both are compile-time. values is a runtime argument.
+# T 是类型参数，threshold 是值参数
+# 两者都是编译时的。values 是运行时参数。
 def count_above[
     T: Comparable & Copyable, threshold: T
 ](values: List[T]) -> Int:
@@ -32,82 +24,49 @@ def count_above[
     return count
 ```
 
-Many generics use traits to constrain which types work with the code.
-A trait defines what a type must do, and generic code declares which
-traits it requires.
+许多泛型使用特征来约束哪些类型可以与代码一起工作。特征定义了类型必须做什么，泛型代码声明它需要哪些特征。
 
-The compiler enforces these requirements and generates specialized code
-for each concrete type at the call site.
+编译器强制执行这些要求，并在调用站点为每个具体类型生成专用代码。
 
-## The value of generics
+## 泛型的价值
 
-Generics eliminate duplicated logic. You write one implementation that
-adapts at compile time to the types and values you use, including types
-from libraries you didn't write.
+泛型消除了重复逻辑。你编写一个在编译时适应你使用的类型和值的实现，包括你未编写的库中的类型。
 
-Type generics let one function, method, or struct work across many
-types. You declare requirements once using trait bounds, and the
-compiler enforces them. You avoid near-identical implementations and fix
-bugs in one place.
+类型泛型让一个函数、方法或结构体可以跨多种类型工作。你使用特征约束声明一次要求，编译器就会强制执行它们。你避免了几乎相同的实现，并可以在一处修复错误。
 
-Value generics let you parameterize over compile-time constants such as
-sizes, thresholds, or feature flags. The compiler can specialize code
-paths, remove dead branches, and optimize for specific values without
-runtime cost.
+值泛型让你可以对编译时常量进行参数化，如大小、阈值或功能标志。编译器可以特化代码路径、移除死分支，并为特定值进行优化，而无需运行时成本。
 
-Together, they let you express intent once and apply it broadly without
-sacrificing correctness, clarity, or performance.
+它们一起让你表达一次意图并广泛应用，而不会牺牲正确性、清晰性或性能。
 
 :::note
-The compiler generates specialized code for each combination of
-concrete types and values at call sites. This enables static checking
-and optimization, but increases compile time and code size.
+编译器在调用站点为具体类型和值的每种组合生成专用代码。这实现了静态检查和优化，但会增加编译时间和代码大小。
 :::
 
-## Type generics
+## 类型泛型
 
-Type generics let you write code that works across many types. You define
-behavior once, and the compiler specializes it for each concrete type at
-the call site.
+类型泛型让你编写可跨多种类型工作的代码。你定义一次行为，编译器在调用站点为每个具体类型特化它。
 
-### Setting generic parameter bounds
+### 设置泛型参数约束
 
-_Bounds_ define what a type must do. You express them as traits that
-restrict which types your generic code accepts.
+*约束*定义了类型必须做什么。你将它们表示为特征，限制你的泛型代码接受哪些类型。
 
-Always constrain generic parameters with trait bounds. Traits define the
-operations and guarantees your code relies on. They also expose associated
-types (compile-time aliases) that your implementation can use. With these
-constraints in place, the compiler can check correctness and report
-missing requirements early.
+始终使用特征约束来约束泛型参数。特征定义了你的代码所依赖的操作和保证。它们还暴露了你的实现可以使用的关联类型（编译时别名）。有了这些约束，编译器可以检查正确性并及早报告缺失的要求。
 
-- The most permissive bound is
-  [`AnyType`](/docs/std/builtin/anytype/AnyType/). It places no behavioral
-  requirements on a type and serves as the least restrictive option.
+- 最宽松的约束是 [`AnyType`](/docs/std/builtin/anytype/AnyType/)。它对类型没有行为要求，是最不具限制性的选择。
 
-- [`ImplicitlyDestructible`](/docs/std/builtin/anytype/ImplicitlyDestructible/)
-  is a common baseline for types with lifetimes. It marks types that need
-  cleanup when they go out of scope. Generic code that stores or owns
-  values often requires it.
+- [`ImplicitlyDestructible`](/docs/std/builtin/anytype/ImplicitlyDestructible/) 是具有生命周期的类型的常见基线。它标记了在超出作用域时需要清理的类型。存储或拥有值的泛型代码通常需要它。
 
-Without bounds, generic code can't do meaningful work. The compiler has no
-guarantees about what operations are valid.
+没有约束，泛型代码无法做有意义的工作。编译器无法保证哪些操作是有效的。
 
-Examples on this page use trait composition (such as
-`Equatable & Copyable`) to declare the exact capabilities an algorithm
-needs. Each trait defines required API elements that concrete types must
-provide at the call site.
+本页的示例使用特征组合（如 `Equatable & Copyable`）来声明算法所需的确切能力。每个特征定义了具体类型在调用站点必须提供的必需 API 元素。
 
-## Basic generics: compare two lists
+## 基本泛型：比较两个列表
 
-Consider comparing two lists to test whether they contain the same values
-in the same order.
+考虑比较两个列表以测试它们是否按相同顺序包含相同的值。
 
-You could write a separate implementation for each element type. Or you
-can write one generic function that works for any list whose elements
-support the operations you need.
+你可以为每种元素类型编写单独的实现。或者你可以编写一个泛型函数，适用于任何元素支持所需操作的列表。
 
-This concrete version only works with integers:
+这个具体版本只适用于整数：
 
 ```mojo
 def all_equal_int(ref lhs: List[Int], ref rhs: List[Int]) -> Bool:
@@ -119,12 +78,9 @@ def all_equal_int(ref lhs: List[Int], ref rhs: List[Int]) -> Bool:
     return True
 ```
 
-The generic version doesn't care about the element type. It only requires
-the capabilities the algorithm uses: elements must support equality
-comparison and be copyable.
+泛型版本不关心元素类型。它只需要算法使用的能力：元素必须支持相等比较并且可复制。
 
-With those requirements, this updated function walks both lists element by
-element, just like the integer version:
+有了这些要求，这个更新的函数逐个元素遍历两个列表，就像整数版本一样：
 
 ```mojo
 def all_equal[
@@ -138,35 +94,26 @@ def all_equal[
     return True
 ```
 
-Both implementations follow the same logic: check lengths, return `False`
-on the first mismatch, and return `True` if no differences are found.
+两个实现遵循相同的逻辑：检查长度，在第一次不匹配时返回 `False`，如果没有发现差异则返回 `True`。
 
-### How this works
+### 工作原理
 
-The generic pieces in this example make a function reusable across
-many types. The first sign is the type parameter `T`. You declare type
-parameters in square brackets before the function arguments. Here, `T`
-represents the element type for both lists.
+这个示例中的泛型部分使函数可以跨多种类型重用。第一个标志是类型参数 `T`。你在函数参数之前的方括号中声明类型参数。这里，`T` 表示两个列表的元素类型。
 
 :::note
-Mojo favors names that show purpose over type. It follows naming
-conventions used in languages like Rust and C++, which keeps generic
-signatures readable.
+Mojo 倾向于显示目的而非类型的名称。它遵循 Rust 和 C++ 等语言中使用的命名约定，这使泛型签名保持可读性。
 
-Type parameter names use PascalCase. They can be short (`T`, `E`) or
-descriptive (`ErrorType`, `Element`). Common conventions:
+类型参数名称使用 PascalCase。它们可以简短（`T`、`E`）或描述性（`ErrorType`、`Element`）。常见约定：
 
-- `T`, `U`, `V` general type parameters
-- `K`, `V` key and value types
-- `H` hasher types or functions
-- `E` error types, as in `Result[T, E]`
+- `T`、`U`、`V` 通用类型参数
+- `K`、`V` 键和值类型
+- `H` 哈希类型或函数
+- `E` 错误类型，如 `Result[T, E]`
 
-Value parameter names use lower_snake_case. They should be descriptive
-(`capacity`, `hasher`, `value`, `writer`, `tile_x`).
+值参数名称使用 lower_snake_case。它们应该具有描述性（`capacity`、`hasher`、`value`、`writer`、`tile_x`）。
 :::
 
-When you call `all_equal()`, the compiler infers `T` from the call
-site:
+当你调用 `all_equal()` 时，编译器从调用站点推断 `T`：
 
 ```mojo
 print("Int (Expect True):\t",
@@ -179,94 +126,65 @@ print("String (Expect False):\t",
     all_equal(["hello", "world"], ["goodbye", "world"])) # False
 ```
 
-The compiler generates a concrete, type-specific version of
-`all_equal()` for each type you use. In this example, it creates one
-for `Int` and one for `String`.
+编译器为你使用的每种类型生成一个具体的、特定类型的 `all_equal()` 版本。在这个例子中，它为 `Int` 创建一个，为 `String` 创建一个。
 
 :::note
-In type theory terms, the parametric all_equal() function is
-_polymorphic_. The generated type-specific versions are _monomorphic_.
+在类型理论术语中，参数化 all_equal() 函数是*多态的*。生成的特定类型版本是*单态的*。
 :::
 
-### Type requirements
+### 类型要求
 
-`Equatable` is required by this algorithm. `Copyable` is often needed
-for loops and container elements. The compiler enforces both, so you
-don't have to guess.
+`Equatable` 是这个算法所需的。`Copyable` 通常用于循环和容器元素。编译器强制执行两者，所以你不必猜测。
 
-Keep requirements minimal:
+保持要求最小化：
 
 ```mojo
 T: Equatable & Copyable
 ```
 
-The ampersand (`&`) composes traits. It means both requirements apply.
+和号（`&`）组合特征。这意味着两个要求都适用。
 
-Use the fewest bounds your code needs. That keeps your function usable
-with more types. For example, if you remove `Equatable` from
-`all_equal()`, the code fails to compile because the compiler can't
-guarantee that `!=` exists for all `T`.
+使用你的代码所需的最少约束。这使你的函数可用于更多类型。例如，如果你从 `all_equal()` 中移除 `Equatable`，代码将无法编译，因为编译器无法保证 `!=` 对所有 `T` 都存在。
 
 :::note
-A type supports `!=` by implementing `__ne__()`.
+类型通过实现 `__ne__()` 来支持 `!=`。
 :::
 
-When your code uses an operation not covered by the bounds, the
-compiler reports an error. The type is _underspecified_. Required
-behavior isn't guaranteed by the current bounds.
+当你的代码使用约束未覆盖的操作时，编译器会报告错误。类型是*未充分指定的*。当前约束不保证所需的行为。
 
-Fix this by adding the trait that provides the missing behavior. Use
-trait composition to extend the bounds.
+通过添加提供缺失行为的特征来修复此问题。使用特征组合来扩展约束。
 
-Adding bounds restricts which types you accept, but expands what your
-code can do. Each trait adds guaranteed operations, which lets the
-compiler check correctness and reason about lifetimes and effects.
+添加约束会限制你接受的类型，但会扩展你的代码可以做的事情。每个特征都添加了保证的操作，这让编译器可以检查正确性并推理生命周期和效果。
 
-In practice, generic errors mean your bounds don't include the
-behavior your code uses. Add the missing trait.
+在实践中，泛型错误意味着你的约束不包括你的代码使用的行为。添加缺失的特征。
 
 :::note
-Bounds make your code sound: every operation you use is guaranteed to
-exist for any type that satisfies them.
+约束使你的代码健全：你使用的每个操作都保证存在于满足它们的任何类型。
 :::
 
-### Generic parameter types
+### 泛型参数类型
 
-In this example, both parameters are `List`s that use the
-same element type:
+在这个例子中，两个参数都是使用相同元素类型的 `List`：
 
 ```mojo
 lhs: List[T], rhs: List[T]
 ```
 
-Using `T` for both arguments ensures your loop compares
-like-with-like and prevents type mismatches.
+对两个参数使用 `T` 确保你的循环进行同类比较并防止类型不匹配。
 
-The previous example showed lists containing elements
-of type `T`. Generic types can also be used without embedding
-them into container types, like you see here:
+前面的示例显示了包含类型 `T` 元素的列表。泛型类型也可以在不嵌入容器类型的情况下使用，如下所示：
 
 ```mojo
 def my_generic_fn[T: AnyType](value: T):
 ```
 
-This function accepts any type, because its only limit is `AnyType`.
-`AnyType` is the root of the trait hierarchy. It's the baseline
-that all types extend. Using `AnyType` means the value has no guaranteed
-destructor or lifetime management. Outside of
-[_reflection_](/docs/manual/metaprogramming/reflection/) (type introspection),
-this function is effectively useless.
+这个函数接受任何类型，因为它的唯一限制是 `AnyType`。`AnyType` 是特征层次结构的根。它是所有类型扩展的基线。使用 `AnyType` 意味着该值没有保证的析构函数或生命周期管理。除了[_反射_](/docs/manual/metaprogramming/reflection/)（类型内省）之外，这个函数实际上是没用的。
 
-## Generic types
+## 泛型类型
 
-So far, you've seen generics applied to methods and functions. Mojo
-also lets you define generic types. These use compile-time parameters
-to define both their fields and their methods.
+到目前为止，你已经看到了应用于方法和函数的泛型。Mojo 还让你定义泛型类型。这些使用编译时参数来定义它们的字段和方法。
 
-Generic types let you package a reusable _shape_: stored fields plus
-supported operations. Instead of coding `PairInt`, `PairString`, and so
-on, you write one `Pair[T]` and let the compiler generate specialized
-versions for each concrete `T` you use.
+泛型类型让你打包一个可重用的*形状*：存储的字段加上支持的操作。你不需要编写 `PairInt`、`PairString` 等，只需编写一个 `Pair[T]`，让编译器为你使用的每个具体 `T` 生成专用版本。
 
 ```mojo
 comptime ComparableValue = Equatable & ImplicitlyCopyable
@@ -281,74 +199,52 @@ struct Pair[T: ComparableValue](ComparableValue):
                self.right == other.right
 ```
 
-Like generic functions, generic types use placeholder parameters. The
-difference is that a generic type uses those parameters in its storage
-as well as in its methods. Here, `Pair` stores two values of the same
-element type and implements equality by comparing its fields.
+像泛型函数一样，泛型类型使用占位符参数。区别在于泛型类型在其存储和方法中都使用这些参数。这里，`Pair` 存储两个相同元素类型的值，并通过比较其字段来实现相等。
 
-Traits are what make generic types practical. Those bounds describe
-the requirements the type definition depends on.
-In this example, `Pair` needs to compare values,
-so `T` must be equatable. It also needs to assign and copy values in common
-operations, so it applies a trait composition bound to `T`:
+特征是使泛型类型实用的原因。这些约束描述了类型定义所依赖的要求。在这个例子中，`Pair` 需要比较值，所以 `T` 必须是可相等的。它还需要在常见操作中赋值和复制值，所以它对 `T` 应用了特征组合约束：
 
 ```mojo
 comptime ComparableValue = Equatable & ImplicitlyCopyable
 ```
 
-The `Pair` definition applies this bound in two places: to the type
-itself (in parentheses) and to the type parameter (in square brackets),
-which is used to define its fields.
+`Pair` 定义在两个地方应用了这个约束：类型本身（在圆括号中）和类型参数（在方括号中），后者用于定义其字段。
 
 ```mojo
 struct Pair[T: ComparableValue](ComparableValue):
 ```
 
-- For the parentheses after the type, you can say the struct "conforms to"
-  or "implements" this bound. This is a promise.
-  The `Pair` type is saying, "I am a `ComparableValue`."
-- For the square brackets, the trait bound restricts which values
-  callers can pass. This is a requirement: "Any value used with `Pair`
-  must have type `T`, and `T` must be a `ComparableValue`."
+- 对于类型后的圆括号，你可以说结构体"遵循"或"实现"这个约束。这是一个承诺。`Pair` 类型在说，"我是一个 `ComparableValue`。"
+- 对于方括号，特征约束限制了调用者可以传递哪些值。这是一个要求："任何与 `Pair` 一起使用的值必须具有类型 `T`，而 `T` 必须是一个 `ComparableValue`。"
 
-This makes `Pair[T]` usable anywhere a `ComparableValue` is required
-(because of the parentheses) and ensures all `T` values conform (because
-of the square brackets).
+这使得 `Pair[T]` 可以在任何需要 `ComparableValue` 的地方使用（因为有圆括号），并确保所有 `T` 值都遵循（因为有方括号）。
 
-So far, these examples use type parameters. Generic types can also take
-non-type parameters, which you'll see next.
+到目前为止，这些示例使用类型参数。泛型类型也可以接受非类型参数，你接下来会看到。
 
-## Mixing type and value parameters
+## 混合类型和值参数
 
-Generics don't limit what parameters you can use. Add whatever you
-need to define the behavior.
+泛型不限制你可以使用什么参数。添加定义行为所需的任何内容。
 
 ```mojo
 struct ExampleStruct:
     def example[
-        T: Writable & Copyable,   # type parameter
-        count: Int,               # value parameter
+        T: Writable & Copyable,   # 类型参数
+        count: Int,               # 值参数
     ](
         self,
-        data: String,             # argument
-        init_value: T             # generic argument
+        data: String,             # 参数
+        init_value: T             # 泛型参数
     ) -> String:
 ```
 
-By convention, Mojo uses lower_snake_case for compile-time value
-parameters. This visually distinguishes them from type parameters.
+按照约定，Mojo 对编译时值参数使用 lower_snake_case。这在视觉上将它们与类型参数区分开来。
 
-## Downcasting safely: `conforms_to` + `trait_downcast()`
+## 安全向下转型：`conforms_to` + `trait_downcast()`
 
-Sometimes a generic bound is broader than what you need. You may want
-operations from a specific trait that the bound doesn't guarantee. Use
-a guarded downcast with `conforms_to()` and `trait_downcast()`.
+有时泛型约束比你需要的更宽泛。你可能想要约束不保证的特定特征的操作。使用带有 `conforms_to()` 和 `trait_downcast()` 的受保护向下转型。
 
-Downcast only when the underlying type implements the target trait.
-Check conformance first. Then downcast and use the value through that
-trait.
+仅当底层类型实现目标特征时才向下转型。首先检查遵循性。然后向下转型并通过该特征使用值。
 
-This pattern keeps behavior explicit and safe:
+这种模式保持行为明确且安全：
 
 ```mojo
 def process[T: AnyType](value: T):
@@ -357,78 +253,57 @@ def process[T: AnyType](value: T):
         print(w)
     else:
         print("<not writable>")
-        # Or fail at compile time with `comptime assert`
+        # 或使用 `comptime assert` 在编译时失败
 ```
 
-Key points:
+关键点：
 
-- `conforms_to(T, Writable & ImplicitlyCopyable)` checks whether `T`
-  satisfies the trait composition.
-- `trait_downcast()` rebinds the value to a trait-constrained view at
-  compile time.
+- `conforms_to(T, Writable & ImplicitlyCopyable)` 检查 `T` 是否满足特征组合。
+- `trait_downcast()` 在编译时将值重新绑定到特征约束的视图。
 
-Only call `trait_downcast()` inside the guarded branch. Handle the
-fallback in the `else` branch. If you always need the trait, add it as
-a bound (for example, `T: Writable`) instead of downcasting.
+只在受保护的分支内调用 `trait_downcast()`。在 `else` 分支中处理回退。如果你总是需要该特征，请将其添加为约束（例如，`T: Writable`）而不是向下转型。
 
-Use this pattern when you can't express the requirement as a bound.
-It's common in reflection-style code that handles values based on
-their traits. See [reflection](/docs/manual/metaprogramming/reflection/).
+当你无法将要求表示为约束时使用此模式。这在基于特征处理值的反射式代码中很常见。参见[反射](/docs/manual/metaprogramming/reflection/)。
 
-## Type generics and explicit destruction
+## 类型泛型与显式销毁
 
-Explicitly destroyed types don't always work with generic code. The
-issue isn't generics, it's lifetime management. Explicit destruction
-gives you control over teardown. You can define destructors that take
-arguments, follow different paths, or raise errors.
+显式销毁的类型并不总是适用于泛型代码。问题不在于泛型，而在于生命周期管理。显式销毁让你可以控制拆卸。你可以定义接受参数、遵循不同路径或引发错误的析构函数。
 
-Generic code that copies or moves values can't see or honor that
-logic. Once a value is copied or transferred, you lose control over
-how (or whether) it's cleaned up, and the code won't compile.
+复制或移动值的泛型代码无法看到或遵守该逻辑。一旦值被复制或传输，你就失去了如何（或是否）清理它的控制，代码将无法编译。
 
-Watch for these cases:
+注意这些情况：
 
-- Generic code that manages lifetimes
-- Generic code that copies or transfers values
+- 管理生命周期的泛型代码
+- 复制或传输值的泛型代码
 
-These show up most often in containers, collections, and iterators.
-They copy values or take ownership and decide when destruction
-happens.
+这些最常出现在容器、集合和迭代器中。它们复制值或获取所有权并决定何时销毁。
 
-Safe cases:
+安全的情况：
 
-- Generic operations that don't affect lifetimes
+- 不影响生命周期的泛型操作
 
-Think comparisons, predicates, and other pure operations.
+比如比较、谓词和其他纯操作。
 
-Rule of thumb: if your generic code needs to own, copy, or control
-when a value dies, avoid explicitly destroyed types. Add an
-`ImplicitlyDestructible` bound to keep things working.
+经验法则：如果你的泛型代码需要拥有、复制或控制值何时消亡，请避免显式销毁的类型。添加 `ImplicitlyDestructible` 约束以保持正常工作。
 
-## Value generics
+## 值泛型
 
-Value generics parameterize code over compile-time constants instead
-of types. You declare them in `[]` alongside type parameters, but they
-bind to values.
+值泛型对编译时常量而不是类型进行参数化代码。你在 `[]` 中与类型参数一起声明它们，但它们绑定到值。
 
-### When to use value generics
+### 何时使用值泛型
 
-Use value generics when a value shapes structure or behavior and is
-known at compile time. Common cases:
+当值影响结构或行为且在编译时已知时，使用值泛型。常见情况：
 
-- _Fixed sizes:_ buffer lengths, array dimensions, matrix shapes
-- _Thresholds and limits:_ capacity caps, retry counts, precision levels
-- _Feature selection:_ algorithm variants, debug flags, mode switches
-- _Numeric configuration:_ SIMD widths, stride lengths, unroll factors
+- *固定大小：* 缓冲区长度、数组维度、矩阵形状
+- *阈值和限制：* 容量上限、重试次数、精度级别
+- *功能选择：* 算法变体、调试标志、模式开关
+- *数值配置：* SIMD 宽度、步幅长度、展开因子
 
-The compiler specializes code for each distinct value. It can remove
-dead branches (`comptime if`), unroll loops (`comptime for`), replace
-inline constants, and optimize aggressively with no runtime cost.
+编译器为每个不同的值特化代码。它可以移除死分支（`comptime if`）、展开循环（`comptime for`）、替换内联常量，并进行积极优化而无需运行时成本。
 
-### Basic example
+### 基本示例
 
-This function creates a fixed-size list initialized with a default
-value:
+这个函数创建一个用默认值初始化的固定大小列表：
 
 ```mojo
 comptime MyCollectionElement = ImplicitlyCopyable & ImplicitlyDestructible
@@ -442,8 +317,7 @@ def make_filled[T: MyCollectionElement, size: Int](
     return result^
 ```
 
-The `size` parameter resolves at compile time. Each call site with a
-different value gets its own specialized version:
+`size` 参数在编译时解析。每个具有不同值的调用站点都会获得自己的专用版本：
 
 ```mojo
 var three_zeros = make_filled[Int, 3](0)
@@ -452,86 +326,57 @@ print(three_zeros)  # [0, 0, 0]
 print(five_hellos)  # [hello, hello, hello, hello, hello]
 ```
 
-### Value parameters vs runtime arguments
+### 值参数与运行时参数
 
-Put values known at compile time in `[]`. Put values only known at
-runtime in `()`.
+将编译时已知的值放在 `[]` 中。将只在运行时已知的值放在 `()` 中。
 
-Ask yourself: does the caller know this value when writing the code? If
-yes, use a parameter. If it depends on input, files, or runtime state,
-use an argument.
+问问自己：调用者在编写代码时是否知道这个值？如果是，使用参数。如果它依赖于输入、文件或运行时状态，使用参数。
 
 ```mojo
-# size is compile-time: the compiler specializes
+# size 是编译时的：编译器特化
 def fixed[size: Int]():
     var buf = InlineArray[Int, size](fill=0)
 
-# size is runtime: no specialization
+# size 是运行时的：不特化
 def dynamic(size: Int):
     var buf = List[Int](capacity=size)
 ```
 
-## When generics get more complex
+## 当泛型变得更复杂时
 
-The examples on this page cover the most common cases. As you build
-larger APIs, you'll run into a few additional patterns:
+本页的示例涵盖了最常见的情况。当你构建更大的 API 时，你会遇到一些额外的模式：
 
-- _Associated (dependent) types:_
-  Some traits declare
-  [associated types](/docs/manual/traits/#comptime-members-for-generics).
-  For example, collection and iteration traits use an associated
-  element type (often `Element`) to describe the values they own.
-  Associated types can also constrain behavior—for example, requiring
-  elements to be hashable or implicitly destructible.
+- *关联（依赖）类型：*
+  某些特征声明[关联类型](/docs/manual/traits/#comptime-members-for-generics)。
+  例如，集合和迭代特征使用关联元素类型（通常是 `Element`）来描述它们拥有的值。
+  关联类型也可以约束行为——例如，要求元素可哈希或可隐式销毁。
 
-- _Generic methods in non-generic types:_
-  A type doesn't have to be generic to use generics. Individual methods
-  can declare their own type parameters when only part of the API needs
-  them.
+- *非泛型类型中的泛型方法：*
+  类型不必是泛型的就可以使用泛型。当只有部分 API 需要时，单个方法可以声明自己的类型参数。
 
-- _Multiple type parameters:_
-  Some algorithms use more than one type parameter. Traits describe how
-  those types relate, not just what each can do. Common examples include
-  dictionaries (keys and values), caches (keys and values), result types
-  (values and errors), and algorithms that operate across multiple types.
+- *多个类型参数：*
+  某些算法使用多个类型参数。特征描述这些类型如何关联，而不仅仅是每个类型能做什么。常见示例包括字典（键和值）、缓存（键和值）、结果类型（值和错误），以及跨多种类型操作的算法。
 
-- _Compile-time computation:_
-  Value parameters enable `comptime if`, `comptime for`, and
-  compile-time arithmetic. This shows up in SIMD code, fixed-size
-  containers, and performance-critical loops where the compiler
-  generates different code paths for different values.
+- *编译时计算：*
+  值参数启用 `comptime if`、`comptime for` 和编译时算术。这出现在 SIMD 代码、固定大小容器和性能关键循环中，编译器为不同的值生成不同的代码路径。
 
-These topics build on the same core ideas: type parameters, bounds,
-and specialization. You can apply bounds to functions, methods,
-types, or `comptime` aliases to keep requirements close to where they
-matter.
+这些主题建立在相同的核心思想上：类型参数、约束和特化。你可以将约束应用于函数、方法、类型或 `comptime` 别名，以使要求接近它们重要的地方。
 
-You won't need these patterns for simple cases, but they matter as
-generic code grows.
+简单情况下你不需要这些模式，但随着泛型代码的增长，它们很重要。
 
-## Conditional trait conformance
+## 条件特征遵循
 
 :::caution
-Conditional trait conformance is new and evolving. Certain
-capabilities may be unstable or unusable during roll-out. Use
-caution with `Copyable`, `Movable`, `RegisterPassable`,
-`TrivialRegisterPassable`, and `ImplicitlyDestructible`.
+条件特征遵循是新的且正在发展中。某些功能在推出期间可能不稳定或不可用。对 `Copyable`、`Movable`、`RegisterPassable`、`TrivialRegisterPassable` 和 `ImplicitlyDestructible` 使用时要小心。
 :::
 
-_Conditional trait conformance_ uses checks before allowing a type to
-adopt a trait. If the condition is _satisfied_, the type conforms.
-It must fulfill the trait's requirements by providing required methods
-and associated types, and it gains any default implementation provided
-by the trait. The type can then be used anywhere the trait is required,
-such as when passing it to a function that expects a conforming type.
+*条件特征遵循*在允许类型采用特征之前使用检查。如果条件*满足*，类型就遵循。它必须通过提供必需方法和关联类型来满足特征的要求，并获得特征提供的任何默认实现。然后该类型可以在任何需要该特征的地方使用，例如将其传递给期望遵循类型的函数。
 
-When the condition _isn't_ satisfied, Mojo skips the conformance. You
-can't use the fully concrete type in contexts that require the trait.
+当条件*不*满足时，Mojo 跳过遵循。你不能在需要该特征的上下文中使用完全具体的类型。
 
-### Example: derived conformance
+### 示例：派生遵循
 
-In the following declaration, Mojo conforms `Wrapper` to `Writable`
-when its parameter, `T`, is also `Writable`:
+在以下声明中，当其参数 `T` 也是 `Writable` 时，Mojo 使 `Wrapper` 遵循 `Writable`：
 
 ```mojo
 comptime BaseTraits = Copyable & ImplicitlyDestructible
@@ -542,12 +387,9 @@ struct Wrapper[T: BaseTraits](
     var value: Self.T
 ```
 
-When conforming to `Writable`, Wrapper doesn't need to implement any
-methods to enable printing. The trait provides a default implementation
-of the `write_to()` method.
+当遵循 `Writable` 时，Wrapper 不需要实现任何方法来启用打印。该特征提供了 `write_to()` 方法的默认实现。
 
-Now consider a type that isn't `Writable`, that you might add into a
-`Wrapper`:
+现在考虑一个不是 `Writable` 的类型，你可能会将其添加到 `Wrapper` 中：
 
 ```mojo
 @fieldwise_init
@@ -555,41 +397,31 @@ struct NotWritable(BaseTraits):
     var data: Int
 ```
 
-When instantiated with an `Int` or `String` (both `Writable`), the
-`Wrapper` gains `Writable` conformance. With `NotWritable`, you can build
-a struct, but you can't print it:
+当用 `Int` 或 `String`（两者都是 `Writable`）实例化时，`Wrapper` 获得 `Writable` 遵循性。对于 `NotWritable`，你可以构建结构体，但不能打印它：
 
 ```mojo
-var w_int = Wrapper[Int](42)  # Int is Writable
+var w_int = Wrapper[Int](42)  # Int 是 Writable
 print(w_int)  # Wrapper[Int](value=42)
 
 
-var w_str = Wrapper[String]("Hello")  # String is Writable
+var w_str = Wrapper[String]("Hello")  # String 是 Writable
 print(w_str)  # Wrapper[String](value=Hello)
 
 
-# OK: only `Writable` conformance is unavailable
+# OK：只有 `Writable` 遵循性不可用
 var w_not_writable = Wrapper[NotWritable](NotWritable(10))
-# print(w_not_writable)  # Compile-time error:
+# print(w_not_writable)  # 编译时错误：
 # invalid call to 'print': could not convert element of 'values' with
 # type 'Wrapper[NotWritable]' to expected type 'Writable'
 ```
 
-Since `NotWritable` doesn't conform to `Writable`, the conditional
-conformance check fails and `Wrapper[NotWritable]` doesn't adopt the
-`Writable` conformance. In contrast, `Int` and `String` are `Writable`
-and their wrappers gain the conformance. This allows their instances
-to print by using the `write_to()` method provided by `Writable`.
+由于 `NotWritable` 不遵循 `Writable`，条件遵循检查失败，`Wrapper[NotWritable]` 不采用 `Writable` 遵循性。相反，`Int` 和 `String` 是 `Writable`，它们的包装器获得遵循性。这允许它们的实例使用 `Writable` 提供的 `write_to()` 方法进行打印。
 
-This pattern is standard for single-type containers like `Optional[T]`,
-`Box[T]`, `Lazy[T]`, and `List[T]`. It says: "This type can do X if its inner
-type can do X."
+这种模式对于像 `Optional[T]`、`Box[T]`、`Lazy[T]` 和 `List[T]` 这样的单类型容器是标准的。它说："如果其内部类型可以做 X，这个类型就可以做 X。"
 
-### Example: parts conformance
+### 示例：部分遵循
 
-Conditional conformance has another standard pattern for types with
-multiple distinct components: `Result[T, E]`, `Pair[L, R]`, `Dict[K, V]`,
-and similar. It says: "This type can do X if each of its parts can do X":
+条件遵循对于具有多个不同组件的类型有另一种标准模式：`Result[T, E]`、`Pair[L, R]`、`Dict[K, V]` 等。它说："如果其每个部分都可以做 X，这个类型就可以做 X"：
 
 ```mojo
 comptime BaseTraits = Copyable & ImplicitlyDestructible
@@ -607,79 +439,60 @@ struct NotHashable(BaseTraits):
     var data: Int
 ```
 
-In this example, `Pair` uses two distinct type parameters. When both are
-`Hashable`, the concrete `Pair` type becomes `Hashable`, gaining the `hash()`
-method from the trait:
+在这个例子中，`Pair` 使用两个不同的类型参数。当两者都是 `Hashable` 时，具体的 `Pair` 类型变为 `Hashable`，从特征获得 `hash()` 方法：
 
 ```mojo
 var pair = Pair[Int, String](left=1, right="one")
 var hash = hash(pair)
-print(hash)  # Prints the hash of the pair
+print(hash)  # 打印 pair 的哈希值
 
-# OK: only hashing is unavailable
-var pair2 = Pair[Int, NotHashable](left=1, right=NotHashable(10)) # Constructible
-# var hash2 = hash(pair2) # Compile time error
+# OK：只有哈希不可用
+var pair2 = Pair[Int, NotHashable](left=1, right=NotHashable(10)) # 可构造
+# var hash2 = hash(pair2) # 编译时错误
 ```
 
-### Example: conditional method access
+### 示例：条件方法访问
 
-When a type adopts a trait, it must satisfy the trait's required
-methods. The same conditions that determine whether a type can
-conditionally conform to a trait are usually the same conditions used
-to _gate_ required method implementations.
+当类型采用特征时，它必须满足特征的必需方法。确定类型是否可以有条件地遵循特征的相同条件通常也用于*门控*必需方法实现。
 
-You express these method tests with `where` clauses. If true, the
-method is available. If not, the method can't be used for that
-specialized type. The following example walks you through this
-process and how it works.
+你用 `where` 子句表达这些方法测试。如果为真，方法可用。如果不为真，该方法不能用于该特化类型。以下示例引导你完成此过程及其工作原理。
 
-You can use `Boolable` instances in `if` statements. You make your
-`Wrapper` testable by conforming to the `Boolable` trait. This
-trait requires a new method, `__bool__()`:
+你可以在 `if` 语句中使用 `Boolable` 实例。你通过遵循 `Boolable` 特征使你的 `Wrapper` 可测试。这个特征需要一个新方法 `__bool__()`：
 
 ``` mojo
 @fieldwise_init
 struct Wrapper[T: BaseTraits](
     Writable where conforms_to(T, Writable),
-    Boolable where conforms_to(T, Boolable), # New conditional conformance
+    Boolable where conforms_to(T, Boolable), # 新的条件遵循
     ):
     var value: Self.T
 
-    # New method
+    # 新方法
     def __bool__(self) -> Bool where conforms_to(Self.T, Boolable):
         return trait_downcast[Boolable](self.value).__bool__()
 ```
 
-In this example, the condition on `__bool__()` is the same as the one
-used for the `Boolable` conditional conformance. The `where` clause gates
-the method. If the condition is true, the method is available. If not,
-it isn't.
+在这个例子中，`__bool__()` 上的条件与用于 `Boolable` 条件遵循的条件相同。`where` 子句门控该方法。如果条件为真，方法可用。如果不为真，则不可用。
 
-Since the method and the conformance use the same condition, they
-stay aligned. You won't end up in a situation where the wrapped type
-conforms but the method isn't available, or where the method exists
-without the corresponding conformance.
+由于方法和遵循使用相同的条件，它们保持一致。你不会遇到包装类型遵循但方法不可用，或方法存在但没有相应遵循的情况。
 
-You see this in the following examples:
+你在以下示例中看到这一点：
 
 ```mojo
 var w_str = Wrapper[String]("Hello")
-if w_str:  # Chooses the non-empty branch
+if w_str:  # 选择非空分支
     print(t"Non-empty string \"{w_str.value}\" is truthy")
 else:
     print(t"Empty string \"{w_str.value}\" is falsy")
 
 var w_empty_str = Wrapper[String]("")
-if w_empty_str:  # Chooses the empty branch
+if w_empty_str:  # 选择空分支
     print(t"Non-empty string \"{w_empty_str.value}\" is truthy")
 else:
     print(t"Empty string \"{w_empty_str.value}\" is falsy")
 ```
 
-The `NotWritable` type from earlier in this section has no traits
-beyond the base `Copyable` and `ImplicitlyDestructible`. Therefore
-it isn't `Boolable` and the condition on the `__bool__()` method
-will fail:
+本节前面的 `NotWritable` 类型除了基本的 `Copyable` 和 `ImplicitlyDestructible` 之外没有特征。因此它不是 `Boolable`，`__bool__()` 方法上的条件将失败：
 
 ```mojo
 @fieldwise_init
@@ -688,36 +501,30 @@ struct NotWritable(BaseTraits):
 
 var w_not_writable = Wrapper[NotWritable](NotWritable(10))
 
-# The instance can't be used as a boolean value due to the
-# conditional method access for `__bool__()`.
+# 由于 `__bool__()` 的条件方法访问，该实例不能用作布尔值。
 
-# Compiler error: the method condition is false
+# 编译器错误：方法条件为假
 if w_not_writable:
     print(t"NotWritable with data {w_not_writable.value.data} is truthy")
 else:
     print(t"NotWritable with data {w_not_writable.value.data} is falsy")
 ```
 
-This condition on your method isn't conditional trait conformance.
-It's conditional method _access_. In this example, the method and the
-conformance use the same condition, so they stay aligned.
+方法上的这个条件不是条件特征遵循。它是条件方法*访问*。在这个例子中，方法和遵循使用相同的条件，所以它们保持一致。
 
-That said, `where` clauses on methods and functions are useful even when
-you're not working with trait conformance. For example, you might gate
-a method so it only works with non-empty lists, real numbers, or with
-values that fall within the index bounds of a collection.
+也就是说，方法上的 `where` 子句即使在你不处理特征遵循时也很有用。例如，你可能门控一个方法，使其只适用于非空列表、实数，或落在集合索引边界内的值。
 
-### Conditional trait composition
+### 条件特征组合
 
-Mojo supports flexible condition composition, as shown in these examples:
+Mojo 支持灵活的条件组合，如下例所示：
 
-- Unconditional: No special clauses.
+- 无条件：没有特殊子句。
 
   ```mojo
   struct Foo(Copyable, ImplicitlyDestructible):
   ```
 
-- Simple condition: as shown in `Wrapper`.
+- 简单条件：如 `Wrapper` 所示。
 
   ```mojo
   struct Wrapper[T: BaseTraits](
@@ -725,7 +532,7 @@ Mojo supports flexible condition composition, as shown in these examples:
   ):
   ```
 
-- Hybrid: Mixes unconditional and conditional traits.
+- 混合：混合无条件特征和条件特征。
 
   ```mojo
   struct Foo[T: AnyType](
@@ -733,7 +540,7 @@ Mojo supports flexible condition composition, as shown in these examples:
   )
   ```
 
-- Multiple aligned conditions: as shown in `Pair`.
+- 多个对齐条件：如 `Pair` 所示。
 
   ```mojo
   struct Pair[L: BaseTraits, R: BaseTraits](
@@ -741,7 +548,7 @@ Mojo supports flexible condition composition, as shown in these examples:
   ):
   ```
 
-- Multiple independent conditions:
+- 多个独立条件：
 
   ```mojo
   struct Foo[T: AnyType](
@@ -750,16 +557,11 @@ Mojo supports flexible condition composition, as shown in these examples:
   )
   ```
 
-### Conditional conformance with value parameters
+### 带值参数的条件遵循
 
-Conditional conformance also works with value parameters. You
-can gate both conformance and methods on compile-time value
-conditions.
+条件遵循也适用于值参数。你可以在编译时值条件上门控遵循和方法。
 
-This is useful when a type's capabilities depend on a numeric
-parameter. For example, a fixed-capacity wrapper might only be
-`Writable` when it has capacity and its elements are writable.
-The `Sized` conformance is unconditional.
+当类型的能力依赖于数值参数时，这很有用。例如，固定容量包装器可能只有在有容量且其元素可写时才是 `Writable`。`Sized` 遵循是无条件的。
 
 ```mojo
 struct SizedListWrapper[capacity: Int, T: Copyable](
@@ -779,16 +581,14 @@ struct SizedListWrapper[capacity: Int, T: Copyable](
         writer.write(repr(self.data))
 ```
 
-You can gate methods on value conditions:
+你可以在值条件上门控方法：
 
 ```mojo
 def first(self) -> Self.T where Self.capacity > 0:
     return self.data[0].copy()
 ```
 
-When capacity is one or more, the type conforms to `Writable` and the
-`first()` method is available. When it is zero or less, neither is
-usable:
+当容量为一个或更多时，类型遵循 `Writable`，`first()` 方法可用。当它为零或更少时，两者都不可用：
 
 ```mojo
 var s = SizedListWrapper[5, Int](42)
@@ -796,10 +596,8 @@ print(s)          # List[Int]([Int(42), Int(42), Int(42), Int(42), Int(42)])
 print(s.first())  # 42
 
 # var s = SizedListWrapper[0, Int](42)
-# print(s)          # Error: Writable not satisfied
-# print(s.first())  # Error: constraint is false
+# print(s)          # 错误：Writable 不满足
+# print(s.first())  # 错误：约束为假
 ```
 
-Value conditions follow the same rules as type conditions. You can
-combine them with `and` and mix them with `conforms_to` checks in the
-same `where` clause.
+值条件遵循与类型条件相同的规则。你可以用 `and` 组合它们，并在同一个 `where` 子句中与 `conforms_to` 检查混合使用。

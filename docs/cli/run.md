@@ -4,171 +4,170 @@ sidebar_position: 9
 
 # mojo run
 
-Builds and executes a Mojo file.
+构建并执行 Mojo 文件。
 
-## Synopsis
+## 用法概要
 
 ```
 mojo run [options] <path> [path-arguments...]
 ```
 
-## Description
+## 描述
 
-Compiles the Mojo file at the given path and immediately executes it. Another way to execute this command is to simply pass a file to `mojo`. For example:
+编译指定路径的 Mojo 文件并立即执行。执行此命令的另一种方法是简单地将文件传递给 `mojo`。例如：
 
     mojo hello.mojo
 
-Options for this command itself, such as the ones listed below, must appear before the input file `path` argument. Any command line arguments that appear after the Mojo source file `path` are interpreted as arguments for that Mojo program.
+此命令本身的选项（例如下面列出的选项）必须出现在输入文件 `path` 参数之前。Mojo 源文件 `path` 之后出现的任何命令行参数都将被解释为该 Mojo 程序的参数。
 
-## Options
+## 选项
 
-### Compilation options
+### 编译选项
 
 #### `--optimization-level <LEVEL>`, `-O`, `--no-optimization (LEVEL=0)`
 
-Sets the level of optimization to use at compilation. The value must be a number between 0 and 3. The default is 3.
+设置编译时使用的优化级别。该值必须是 0 到 3 之间的数字。默认值为 3。
 
 #### `-I <PATH>`
 
-Appends the given path to the list of directories to search for imported Mojo files.
+将指定路径追加到搜索导入 Mojo 文件的目录列表中。
 
 #### `-D <KEY=VALUE>`
 
-Defines a named value that can be used from within the Mojo source file being executed. For example, `-Dfoo=42` defines a name `foo` that, when queried with the `std.defines` module from within the Mojo program, would yield the compile-time value `42`.
+定义一个命名值，可在正在执行的 Mojo 源文件中使用。例如，`-Dfoo=42` 定义了一个名称 `foo`，当在 Mojo 程序中通过 `std.defines` 模块查询时，将产生编译时值 `42`。
 
 #### `--debug-level <LEVEL>`, `-g (LEVEL=full)`, `-g0 (LEVEL=none)`, `-g1 (LEVEL=line-tables)`, `-g2 (LEVEL=full)`
 
-Sets the level of debug info to use at compilation. The value must be one of: `none`, `line-tables`, or `full`. Default is `none`, except when using `mojo debug foo.mojo`, which defaults to `full`. Please note that there are issues when generating debug info for some Mojo programs that have yet to be addressed.
+设置编译时使用的调试信息级别。该值必须是以下之一：`none`、`line-tables` 或 `full`。默认值为 `none`，但在使用 `mojo debug foo.mojo` 时默认为 `full`。请注意，为某些 Mojo 程序生成调试信息时仍存在一些尚未解决的问题。
 
 #### `--num-threads <NUM>`, `-j`
 
-Sets the maximum number of threads to use for compilation. The default is 0 (use all available threads).
+设置编译时使用的最大线程数。默认值为 0（使用所有可用线程）。
 
 #### `--elaboration-error-include-prelude`
 
-Show elaboration error with locations in mojo startup modules (prelude).
+显示包含 Mojo 启动模块（prelude）位置的详细错误信息。
 
-### Target options
+### 目标选项
 
 #### `--target-triple <TRIPLE>`
 
-Sets the compilation target triple. Defaults to the host target.
+设置编译目标三元组。默认为主机目标。
 
 #### `--target-cpu <CPU>`
 
-Sets the compilation target CPU. Defaults to the host CPU.
+设置编译目标 CPU。默认为主机 CPU。
 
 #### `--target-features <FEATURES>`
 
-Sets the compilation target CPU features. Defaults to the host features.
+设置编译目标 CPU 特性。默认为主机特性。
 
 #### `--march <ARCHITECTURE>`
 
-Sets the architecture for which to generate code.
+设置生成代码的目标架构。
 
 #### `--mcpu <CPU>`
 
-Sets the CPU for which to generate code.
+设置生成代码的目标 CPU。
 
 #### `--mtune <TUNE>`
 
-Sets the CPU for which to tune code.
+设置代码调优的目标 CPU。
 
 #### `--target-accelerator <ACCELERATOR>`
 
-Sets the GPU or accelerator architecture for heterogeneous computing (e.g., sm_90 for NVIDIA H100, gfx942 for AMD MI300).
+设置用于异构计算的 GPU 或加速器架构（例如，NVIDIA H100 为 sm_90，AMD MI300 为 gfx942）。
 
 #### `--print-effective-target`
 
-Print the effective target configuration after absorbing all command-line flags and exit.
+打印吸收所有命令行标志后的有效目标配置并退出。
 
 #### `--print-supported-targets`
 
-Print all available target names and exit.
+打印所有可用的目标名称并退出。
 
 #### `--print-supported-cpus`
 
-Print valid CPU names for the specified target and exit. Requires --target-triple.
+打印指定目标的有效 CPU 名称并退出。需要 --target-triple。
 
 #### `--print-supported-accelerators`
 
-Print all supported GPU and accelerator architectures and exit.
+打印所有支持的 GPU 和加速器架构并退出。
 
-### Compilation diagnostic options
+### 编译诊断选项
 
-Controls how the Mojo compiler outputs diagnostics related to compiling and running Mojo source code.
+控制 Mojo 编译器如何输出与编译和运行 Mojo 源代码相关的诊断信息。
 
 #### `--diagnose-missing-doc-strings`
 
-Emits diagnostics for missing or partial doc strings.
+为缺失或不完整的文档字符串发出诊断信息。
 
 #### `--max-notes-per-diagnostic <INTEGER>`
 
-When the Mojo compiler emits diagnostics, it sometimes also prints notes with additional information. This option sets an upper threshold on the number of notes that can be printed with a diagnostic. If not specified, the default maximum is 10.
+当 Mojo 编译器发出诊断信息时，有时也会打印带有附加信息的备注。此选项设置可随诊断信息打印的备注数量的上限。如果未指定，默认最大值为 10。
 
 #### `--disable-builtins`
 
-Do not use builtins when create package.
+创建包时不使用内置函数。
 
 #### `--disable-warnings`
 
-Do not print warning messages.
+不打印警告消息。
 
 #### `--experimental-fixit`
 
-Automatically apply fix-its to the code, and rerun the command again after the fix-its are applied. WARNING: this feature is highly experimental and may result in irreversible data loss.
+自动将修复应用到代码，并在应用修复后重新运行命令。警告：此功能高度实验性，可能导致不可逆的数据丢失。
 
 #### `--experimental-export-fixit <YAML_FILE>`
 
-Export fix-its to a YAML file in clang-tidy format instead of applying them directly. The file can be applied using 'clang-apply-replacements'. WARNING: this feature is highly experimental.
+将修复导出为 clang-tidy 格式的 YAML 文件，而不是直接应用。该文件可以使用 'clang-apply-replacements' 应用。警告：此功能高度实验性。
 
 #### `--Werror`
 
-Treat warnings as errors.
+将警告视为错误。
 
 #### `--Wno-error`
 
-Do not treat warnings as errors.
+不将警告视为错误。
 
 #### `--warn-on-unstable-apis`
 
-Warn when using unstable APIs from the standard library.
+使用标准库中的不稳定 API 时发出警告。
 
 #### `--ignore-incompatible-package-errors`
 
-Ignore errors encountered when loading incompatible Mojo packages.
+忽略加载不兼容 Mojo 包时遇到的错误。
 
-### Linker options
+### 链接器选项
 
 #### `-Xlinker <ARG>`
 
-Pass ARG to the linker.
+将 ARG 传递给链接器。
 
-### Experimental compilation options
+### 实验性编译选项
 
 #### `--sanitize <CHECK>`
 
-Turns on runtime checks. The following values are supported: `address` (detects memory issues), and `thread` (detects multi-threading issues).
+启用运行时检查。支持以下值：`address`（检测内存问题）和 `thread`（检测多线程问题）。
 
 #### `--shared-libasan`
 
-Dynamically link the address sanitizer runtime. Requires address sanitization turned on with `--sanitize` option.
+动态链接地址消毒器运行时。需要使用 `--sanitize` 选项启用地址消毒。
 
 #### `--debug-info-language <LANGUAGE>`
 
-Sets the language to emit as part of the debug info. The supported languages are: `Mojo`, and `C`. `Mojo` is the default. `C` is useful to enable rudimentary debugging and binary introspection in tools that don't understand Mojo, but is not required for `mojo debug`.
+设置作为调试信息一部分发出的语言。支持的语言有：`Mojo` 和 `C`。默认为 `Mojo`。`C` 有助于在不理解 Mojo 的工具中启用基本调试和二进制内省，但 `mojo debug` 不需要此选项。
 
-### Common options
+### 通用选项
 
 #### `--diagnostic-format <FORMAT>`
 
-The format in which diagnostics and error messages are printed. Must be one of "text" or "json" ("text" is the default).
+打印诊断信息和错误消息的格式。必须是 "text" 或 "json" 之一（"text" 为默认值）。
 
 #### `--help`, `-h`
 
-Displays help information.
+显示帮助信息。
 
 #### `--help-hidden`
 
-Displays help for hidden options.
-
+显示隐藏选项的帮助信息。

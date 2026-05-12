@@ -4,260 +4,259 @@ sidebar_position: 3
 
 # mojo debug
 
-Launches the Mojo debugger using the command-line interface or an external editor.
+通过命令行界面或外部编辑器启动 Mojo 调试器。
 
-## Synopsis
+## 用法概要
 
 ```
 mojo debug [debug-options]
 ```
 
-## Description
+## 描述
 
-This command, which underneath uses the LLDB debugger, or cuda-gdb, offers four basic debug session modes:
+此命令底层使用 LLDB 调试器或 cuda-gdb，提供四种基本的调试会话模式：
 
-* Build and debug a Mojo file.
+* 构建并调试 Mojo 文件。
 
         mojo debug [options] <file.mojo> [runtime args]
 
-    Builds the Mojo file at the given path and launches it under the debugger. Options, which come before the Mojo file, can include any compilation options expected by the `mojo run`, as well as regular debuggingcommands. Runtime args, which come after the Mojo file, are passed directly to the debuggee upon launch. By default, this mode uses `-O0` and `--debug-level=full` as compilation options.
+    构建指定路径的 Mojo 文件并在调试器中启动它。选项位于 Mojo 文件之前，可以包含 `mojo run` 预期的任何编译选项以及常规调试命令。运行时参数位于 Mojo 文件之后，在启动时直接传递给被调试程序。默认情况下，此模式使用 `-O0` 和 `--debug-level=full` 作为编译选项。
 
-* Debug a precompiled program.
+* 调试预编译的程序。
 
         mojo debug [options] <program> [runtime args]
 
-    Launches the program at the given path in the debugger. Options, which come before the program path, cannot include compilation commands. Runtime args, which come after the program path, are passed directly to the debuggee upon launch.
+    在调试器中启动指定路径的程序。选项位于程序路径之前，不能包含编译命令。运行时参数位于程序路径之后，在启动时直接传递给被调试程序。
 
-* Attach to a running process.
+* 附加到正在运行的进程。
 
         mojo debug [options] [--pid <pid> | --process-name <process-name>]
 
-    Attaches to the process specified by pid or name, which can be the full path of the process' executable. Options other than the process identifier cannot include compilation options.
+    通过 pid 或名称附加到进程，名称可以是进程可执行文件的完整路径。进程标识符以外的选项不能包含编译选项。
 
-* Start the debugger command-line interface.
+* 启动调试器命令行界面。
 
         mojo debug [options]
 
-    Launches the debugger CLI with support for debugging Mojo programs. This command only supports LLDB or cuda-gdb options via the `--X` option.
+    启动支持调试 Mojo 程序的调试器 CLI。此命令仅通过 `--X` 选项支持 LLDB 或 cuda-gdb 选项。
 
-You can also select one of two interfaces for the debug session:
+您还可以为调试会话选择两种界面之一：
 
-* CLI: By default, all debug session modes are launched using the regular debugger command-line interface.
+* CLI：默认情况下，所有调试会话模式都使用常规调试器命令行界面启动。
 
-* VS Code Debug Server: If you add the `--vscode` option, the debug session is launched in VS Code via the Mojo extension. VS Code must be running and the Mojo extension must be enabled. Besides that, the environment variables and the current working directory of this invocation are preserved when launching programs in the debugger on VS Code.
+* VS Code 调试服务器：如果添加 `--vscode` 选项，调试会话将通过 Mojo 扩展在 VS Code 中启动。VS Code 必须正在运行且 Mojo 扩展必须已启用。此外，在 VS Code 调试器中启动程序时，会保留此调用的环境变量和当前工作目录。
 
-Finally, it is worth mentioning that this debugger can debug programs written in other standard native languages like Rust, C and C++, as it is based on LLDB or cuda-gdb.
+最后，值得一提的是，此调试器可以调试用其他标准原生语言（如 Rust、C 和 C++）编写的程序，因为它基于 LLDB 或 cuda-gdb。
 
-Debugger capabilities:
+调试器能力：
 
-* LLDB: this is the default debugger and has great support for CPU Mojo code, but has no support at all for Mojo GPU code.
+* LLDB：这是默认调试器，对 CPU Mojo 代码有很好的支持，但对 Mojo GPU 代码完全没有支持。
 
-* cuda-gdb: this is invoked via the `--cuda-gdb` option and has minimal support for CPU Mojo code but it has support for GPU Mojo code.
+* cuda-gdb：通过 `--cuda-gdb` 选项调用，对 CPU Mojo 代码支持有限，但支持 GPU Mojo 代码。
 
-## Options
+## 选项
 
-### Attach options
+### 附加选项
 
 #### `--pid <PID>`
 
-Indicates the debugger to attach to the process with the given PID.
+指示调试器附加到具有给定 PID 的进程。
 
 #### `--process-name <NAME>`
 
-Indicates the debugger to attach to the process with the given name or path.
+指示调试器附加到具有给定名称或路径的进程。
 
-### cuda-gdb options
+### cuda-gdb 选项
 
 #### `--cuda-gdb`
 
-Uses cuda-gdb instead of LLDB for debugging. In this mode, it's possible to step into GPU code, but the CPU debugging experience is degraded.
+使用 cuda-gdb 而不是 LLDB 进行调试。在此模式下，可以进入 GPU 代码，但 CPU 调试体验会降低。
 
 #### `--cuda-gdb-path <CUDA_GDB_PATH>`
 
-Uses the given CUDA_GDB_PATH instead of looking for cuda-gdb in the PATH environment variable.
+使用给定的 CUDA_GDB_PATH，而不是在 PATH 环境变量中查找 cuda-gdb。
 
 #### `--break-on-launch`
 
-Set the breakOnLaunch option for cuda-gdb.  This makes the debugger break on the first instruction of every launched kernel.
+为 cuda-gdb 设置 breakOnLaunch 选项。这使调试器在每个启动的内核的第一条指令处中断。
 
-### Compilation options
+### 编译选项
 
 #### `--optimization-level <LEVEL>`, `-O`, `--no-optimization (LEVEL=0)`
 
-Sets the level of optimization to use at compilation. The value must be a number between 0 and 3. The default is 3.
+设置编译时使用的优化级别。该值必须是 0 到 3 之间的数字。默认值为 3。
 
 #### `-I <PATH>`
 
-Appends the given path to the list of directories to search for imported Mojo files.
+将指定路径追加到搜索导入 Mojo 文件的目录列表中。
 
 #### `-D <KEY=VALUE>`
 
-Defines a named value that can be used from within the Mojo source file being executed. For example, `-Dfoo=42` defines a name `foo` that, when queried with the `std.defines` module from within the Mojo program, would yield the compile-time value `42`.
+定义一个命名值，可在正在执行的 Mojo 源文件中使用。例如，`-Dfoo=42` 定义了一个名称 `foo`，当在 Mojo 程序中通过 `std.defines` 模块查询时，将产生编译时值 `42`。
 
 #### `--debug-level <LEVEL>`, `-g (LEVEL=full)`, `-g0 (LEVEL=none)`, `-g1 (LEVEL=line-tables)`, `-g2 (LEVEL=full)`
 
-Sets the level of debug info to use at compilation. The value must be one of: `none`, `line-tables`, or `full`. Default is `none`, except when using `mojo debug foo.mojo`, which defaults to `full`. Please note that there are issues when generating debug info for some Mojo programs that have yet to be addressed.
+设置编译时使用的调试信息级别。该值必须是以下之一：`none`、`line-tables` 或 `full`。默认值为 `none`，但在使用 `mojo debug foo.mojo` 时默认为 `full`。请注意，为某些 Mojo 程序生成调试信息时仍存在一些尚未解决的问题。
 
 #### `--num-threads <NUM>`, `-j`
 
-Sets the maximum number of threads to use for compilation. The default is 0 (use all available threads).
+设置编译时使用的最大线程数。默认值为 0（使用所有可用线程）。
 
 #### `--elaboration-error-include-prelude`
 
-Show elaboration error with locations in mojo startup modules (prelude).
+显示包含 Mojo 启动模块（prelude）位置的详细错误信息。
 
-### Target options
+### 目标选项
 
 #### `--target-triple <TRIPLE>`
 
-Sets the compilation target triple. Defaults to the host target.
+设置编译目标三元组。默认为主机目标。
 
 #### `--target-cpu <CPU>`
 
-Sets the compilation target CPU. Defaults to the host CPU.
+设置编译目标 CPU。默认为主机 CPU。
 
 #### `--target-features <FEATURES>`
 
-Sets the compilation target CPU features. Defaults to the host features.
+设置编译目标 CPU 特性。默认为主机特性。
 
 #### `--march <ARCHITECTURE>`
 
-Sets the architecture for which to generate code.
+设置生成代码的目标架构。
 
 #### `--mcpu <CPU>`
 
-Sets the CPU for which to generate code.
+设置生成代码的目标 CPU。
 
 #### `--mtune <TUNE>`
 
-Sets the CPU for which to tune code.
+设置代码调优的目标 CPU。
 
 #### `--target-accelerator <ACCELERATOR>`
 
-Sets the GPU or accelerator architecture for heterogeneous computing (e.g., sm_90 for NVIDIA H100, gfx942 for AMD MI300).
+设置用于异构计算的 GPU 或加速器架构（例如，NVIDIA H100 为 sm_90，AMD MI300 为 gfx942）。
 
 #### `--print-effective-target`
 
-Print the effective target configuration after absorbing all command-line flags and exit.
+打印吸收所有命令行标志后的有效目标配置并退出。
 
 #### `--print-supported-targets`
 
-Print all available target names and exit.
+打印所有可用的目标名称并退出。
 
 #### `--print-supported-cpus`
 
-Print valid CPU names for the specified target and exit. Requires --target-triple.
+打印指定目标的有效 CPU 名称并退出。需要 --target-triple。
 
 #### `--print-supported-accelerators`
 
-Print all supported GPU and accelerator architectures and exit.
+打印所有支持的 GPU 和加速器架构并退出。
 
-### Compilation diagnostic options
+### 编译诊断选项
 
-Controls how the Mojo compiler outputs diagnostics related to compiling and running Mojo source code.
+控制 Mojo 编译器如何输出与编译和运行 Mojo 源代码相关的诊断信息。
 
 #### `--diagnose-missing-doc-strings`
 
-Emits diagnostics for missing or partial doc strings.
+为缺失或不完整的文档字符串发出诊断信息。
 
 #### `--max-notes-per-diagnostic <INTEGER>`
 
-When the Mojo compiler emits diagnostics, it sometimes also prints notes with additional information. This option sets an upper threshold on the number of notes that can be printed with a diagnostic. If not specified, the default maximum is 10.
+当 Mojo 编译器发出诊断信息时，有时也会打印带有附加信息的备注。此选项设置可随诊断信息打印的备注数量的上限。如果未指定，默认最大值为 10。
 
 #### `--disable-builtins`
 
-Do not use builtins when create package.
+创建包时不使用内置函数。
 
 #### `--disable-warnings`
 
-Do not print warning messages.
+不打印警告消息。
 
 #### `--experimental-fixit`
 
-Automatically apply fix-its to the code, and rerun the command again after the fix-its are applied. WARNING: this feature is highly experimental and may result in irreversible data loss.
+自动将修复应用到代码，并在应用修复后重新运行命令。警告：此功能高度实验性，可能导致不可逆的数据丢失。
 
 #### `--experimental-export-fixit <YAML_FILE>`
 
-Export fix-its to a YAML file in clang-tidy format instead of applying them directly. The file can be applied using 'clang-apply-replacements'. WARNING: this feature is highly experimental.
+将修复导出为 clang-tidy 格式的 YAML 文件，而不是直接应用。该文件可以使用 'clang-apply-replacements' 应用。警告：此功能高度实验性。
 
 #### `--Werror`
 
-Treat warnings as errors.
+将警告视为错误。
 
 #### `--Wno-error`
 
-Do not treat warnings as errors.
+不将警告视为错误。
 
 #### `--warn-on-unstable-apis`
 
-Warn when using unstable APIs from the standard library.
+使用标准库中的不稳定 API 时发出警告。
 
 #### `--ignore-incompatible-package-errors`
 
-Ignore errors encountered when loading incompatible Mojo packages.
+忽略加载不兼容 Mojo 包时遇到的错误。
 
-### Debugger options
+### 调试器选项
 
 #### `--X <ARG>`
 
-Passes ARG as an argument to the debugger when the debug session is launched using the debugger command-line interface. This option can be specified multiple times. It is ignored when using the RPC mode.
+当使用调试器命令行界面启动调试会话时，将 ARG 作为参数传递给调试器。此选项可以多次指定。使用 RPC 模式时会被忽略。
 
-### Debug server options
+### 调试服务器选项
 
 #### `--vscode`
 
-Launches the debug session on VS Code via the Mojo extension.
+通过 Mojo 扩展在 VS Code 中启动调试会话。
 
 #### `--rpc`
 
-Alias for --vscode.
+--vscode 的别名。
 
 #### `--terminal <TERMINAL>`
 
-The type of terminal to use when starting a launch debug session.
+启动启动调试会话时使用的终端类型。
 
-* `console` (default): the debuggee will be launched in the default environment for the editor. If using VS Code, this will be the Debug Console.
-* `dedicated`: the debuggee will be launched in a dedicated terminal within the editor.
+* `console`（默认）：被调试程序将在编辑器的默认环境中启动。如果使用 VS Code，这将是调试控制台。
+* `dedicated`：被调试程序将在编辑器内的专用终端中启动。
 
 #### `--port <PORT>`
 
-Uses the given PORT to communicate with the RPC debug server. Defaults to trying all ports from 12355 to 12364 inclusive.
+使用给定的 PORT 与 RPC 调试服务器通信。默认尝试从 12355 到 12364（含）的所有端口。
 
 #### `--stop-on-entry`
 
-Automatically stop after launch.
+启动后自动停止。
 
 #### `--init-command <INIT_COMMAND>`
 
-Initialization command executed upon debugger startup. Can be specified multiple times.
+调试器启动时执行的初始化命令。可以多次指定。
 
-### Linker options
+### 链接器选项
 
 #### `-Xlinker <ARG>`
 
-Pass ARG to the linker.
+将 ARG 传递给链接器。
 
-### Experimental compilation options
+### 实验性编译选项
 
 #### `--sanitize <CHECK>`
 
-Turns on runtime checks. The following values are supported: `address` (detects memory issues), and `thread` (detects multi-threading issues).
+启用运行时检查。支持以下值：`address`（检测内存问题）和 `thread`（检测多线程问题）。
 
 #### `--shared-libasan`
 
-Dynamically link the address sanitizer runtime. Requires address sanitization turned on with `--sanitize` option.
+动态链接地址消毒器运行时。需要使用 `--sanitize` 选项启用地址消毒。
 
 #### `--debug-info-language <LANGUAGE>`
 
-Sets the language to emit as part of the debug info. The supported languages are: `Mojo`, and `C`. `Mojo` is the default. `C` is useful to enable rudimentary debugging and binary introspection in tools that don't understand Mojo, but is not required for `mojo debug`.
+设置作为调试信息一部分发出的语言。支持的语言有：`Mojo` 和 `C`。默认为 `Mojo`。`C` 有助于在不理解 Mojo 的工具中启用基本调试和二进制内省，但 `mojo debug` 不需要此选项。
 
-### Common options
+### 通用选项
 
 #### `--help`, `-h`
 
-Displays help information.
+显示帮助信息。
 
 #### `--help-hidden`
 
-Displays help for hidden options.
-
+显示隐藏选项的帮助信息。

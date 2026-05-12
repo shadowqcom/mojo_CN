@@ -1,13 +1,12 @@
 ---
 title: "arg"
 sidebar_label: "arg"
-description: "Implements functions and variables for interacting with execution and system environment."
+description: "实现与执行和系统环境交互的函数和变量。"
 ---
 
 # arg
 
-Implements functions and variables for interacting with execution and system
-environment.
+实现与执行和系统环境交互的函数和变量。
 
 ## 函数
 

@@ -1,24 +1,16 @@
 ---
 title: "logger"
 sidebar_label: "logger"
-description: "Logging with configurable severity levels.  The `logger` package provides a flexible logging system with multiple severity levels for debugging and monitoring applications. It supports configurable lo"
+description: "具有可配置严重级别的日志记录。`logger` 包提供灵活的日志系统，具有多种严重级别，用于调试和监控应用程序。"
 ---
 
 # logger
 
-Logging with configurable severity levels.
+具有可配置严重级别的日志记录。
 
-The `logger` package provides a flexible logging system with multiple severity
-levels for debugging and monitoring applications. It supports configurable log
-levels (`TRACE`, `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`), colored output,
-customizable formatting, and environment-based configuration. The logging level
-can be set via the LOGGING_LEVEL environment variable to control message
-verbosity.
+`logger` 包提供灵活的日志系统，具有多种严重级别，用于调试和监控应用程序。它支持可配置的日志级别（`TRACE`、`DEBUG`、`INFO`、`WARNING`、`ERROR`、`CRITICAL`）、彩色输出、可自定义格式和基于环境的配置。可以通过 LOGGING_LEVEL 环境变量设置日志级别来控制消息详细程度。
 
-Use this package for debugging, monitoring application behavior, error
-reporting, or adding instrumentation to track program execution. Configure the
-logging level in development for detailed output, then reduce verbosity in
-production for performance.
+使用此包进行调试、监控应用程序行为、错误报告，或添加检测以跟踪程序执行。在开发环境中配置详细的日志级别，在生产环境中降低详细程度以提高性能。
 
 ## 模块
 

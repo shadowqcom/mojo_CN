@@ -1,17 +1,15 @@
 ---
 title: "compiler"
 sidebar_label: "compiler"
-description: "Provides compiler hints to prevent optimization of benchmark code.  This module includes utilities that prevent the compiler from optimizing away code being benchmarked. The `keep()` and `black_box()`"
+description: "提供编译器提示以防止基准测试代码被优化。此模块包含防止编译器优化掉正在基准测试的代码的工具。`keep()` 和 `black_box()` 函数向编译器提供提示，防止过度优化掉正在基准测试的代码。"
 ---
 
 # compiler
 
-Provides compiler hints to prevent optimization of benchmark code.
+提供编译器提示以防止基准测试代码被优化。
 
-This module includes utilities that prevent the compiler from optimizing away
-code being benchmarked.
-The `keep()` and `black_box()` functions provide hints to the compiler from
-overly optimizing away code being benchmarked.
+此模块包含防止编译器优化掉正在基准测试的代码的工具。
+`keep()` 和 `black_box()` 函数向编译器提供提示，防止过度优化掉正在基准测试的代码。
 
 ## 函数
 

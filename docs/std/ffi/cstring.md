@@ -1,12 +1,12 @@
 ---
 title: "cstring"
 sidebar_label: "cstring"
-description: "Implements C string interoperability utilities."
+description: "实现 C 字符串互操作性工具。"
 ---
 
 # cstring
 
-Implements C string interoperability utilities.
+实现 C 字符串互操作性工具。
 
 ## 类型
 

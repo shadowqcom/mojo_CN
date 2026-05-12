@@ -1,14 +1,14 @@
 ---
 title: "rebind"
 sidebar_label: "rebind"
-description: "Implements type rebind/trait downcast.  These are Mojo built-ins, so you don't need to import them."
+description: "实现类型重新绑定/trait 向下转型。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # rebind
 
-Implements type rebind/trait downcast.
+实现类型重新绑定/trait 向下转型。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 函数
 

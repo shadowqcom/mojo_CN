@@ -1,35 +1,28 @@
 ---
-title: Variables
+title: 变量
 sidebar_position: 3
-description: Introduction to Mojo variables.
+description: Mojo 变量介绍。
 ---
 
-A variable is a name that holds a value or object. All variables in Mojo are
-mutable—their value can be changed. (If you want to define a constant value that
-can't change at runtime, see the
-[`comptime` keyword](/docs/manual/metaprogramming/comptime-evaluation/#comptime-values).)
+变量是一个保存值或对象的名称。Mojo 中的所有变量都是可变的——它们的值可以被更改。（如果你想在运行时定义一个不能更改的常量值，请参阅 [`comptime` 关键字](/docs/manual/metaprogramming/comptime-evaluation/#comptime-values)。）
 
-When you declare a variable in Mojo, you allocate a logical storage location,
-and bind a name to that storage location.
+在 Mojo 中声明变量时，你会分配一个逻辑存储位置，并将一个名称绑定到该存储位置。
 
 ```mojo
 var greeting: String = "Hello World"
 ```
 
-The `var` statement above does three things:
+上面的 `var` 语句做了三件事：
 
-- It declares a logical storage location (in this case, a storage location sized
-  to hold a `String` struct).
-- It binds the name `greeting` to this logical storage location.
-- It *initializes* the storage space with a newly created `String` value,
-  with the text, "Hello World". The new value is *owned by* the variable.
-  No other variable can own this value unless we intentionally transfer it.
+- 它声明了一个逻辑存储位置（在本例中，是一个大小为容纳 `String` 结构体的存储位置）。
+- 它将名称 `greeting` 绑定到这个逻辑存储位置。
+- 它用新创建的 `String` 值初始化存储空间，文本为 "Hello World"。新值由变量**拥有**。除非我们有意转移它，否则没有其他变量可以拥有这个值。
 
-## Variable declarations
+## 变量声明
 
-Mojo has two ways to declare a variable:
+Mojo 有两种声明变量的方式：
 
-- Explicitly-declared variables are created with the `var` keyword.
+- 显式声明的变量使用 `var` 关键字创建。
 
   ```mojo {doctest="foo"}
   var a = 5
@@ -37,8 +30,7 @@ Mojo has two ways to declare a variable:
   var c: String
   ```
 
-- Implicitly-declared variables are created the first time the variable is used,
-  either with an assignment statement or with a type annotation:
+- 隐式声明的变量在第一次使用变量时创建，可以是赋值语句或类型注解：
 
   ```mojo
   a = 5
@@ -46,21 +38,16 @@ Mojo has two ways to declare a variable:
   c: String
   ```
 
-Both types of variables are strongly typed—the type is either set explicitly
-with a [type annotation](#type-annotations) or implicitly when the variable is
-first initialized with a value.
+这两种类型的变量都是强类型的——类型要么通过[类型注解](#type-annotations)显式设置，要么在变量首次用值初始化时隐式设置。
 
-Either way, the variable receives a type when it's created, and the type never
-changes. So you can't assign a variable a value of a different type:
+无论如何，变量在创建时获得一个类型，并且类型永远不会改变。所以你不能为变量分配不同类型的值：
 
 ```mojo
-count = 8 # count is type Int
-count = "Nine?" # Error: can't implicitly convert 'StringLiteral' to 'Int'
+count = 8 # count 是 Int 类型
+count = "Nine?" # 错误：不能隐式将 'StringLiteral' 转换为 'Int'
 ```
 
-Some types support [*implicit conversions*](#implicit-type-conversion) from
-other types. For example, an integer value can implicitly convert to a
-floating-point value:
+某些类型支持从其他类型的[*隐式转换*](#implicit-type-conversion)。例如，整数值可以隐式转换为浮点值：
 
 ```mojo
 var temperature: Float64 = 99
@@ -71,84 +58,64 @@ print(temperature)
 99.0
 ```
 
-In this example, the `temperature` variable is explicitly typed as `Float64`,
-but assigned an integer value, so the value is implicitly converted to a
-`Float64`.
+在这个例子中，`temperature` 变量显式类型化为 `Float64`，但分配了一个整数值，因此该值被隐式转换为 `Float64`。
 
-## Implicitly-declared variables
+## 隐式声明的变量
 
-You can create a variable with just a name and a value. For example:
+你只需要一个名称和一个值就可以创建一个变量。例如：
 
 ```mojo
 name = "Sam"
 user_id = 0
 ```
 
-Implicitly-declared variables are strongly typed: they take the type from the
-first value assigned to them. For example, the `user_id` variable above is type
-`Int`, while the `name` variable is type `String`. You can't assign a string to
-`user_id` or an integer to `name`.
+隐式声明的变量是强类型的：它们从分配给它们的第一个值中获取类型。例如，上面的 `user_id` 变量是 `Int` 类型，而 `name` 变量是 `String` 类型。你不能将字符串分配给 `user_id` 或将整数分配给 `name`。
 
-You can also use a type annotation with an implicitly-declared variable, either
-as part of an assignment statement, or on its own:
+你也可以对隐式声明的变量使用类型注解，可以是赋值语句的一部分，也可以单独使用：
 
 ```mojo
 name: String = "Sam"
 user_id: Int
 ```
 
-Here, the `user_id` variable has a type, but is uninitialized.
+在这里，`user_id` 变量有一个类型，但未初始化。
 
-Implicitly-declared variables are scoped at the function level. You create an
-implicitly-declared variable the first time you assign a value to a given name
-inside a function. Any subsequent references to that name inside the function
-refer to the same variable. For more information, see [Variable
-scopes](#variable-scopes), which describes how variable scoping differs between
-explicitly- and implicitly-declared variables.
+隐式声明的变量在函数级别作用域。你在函数内部第一次为给定名称分配值时创建一个隐式声明的变量。函数内部对该名称的任何后续引用都指向同一个变量。有关更多信息，请参阅[变量作用域](#variable-scopes)，它描述了显式声明和隐式声明变量之间的作用域差异。
 
-## Explicitly-declared variables
+## 显式声明的变量
 
-You can declare a variable with the `var` keyword. For example:
+你可以使用 `var` 关键字声明一个变量。例如：
 
 ```mojo
 var name = "Sam"
 var user_id: Int
 ```
 
-The `name` variable is initialized to the string "Sam". The `user_id` variable
-is uninitialized, but it has a declared type, `Int` for an integer value.
+`name` 变量初始化为字符串 "Sam"。`user_id` 变量未初始化，但它有一个声明的类型，`Int` 用于整数值。
 
-Since variables are strongly typed, you can't assign a variable a
-value of a different type, unless those types can be
-[implicitly converted](#implicit-type-conversion). For example, this code will
-not compile:
+由于变量是强类型的，你不能为变量分配不同类型的值，除非这些类型可以[隐式转换](#implicit-type-conversion)。例如，这段代码不会编译：
 
 ```mojo
 var user_id: Int = "Sam"
 ```
 
-Explicitly-declared variables have block-level [scope](#variable-scopes).
+显式声明的变量具有块级[作用域](#variable-scopes)。
 
-## Type annotations
+## 类型注解
 
-Although Mojo can infer a variable type from the first value assigned to a
-variable, it also supports static type annotations on variables. Type
-annotations provide a more explicit way of specifying the variable's type.
+虽然 Mojo 可以从分配给变量的第一个值中推断变量类型，但它也支持变量的静态类型注解。类型注解提供了更明确的方式来指定变量的类型。
 
-To specify the type for a variable, add a colon followed by the type name:
+要为变量指定类型，添加一个冒号，后跟类型名称：
 
 ```mojo
 var name: String = get_name()
-# Or
+# 或者
 name: String = get_name()
 ```
 
-This makes it clear that `name` is type `String`, without knowing what the
-`get_name()` function returns. The `get_name()` function may return a `String`,
-or a value that's implicitly convertible to a `String`.
+这清楚地表明 `name` 是 `String` 类型，而不知道 `get_name()` 函数返回什么。`get_name()` 函数可能返回 `String`，或一个可以隐式转换为 `String` 的值。
 
-If a type has a constructor with just one argument, you can initialize it in
-two ways:
+如果一个类型有一个只有一个参数的构造函数，你可以用两种方式初始化它：
 
 ```mojo
 var name1: String = "Sam"
@@ -156,14 +123,11 @@ var name2 = String("Sam")
 var name3 = "Sam"
 ```
 
-All of these lines invoke the same constructor to create a `String` from a
-`StringLiteral`.
+所有这些行都调用同一个构造函数，从 `StringLiteral` 创建一个 `String`。
 
-### Late initialization
+### 延迟初始化
 
-Using type annotations allows for late initialization. For example, notice here
-that the `z` variable is first declared with just a type, and the value is
-assigned later:
+使用类型注解允许延迟初始化。例如，请注意这里 `z` 变量首先只声明了类型，稍后分配值：
 
 ```mojo
 def my_function(x: Int):
@@ -178,26 +142,22 @@ def foo() -> Float32:
     return 3.14
 ```
 
-If you try to pass an uninitialized variable to a function or use
-it on the right-hand side of an assignment statement, compilation fails.
+如果你尝试将未初始化的变量传递给函数或在赋值语句的右侧使用它，编译会失败。
 
 ```mojo
 var z: Float32
-var y = z # Error: use of uninitialized value 'z'
+var y = z # 错误：使用未初始化的值 'z'
 ```
 
 :::note
 
-Late initialization works only if the variable is declared with a
-type.
+延迟初始化只有在变量声明了类型时才有效。
 
 :::
 
-### Implicit type conversion
+### 隐式类型转换
 
-Some types include built-in type conversion (type casting) from one type into
-its own type. For example, if you assign an integer to a variable that has a
-floating-point type, it converts the value instead of giving a compiler error:
+某些类型包含从一种类型到其自身类型的内置类型转换（类型转换）。例如，如果你将整数分配给具有浮点类型的变量，它会转换值而不是给出编译器错误：
 
 ```mojo
 var number: Float64 = Int(1)
@@ -208,38 +168,27 @@ print(number)
 1.0
 ```
 
-As shown above, value assignment can be converted into a constructor call if the
-target type has a constructor that meets the following criteria:
+如上所示，如果目标类型有满足以下条件的构造函数，值赋值可以转换为构造函数调用：
 
-- It's decorated with the `@implicit` decorator.
+- 它用 `@implicit` 装饰器装饰。
 
-- It takes a single required argument that matches the value being assigned.
+- 它接受一个与要赋值的值匹配的必需参数。
 
-So, this code uses the `Float64` constructor that takes an
-integer: `__init__(out self, value: Int)`.
+因此，这段代码使用了接受整数的 `Float64` 构造函数：`__init__(out self, value: Int)`。
 
-In general, implicit conversions should only be supported where the conversion
-is lossless.
+一般来说，隐式转换应该只在转换是无损的情况下支持。
 
-Implicit conversion follows the logic of [overloaded
-functions](/docs/manual/functions#overloaded-functions). If the destination
-type has a viable implicit conversion constructor for the source
-type, it can be invoked for implicit conversion.
+隐式转换遵循[重载函数](/docs/manual/functions#overloaded-functions)的逻辑。如果目标类型有源类型的可行隐式转换构造函数，它可以在隐式转换时调用。
 
-So assigning an integer to a `Float64` variable is exactly the same as this:
+因此，将整数分配给 `Float64` 变量与以下代码完全相同：
 
 ```mojo
 var number = Float64(1)
 ```
 
-Similarly, if you call a function that requires an argument of a certain type
-(such as `Float64`), you can pass in any value as long as that value type can
-implicitly convert to the required type (using one of the type's overloaded
-constructors).
+同样，如果你调用一个需要特定类型参数的函数（如 `Float64`），只要该值类型可以隐式转换为所需类型（使用该类型的一个重载构造函数），你就可以传入任何值。
 
-For example, you can pass an `Int` to a function that expects a `Float64`,
-because `Float64` includes an implicit conversion constructor that takes an
-`Int`:
+例如，你可以将 `Int` 传递给期望 `Float64` 的函数，因为 `Float64` 包含一个接受 `Int` 的隐式转换构造函数：
 
 ```mojo
 def take_float(value: Float64):
@@ -250,38 +199,29 @@ def pass_integer():
     take_float(value)
 ```
 
-For more details on implicit conversion, see
-[Constructors and implicit
-conversion](/docs/manual/lifecycle/life/#constructors-and-implicit-conversion).
+有关隐式转换的更多详细信息，请参阅[构造函数和隐式转换](/docs/manual/lifecycle/life/#constructors-and-implicit-conversion)。
 
-## Variable scopes
+## 变量作用域
 
-Variables in Mojo use *lexical scoping*. A variable's definition is
-determined by where it appears in the source code, not when it executes
-at runtime. The specific scope level depends on how the variable is
-declared.
+Mojo 中的变量使用*词法作用域*。变量的定义由它在源代码中出现的位置决定，而不是它在运行时执行的时间。具体的作用域级别取决于变量是如何声明的。
 
-Nested code can read and modify variables defined in an outer scope.
-An outer scope can't read variables defined in an inner scope.
+嵌套代码可以读取和修改在外部作用域中定义的变量。外部作用域不能读取在内部作用域中定义的变量。
 
-Variables [explicitly declared](#explicitly-declared-variables) with `var`
-have **block-level** scope.
+使用 `var` 显式声明的变量具有**块级**作用域。
 
-For example, the `if` code block shown here creates an inner scope where outer
-variables are accessible to read/write, but any new variables do not live
-beyond the scope of the `if` block:
+例如，这里显示的 `if` 代码块创建了一个内部作用域，外部变量可以读写，但任何新变量都不会在 `if` 代码块的作用域之外存在：
 
 ```mojo
 def lexical_scopes():
     var num = 1
     var dig = 1
     if num == 1:
-        print("num:", num)  # Reads the outer-scope "num"
-        var num = 2         # Creates new inner-scope "num"
-        print("num:", num)  # Reads the inner-scope "num"
-        dig = 2             # Updates the outer-scope "dig"
-    print("num:", num)      # Reads the outer-scope "num"
-    print("dig:", dig)      # Reads the outer-scope "dig"
+        print("num:", num)  # 读取外部作用域的 "num"
+        var num = 2         # 创建新的内部作用域 "num"
+        print("num:", num)  # 读取内部作用域的 "num"
+        dig = 2             # 更新外部作用域的 "dig"
+    print("num:", num)      # 读取外部作用域的 "num"
+    print("dig:", dig)      # 读取外部作用域的 "dig"
 ```
 
 ```output
@@ -291,30 +231,22 @@ num: 1
 dig: 2
 ```
 
-Note that the `var` statement inside the `if` creates a **new** variable with
-the same name as the outer variable. This prevents the inner loop from accessing
-the outer `num` variable. (This is called "variable shadowing," where the inner
-scope variable hides or "shadows" a variable from an outer scope.)
+请注意，`if` 内部的 `var` 语句创建了一个与外部变量同名的新变量。这防止了内部循环访问外部 `num` 变量。（这称为"变量遮蔽"，其中内部作用域变量隐藏或"遮蔽"了外部作用域的变量。）
 
-The lifetime of the inner `num` ends exactly where the `if` code block ends,
-because that's the scope in which the variable was defined.
+内部 `num` 的生命周期在 `if` 代码块结束时正好结束，因为那是定义变量的作用域。
 
-This is in contrast to [implicitly-declared](#implicitly-declared-variables)
-variables (those without the `var` keyword), which use
-**function-level scoping** (consistent with Python variable behavior). That
-means, when you change the value of an implicitly-declared variable inside the
-`if` block, it actually changes the value for the entire function.
+这与[隐式声明](#implicitly-declared-variables)的变量（没有 `var` 关键字的那些）形成对比，后者使用**函数级作用域**（与 Python 变量行为一致）。这意味着，当你在 `if` 代码块内部更改隐式声明的变量的值时，它实际上会更改整个函数的值。
 
-For example, here's the same code but *without* the `var` declarations:
+例如，这是相同的代码，但没有 `var` 声明：
 
 ```mojo
 def function_scopes():
     num = 1
     if num == 1:
-        print(num)   # Reads the function-scope "num"
-        num = 2      # Updates the function-scope variable
-        print(num)   # Reads the function-scope "num"
-    print(num)       # Reads the function-scope "num"
+        print(num)   # 读取函数作用域的 "num"
+        num = 2      # 更新函数作用域变量
+        print(num)   # 读取函数作用域的 "num"
+    print(num)       # 读取函数作用域的 "num"
 ```
 
 ```output
@@ -323,126 +255,94 @@ def function_scopes():
 2
 ```
 
-Now, the last `print()` function sees the updated `num` value from the inner
-scope, because implicitly-declared variables are scoped at the function level,
-as in Python, rather than at the block level.
+现在，最后一个 `print()` 函数看到的是内部作用域中的更新后的 `num` 值，因为隐式声明的变量在函数级别作用域，就像 Python 一样，而不是在块级别。
 
-## Copying and moving values
+## 复制和移动值
 
-Remember that a variable owns its value, and only one variable can own a given
-value at a time. To take this one step further, you can think of an assignment
-statement as assigning *ownership* of a value to a variable:
+记住，一个变量拥有它的值，并且同一时间只有一个变量可以拥有给定值。进一步来说，你可以将赋值语句视为将值的*所有权*分配给变量：
 
 ```mojo
 owning_variable = "Owned value"
 ```
 
-This means the value on the right-hand side of the assignment statement must be
-transferrable to the new variable. Here's an example where that doesn't work:
+这意味着赋值语句右侧的值必须可以转移到新变量。这里有一个失败的例子：
 
 ```mojo
 first = [1, 2, 3]
-second = first  # error: 'List[Int]' is not implicitly copyable because it does
-                 # not conform to 'ImplicitlyCopyable'
+second = first  # 错误：'List[Int]' 不是隐式可复制的，因为它不符合 'ImplicitlyCopyable'
 ```
 
-The first assignment is no problem: the expression `[1, 2, 3]` creates a new
-`List` value that doesn't belong to any variable, so its ownership can be
-transferred directly to the `first` variable.
+第一个赋值没有问题：表达式 `[1, 2, 3]` 创建了一个不属于任何变量的新 `List` 值，所以它的所有权可以直接转移到 `first` 变量。
 
-But the second assignment causes an error. Since the `List` is owned by the
-`first` variable, it can't simply be transferred to the `second` variable
-without an explicit signal from the user. Does the user want to transfer the
-value from `first` to `second`? Or create a copy of the original value?
+但第二个赋值导致错误。由于 `List` 由 `first` 变量拥有，如果没有来自用户的显式信号，就不能简单地将它转移到 `second` 变量。用户是想将值从 `first` 转移到 `second` 吗？还是创建原始值的副本？
 
-These choices depend on some features of the type of the values involved:
-specifically, if the values are movable, copyable, or implicitly copyable.
+这些选择取决于涉及的值的类型的一些特性：具体来说，如果值是可移动的、可复制的或隐式可复制的。
 
-- A *copyable* type can be copied explicitly, by calling its copy initializer or
-  the `copy()` method.
+- *可复制类型*可以通过调用其复制初始化器或 `copy()` 方法显式复制。
 
   ```mojo
   second = first.copy()
   ```
 
-  This leaves `first` unchanged and assigns `second` its own, uniquely owned
-  copy of the list.
+  这使 `first` 保持不变，并将 `second` 分配给它自己的、唯一拥有的列表副本。
 
-- An *implicitly copyable* type can be copied without an explicit signal from
-  the user.
+- *隐式可复制类型*可以在没有用户显式信号的情况下复制。
 
   ```mojo
   one_value = 15
-  another_value = one_value  # implicit copy
+  another_value = one_value  # 隐式复制
   ```
 
-  Here, `one_value` is unchanged, and `another_value` gets a copy of the value.
+  在这里，`one_value` 保持不变，`another_value` 获得值的副本。
 
-  Implicitly copyable types are generally simple value types like `Int`,
-  `Float64`, and `Bool`, which can be copied trivially.
+  隐式可复制类型通常是简单的值类型，如 `Int`、`Float64` 和 `Bool`，可以简单复制。
 
-- The ownership of a value can be explicitly transferred from one variable
-  to another by appending the *transfer sigil* (`^`) after the value to
-  transfer:
+- 值的所有权可以从一个变量显式转移到另一个变量，方法是将*转移符号*（`^`）附加到要转移的值之后：
 
   ```mojo
   second = first^
   ```
 
-  This moves the value to `second`, and leaves `first` uninitialized.
+  这将值移动到 `second`，并使 `first` 未初始化。
 
-  In many cases, this ownership transfer also involves moving the value from
-  one memory location to another, which requires the value to be either movable
-  or copyable.
+  在许多情况下，这种所有权转移还涉及将值从一个内存位置移动到另一个位置，这要求值要么是可移动的，要么是可复制的。
 
-You don't have to digest all of these details now: copyability and movability
-are discussed in more detail in the section on
-[making structs copyable and movable](/docs/manual/structs/#making-a-struct-copyable-and-movable)
-and in the section on the [value lifecycle](/docs/manual/lifecycle/life/).
+你现在不需要消化所有这些细节：可复制性和可移动性在[使结构体可复制和可移动](/docs/manual/structs/#making-a-struct-copyable-and-movable)的章节和[值生命周期](/docs/manual/lifecycle/life/)的章节中有更详细的讨论。
 
-## Reference bindings
+## 引用绑定
 
-Some APIs return
-[references](/docs/manual/values/lifetimes/#working-with-references) to values
-owned elsewhere. References can be useful to avoid copying values. For example,
-when you retrieve a value from a collection, the collection returns a reference,
-instead of a copy.
+某些 API 返回[引用](/docs/manual/values/lifetimes/#working-with-references)到在其他地方拥有的值。引用对于避免复制值很有用。例如，当你从集合中检索值时，集合返回一个引用，而不是副本。
 
 ```mojo
 animals: List[String] = ["Cats", "Dogs", "Zebras"]
-print(animals[2])  # Prints "Zebras", does not copy the value.
+print(animals[2])  # 打印 "Zebras"，不复制值。
 ```
 
-But if you assign a reference to a *variable*, it creates a copy (if the value
-is implicitly copyable) or produces an error (if it isn't).
+但是，如果你将引用分配给*变量*，它会创建一个副本（如果值是隐式可复制的）或产生错误（如果不是）。
 
 ```mojo
 items = [99, 77, 33, 12]
-item = items[1]  # item is a copy of items[1]
-item += 1  # increments item
-print(items[1])  # prints 77
+item = items[1]  # item 是 items[1] 的副本
+item += 1  # 增加 item
+print(items[1])  # 打印 77
 ```
 
-To hold on to a reference, use the `ref` keyword to create a reference binding:
+要保留引用，使用 `ref` 关键字创建引用绑定：
 
 ```mojo
-ref item_ref = items[1]  # item_ref is a reference to item[1]
-item_ref += 1  # increments items[1]
-print(items[1])  # prints 78
+ref item_ref = items[1]  # item_ref 是 item[1] 的引用
+item_ref += 1  # 增加 items[1]
+print(items[1])  # 打印 78
 ```
 
-Here, the name `item_ref` is bound to the reference to `items[1]`. All reads and
-writes to `item_ref` go to the referenced item.
+在这里，名称 `item_ref` 绑定到 `items[1]` 的引用。对 `item_ref` 的所有读取和写入都指向被引用的项。
 
-Reference bindings can also be used when iterating through collections with
-[`for` loops](/docs/manual/control-flow/#iterating-using-references).
+引用绑定也可以在与[`for` 循环](/docs/manual/control-flow/#iterating-using-references)遍历集合时使用。
 
-Once a reference binding is assigned, it can't be re-bound to a different
-location. For example:
+一旦分配了引用绑定，它就不能重新绑定到不同的位置。例如：
 
 ```mojo
-ref item_ref = items[2]  # error: invalid redefinition of item_ref
+ref item_ref = items[2]  # 错误：item_ref 的无效重新定义
 ```
 
-For more information on references, see
-[Working with references](/docs/manual/values/lifetimes/#working-with-references).
+有关引用的更多信息，请参阅[使用引用](/docs/manual/values/lifetimes/#working-with-references)。

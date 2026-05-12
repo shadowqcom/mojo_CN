@@ -1,20 +1,16 @@
 ---
 title: "time"
 sidebar_label: "time"
-description: "Timing operations: monotonic clocks, performance counters, sleep, time_function.  The `time` package provides utilities for measuring elapsed time, benchmarking code performance, and introducing delay"
+description: "计时操作：单调时钟、性能计数器、休眠、time_function。`time` 包提供用于测量经过时间、基准测试代码性能和引入延迟的工具。"
 ---
 
 # time
 
-Timing operations: monotonic clocks, performance counters, sleep, time_function.
+计时操作：单调时钟、性能计数器、休眠、time_function。
 
-The `time` package provides utilities for measuring elapsed time, benchmarking
-code performance, and introducing delays. It offers monotonic clocks that are
-unaffected by system clock adjustments, making them suitable for measuring
-intervals and profiling execution time.
+`time` 包提供用于测量经过时间、基准测试代码性能和引入延迟的工具。它提供不受系统时钟调整影响的单调时钟，适合测量间隔和分析执行时间。
 
-Use this package for performance measurement, benchmarking, profiling, or when
-you need to introduce delays in your code.
+使用此包进行性能测量、基准测试、分析，或当您需要在代码中引入延迟时。
 
 ## 模块
 

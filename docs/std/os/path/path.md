@@ -1,15 +1,15 @@
 ---
 title: "path"
+slug: path
 sidebar_label: "path"
-description: "Provides a set of operating-system independent functions for manipulating file system paths.  You can import these APIs from the `os.path` package. For example:  ```mojo from std.os.path import isdir "
+description: "提供一组独立于操作系统的函数用于操作文件系统路径。您可以从 `os.path` 包导入这些 API。例如：```mojo from std.os.path import isdir ```"
 ---
 
 # path
 
-Provides a set of operating-system independent functions for manipulating
-file system paths.
+提供一组独立于操作系统的函数用于操作文件系统路径。
 
-You can import these APIs from the `os.path` package. For example:
+您可以从 `os.path` 包导入这些 API。例如：
 
 ```mojo
 from std.os.path import isdir

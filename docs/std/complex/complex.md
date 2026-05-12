@@ -1,14 +1,15 @@
 ---
 title: "complex"
+slug: complex
 sidebar_label: "complex"
-description: "Implements the Complex dtype.  You can import these APIs from the `complex` package. For example:  ```mojo from std.complex import ComplexSIMD ```"
+description: "实现 Complex 数据类型。您可以从 `complex` 包导入这些 API。例如：```mojo from std.complex import ComplexSIMD ```"
 ---
 
 # complex
 
-Implements the Complex dtype.
+实现 Complex 数据类型。
 
-You can import these APIs from the `complex` package. For example:
+您可以从 `complex` 包导入这些 API。例如：
 
 ```mojo
 from std.complex import ComplexSIMD

@@ -1,12 +1,12 @@
 ---
 title: "runner"
 sidebar_label: "runner"
-description: "Implements the property test runner and configuration."
+description: "实现属性测试运行器和配置。"
 ---
 
 # runner
 
-Implements the property test runner and configuration.
+实现属性测试运行器和配置。
 
 ## 类型
 

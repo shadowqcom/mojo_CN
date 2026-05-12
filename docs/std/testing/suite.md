@@ -1,17 +1,14 @@
 ---
 title: "suite"
 sidebar_label: "suite"
-description: "Implements test suite infrastructure for organizing and running tests.  This module provides the `TestSuite` type for collecting, filtering, and executing unit tests with automatic discovery, command-"
+description: "实现用于组织和运行测试的测试套件基础设施。此模块提供 `TestSuite` 类型，用于收集、过滤和执行单元测试，具有自动发现、命令行过滤功能。"
 ---
 
 # suite
 
-Implements test suite infrastructure for organizing and running tests.
+实现用于组织和运行测试的测试套件基础设施。
 
-This module provides the `TestSuite` type for collecting, filtering, and
-executing unit tests with automatic discovery, command-line filtering, and
-formatted reporting. It includes support for colored output, timing statistics,
-and flexible test selection via CLI arguments.
+此模块提供 `TestSuite` 类型，用于收集、过滤和执行单元测试，具有自动发现、命令行过滤和格式化报告功能。它支持彩色输出、计时统计和通过 CLI 参数灵活选择测试。
 
 ## 类型
 

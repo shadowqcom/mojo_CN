@@ -1,12 +1,12 @@
 ---
 title: "tstring"
 sidebar_label: "tstring"
-description: "Implements `TString`, a template string that captures interpolated values at compile-time."
+description: "实现 `TString`，一种在编译时捕获插值的模板字符串。"
 ---
 
 # tstring
 
-Implements `TString`, a template string that captures interpolated values at compile-time.
+实现 `TString`，一种在编译时捕获插值的模板字符串。
 
 ## 类型
 

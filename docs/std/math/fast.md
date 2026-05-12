@@ -1,14 +1,14 @@
 ---
 title: "fast"
 sidebar_label: "fast"
-description: "Defines fast math approximation utilities.  You can import these APIs from the `math` package. For example:  ```mojo from std.math.fast import exp_approx_f32 ```"
+description: "定义快速数学近似工具。您可以从 `math` 包导入这些 API。例如：```mojo from std.math.fast import exp_approx_f32 ```"
 ---
 
 # fast
 
-Defines fast math approximation utilities.
+定义快速数学近似工具。
 
-You can import these APIs from the `math` package. For example:
+您可以从 `math` 包导入这些 API。例如：
 
 ```mojo
 from std.math.fast import exp_approx_f32

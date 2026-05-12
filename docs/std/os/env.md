@@ -1,14 +1,14 @@
 ---
 title: "env"
 sidebar_label: "env"
-description: "Provides functions for working with environment variables.  You can import these APIs from the `os` package. For example:  ```mojo from std.os import setenv ```"
+description: "提供处理环境变量的函数。您可以从 `os` 包导入这些 API。例如：```mojo from std.os import setenv ```"
 ---
 
 # env
 
-Provides functions for working with environment variables.
+提供处理环境变量的函数。
 
-You can import these APIs from the `os` package. For example:
+您可以从 `os` 包导入这些 API。例如：
 
 ```mojo
 from std.os import setenv

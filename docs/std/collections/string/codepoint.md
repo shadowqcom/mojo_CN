@@ -1,16 +1,15 @@
 ---
 title: "codepoint"
 sidebar_label: "codepoint"
-description: "Unicode codepoint handling.  This module provides the `Codepoint` type for representing single Unicode scalar values. A codepoint represents a single Unicode character, restricted to valid Unicode sca"
+description: "Unicode 码点处理。此模块提供 `Codepoint` 类型，用于表示单个 Unicode 标量值。码点表示单个 Unicode 字符，限制为有效的 Unicode 标量值。"
 ---
 
 # codepoint
 
-Unicode codepoint handling.
+Unicode 码点处理。
 
-This module provides the `Codepoint` type for representing single Unicode scalar values.
-A codepoint represents a single Unicode character, restricted to valid Unicode scalar
-values in the ranges `0` to `0xD7FF` and `0xE000` to `0x10FFFF` inclusive.
+此模块提供 `Codepoint` 类型，用于表示单个 Unicode 标量值。
+码点表示单个 Unicode 字符，限制为 `0` 到 `0xD7FF` 和 `0xE000` 到 `0x10FFFF` 范围内的有效 Unicode 标量值。
 
 ## 类型
 

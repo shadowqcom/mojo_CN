@@ -1,14 +1,14 @@
 ---
 title: "span"
 sidebar_label: "span"
-description: "Implements the `Span` type.  You can import these APIs from the `memory` module. For example:  ```mojo from std.memory import Span ```"
+description: "实现 `Span` 类型。您可以从 `memory` 模块导入这些 API。例如：```mojo from std.memory import Span ```"
 ---
 
 # span
 
-Implements the `Span` type.
+实现 `Span` 类型。
 
-You can import these APIs from the `memory` module. For example:
+您可以从 `memory` 模块导入这些 API。例如：
 
 ```mojo
 from std.memory import Span

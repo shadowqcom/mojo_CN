@@ -1,19 +1,12 @@
 ---
-title: Intro to pointers
+title: 指针简介
 sidebar_position: 1
-description: An overview of accessing memory using Mojo's pointer types.
+description: 概述如何使用 Mojo 的指针类型访问内存。
 ---
 
-A pointer is an indirect reference to one or more values stored in memory. The
-pointer is a value that holds an address to memory, and provides APIs to store
-and retrieve values to that memory. The value pointed to by a pointer is also
-known as a _pointee_.
+指针是对存储在内存中的一个或多个值的间接引用。指针是一个持有内存地址的值，并提供 API 来在该内存中存储和检索值。指针所指向的值也被称为_被指物_（pointee）。
 
-The Mojo standard library includes several types of pointers, which provide
-different sets of features. All of these pointer types are _generic_—they can
-point to any type of value, and the value type is specified as a parameter. For
-example, the following code creates an `OwnedPointer` that points to an `Int`
-value:
+Mojo 标准库包含多种指针类型，它们提供不同的功能集。所有这些指针类型都是_泛型_的——它们可以指向任何类型的值，值类型以参数的形式指定。例如，以下代码创建了一个指向 `Int` 值的 `OwnedPointer`：
 
 ```mojo
 from std.memory import OwnedPointer
@@ -22,8 +15,7 @@ var ptr: OwnedPointer[Int]
 ptr = OwnedPointer(100)
 ```
 
-The `ptr` variable has a value of type `OwnedPointer[Int]`. The pointer _points
-to_ a value of type `Int`, as shown in Figure 1.
+变量 `ptr` 的类型为 `OwnedPointer[Int]`。该指针_指向_一个 `Int` 类型的值，如图 1 所示。
 
 {/*  markdownlint-disable MD033 MD045  */}
 <figure>
@@ -31,87 +23,58 @@ to_ a value of type `Int`, as shown in Figure 1.
 ![](../images/owned-pointer-diagram.png#light)
 ![](../images/owned-pointer-diagram-dark.png#dark)
 
-<figcaption><b>Figure 1.</b> Pointer and pointee</figcaption>
+<figcaption><b>图 1.</b> 指针与被指物</figcaption>
 </figure>
 {/*  markdownlint-enable MD033 MD045  */}
 
-Accessing the memory—to retrieve or update a value—is called
-_dereferencing_ the pointer. You can dereference a pointer by following the
-variable name with an empty pair of square brackets:
+访问内存——检索或更新值——被称为_解引用_指针。你可以在变量名后跟一对空的方括号来解引用指针：
 
 ```mojo
-# Update an initialized value
+# 更新已初始化的值
 ptr[] += 10
-# Access an initialized value
+# 访问已初始化的值
 print(ptr[])
 ```
 
-## Pointer terminology
+## 指针术语
 
-Before we jump into the pointer types, here are a few terms you'll run across.
-Some of them may already be familiar to you.
+在深入了解指针类型之前，以下是一些你会遇到的术语。其中一些你可能已经熟悉了。
 
-- **Safe pointers**: are designed to prevent memory errors. Unless you use one
-  of the APIs that are specially designated as unsafe, you can use these
-  pointers without worrying about memory issues like double-free or
-  use-after-free.
+- **安全指针**：旨在防止内存错误。除非你使用特别标记为不安全的 API，否则你可以放心使用这些指针，不必担心双重释放或释放后使用等内存问题。
 
-- **Nullable pointers**: can point to an invalid memory location (typically 0,
-or a "null pointer"). None of the standard library pointer types are nullable.
-To model a nullable pointer, use `Optional[UnsafePointer]`.
+- **可空指针**：可以指向无效的内存位置（通常为 0，即"空指针"）。标准库中的指针类型都不可空。要模拟可空指针，请使用 `Optional[UnsafePointer]`。
 
-- **Smart pointers**: own their pointees, which means that the value they point
-  to may be deallocated when the pointer itself is destroyed. Non-owning
-  pointers may point to values owned elsewhere, or may require some manual
-  management of the value lifecycle.
+- **智能指针**：拥有其被指物的所有权，这意味着当指针本身被销毁时，它所指向的值可能会被释放。非拥有指针可能指向由其他地方拥有的值，或者可能需要手动管理值的生命周期。
 
-- **Memory allocation**: some pointer types can allocate memory to store their
-  pointees, while other pointers can only point to pre-existing values. Memory
-  allocation can either be implicit (that is, performed automatically when
-  initializing a pointer with a value) or explicit.
+- **内存分配**：某些指针类型可以分配内存来存储其被指物，而其他指针只能指向预先存在的值。内存分配可以是隐式的（即在用值初始化指针时自动执行），也可以是显式的。
 
-- **Uninitialized memory**: refers to memory locations that haven't been
-  initialized with a value, which may therefore contain random data.
-  Newly-allocated memory is uninitialized. The safe pointer types don't allow
-  users to access memory that's uninitialized. Unsafe pointers can allocate a
-  block of uninitialized memory locations and then initialize them one at a
-  time. Being able to access uninitialized memory is unsafe by definition.
+- **未初始化内存**：指尚未用值初始化的内存位置，因此可能包含随机数据。新分配的内存是未初始化的。安全指针类型不允许用户访问未初始化的内存。不安全指针可以分配一块未初始化的内存位置，然后逐一初始化它们。能够访问未初始化的内存本质上就是不安全的。
 
-- **Copyable types**: can be copied implicitly (for example, by assigning a
-  value to a variable). Also called _implicitly copyable types_.
+- **可复制类型**：可以隐式复制（例如，通过将值赋给变量）。也称为_隐式可复制类型_。
 
   ```mojo
   copied_ptr = ptr
   ```
 
-  _Explicitly copyable_ types require the user to request a copy, using a
-    constructor with a keyword argument:
+  _显式可复制_类型要求用户使用带关键字参数的构造函数来请求复制：
 
   ```mojo
   copied_owned_ptr = OwnedPointer(other=owned_ptr)
   ```
 
-## Pointer types
+## 指针类型
 
-The Mojo standard library includes several pointer types with different
-characteristics:
+Mojo 标准库包含多种具有不同特性的指针类型：
 
-- [`Pointer`](/docs/std/memory/pointer/Pointer/) is a safe pointer that points
-  to a single value that it doesn't own.
+- [`Pointer`](/docs/std/memory/pointer/Pointer/) 是一种安全指针，指向它不拥有的单个值。
 
-- [`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) is a smart
-  pointer that points to a single value, and maintains exclusive ownership of
-  that value.
+- [`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) 是一种智能指针，指向单个值，并维护对该值的独占所有权。
 
-- [`ArcPointer`](/docs/std/memory/arc_pointer/ArcPointer/) is a
-  reference-counted smart pointer that points to an owned value with ownership
-  potentially shared with other instances of `ArcPointer`.
+- [`ArcPointer`](/docs/std/memory/arc_pointer/ArcPointer/) 是一种引用计数智能指针，指向一个拥有的值，该值的所有权可能与其他 `ArcPointer` 实例共享。
 
-- [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) points to
-  one or more consecutive memory locations, and can refer to uninitialized
-  memory.
+- [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 指向一个或多个连续的内存位置，并且可以引用未初始化的内存。
 
-Table 1 summarizes the different types of pointers:
+表 1 总结了不同类型的指针：
 
 {/*  markdownlint-disable MD033  */}
 {/*  markdownlint-disable MD013  */}
@@ -119,49 +82,38 @@ Table 1 summarizes the different types of pointers:
 
 |                                                  | `Pointer` | `OwnedPointer`          | `ArcPointer`            | `UnsafePointer` |
 |--------------------------------------------------|-----------|-------------------------|-------------------------|-----------------|
-| Safe                                             | Yes       | Yes                     | Yes                     | No              |
-| Allocates memory                                 | No        | Implicitly <sup>1</sup> | Implicitly <sup>1</sup> | Explicitly      |
-| Owns pointee(s)                                  | No        | Yes                     | Yes                     | No <sup>2</sup> |
-| Copyable                                         | Yes       | No <sup>3</sup>         | Yes                     | Yes             |
-| Nullable                                         | No        | No                      | No                      | No              |
-| Can point to uninitialized memory                | No        | No                      | No                      | Yes             |
-| Can point to multiple values (array-like access) | No        | No                      | No                      | Yes             |
+| 安全                                             | 是       | 是                     | 是                     | 否              |
+| 分配内存                                         | 否        | 隐式 <sup>1</sup> | 隐式 <sup>1</sup> | 显式      |
+| 拥有被指物                                  | 否        | 是                     | 是                     | 否 <sup>2</sup> |
+| 可复制                                         | 是       | 否 <sup>3</sup>         | 是                     | 是             |
+| 可空                                         | 否        | 否                      | 否                      | 否              |
+| 可指向未初始化内存                | 否        | 否                      | 否                      | 是             |
+| 可指向多个值（类数组访问） | 否        | 否                      | 否                      | 是             |
 
-<figcaption><b>Table 1.</b> Pointer types</figcaption>
+<figcaption><b>表 1.</b> 指针类型</figcaption>
 </figure>
 
-<sup>1</sup> `OwnedPointer` and `ArcPointer` implicitly allocate memory when you
-initialize the pointer with a value.
+<sup>1</sup> 当你用值初始化指针时，`OwnedPointer` 和 `ArcPointer` 会隐式分配内存。
 
-<sup>2</sup> `UnsafePointer` provides unsafe methods for initializing and
-destroying instances of the stored type. The user is responsible for managing
-the lifecycle of stored values.
+<sup>2</sup> `UnsafePointer` 提供了不安全的方法来初始化和销毁存储类型的实例。用户负责管理存储值的生命周期。
 
-<sup>3</sup> `OwnedPointer` is explicitly copyable, but explicitly copying an
-`OwnedPointer` copies the _stored value_ into a new `OwnedPointer`.
+<sup>3</sup> `OwnedPointer` 是显式可复制的，但显式复制 `OwnedPointer` 会复制_存储的值_到一个新的 `OwnedPointer` 中。
 {/*  markdownlint-enable MD013  */}
 {/*  markdownlint-enable MD033  */}
 
-The following sections provide more details on each pointer type.
+以下各节提供了每种指针类型的更多细节。
 
 ## `Pointer`
 
-The [`Pointer`](/docs/std/memory/pointer/Pointer/) type is a safe pointer that
-points to an initialized value that it doesn't own. Some example use cases for a
-`Pointer` include:
+[`Pointer`](/docs/std/memory/pointer/Pointer/) 类型是一种安全指针，指向它不拥有的已初始化值。`Pointer` 的一些示例用例包括：
 
-- Storing a reference to a related type. For example, a list's iterator object
-might hold a `Pointer` back to the original list.
+- 存储对相关类型的引用。例如，列表的迭代器对象可能持有一个指向原始列表的 `Pointer`。
 
-- Passing the memory location for a single value to external code via
-`external_call()`.
+- 通过 `external_call()` 将单个值的内存位置传递给外部代码。
 
-- Where you need an API to return a long-lived reference to a value. (Currently
-the iterators for standard library collection types like `List` return
-pointers.)
+- 需要一个 API 返回对值的长生命周期引用的情况。（目前标准库集合类型如 `List` 的迭代器返回指针。）
 
-You can construct a `Pointer` to an existing value by calling the constructor
-with the `to` keyword argument:
+你可以通过使用 `to` 关键字参数调用构造函数来构造一个指向现有值的 `Pointer`：
 
 ```mojo
 from std.memory import Pointer
@@ -169,18 +121,13 @@ from std.memory import Pointer
 ptr = Pointer(to=some_value)
 ```
 
-You can also create a `Pointer` by copying an existing `Pointer`.
+你也可以通过复制现有的 `Pointer` 来创建一个 `Pointer`。
 
-A `Pointer` carries an [`origin`](/docs/manual/values/lifetimes/) for the stored
-value, so Mojo can track the lifetime of the referenced value.
+`Pointer` 携带存储值的[`来源`](/docs/manual/values/lifetimes/)，因此 Mojo 可以跟踪被引用值的生命周期。
 
 ## `OwnedPointer`
 
-The [`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) type is a
-smart pointer designed for cases where there is single ownership of the
-underlying data. An `OwnedPointer` points to a single item, which is passed in
-when you initialize the `OwnedPointer`. The `OwnedPointer` allocates memory and
-moves or copies the value into the reserved memory.
+[`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) 类型是一种智能指针，专为底层数据单一所有权的场景而设计。`OwnedPointer` 指向单个项目，该项目在你初始化 `OwnedPointer` 时传入。`OwnedPointer` 分配内存并将值移动或复制到预留的内存中。
 
 ```mojo
 from std.memory import OwnedPointer
@@ -188,26 +135,15 @@ from std.memory import OwnedPointer
 o_ptr = OwnedPointer(some_big_struct)
 ```
 
-An owned pointer can hold almost any type of item, but when constructing an
-`OwnedPointer`, the stored item must be either `Movable` or `Copyable`.
+拥有指针几乎可以持有任何类型的项目，但在构造 `OwnedPointer` 时，存储的项目必须是 `Movable` 或 `Copyable` 的。
 
-Since an `OwnedPointer` is designed to enforce single ownership, the pointer
-itself can be moved, but not copied.
+由于 `OwnedPointer` 旨在强制单一所有权，指针本身可以移动，但不能复制。
 
-Note: Currently, you can't create an `Optional[OwnedPointer[T]]` because the
-`Optional` type only works with types that are both movable and copyable. This
-restricts some use cases that would otherwise be a natural fit
-for `OwnedPointer`, including self-referential data structures like linked lists
-and trees. (Until this use case is supported for `OwnedPointer`, it's possible
-to use `ArcPointer` where you need a smart pointer that can be `Optional`.)
+注意：目前，你无法创建 `Optional[OwnedPointer[T]]`，因为 `Optional` 类型仅适用于既可移动又可复制的类型。这限制了某些本应是 `OwnedPointer` 自然适用场景的用例，包括自引用数据结构如链表和树。（在 `OwnedPointer` 支持此用例之前，可以在需要可 `Optional` 的智能指针时使用 `ArcPointer`。）
 
 ## `ArcPointer`
 
-An [`ArcPointer`](/docs/std/memory/arc_pointer/ArcPointer/) is a
-reference-counted smart pointer, ideal for shared resources where the last owner
-for a given value may not be clear. Like an `OwnedPointer`, it points to a
-single value, and it allocates memory when you initialize the `ArcPointer` with
-a value:
+[`ArcPointer`](/docs/std/memory/arc_pointer/ArcPointer/) 是一种引用计数智能指针，非常适合共享资源的场景，其中给定值的最后一个所有者可能不明确。与 `OwnedPointer` 类似，它指向单个值，并在你用值初始化 `ArcPointer` 时分配内存：
 
 ```mojo
 from std.memory import ArcPointer
@@ -216,16 +152,9 @@ attributesDict: Dict[String, String] = {}
 attributes = ArcPointer(attributesDict)
 ```
 
-Unlike an `OwnedPointer`, an `ArcPointer` can be freely copied. All instances
-of a given `ArcPointer` share a reference count, which is incremented whenever
-the `ArcPointer` is copied and decremented whenever an instance is destroyed.
-When the reference count reaches zero, the stored value is destroyed and the
-allocated memory is freed.
+与 `OwnedPointer` 不同，`ArcPointer` 可以自由复制。给定 `ArcPointer` 的所有实例共享一个引用计数，每当 `ArcPointer` 被复制时引用计数递增，每当实例被销毁时引用计数递减。当引用计数降为零时，存储的值被销毁，分配的内存被释放。
 
-You can use `ArcPointer` to implement safe reference-semantic types. For
-example, in the following code snippet `SharedDict` uses an `ArcPointer` to
-store a dictionary. Copying an instance of `SharedDict` only copies the
-`ArcPointer`, not the dictionary, which is shared between all of the copies.
+你可以使用 `ArcPointer` 来实现安全的引用语义类型。例如，在以下代码片段中，`SharedDict` 使用 `ArcPointer` 来存储字典。复制 `SharedDict` 的实例只会复制 `ArcPointer`，而不会复制字典，字典在所有副本之间共享。
 
 ```mojo
 from std.memory import ArcPointer
@@ -253,35 +182,16 @@ def main():
     print(thing2["Flip"])
 ```
 
-Note: The reference count is stored using an
-[`Atomic`](/docs/std/atomic/atomic/Atomic/)
-value to ensure that updates to the reference count are thread-safe. However,
-Mojo doesn't currently enforce exclusive access across thread boundaries, so
-it's possible to form race conditions.
+注意：引用计数使用 [`Atomic`](/docs/std/atomic/atomic/Atomic/) 值存储，以确保引用计数的更新是线程安全的。然而，Mojo 目前不强制跨线程边界的独占访问，因此仍有可能形成竞态条件。
 
 ## UnsafePointer
 
-[`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) is a
-low-level pointer that can access a block of contiguous memory locations, which
-might be uninitialized. It's analogous to a raw pointer in the C and C++
-programming languages. `UnsafePointer` provides unsafe methods for initializing
-and destroying stored values, as well as for accessing the values once they're
-initialized.
+[`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 是一种低级指针，可以访问一块连续的内存位置，这些内存可能是未初始化的。它类似于 C 和 C++ 编程语言中的原始指针。`UnsafePointer` 提供了不安全的方法来初始化和销毁存储的值，以及在值初始化后访问它们。
 
-As the name suggests, `UnsafePointer` doesn't provide any memory safety
-guarantees, so you should reserve it for cases when none of the other pointer
-types will do the job. Here are some use cases where you might want to use an
-`UnsafePointer`:
+顾名思义，`UnsafePointer` 不提供任何内存安全保证，因此你应该将其保留给其他指针类型无法胜任的情况。以下是一些你可能需要使用 `UnsafePointer` 的用例：
 
-- Building a high-performance array-like structure, such as `List` or `Tensor`.
-  A single `UnsafePointer` can access many values, and gives you a lot of
-  control over how you allocate, use, and deallocate memory. Being able to
-  access uninitialized memory means that you can preallocate a block of memory,
-  and initialize values incrementally as they are added to the collection.
+- 构建高性能的类数组结构，如 `List` 或 `Tensor`。单个 `UnsafePointer` 可以访问多个值，并让你对内存的分配、使用和释放拥有很大的控制权。能够访问未初始化的内存意味着你可以预分配一块内存，并在值添加到集合时逐步初始化它们。
 
-- Interacting with external libraries including C++ and Python. You can
-  use`UnsafePointer` to pass a buffer full of data to or from an external
-  library.
+- 与外部库（包括 C++ 和 Python）交互。你可以使用 `UnsafePointer` 向外部库传递或从外部库接收充满数据的缓冲区。
 
-For more information, see [Unsafe
-pointers](/docs/manual/pointers/unsafe-pointers).
+更多信息请参阅[不安全指针](/docs/manual/pointers/unsafe-pointers)。

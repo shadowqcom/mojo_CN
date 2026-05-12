@@ -1,53 +1,36 @@
 ---
-title: GPU programming fundamentals
-sidebar_label: Programming fundamentals
-description: A description of the fundamental GPU APIs in Mojo.
+title: GPU 编程基础
+sidebar_label: 编程基础
+description: Mojo 中基本 GPU API 的描述。
 ---
 
-This guide explores the fundamentals of GPU programming using the Mojo
-programming language, covering essential concepts and techniques for developing
-GPU-accelerated applications that can work on a variety of supported GPUs from
-different vendors.
+本指南探讨了使用 Mojo 编程语言进行 GPU 编程的基础知识，涵盖了开发 GPU 加速应用程序的基本概念和技术，这些应用程序可以在来自不同供应商的各种受支持 GPU 上运行。
 
-Key topics covered in this guide:
+本指南涵盖的关键主题：
 
-- Understanding the CPU-GPU programming model.
-- Working with Mojo's GPU support through the standard library.
-- Managing GPU devices and contexts using `DeviceContext`.
-- Writing and executing kernel functions for parallel computation.
-- Memory management and data transfer between CPU and GPU.
-- Organizing threads and thread blocks for optimal performance.
+- 理解 CPU-GPU 编程模型。
+- 通过标准库使用 Mojo 的 GPU 支持。
+- 使用 `DeviceContext` 管理 GPU 设备和上下文。
+- 编写和执行内核函数以进行并行计算。
+- 内存管理以及 CPU 和 GPU 之间的数据传输。
+- 组织线程和线程块以实现最佳性能。
 
-Before diving into GPU programming, ensure you have a [compatible
-GPU](/docs/requirements#gpu-compatibility) and the necessary development
-environment installed. And if you're new to GPU programming, we suggest you
-read the [Intro to GPU architectures](/docs/manual/gpu/architecture/).
+在深入 GPU 编程之前，请确保你拥有[兼容的 GPU](/docs/requirements#gpu-compatibility)并安装了必要的开发环境。如果你是 GPU 编程的新手，我们建议你先阅读 [GPU 架构简介](/docs/manual/gpu/architecture/)。
 
-## Overview of GPU programming in Mojo
+## Mojo 中的 GPU 编程概述
 
-The Mojo language, including its standard library and open source MAX kernels
-library, allow you to develop GPU-enabled applications.
+Mojo 语言，包括其标准库和开源 MAX 内核库，允许你开发支持 GPU 的应用程序。
 
-### GPU support in the Mojo standard library
+### Mojo 标准库中的 GPU 支持
 
-The [`gpu`](/docs/std/gpu/) package of the Mojo standard library includes
-several subpackages for interacting with GPUs, with the
-[`gpu.host`](/docs/std/gpu/host/) package providing most of the commonly used
-APIs. However, the [`sys`](/docs/std/sys/info/) package contains a few basic
-introspection functions for determining whether a system has a supported GPU:
+Mojo 标准库的 [`gpu`](/docs/std/gpu/) 包包含多个用于与 GPU 交互的子包，其中 [`gpu.host`](/docs/std/gpu/host/) 包提供了最常用的 API。不过，[`sys`](/docs/std/sys/info/) 包包含一些基本的内省函数，用于确定系统是否具有受支持的 GPU：
 
-- [`has_accelerator()`](/docs/std/sys/info/has_accelerator/): Returns `True`
-  if the host system has an accelerator and `False` otherwise.
-- [`has_amd_gpu_accelerator()`](/docs/std/sys/info/has_amd_gpu_accelerator/):
-  Returns `True` if the host system has an AMD GPU and `False` otherwise.
-- [`has_apple_gpu_accelerator()`](/docs/std/sys/info/has_apple_gpu_accelerator/):
-  Returns `True` if the host system has an Apple silicon GPU and `False`
-  otherwise.
-- [`has_nvidia_gpu_accelerator()`](/docs/std/sys/info/has_nvidia_gpu_accelerator/):
-  Returns `True` if the host system has an NVIDIA GPU and `False` otherwise.
+- [`has_accelerator()`](/docs/std/sys/info/has_accelerator/)：如果主机系统有加速器则返回 `True`，否则返回 `False`。
+- [`has_amd_gpu_accelerator()`](/docs/std/sys/info/has_amd_gpu_accelerator/)：如果主机系统有 AMD GPU 则返回 `True`，否则返回 `False`。
+- [`has_apple_gpu_accelerator()`](/docs/std/sys/info/has_apple_gpu_accelerator/)：如果主机系统有 Apple 芯片 GPU 则返回 `True`，否则返回 `False`。
+- [`has_nvidia_gpu_accelerator()`](/docs/std/sys/info/has_nvidia_gpu_accelerator/)：如果主机系统有 NVIDIA GPU 则返回 `True`，否则返回 `False`。
 
-These functions are useful for conditional compilation or execution depending on
-whether a supported GPU is available.
+这些函数对于根据是否有受支持的 GPU 来进行条件编译或执行非常有用。
 
 ```mojo title="detect_gpu.mojo"
 from std.sys import has_accelerator
@@ -55,23 +38,15 @@ from std.sys import has_accelerator
 def main():
     comptime if has_accelerator():
         print("GPU detected")
-        # Enable GPU processing
+        # 启用 GPU 处理
     else:
         print("No GPU detected")
-        # Print error or fall back to CPU-only execution
+        # 打印错误或回退到仅 CPU 执行
 ```
 
 :::note
 
-Mojo requires a
-[compatible GPU development environment](/docs/requirements/#gpu-compatibility)
-to compile kernel functions, otherwise it raises a compile-time error. In this
-example, we're using the
-[`comptime if`](/docs/manual/metaprogramming/comptime-evaluation/#comptime-if)
-statement to evaluate the `has_accelerator()` function at compile time and
-compile only the corresponding branch of the `if` statement. As a result, if you
-don't have a compatible GPU development environment, you'll see the following
-message when you run the program:
+Mojo 需要[兼容的 GPU 开发环境](/docs/requirements/#gpu-compatibility)才能编译内核函数，否则会引发编译时错误。在这个示例中，我们使用 [`comptime if`](/docs/manual/metaprogramming/comptime-evaluation/#comptime-if) 语句在编译时评估 `has_accelerator()` 函数，并仅编译 `if` 语句的对应分支。因此，如果你没有兼容的 GPU 开发环境，运行程序时会看到以下消息：
 
 ```output
 No GPU detected
@@ -79,33 +54,24 @@ No GPU detected
 
 :::
 
-### GPU programming model
+### GPU 编程模型
 
-GPU programming follows a distinct pattern where work is divided between the CPU
-and GPU:
+GPU 编程遵循一种独特的模式，工作在 CPU 和 GPU 之间进行分工：
 
-- The CPU (host) manages program flow and coordinates GPU operations.
-- The GPU (device) executes parallel computations across many threads.
-- You must explicitly manage data exchange between host and device memory.
+- CPU（主机）管理程序流程并协调 GPU 操作。
+- GPU（设备）在许多线程上执行并行计算。
+- 你必须显式管理主机和设备内存之间的数据交换。
 
-A GPU program generally follows these steps:
+GPU 程序通常遵循以下步骤：
 
-1. Initialize data in host (CPU) memory.
-2. Allocate device (GPU) memory and transfer data from host to device memory.
-3. Execute a kernel function on the GPU to process the data.
-4. Transfer results back from device to host memory.
+1. 在主机（CPU）内存中初始化数据。
+2. 分配设备（GPU）内存并将数据从主机内存传输到设备内存。
+3. 在 GPU 上执行内核函数以处理数据。
+4. 将结果从设备内存传输回主机内存。
 
-This process typically runs asynchronously, allowing the CPU to perform other
-tasks while the GPU processes data. Any time that the CPU needs to ensure that
-the GPU has completed an operation, such as before it copies kernel results from
-device memory, it must first explicitly synchronize with the GPU as described in
-[Asynchronous operation and synchronizing the CPU and
-GPU](#asynchronous-operation-and-synchronizing-the-cpu-and-gpu).
+此过程通常异步运行，允许 CPU 在 GPU 处理数据时执行其他任务。每当 CPU 需要确保 GPU 已完成操作时（例如在从设备内存复制内核结果之前），必须先与 GPU 显式同步，如[异步操作与 CPU 和 GPU 同步](#asynchronous-operation-and-synchronizing-the-cpu-and-gpu)中所述。
 
-A simple example helps to understand this programming model. We'll not go into
-detail about the specific APIs at this point other than the included comments,
-but all of the types, functions, and methods are discussed in more detail in
-later sections of this document.
+一个简单的示例有助于理解这种编程模型。此时我们不会详细介绍具体的 API，仅通过注释说明，所有类型、函数和方法将在本文档的后续章节中详细讨论。
 
 ```mojo title="scalar_add.mojo"
 from std.math import iota
@@ -122,32 +88,30 @@ def scalar_add(
     scalar: Float32,
 ):
     """
-    Kernel function to add a scalar to all elements of a vector.
+    将标量加到向量所有元素上的内核函数。
 
-    This kernel function adds a scalar value to each element of a vector stored
-    in GPU memory. The input vector is modified in place.
+    此内核函数将一个标量值加到存储在 GPU 内存中的向量的每个元素上。
+    输入向量会被原地修改。
 
     Args:
-        vector: Pointer to the input vector.
-        size: Number of elements in the vector.
-        scalar: Scalar to add to the vector.
+        vector: 指向输入向量的指针。
+        size: 向量中的元素数量。
+        scalar: 要加到向量上的标量值。
 
     """
 
-    # Calculate the global thread index within the entire grid. Each thread
-    # processes one element of the vector.
+    # 计算整个网格内的全局线程索引。每个线程处理向量的一个元素。
     #
-    # block_idx.x: index of the current thread block.
-    # block_dim.x: number of threads per block.
-    # thread_idx.x: index of the current thread within its block.
+    # block_idx.x: 当前线程块的索引。
+    # block_dim.x: 每个块的线程数。
+    # thread_idx.x: 当前线程在其块内的索引。
     idx = block_idx.x * block_dim.x + thread_idx.x
 
-    # Bounds checking: ensure we don't access memory beyond the vector size.
-    # This is crucial when the number of threads doesn't exactly match vector
-    # size.
+    # 边界检查：确保不会访问超出向量大小的内存。
+    # 当线程数与向量大小不完全匹配时，这非常关键。
     if idx < size:
-        # Each thread adds the scalar to its corresponding vector element
-        # This operation happens in parallel across all GPU threads
+        # 每个线程将标量加到其对应的向量元素上
+        # 此操作在所有 GPU 线程上并行执行
         vector[idx] += scalar
 
 
@@ -156,38 +120,38 @@ def main() raises:
         print("No GPUs detected")
         exit(0)
     else:
-        # Initialize GPU context for device 0 (default GPU device).
+        # 为设备 0（默认 GPU 设备）初始化 GPU 上下文。
         ctx = DeviceContext()
 
-        # Create a buffer in host (CPU) memory to store our input data
+        # 在主机（CPU）内存中创建缓冲区以存储输入数据
         host_buffer = ctx.enqueue_create_host_buffer[DType.float32](
             num_elements
         )
 
-        # Wait for buffer creation to complete.
+        # 等待缓冲区创建完成。
         ctx.synchronize()
 
-        # Fill the host buffer with sequential numbers (0, 1, 2, ..., size-1).
+        # 用连续数字（0, 1, 2, ..., size-1）填充主机缓冲区。
         iota(host_buffer.as_span())
         print("Original host buffer:", host_buffer)
 
-        # Create a buffer in device (GPU) memory to store data for computation.
+        # 在设备（GPU）内存中创建缓冲区以存储计算数据。
         device_buffer = ctx.enqueue_create_buffer[DType.float32](num_elements)
 
-        # Copy data from host memory to device memory for GPU processing.
+        # 将数据从主机内存复制到设备内存以进行 GPU 处理。
         ctx.enqueue_copy(src_buf=host_buffer, dst_buf=device_buffer)
 
-        # Compile the scalar_add kernel function for execution on the GPU.
+        # 编译 scalar_add 内核函数以在 GPU 上执行。
         scalar_add_kernel = ctx.compile_function[scalar_add]()
 
-        # Launch the GPU kernel with the following arguments:
+        # 使用以下参数启动 GPU 内核：
         #
-        # - device_buffer: GPU memory containing our vector data
-        # - num_elements: number of elements in the vector
-        # - Float32(20.0): the scalar value to add to each element
-        # - grid_dim=1: use 1 thread block
-        # - block_dim=num_elements: use 'num_elements' threads per block (one
-        #   thread per vector element)
+        # - device_buffer: 包含向量数据的 GPU 内存
+        # - num_elements: 向量中的元素数量
+        # - Float32(20.0): 要加到每个元素上的标量值
+        # - grid_dim=1: 使用 1 个线程块
+        # - block_dim=num_elements: 每个块使用 'num_elements' 个线程
+        #   （每个向量元素一个线程）
         ctx.enqueue_function(
             scalar_add_kernel,
             device_buffer,
@@ -197,135 +161,90 @@ def main() raises:
             block_dim=num_elements,
         )
 
-        # Copy the computed results back from device memory to host memory.
+        # 将计算结果从设备内存复制回主机内存。
         ctx.enqueue_copy(src_buf=device_buffer, dst_buf=host_buffer)
 
-        # Wait for all GPU operations to complete.
+        # 等待所有 GPU 操作完成。
         ctx.synchronize()
 
-        # Display the final results after GPU computation.
+        # 显示 GPU 计算后的最终结果。
         print("Modified host buffer:", host_buffer)
 ```
 
-This application produces the following output:
+此应用程序产生以下输出：
 
 ```output
 Original host buffer: HostBuffer([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0])
 Modified host buffer: HostBuffer([20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0, 31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0, 38.0, 39.0])
 ```
 
-## Accessing and managing GPUs with `DeviceContext`
+## 使用 `DeviceContext` 访问和管理 GPU
 
-The [`gpu.host`](/docs/std/gpu/host/) package includes the
-[`DeviceContext`](/docs/std/gpu/host/device_context/DeviceContext/) struct,
-which represents a logical instance of a GPU device. It provides methods for
-allocating memory on the device, copying data between the host CPU and the GPU,
-and compiling and running functions (also known as *kernels*) on the device.
+[`gpu.host`](/docs/std/gpu/host/) 包包含 [`DeviceContext`](/docs/std/gpu/host/device_context/DeviceContext/) 结构体，它表示 GPU 设备的逻辑实例。它提供了在设备上分配内存、在主机 CPU 和 GPU 之间复制数据以及编译和运行函数（也称为*内核*）的方法。
 
-### Creating an instance of `DeviceContext` to access a GPU
+### 创建 `DeviceContext` 实例以访问 GPU
 
-Mojo supports systems with multiple GPUs. GPUs are uniquely identified by
-integer indices starting with `0`, which is considered the "default" device. You
-can determine the number of GPUs available by invoking the
-[`DeviceContext.number_of_devices()`](/docs/std/gpu/host/device_context/DeviceContext/#number_of_devices)
-static method.
+Mojo 支持具有多个 GPU 的系统。GPU 通过从 `0` 开始的整数索引唯一标识，`0` 被视为"默认"设备。你可以通过调用 [`DeviceContext.number_of_devices()`](/docs/std/gpu/host/device_context/DeviceContext/#number_of_devices) 静态方法来确定可用的 GPU 数量。
 
-The `DeviceContext()` constructor returns an instance for interacting with a
-specified GPU. It accepts two optional arguments:
+`DeviceContext()` 构造函数返回一个用于与指定 GPU 交互的实例。它接受两个可选参数：
 
-- `device_id`: An integer index of a specific GPU on the system. The default
-  value of 0 refers to the "default" GPU for the system.
-- `api`: A `String` specifying a particular vendor's API. "cuda" (NVIDIA), "hip"
-  (AMD), and "metal" (Apple) are currently supported.
+- `device_id`：系统上特定 GPU 的整数索引。默认值 0 表示系统的"默认" GPU。
+- `api`：指定特定供应商 API 的 `String`。目前支持 "cuda"（NVIDIA）、"hip"（AMD）和 "metal"（Apple）。
 
-If your system doesn't have a supported GPU—or doesn't have a GPU matching the
-`device_id` or `api`, if provided—then the constructor raises an error.
+如果你的系统没有受支持的 GPU——或者没有与提供的 `device_id` 或 `api` 匹配的 GPU——则构造函数会引发错误。
 
-### Asynchronous operation and synchronizing the CPU and GPU
+### 异步操作与 CPU 和 GPU 同步
 
-Typical CPU-GPU interaction is asynchronous, allowing the GPU to process tasks
-while the CPU is busy with other work. Each `DeviceContext` has an associated
-stream of queued operations to execute on the GPU. Operations within a stream
-execute in the order they are enqueued.
+典型的 CPU-GPU 交互是异步的，允许 GPU 在 CPU 忙于其他工作时处理任务。每个 `DeviceContext` 都有一个关联的操作队列流，用于在 GPU 上执行。流中的操作按入队顺序执行。
 
-The
-[`synchronize()`](/docs/std/gpu/host/device_context/DeviceContext/#synchronize)
-method blocks execution of the current CPU thread until all queued operations on
-the associated `DeviceContext` stream have completed. Most commonly, you use
-this to wait until the result of a kernel function is copied from device memory
-to host memory before accessing it on the host.
+[`synchronize()`](/docs/std/gpu/host/device_context/DeviceContext/#synchronize) 方法会阻塞当前 CPU 线程的执行，直到关联的 `DeviceContext` 流上的所有排队操作完成。最常见的是，你使用此方法在主机上访问内核函数结果之前，等待结果从设备内存复制到主机内存。
 
-## Kernel functions
+## 内核函数
 
-A GPU *kernel* is simply a function that runs on a GPU, executing a specific
-computation on a large dataset in parallel across thousands or millions of
-*threads*. You specify the number of threads when you execute a kernel function,
-and all threads run the same kernel function. However, the GPU assigns a unique
-thread index for each thread, and you use the thread index to determine which
-data elements an individual thread should process.
+GPU *内核*只是一个在 GPU 上运行的函数，在数千或数百万个*线程*上并行执行对大型数据集的特定计算。你在执行内核函数时指定线程数，所有线程都运行相同的内核函数。但是，GPU 为每个线程分配一个唯一的线程索引，你使用线程索引来确定单个线程应处理哪些数据元素。
 
-### Multidimensional grids and thread organization
+### 多维网格和线程组织
 
-As discussed in [GPU execution
-model](/docs/manual/gpu/architecture#gpu-execution-model), a *grid* is the
-top-level organizational structure of the threads executing a kernel function on
-a GPU. A grid consists of multiple *thread blocks*, which are organized across
-one, two, or three dimensions. Each thread block is further divided into
-individual threads, which are in turn organized across one, two, or three
-dimensions.
+如 [GPU 执行模型](/docs/manual/gpu/architecture#gpu-execution-model)中所述，*网格*是在 GPU 上执行内核函数的线程的顶层组织结构。网格由多个*线程块*组成，这些线程块在一维、二维或三维上组织。每个线程块进一步划分为各个线程，这些线程同样在一维、二维或三维上组织。
 
-You specify the grid and thread block dimensions with the `grid_dim` and
-`block_dim` keyword arguments when you enqueue a kernel function to execute
-using the
-[`enqueue_function()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_function)
-method. For example:
+当你使用 [`enqueue_function()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_function) 方法将内核函数入队执行时，通过 `grid_dim` 和 `block_dim` 关键字参数指定网格和线程块维度。例如：
 
 ```mojo
-# Enqueue the print_threads() kernel function
+# 将 print_threads() 内核函数入队
 ctx.enqueue_function[print_threads](
-    grid_dim=(2, 2, 1),   # 2x2x1 blocks per grid
-    block_dim=(4, 4, 2),  # 4x4x2 threads per block
+    grid_dim=(2, 2, 1),   # 每个网格 2x2x1 个块
+    block_dim=(4, 4, 2),  # 每个块 4x4x2 个线程
 )
 ```
 
-For both `grid_dim` and `block_dim`, you express the size in the `x`, `y`, and
-`z` dimensions as a [`Dim`](/docs/std/gpu/host/dim/Dim/) or a `Tuple`. The
-`y` and `z` dimensions default to 1 if you don't explicitly provide them (that
-is, `(2, 2)` is treated as `(2, 2, 1)` and `(8,)` is treated as `(8, 1, 1)`).
-You can also provide just an `Int` value to specify only the `x` dimension (that
-is, `64` is treated as `(64, 1, 1)`).
+对于 `grid_dim` 和 `block_dim`，你可以将 `x`、`y` 和 `z` 维度的大小表示为 [`Dim`](/docs/std/gpu/host/dim/Dim/) 或 `Tuple`。如果你不显式提供 `y` 和 `z` 维度，它们默认为 1（即 `(2, 2)` 被视为 `(2, 2, 1)`，`(8,)` 被视为 `(8, 1, 1)`）。你也可以只提供一个 `Int` 值来仅指定 `x` 维度（即 `64` 被视为 `(64, 1, 1)`）。
 
 <figure>
 
 ![](../images/gpu/multidimensional-grid.png#light)
 ![](../images/gpu/multidimensional-grid-dark.png#dark)
 
-<figcaption><b>Figure 1.</b> Organization of thread blocks and threads within a
-grid. </figcaption>
+<figcaption><b>图 1.</b> 网格内线程块和线程的组织方式。</figcaption>
 
 </figure>
 
-From within a kernel function, you can access the grid and thread block
-dimensions and the assigned thread block and thread indices of the individual
-threads executing the kernel using the following structures:
+在内核函数中，你可以使用以下结构访问网格和线程块维度，以及执行内核的各个线程被分配的线程块和线程索引：
 
-| Comptime value                                          | Description                                                                                                                                                                                                                                                |
+| 编译时值                                          | 描述                                                                                                                                                                                                                                                |
 |---------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`grid_dim`](/docs/std/gpu/primitives/id/#grid_dim)     | Dimensions of the grid as `x`, `y`, and `z` values (for example, `grid_dim.y`).                                                                                                                                                                            |
-| [`block_dim`](/docs/std/gpu/primitives/id/#block_dim)   | Dimensions of the thread block as `x`, `y`, and `z` values.                                                                                                                                                                                                |
-| [`block_idx`](/docs/std/gpu/primitives/id/#block_idx)   | Index of the block within the grid as `x`, `y`, and `z` values.                                                                                                                                                                                            |
-| [`thread_idx`](/docs/std/gpu/primitives/id/#thread_idx) | Index of the thread within the block as `x`, `y`, and `z` values.                                                                                                                                                                                          |
-| [`global_idx`](/docs/std/gpu/primitives/id/#global_idx) | The global offset of the thread as `x`, `y`, and `z` values. That is, `global_idx.x = block_dim.x * block_idx.x + thread_idx.x`, `global_idx.y = block_dim.y * block_idx.y + thread_idx.y`, and `global_idx.z = block_dim.z * block_idx.z + thread_idx.z`. |
+| [`grid_dim`](/docs/std/gpu/primitives/id/#grid_dim)     | 网格的维度，以 `x`、`y` 和 `z` 值表示（例如 `grid_dim.y`）。                                                                                                                                                                            |
+| [`block_dim`](/docs/std/gpu/primitives/id/#block_dim)   | 线程块的维度，以 `x`、`y` 和 `z` 值表示。                                                                                                                                                                                                |
+| [`block_idx`](/docs/std/gpu/primitives/id/#block_idx)   | 块在网格中的索引，以 `x`、`y` 和 `z` 值表示。                                                                                                                                                                                            |
+| [`thread_idx`](/docs/std/gpu/primitives/id/#thread_idx) | 线程在块中的索引，以 `x`、`y` 和 `z` 值表示。                                                                                                                                                                                          |
+| [`global_idx`](/docs/std/gpu/primitives/id/#global_idx) | 线程的全局偏移量，以 `x`、`y` 和 `z` 值表示。即 `global_idx.x = block_dim.x * block_idx.x + thread_idx.x`，`global_idx.y = block_dim.y * block_idx.y + thread_idx.y`，`global_idx.z = block_dim.z * block_idx.z + thread_idx.z`。 |
 
 :::note
 
-All of these dimensions and indices are
-[`Int`](/docs/std/builtin/int/Int/) values.
+所有这些维度和索引都是 [`Int`](/docs/std/builtin/int/Int/) 值。
 
 :::
 
-The following example shows a kernel function that prints the
-thread block index, thread index, and global index for each thread.
+以下示例展示了一个内核函数，它打印每个线程的线程块索引、线程索引和全局索引。
 
 ```mojo title="print_threads.mojo"
 from std.sys import has_accelerator
@@ -334,7 +253,7 @@ from std.gpu.host import DeviceContext
 from std.gpu import block_dim, block_idx, global_idx, thread_idx
 
 def print_threads():
-    """Print thread block and thread indices."""
+    """打印线程块和线程索引。"""
 
     print(
         block_idx.x,
@@ -356,23 +275,22 @@ def main() raises:
     comptime if not has_accelerator():
         print("No compatible GPU found")
     else:
-        # Initialize GPU context for device 0 (default GPU device).
+        # 为设备 0（默认 GPU 设备）初始化 GPU 上下文。
         ctx = DeviceContext()
 
         print("block_idx\t\tthread_idx\t\tglobal_idx\t\tcalculated global_idx")
         print("x\ty\tz", "x\ty\tz", "x\ty\tz", "x\ty\tz", sep="\t")
         print("-" * 20, "-" * 20, "-" * 20, "-" * 20, sep="\t")
         ctx.enqueue_function[print_threads](
-            grid_dim=(2, 2, 1),  # 2x2x1 blocks per grid
-            block_dim=(4, 4, 2),  # 4x4x2 threads per block
+            grid_dim=(2, 2, 1),  # 每个网格 2x2x1 个块
+            block_dim=(4, 4, 2),  # 每个块 4x4x2 个线程
         )
 
         ctx.synchronize()
         print("Done")
 ```
 
-This example produces output similar to the following (with the output order
-indeterminate because of the concurrent execution of multiple threads):
+此示例产生类似于以下的输出（由于多线程并发执行，输出顺序不确定）：
 
 ```output
 block_idx		thread_idx		global_idx		calculated global_idx
@@ -386,230 +304,116 @@ x	y	z	x	y	z	x	y	z	x	y	z
 Done
 ```
 
-:::note[Known limitation]
+:::note[已知限制]
 
-On Apple silicon GPUs, each `print()` call inside a GPU kernel currently
-supports at most one string literal argument. To ensure readable output across
-all GPU platforms, the examples here print numeric values only, with the host
-printing column headers before launching the kernel. This restriction doesn't
-apply to NVIDIA or AMD GPUs.
+在 Apple 芯片 GPU 上，GPU 内核中的每个 `print()` 调用目前最多支持一个字符串字面量参数。为确保在所有 GPU 平台上的输出可读性，此处的示例仅打印数值，由主机在启动内核前打印列标题。此限制不适用于 NVIDIA 或 AMD GPU。
 
 :::
 
-### Writing a kernel function
+### 编写内核函数
 
-Kernel functions must be
-[non-raising](/docs/manual/functions/#raising-and-non-raising-functions).
+内核函数必须是[非抛出异常的](/docs/manual/functions/#raising-and-non-raising-functions)。
 
 :::note
 
-For functions called from GPU kernels that need error handling, Mojo supports
-typed errors with types that don't allocate heap memory. See
-[Define a custom error type](/docs/manual/errors/#define-a-custom-error-type)
-for details.
+对于需要错误处理的从 GPU 内核调用的函数，Mojo 支持不分配堆内存的类型化错误。详见[定义自定义错误类型](/docs/manual/errors/#define-a-custom-error-type)。
 
 :::
 
-Argument values must be of types that conform to the
-[`DevicePassable`](/docs/std/builtin/device_passable/DevicePassable/) trait.
-Additionally, a kernel function can't have a return value. Instead, you must
-write any result of a kernel function to a memory buffer passed in as an
-argument. The next two sections, [Passing data between CPU and
-GPU](#passing-data-between-cpu-and-gpu) and
-[`DeviceBuffer` and `HostBuffer`](#devicebuffer-and-hostbuffer) go into more
-detail on how to pass values to a kernel function and get back results.
+参数值的类型必须符合 [`DevicePassable`](/docs/std/builtin/device_passable/DevicePassable/) 特征。此外，内核函数不能有返回值。相反，你必须将内核函数的任何结果写入作为参数传入的内存缓冲区。接下来的两节[在 CPU 和 GPU 之间传递数据](#passing-data-between-cpu-and-gpu)和 [`DeviceBuffer` 和 `HostBuffer`](#devicebuffer-and-hostbuffer) 将更详细地介绍如何向内核函数传递值和获取结果。
 
-As discussed in [GPU execution
-model](/docs/manual/gpu/architecture#gpu-execution-model), when the GPU executes
-a kernel, it assigns the grid's thread blocks to various streaming
-multiprocessors (SMs) for execution. The SM then divides the thread block into
-subsets of threads called a *warp*. The size of a warp depends on the GPU
-architecture, but most modern GPUs currently use a warp size of 32 or 64
-threads.
+如 [GPU 执行模型](/docs/manual/gpu/architecture#gpu-execution-model)中所述，当 GPU 执行内核时，它将网格的线程块分配给各个流式多处理器（SM）执行。SM 然后将线程块划分为称为*线程束*（warp）的线程子集。线程束的大小取决于 GPU 架构，但目前大多数现代 GPU 使用的线程束大小为 32 或 64 个线程。
 
 <figure>
 
 ![](../images/gpu/grid-hierarchy.png#light)
 ![](../images/gpu/grid-hierarchy-dark.png#dark)
 
-<figcaption><b>Figure 2.</b> Hierarchy of threads running on a GPU, showing the
-relationship of the grid, thread blocks, warps, and individual threads, based
-on <cite>HIP Programming Guide</cite> ©2023-2025 Advanced Micro Devices,
-Inc.</figcaption>
+<figcaption><b>图 2.</b> GPU 上运行线程的层次结构，展示了网格、线程块、线程束和各个线程之间的关系，基于 <cite>HIP 编程指南</cite> ©2023-2025 Advanced Micro Devices, Inc.</figcaption>
 
 </figure>
 
-If a thread block contains a number of threads not evenly divisible by the warp
-size, the SM creates a partially filled final warp that still consumes the full
-warp's resources. For example, if a thread block has 100 threads and the warp
-size is 32, the SM creates:
+如果线程块包含的线程数不能被线程束大小整除，SM 会创建一个部分填充的最后一个线程束，该线程束仍然消耗完整线程束的资源。例如，如果一个线程块有 100 个线程，线程束大小为 32，则 SM 创建：
 
-- 3 full warps of 32 threads each (96 threads total).
-- 1 partial warp with only 4 active threads but still occupying a full warp's
-  worth of resources (32 thread slots).
+- 3 个完整的线程束，每个 32 个线程（共 96 个线程）。
+- 1 个部分线程束，只有 4 个活跃线程，但仍然占用完整线程束的资源（32 个线程槽位）。
 
-Because of this execution model, you must ensure that the threads in your kernel
-don't attempt to access out-of-bounds data. Otherwise, your kernel might crash
-or produce incorrect results. For example, if you pass a 2,000-element vector to
-a kernel that you execute with single-dimension thread blocks of 512 threads
-each, and each thread is responsible for processing one element, your kernel
-could perform a boundary check like this to ensure that it doesn't attempt to
-process out-of-bounds elements:
+由于这种执行模型，你必须确保内核中的线程不会尝试访问越界数据。否则，你的内核可能会崩溃或产生不正确的结果。例如，如果你将一个 2,000 元素的向量传递给一个使用 512 线程的单维线程块执行的内核，并且每个线程负责处理一个元素，你的内核可以执行如下边界检查以确保不会尝试处理越界元素：
 
 ```mojo
 from std.gpu import global_idx
 
 def process_vector(vector: UnsafePointer[Float32, MutAnyOrigin], size: Int):
     if global_idx.x < size:
-        # Process vector[global_idx.x] in some way
+        # 以某种方式处理 vector[global_idx.x]
 ```
 
-### Passing data between CPU and GPU
+### 在 CPU 和 GPU 之间传递数据
 
-All values passed to a kernel function must be of types that conform to the
-[`DevicePassable`](/docs/std/builtin/device_passable/DevicePassable/) trait.
-The trait declares a
-[`comptime` member](/docs/manual/traits/#comptime-members-for-generics) named
-`device_type` that maps the type as used on the CPU host to a corresponding type
-used on the GPU device.
+传递给内核函数的所有值的类型必须符合 [`DevicePassable`](/docs/std/builtin/device_passable/DevicePassable/) 特征。该特征声明了一个名为 `device_type` 的 [`comptime` 成员](/docs/manual/traits/#comptime-members-for-generics)，它将 CPU 主机上使用的类型映射到 GPU 设备上使用的对应类型。
 
-As an example,
-[`DeviceBuffer`](/docs/std/gpu/host/device_context/DeviceBuffer/) is a
-host-side representation of a buffer located in the GPU's global memory space.
-But it defines its `device_type` member as `UnsafePointer`, so the
-data represented by a `DeviceBuffer` is actually passed to the kernel function
-as a value of type
-[`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/). The next
-section, [`DeviceBuffer` and `HostBuffer`](#devicebuffer-and-hostbuffer),
-describes in more detail how to allocate memory buffers on the host and device
-and to exchange blocks of data between host and device.
+例如，[`DeviceBuffer`](/docs/std/gpu/host/device_context/DeviceBuffer/) 是位于 GPU 全局内存空间中的缓冲区的主机端表示。但它将其 `device_type` 成员定义为 `UnsafePointer`，因此由 `DeviceBuffer` 表示的数据实际上作为 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 类型的值传递给内核函数。下一节 [`DeviceBuffer` 和 `HostBuffer`](#devicebuffer-and-hostbuffer) 将更详细地描述如何在主机和设备上分配内存缓冲区以及在主机和设备之间交换数据块。
 
-The following table lists the most commonly used types in the Mojo libraries
-that conform to the `DevicePassable` trait.
+下表列出了 Mojo 库中符合 `DevicePassable` 特征的最常用类型。
 
-| Host type                                                                | Device Type                                                                       | Description                                                                                                     |
-|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| [`Int`](/docs/std/builtin/int/Int/)                                      | `Int`                                                                             | Signed integer                                                                                                  |
-| [`SIMD[dtype, width]`](/docs/std/builtin/simd/SIMD/)                     | `SIMD[dtype, width]`                                                              | Small vector backed by a hardware vector element                                                                |
-| [`DeviceBuffer[dtype]`](/docs/std/gpu/host/device_context/DeviceBuffer/) | [`UnsafePointer[SIMD[dtype, 1]]`](/docs/std/memory/unsafe_pointer/UnsafePointer/) | Memory buffer of `dtype` values                                                                                 |
-| [`TileTensor`](/docs/layout/tile_tensor/TileTensor/)                     | `TileTensor`                                                                      | A powerful abstraction for multi-dimensional data. See [Using `TileTensor`](/docs/manual/tile-tensor/tensors/). |
+| 主机类型                                                                | 设备类型                                                                       | 描述                                                                                                     |
+|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| [`Int`](/docs/std/builtin/int/Int/)                                      | `Int`                                                                             | 有符号整数                                                                                                  |
+| [`SIMD[dtype, width]`](/docs/std/builtin/simd/SIMD/)                     | `SIMD[dtype, width]`                                                              | 由硬件向量元素支持的小向量                                                                |
+| [`DeviceBuffer[dtype]`](/docs/std/gpu/host/device_context/DeviceBuffer/) | [`UnsafePointer[SIMD[dtype, 1]]`](/docs/std/memory/unsafe_pointer/UnsafePointer/) | `dtype` 值的内存缓冲区                                                                                 |
+| [`TileTensor`](/docs/layout/tile_tensor/TileTensor/)                     | `TileTensor`                                                                      | 用于多维数据的强大抽象。参见[使用 `TileTensor`](/docs/manual/tile-tensor/tensors/)。 |
 
-### `DeviceBuffer` and `HostBuffer`
+### `DeviceBuffer` 和 `HostBuffer`
 
-This section describes how to use `DeviceBuffer` and `HostBuffer` to allocate
-memory on the device and host respectively, and to copy data between device and
-host memory.
+本节描述如何使用 `DeviceBuffer` 和 `HostBuffer` 分别在设备和主机上分配内存，以及在设备内存和主机内存之间复制数据。
 
-#### Creating a `DeviceBuffer`
+#### 创建 `DeviceBuffer`
 
-The
-[`DeviceBuffer`](/docs/std/gpu/host/device_context/DeviceBuffer/)
-type represents a block of device memory associated with a particular
-`DeviceContext`. Specifically, the buffer is located in the device's *global
-memory* space. As such, the buffer is accessible by all threads of all kernel
-functions executed by the `DeviceContext`.
+[`DeviceBuffer`](/docs/std/gpu/host/device_context/DeviceBuffer/) 类型表示与特定 `DeviceContext` 关联的设备内存块。具体来说，该缓冲区位于设备的*全局内存*空间中。因此，该缓冲区可由 `DeviceContext` 执行的所有内核函数的所有线程访问。
 
-As discussed in [Passing data between CPU and
-GPU](#passing-data-between-cpu-and-gpu), `DeviceBuffer` is the type used by the
-**host** to allocate the buffer and to copy data between the host and device.
-But when you pass a `DeviceBuffer` to a kernel function, the argument received
-by the function is of type `UnsafePointer`. Attempting to use the `DeviceBuffer`
-type directly from within a kernel function results in an error.
+如[在 CPU 和 GPU 之间传递数据](#passing-data-between-cpu-and-gpu)中所述，`DeviceBuffer` 是**主机**用来分配缓冲区以及在主机和设备之间复制数据的类型。但是当你将 `DeviceBuffer` 传递给内核函数时，函数接收到的参数类型是 `UnsafePointer`。尝试在内核函数中直接使用 `DeviceBuffer` 类型会导致错误。
 
-The
-[`DeviceContext.enqueue_create_buffer()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_create_buffer)
-method creates a `DeviceBuffer` associated with that `DeviceContext`. It accepts
-the data type as a compile-time [`DType`](/docs/std/builtin/dtype/DType/)
-parameter and the size of the buffer as a run-time argument. So to create a
-buffer for 1,024 [`Float32`](/docs/std/builtin/simd/#float32) values, you would
-execute:
+[`DeviceContext.enqueue_create_buffer()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_create_buffer) 方法创建一个与该 `DeviceContext` 关联的 `DeviceBuffer`。它接受数据类型作为编译时 [`DType`](/docs/std/builtin/dtype/DType/) 参数，缓冲区大小作为运行时参数。因此，要创建一个包含 1,024 个 [`Float32`](/docs/std/builtin/simd/#float32) 值的缓冲区，你可以执行：
 
 ```mojo
 device_buffer = ctx.enqueue_create_buffer[DType.float32](1024)
 ```
 
-As the method name implies, this method is asynchronous and enqueues the
-operation on the `DeviceContext`'s associated [stream of queued
-operations](#asynchronous-operation-and-synchronizing-the-cpu-and-gpu).
+正如方法名所暗示的，此方法是异步的，将操作入队到 `DeviceContext` 关联的[排队操作流](#asynchronous-operation-and-synchronizing-the-cpu-and-gpu)中。
 
-#### Creating a `HostBuffer`
+#### 创建 `HostBuffer`
 
-The [`HostBuffer`](/docs/std/gpu/host/device_context/HostBuffer/) type is
-analogous to `DeviceBuffer`, but represents a block of host memory associated
-with a particular `DeviceContext`. It supports methods for transferring data
-between host and device memory, as well as a basic set of methods for accessing
-data elements by index and for printing the buffer.
+[`HostBuffer`](/docs/std/gpu/host/device_context/HostBuffer/) 类型类似于 `DeviceBuffer`，但表示与特定 `DeviceContext` 关联的主机内存块。它支持在主机和设备内存之间传输数据的方法，以及通过索引访问数据元素和打印缓冲区的基本方法集。
 
-The
-[`DeviceContext.enqueue_create_host_buffer()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_create_host_buffer)
-method accepts the data type as a compile-time
-[`DType`](/docs/std/builtin/dtype/DType/) parameter and the size of the buffer
-as a run-time argument and returns a `HostBuffer`. As with all `DeviceContext`
-methods whose name starts with `enqueue_`, the method is asynchronous and
-returns immediately, adding the operation to the queue to be executed by the
-`DeviceContext`. Therefore, you need to call the `synchronize()` method to
-ensure that the operation has completed before you write to or read from the
-`HostBuffer` object.
+[`DeviceContext.enqueue_create_host_buffer()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_create_host_buffer) 方法接受数据类型作为编译时 [`DType`](/docs/std/builtin/dtype/DType/) 参数，缓冲区大小作为运行时参数，并返回一个 `HostBuffer`。与所有名称以 `enqueue_` 开头的 `DeviceContext` 方法一样，该方法是异步的并立即返回，将操作添加到由 `DeviceContext` 执行的队列中。因此，你需要调用 `synchronize()` 方法以确保操作在写入或读取 `HostBuffer` 对象之前已完成。
 
 ```mojo
 device_buffer = ctx.enqueue_create_host_buffer[DType.float32](1024)
 
-# Synchronize to wait until buffer is created before attempting to write to it
+# 同步等待缓冲区创建完成后再尝试写入
 ctx.synchronize()
 
-# Now it's safe to write to the buffer
+# 现在可以安全地写入缓冲区
 for i in range(1024):
     device_buffer[i] = Float32(i * i)
 ```
 
-#### Copying data between host and device memory
+#### 在主机和设备内存之间复制数据
 
-The
-[`enqueue_copy()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_copy)
-method is overloaded to support copying from host to device, device to host, or
-even device to device for systems that have multiple GPUs. Typically, you'll use
-it to copy data that you've staged in a `HostBuffer` to a `DeviceBuffer` before
-executing a kernel, and then from a `DeviceBuffer` to a `HostBuffer` to retrieve
-the results of kernel execution. The `scalar_add.mojo` example in
-[GPU programming model](#gpu-programming-model) shows this pattern in action. In
-it, the kernel function does an in-place modification of the buffer it receives
-as an argument and then reuses the original `HostBuffer` to copy the results
-back from the device. However, you can allocate a separate `DeviceBuffer` and
-`HostBuffer` for the result of a kernel function if you want to retain the
-original data.
+[`enqueue_copy()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_copy) 方法被重载以支持从主机到设备、设备到主机的复制，甚至对于具有多个 GPU 的系统还支持设备到设备的复制。通常，你会使用它在执行内核之前将暂存在 `HostBuffer` 中的数据复制到 `DeviceBuffer`，然后从 `DeviceBuffer` 复制到 `HostBuffer` 以获取内核执行的结果。[GPU 编程模型](#gpu-programming-model)中的 `scalar_add.mojo` 示例展示了这种模式的实际应用。在该示例中，内核函数对接收到的缓冲区进行原地修改，然后重用原始的 `HostBuffer` 从设备复制结果。但是，如果你想保留原始数据，可以为内核函数的结果分配单独的 `DeviceBuffer` 和 `HostBuffer`。
 
-In addition to copying data between a `HostBuffer` to a `DeviceBuffer`, you can
-use an [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) as
-the source or destination of a copy. However, the `UnsafePointer` must reference
-host memory for this operation. Attempting to use an `UnsafePointer` referencing
-device memory results in an error. For example, this is useful if you have data
-already staged in a data structure on the host that can expose the data through
-an `UnsafePointer`. In that case you would not need to copy the data from the
-data structure to a `HostBuffer` before copying it to the `DeviceBuffer`.
+除了在 `HostBuffer` 和 `DeviceBuffer` 之间复制数据外，你还可以使用 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 作为复制的源或目标。但是，`UnsafePointer` 必须引用主机内存才能执行此操作。尝试使用引用设备内存的 `UnsafePointer` 会导致错误。例如，如果你已经在主机上的数据结构中暂存了数据，并且该数据结构可以通过 `UnsafePointer` 暴露数据，这就很有用。在这种情况下，你不需要先将数据从数据结构复制到 `HostBuffer`，然后再复制到 `DeviceBuffer`。
 
-Both `DeviceBuffer` and `HostBuffer` also include
-[`enqueue_copy_to()`](/docs/std/gpu/host/device_context/DeviceBuffer/#enqueue_copy_to)
-and
-[`enqueue_copy_from()`](/docs/std/gpu/host/device_context/DeviceBuffer/#enqueue_copy_from)
-methods. These are simply convenience methods that call the `enqueue_copy()`
-method on their corresponding `DeviceContext`. For example, the following two
-method calls are interchangeable:
+`DeviceBuffer` 和 `HostBuffer` 还包含 [`enqueue_copy_to()`](/docs/std/gpu/host/device_context/DeviceBuffer/#enqueue_copy_to) 和 [`enqueue_copy_from()`](/docs/std/gpu/host/device_context/DeviceBuffer/#enqueue_copy_from) 方法。这些只是调用其对应 `DeviceContext` 上的 `enqueue_copy()` 方法的便捷方法。例如，以下两个方法调用是等价的：
 
 ```mojo
 ctx.enqueue_copy(src_buf=host_buffer, dst_buf=device_buffer)
 
-# Equivalent to:
+# 等价于：
 host_buffer.enqueue_copy_to(dst=device_buffer)
 ```
 
-Finally, as a convenience for testing or prototyping, you can use the
-[`DeviceBuffer.map_to_host()`](/docs/std/gpu/host/device_context/DeviceBuffer/#map_to_host)
-method to create a host-accessible view of the device buffer's contents. This
-returns `HostBuffer` as a
-[context manager](/docs/manual/errors/#use-a-context-manager) that contains a
-copy of the data from the corresponding `DeviceBuffer`. Additionally, any
-modifications that you make to the `HostBuffer` are automatically copied back to
-the `DeviceBuffer` when the `with` statement exits. For example:
+最后，作为测试或原型设计的便利，你可以使用 [`DeviceBuffer.map_to_host()`](/docs/std/gpu/host/device_context/DeviceBuffer/#map_to_host) 方法创建设备缓冲区内容的主机可访问视图。这将返回 `HostBuffer` 作为[上下文管理器](/docs/manual/errors/#use-a-context-manager)，其中包含来自对应 `DeviceBuffer` 的数据副本。此外，你对 `HostBuffer` 所做的任何修改都会在 `with` 语句退出时自动复制回 `DeviceBuffer`。例如：
 
 ```mojo
 ctx = DeviceContext()
@@ -617,15 +421,14 @@ length = 1024
 
 input_device = ctx.enqueue_create_buffer[DType.float32](length)
 
-# Initialize the input
+# 初始化输入
 
 with input_device.map_to_host() as input_host:
     for i in range(length):
         input_host[i] = Float32(i)
 ```
 
-However, you should not use this in most production code because of the
-bidirectional copies and synchronization. The example above is equivalent to:
+但是，由于双向复制和同步的开销，你不应在大多数生产代码中使用此方法。上面的示例等价于：
 
 ```mojo
 ctx = DeviceContext()
@@ -644,30 +447,13 @@ input_host.enqueue_copy_to(input_device)
 ctx.synchronize()
 ```
 
-#### Deallocating memory buffers
+#### 释放内存缓冲区
 
-Both `DeviceBuffer` and `HostBuffer` are subject to Mojo's standard ownership
-and lifecycle mechanisms. The Mojo compiler analyzes our program to determine
-the last point that the owner of or a reference to an object is used and
-automatically adds a call to the object's destructor. This means that you don't
-explicitly call any method to free the memory represented by a `DeviceBuffer` or
-`HostBuffer` instance. See the [Ownership](/docs/manual/values/ownership/) and
-[Intro to value lifecycle](/docs/manual/lifecycle/) sections of the Mojo Manual
-for more information on Mojo value ownership and value lifecycle management, and
-the [Death of a value](/docs/manual/lifecycle/death/) section for a detailed
-explanation of object destruction.
+`DeviceBuffer` 和 `HostBuffer` 都受 Mojo 标准所有权和生命周期机制的约束。Mojo 编译器分析你的程序以确定对象的所有者或引用最后被使用的位置，并自动添加对对象析构函数的调用。这意味着你不需要显式调用任何方法来释放由 `DeviceBuffer` 或 `HostBuffer` 实例表示的内存。有关 Mojo 值所有权和值生命周期管理的更多信息，请参阅 Mojo 手册的[所有权](/docs/manual/values/ownership/)和[值生命周期简介](/docs/manual/lifecycle/)部分，以及[值的消亡](/docs/manual/lifecycle/death/)部分以获取对象销毁的详细说明。
 
-### Compiling and enqueuing a kernel function for execution
+### 编译和入队内核函数以执行
 
-The
-[`compile_function()`](/docs/std/gpu/host/device_context/DeviceContext/#compile_function)
-method accepts a kernel function as a compile-time
-[parameter](/docs/manual/parameters/) and then compiles it for the associated
-`DeviceContext`. Then you can enqueue the compiled kernel for execution by
-passing it to the
-[`enqueue_function()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_function)
-method. The example in the [GPU programming model](#gpu-programming-model)
-demonstrated this pattern:
+[`compile_function()`](/docs/std/gpu/host/device_context/DeviceContext/#compile_function) 方法接受内核函数作为编译时[参数](/docs/manual/parameters/)，然后为关联的 `DeviceContext` 编译它。然后你可以通过将编译后的内核传递给 [`enqueue_function()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_function) 方法来将其入队执行。[GPU 编程模型](#gpu-programming-model)中的示例演示了这种模式：
 
 ```mojo title="scalar_add.mojo"
 ...
@@ -683,45 +469,26 @@ ctx.enqueue_function(
 )
 ```
 
-When using a compiled kernel function like this, you execute it by calling
-`enqueue_function()` with the following arguments in this order:
+使用编译后的内核函数时，你按以下顺序调用 `enqueue_function()` 并传入参数：
 
-- The kernel function to execute.
-- Any additional arguments specified by the kernel function definition in the
-  order specified by the function.
-- The grid dimensions using the `grid_dim` keyword argument.
-- The thread block dimensions using the `block_dim` keyword argument.
+- 要执行的内核函数。
+- 内核函数定义指定的任何附加参数，按函数指定的顺序。
+- 使用 `grid_dim` 关键字参数指定网格维度。
+- 使用 `block_dim` 关键字参数指定线程块维度。
 
-Refer to the [Multidimensional grids and thread
-organization](#multidimensional-grids-and-thread-organization) section for more
-information on grid and thread block dimensions.
+有关网格和线程块维度的更多信息，请参阅[多维网格和线程组织](#multidimensional-grids-and-thread-organization)部分。
 
-:::note[API variants]
+:::note[API 变体]
 
-The `compile_function_unchecked()` and `enqueue_function_unchecked()` methods
-are deprecated and will be removed in a future release because they don't
-perform compile-time type checking of the kernel function arguments. You'll
-encounter run-time errors if the values you pass don't conform to the expected
-argument types.
+`compile_function_unchecked()` 和 `enqueue_function_unchecked()` 方法已弃用，将在未来版本中移除，因为它们不对内核函数参数执行编译时类型检查。如果你传递的值不符合预期的参数类型，将会遇到运行时错误。
 
-The `compile_function()` and `enqueue_function()`
-methods perform compile-time type checking but require the kernel function as a
-parameter only once instead of twice. Once we verify these APIs work correctly,
-we'll rename them to `compile_function()` and `enqueue_function()` to make
-type-checking the default behavior.
+`compile_function()` 和 `enqueue_function()` 方法执行编译时类型检查，但只需要将内核函数作为参数提供一次而不是两次。一旦我们验证这些 API 工作正常，我们将把它们重命名为 `compile_function()` 和 `enqueue_function()`，使类型检查成为默认行为。
 
 :::
 
-The advantage of compiling the kernel as a separate step is that you can
-execute the same compiled kernel on the same device multiple times. This avoids
-the overhead of compiling the kernel each time it's executed.
+将内核作为单独步骤编译的优势在于，你可以在同一设备上多次执行同一编译后的内核。这避免了每次执行时编译内核的开销。
 
-If your application needs to execute a kernel function only once, you can use an
-overloaded version of `enqueue_function()` that compiles the kernel and
-enqueues it in a single step. Therefore, the following is equivalent to the
-separate calls to `compile_function()` and `enqueue_function()`
-shown above (note that the kernel function is provided as a compile-time
-parameter in this case):
+如果你的应用程序只需要执行一次内核函数，你可以使用 `enqueue_function()` 的重载版本，该版本在单步中编译内核并将其入队。因此，以下代码等价于上面展示的分别调用 `compile_function()` 和 `enqueue_function()` 的代码（注意在这种情况下内核函数作为编译时参数提供）：
 
 ```mojo
 ctx.enqueue_function[scalar_add](

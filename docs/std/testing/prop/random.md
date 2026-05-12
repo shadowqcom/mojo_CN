@@ -1,12 +1,12 @@
 ---
 title: "random"
 sidebar_label: "random"
-description: "Implements random number generation for property-based testing."
+description: "实现用于属性测试的随机数生成。"
 ---
 
 # random
 
-Implements random number generation for property-based testing.
+实现用于属性测试的随机数生成。
 
 ## 类型
 

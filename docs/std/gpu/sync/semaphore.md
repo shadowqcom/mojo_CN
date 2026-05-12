@@ -1,18 +1,16 @@
 ---
 title: "semaphore"
 sidebar_label: "semaphore"
-description: "This module provides a device-wide semaphore implementation for NVIDIA GPUs.  The Semaphore struct enables inter-CTA (Cooperative Thread Array) synchronization by providing atomic operations and memor"
+description: "此模块提供 NVIDIA GPU 的设备级信号量实现。Semaphore 结构体通过提供原子操作和内存屏障支持 CTA（协作线程阵列）间同步。"
 ---
 
 # semaphore
 
-This module provides a device-wide semaphore implementation for NVIDIA GPUs.
+此模块提供 NVIDIA GPU 的设备级信号量实现。
 
-The Semaphore struct enables inter-CTA (Cooperative Thread Array) synchronization
-by providing atomic operations and memory barriers. It uses NVIDIA-specific intrinsics
-to implement efficient thread synchronization.
+Semaphore 结构体通过提供原子操作和内存屏障支持 CTA（协作线程阵列）间同步。它使用 NVIDIA 特定的内部函数实现高效的线程同步。
 
-Examples:
+示例：
 
     ```mojo
     from std.gpu import Semaphore
@@ -21,10 +19,10 @@ Examples:
     var thread_id = 0
     var sem = Semaphore(lock, thread_id)
 
-    # Wait for a specific state
+    # 等待特定状态
     sem.wait(0)
 
-    # Release the semaphore
+    # 释放信号量
     sem.release(1)
     ```
 

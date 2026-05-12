@@ -1,14 +1,15 @@
 ---
 title: "base64"
+slug: base64
 sidebar_label: "base64"
-description: "Provides functions for base64 encoding strings.  You can import these APIs from the `base64` package. For example:  ```mojo from std.base64 import b64encode ```"
+description: "提供 base64 编码字符串的函数。您可以从 `base64` 包导入这些 API。例如：```mojo from std.base64 import b64encode ```"
 ---
 
 # base64
 
-Provides functions for base64 encoding strings.
+提供 base64 编码字符串的函数。
 
-You can import these APIs from the `base64` package. For example:
+您可以从 `base64` 包导入这些 API。例如：
 
 ```mojo
 from std.base64 import b64encode

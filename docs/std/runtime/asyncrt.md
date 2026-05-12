@@ -1,12 +1,12 @@
 ---
 title: "asyncrt"
 sidebar_label: "asyncrt"
-description: "This module implements the low level concurrency library."
+description: "此模块实现底层并发库。"
 ---
 
 # asyncrt
 
-This module implements the low level concurrency library.
+此模块实现底层并发库。
 
 ## 类型
 

@@ -1,43 +1,35 @@
 ---
-title: Add operator support to custom types
-sidebar_label: Operator support
+title: 为自定义类型添加操作符支持
+sidebar_label: 操作符支持
 sidebar_position: 2
-description: >-
-  Implement operators for your custom types by creating dunder
-  methods in your struct.
+description: >
+  通过在结构体中创建双下划线方法，为自定义类型实现操作符。
 ---
 
-Each Mojo operator maps to a set of dunder methods you can add to your
-struct implementation. These methods let you use operator syntax instead of
-calling methods directly.
+每个 Mojo 操作符都映射到一组你可以添加到结构体实现的双下划线方法。这些方法允许你使用操作符语法而不是直接调用方法。
 
-Knowing your operators and their related methods opens the full suite of
-operator syntax to your custom structs.
+了解你的操作符及其相关方法将为自定义结构体打开完整的操作符语法套件。
 
-## Forward, reverse, and in-place methods
+## 前向、反向和原地方法
 
-Each binary operator uses up to three method forms. For example,
-consider the addition `a + b`:
+每个二元操作符最多使用三种方法形式。例如，考虑加法 `a + b`：
 
-- **Forward**: Mojo tries `a.__add__(b)` first.
-- **Reverse**: If the forward method doesn't exist or can't handle `b`'s
-  type, Mojo falls back to `b.__radd__(a)`.
-- **In-place**: For `a += b`, Mojo calls `a.__iadd__(b)`.
+- **前向**：Mojo 首先尝试 `a.__add__(b)`。
+- **反向**：如果前向方法不存在或无法处理 `b` 的类型，Mojo 回退到 `b.__radd__(a)`。
+- **原地**：对于 `a += b`，Mojo 调用 `a.__iadd__(b)`。
 
-Reversed methods exist for mixed-type expressions where the
-left operand doesn't know about the right operand's type:
+反向方法存在于混合类型表达式中，其中左操作数不知道右操作数的类型：
 
 ```mojo
-a + 5    # calls a.__add__(5)
-5 + a    # Int doesn't know your type, falls back
-         # to a.__radd__(5)
-a += 5   # calls a.__iadd__(5)
+a + 5    # 调用 a.__add__(5)
+5 + a    # Int 不知道你的类型，回退
+         # 到 a.__radd__(5)
+a += 5   # 调用 a.__iadd__(5)
 ```
 
-## Unary operators
+## 一元操作符
 
-A unary operator returns the original value if unchanged, or a new value
-representing the result. For example, `-x` uses the unary negation operator:
+一元操作符如果未更改，则返回原始值，或表示结果的新值。例如，`-x` 使用一元否定操作符：
 
 ```mojo
 @fieldwise_init
@@ -48,31 +40,23 @@ struct MyInt:
         return Self(-self.value)
 ```
 
-If `x` is a `MyInt`, then `-x` returns a new instance with its `value`
-field negated.
+如果 `x` 是 `MyInt`，那么 `-x` 返回一个新实例，其 `value` 字段取反。
 
-## Comparison operators and traits
+## 比较操作符和 trait
 
-Operators do not require that you conform your types to traits. However,
-there are benefits to doing so.
+操作符并不要求你将类型符合到 trait。然而，这样做是有益的。
 
-The `Comparable` trait provides defaults for `<=`, `>`, and `>=`. You just
-implement `__lt__()` and `__eq__()`.
+`Comparable` trait 为 `<=`、`>` 和 `>=` 提供默认值。你只需要实现 `__lt__()` 和 `__eq__()`。
 
-Similarly, the `Equatable` trait provides defaults for `__eq__()` and
-`__ne__()` when all fields are `Equatable`.
+类似地，`Equatable` trait 在所有字段都是 `Equatable` 时为 `__eq__()` 和 `__ne__()` 提供默认值。
 
-For types without a natural ordering (like complex numbers), only implement
-`Equatable`, and not `Comparable`.
+对于没有自然排序的类型（如复数），只实现 `Equatable`，而不是 `Comparable`。
 
-## Subscript operators
+## 下标操作符
 
-Implement `__getitem__()` for reads and `__setitem__()` for writes. Both
-subscripting methods accept variadic arguments for multi-dimensional
-indexing.
+实现 `__getitem__()` 用于读取，`__setitem__()` 用于写入。两个下标方法都接受可变参数用于多维索引。
 
-For a simple one-dimensional collection, you unlock subscripting with a
-simple index:
+对于简单的单维集合，你可以使用简单索引解锁下标：
 
 ```mojo
 struct MySeq[T: Copyable]:
@@ -82,28 +66,21 @@ struct MySeq[T: Copyable]:
         ...
 ```
 
-For multi-dimensional collections, make use of variadics or multiple index
-arguments:
+对于多维集合，请使用可变参数或多个索引参数：
 
 ```mojo
 struct Grid[T: Copyable]:
-    # Fixed two dimensions
+    # 固定的两个维度
     def __getitem__(self, x: Int, y: Int) -> T:
         ...
-    # Arbitrary dimensions
+    # 任意维度
     def __getitem__(self, *indices: Int) -> T:
         ...
 ```
 
-Custom subscripts can support slicing as well as indices, such as
-`obj[1:5]`. Implement `__getitem__()` with a
-[`Slice`](/docs/std/builtin/builtin_slice/Slice/) parameter instead of
-`Int`.
+自定义下标也可以支持切片和索引，如 `obj[1:5]`。使用 [`Slice`](/docs/std/builtin/builtin_slice/Slice/) 参数而不是 `Int` 来实现 `__getitem__()`。
 
-Each `Slice` has three optional fields: `start`, `end`, and `step`. You
-normalize these by calling `indices()`. Pass your type's size. This returns
-a triplet of values representing the span adjusted to your extent,
-resolving omitted values or negative indices into non-negative positions:
+每个 `Slice` 有三个可选字段：`start`、`end` 和 `step`。你通过调用 `indices()` 来规范化这些字段。传递你类型的 size。这返回一个三元组值，表示根据你的范围调整的跨度，将省略的值或负索引解析为非负位置：
 
 ```mojo
 struct MySeq[T: Copyable]:
@@ -117,27 +94,21 @@ struct MySeq[T: Copyable]:
         ...
 ```
 
-## Walkthrough: Build a `Complex` type
+## 演示：构建 `Complex` 类型
 
-The next sections incrementally build a `Complex` struct.
-This example demonstrates every category of operator implementation.
+接下来的部分逐步构建一个 `Complex` 结构体。此示例演示了每个类别的操作符实现。
 
-In this walk-through, you'll work with unary operators, binary operators
-with same-type and mixed-type operands, reversed methods, in-place
-assignment, equality comparison, and subscript access.
+在此演练中，你将处理一元操作符、具有相同类型和混合类型操作数的二元操作符、反向方法、原地赋值、相等比较和下标访问。
 
 :::note
-The standard library includes
-[`ComplexSIMD`](/docs/std/complex/complex/ComplexSIMD/),
-a parameterized complex number type with basic arithmetic
-support. The `Complex` type in this example is independent
-and not based on `ComplexSIMD`.
+标准库包含
+[`ComplexSIMD`](/docs/std/complex/complex/ComplexSIMD/)，
+一个具有基本算术支持的参数化复数类型。此示例中的 `Complex` 类型是独立的，并且不基于 `ComplexSIMD`。
 :::
 
-## Create the base type
+## 创建基础类型
 
-A complex number holds real and imaginary parts, stored in the
-real `re` and imaginary `im` fields:
+复数包含实部和虚部，存储在实部 `re` 和虚部 `im` 字段中：
 
 ```mojo
 from std.math import sqrt
@@ -152,15 +123,12 @@ struct Complex(
     var im: Float64
 ```
 
-- Conforming to `TrivialRegisterPassable` gives you value semantics
-  without needing to write special lifecycle methods.
-- `Equatable` lets you compare two instances, and `Writable` produces
-  output for `print()` statements.
+- 符合 `TrivialRegisterPassable` 让你获得值语义，而无需编写特殊生命周期方法。
+- `Equatable` 让你可以比较两个实例，`Writable` 为 `print()` 语句生成输出。
 
-### Convenience initializer
+### 便捷初始化器
 
-Adding a convenience initializer lets you create instances using
-only the real part of your number:
+添加便捷初始化器可以让你只使用数字的实部来创建实例：
 
 ```mojo
 def __init__(out self, re: Float64):
@@ -168,21 +136,19 @@ def __init__(out self, re: Float64):
     self.im = 0.0
 ```
 
-## Make your type printable
+## 使你的类型可打印
 
-Implementing `Writable` lets you use `print()` and `String()` directly.
-This custom implementation provides parentheses and separate real and
-imaginary output.
+实现 `Writable` 让你可以直接使用 `print()` 和 `String()`。此自定义实现提供括号和单独的实部和虚部输出。
 
 ```mojo
-# Struct method
+# 结构体方法
 def write_to(self, mut writer: Some[Writer]):
     writer.write("(", self.re)
     if self.im < 0:
         writer.write(" - ", -self.im)
     else:
         writer.write(" + ", self.im)
-    writer.write("i)")
+    writer.write("i")
 
 ...
 
@@ -190,13 +156,12 @@ c = Complex(3.14, -2.72)
 print(c)  # (3.14 - 2.72i)
 ```
 
-## Add unary operator support
+## 添加一元操作符支持
 
-`+c` returns the value unchanged. `-c` negates both
-components:
+`+c` 返回未更改的值。`-c` 取反两个分量：
 
 ```mojo
-# methods
+# 方法
 def __pos__(self) -> Self:
     return self
 
@@ -210,11 +175,9 @@ print(+c)  # (-1.2 + 6.5i)
 print(-c)  # (1.2 - 6.5i)
 ```
 
-## Support binary arithmetic
+## 支持二元算术
 
-Add addition, subtraction, multiplication, and division between
-two `Complex` values with dunders. Each form returns a new `Complex`
-instance:
+使用双下划线方法添加两个 `Complex` 值之间的加法、减法、乘法和除法。每种形式都返回一个新的 `Complex` 实例：
 
 ```mojo
     def __add__(self, rhs: Self) -> Self:
@@ -250,19 +213,16 @@ print(c1 + c2)  # (1.94 + 3.78i)
 print(c1 * c2)  # (13.91 + 23.67i)
 ```
 
-## Add mixed-type arithmetic with reversed methods
+## 使用反向方法添加混合类型算术
 
-To support expressions like `2.5 + c` where `Float64` is on
-the left, you need both overloaded forward methods and
-reversed methods. Without `__radd__()`, `2.5 + c` would fail
-because `Float64` doesn't know about `Complex`:
+要支持像 `2.5 + c` 这样的表达式，其中 `Float64` 在左边，你需要两个重载的前向方法和反向方法。没有 `__radd__()`，`2.5 + c` 将会失败，因为 `Float64` 不知道 `Complex`：
 
 ```mojo
-    # Forward: Complex + Float64
+    # 前向：Complex + Float64
     def __add__(self, rhs: Float64) -> Self:
         return Self(self.re + rhs, self.im)
 
-    # Reversed: Float64 + Complex
+    # 反向：Float64 + Complex
     def __radd__(self, lhs: Float64) -> Self:
         return Self(self.re + lhs, self.im)
 
@@ -289,7 +249,7 @@ because `Float64` doesn't know about `Complex`:
         )
 ```
 
-Now both orderings work:
+现在两种顺序都有效：
 
 ```mojo
 c = Complex(-1.2, 6.5)
@@ -298,11 +258,9 @@ print(2.5 + c)    # (1.3 + 6.5i)
 print(2.5 * c)    # (-3.0 + 16.25i)
 ```
 
-### Allow in-place assignment
+### 允许原地赋值
 
-In-place methods modify `self` directly instead of returning
-a new value. You can overload for both `Complex` and
-`Float64` operands:
+原地方法直接修改 `self` 而不是返回新值。你可以为 `Complex` 和 `Float64` 操作数两者都重载：
 
 ```mojo
     def __iadd__(mut self, rhs: Self):
@@ -353,19 +311,16 @@ c /= 2.0
 print(c)       # (0.84375 - 0.5625i)
 ```
 
-## Support type equality checks
+## 支持类型相等检查
 
-Complex numbers have no natural ordering, so you should
-implement `Equatable` (not `Comparable`). This gives you
-`==` and `!=` without implying that one complex number is
-"less than" another:
+复数没有自然排序，因此你应该实现 `Equatable`（而不是 `Comparable`）。这让你获得 `==` 和 `!=` 而不会暗示一个复数"小于"另一个：
 
 ```mojo
     def __eq__(self, other: Self) -> Bool:
         return (self.re == other.re and
                 self.im == other.im)
 
-    # Conforming to Equatable provides this automatically
+    # 符合 Equatable 会自动提供此功能
     def __ne__(self, other: Self) -> Bool:
         return not (self == other)
 ```
@@ -378,11 +333,9 @@ print(c1 == c2)  # True
 print(c1 != c3)  # True
 ```
 
-## Unlock subscript access
+## 解锁下标访问
 
-The get and set item dunders allow you to index content within
-your type. For this example, the real part of the complex number
-is index 0, and index 1 returns the imaginary component:
+获取和设置项双下划线允许你在类型中索引内容。对于此示例，复数的实部是索引 0，索引 1 返回虚部：
 
 ```mojo
     def __getitem__(self, idx: Int) raises -> Float64:
@@ -405,10 +358,8 @@ c[1] = 42.0
 print(c)            # (3.14 + 42.0i)
 ```
 
-## Every operator, one walkthrough
+## 每个操作符，一次演练
 
-This example walked you through every Mojo operator from simple arithmetic
-to comparisons to subscripting.
+此示例引导你完成了从简单算术到比较再到下标的每个 Mojo 操作符。
 
-Implementing the right dunders and/or conforming to the right traits enables
-you to use operator syntax for nearly any custom type.
+实现正确的双下划线方法和/或符合正确的 trait 使你能够对几乎任何自定义类型使用操作符语法。

@@ -1,15 +1,15 @@
 ---
 title: "documentation"
+slug: documentation
 sidebar_label: "documentation"
-description: "Provides decorators and utilities for interacting with Mojo documentation generation and validation.  These are Mojo built-ins, so you don't need to import them."
+description: "提供与 Mojo 文档生成和验证交互的装饰器和工具。这些是 Mojo 内置功能，无需导入。"
 ---
 
 # documentation
 
-Provides decorators and utilities for interacting with Mojo documentation
-generation and validation.
+提供与 Mojo 文档生成和验证交互的装饰器和工具。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置功能，无需导入。
 
 ## 函数
 

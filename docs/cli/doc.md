@@ -5,73 +5,72 @@ sidebar_position: 5
 
 # mojo doc
 
-Compiles docstrings from a Mojo file.
+从 Mojo 文件编译文档字符串。
 
-## Synopsis
+## 用法概要
 
 ```
 mojo doc [options] <path>
 ```
 
-## Description
+## 描述
 
-This is an early version of a documentation tool that generates an API reference from Mojo code comments. Currently, it generates a structured output of all docstrings into a JSON file, and it does not generate HTML. This output format is subject to change.
+这是一个早期版本的文档工具，可从 Mojo 代码注释生成 API 参考。目前，它将所有文档字符串的结构化输出生成到 JSON 文件中，不生成 HTML。此输出格式可能会发生变化。
 
-The input may be a single file or a directory. If you specify a directory, it will generate a single JSON output with documentation for all modules found in that path, recursively.
+输入可以是单个文件或目录。如果指定目录，它将为在该路径中递归找到的所有模块生成单个 JSON 输出文档。
 
-## Options
+## 选项
 
-### Output options
+### 输出选项
 
 #### `-o <PATH>`
 
-Sets the path and filename for the JSON output. If not provided, output is written to stdout.
+设置 JSON 输出的路径和文件名。如果未提供，则输出写入 stdout。
 
-### Compilation options
+### 编译选项
 
 #### `-I <PATH>`
 
-Appends the given path to the list of directories that Mojo will search for any package/module dependencies. That is, if the file you pass to `mojo doc` imports any packages that do not reside in the local path and are not part of the Mojo standard library, use this to specify the path where Mojo can find those packages.
+将指定路径追加到 Mojo 搜索任何包/模块依赖项的目录列表中。也就是说，如果传递给 `mojo doc` 的文件导入了不在本地路径且不属于 Mojo 标准库的任何包，请使用此选项指定 Mojo 可以找到这些包的路径。
 
-### Validation options
+### 验证选项
 
-The following validation options help ensure that your docstrings use valid structure and meet other style criteria. By default, warnings are emitted only if the docstrings contain errors that prevent translation to the output format. (More options coming later.)
+以下验证选项有助于确保文档字符串使用有效的结构并符合其他样式标准。默认情况下，仅当文档字符串包含阻止转换为输出格式的错误时才会发出警告。（更多选项将在稍后推出。）
 
 #### `--diagnose-missing-doc-strings`
 
-Emits diagnostic warnings for missing or partial doc strings.
+为缺失或不完整的文档字符串发出诊断警告。
 
 #### `--docs-base-path <PATH>`
 
-Sets the path prefix for generated documentation links.
+设置生成文档链接的路径前缀。
 
-### Compilation diagnostic options
+### 编译诊断选项
 
-Controls how the Mojo compiler outputs diagnostics related to compiling and running Mojo source code.
+控制 Mojo 编译器如何输出与编译和运行 Mojo 源代码相关的诊断信息。
 
 #### `--max-notes-per-diagnostic <INTEGER>`
 
-When the Mojo compiler emits diagnostics, it sometimes also prints notes with additional information. This option sets an upper threshold on the number of notes that can be printed with a diagnostic. If not specified, the default maximum is 10.
+当 Mojo 编译器发出诊断信息时，有时也会打印带有附加信息的备注。此选项设置可随诊断信息打印的备注数量的上限。如果未指定，默认最大值为 10。
 
 #### `--Werror`
 
-Treat warnings as errors.
+将警告视为错误。
 
 #### `--Wno-error`
 
-Do not treat warnings as errors (overrides -Werror).
+不将警告视为错误（覆盖 -Werror）。
 
-### Common options
+### 通用选项
 
 #### `--diagnostic-format <FORMAT>`
 
-The format in which diagnostics and error messages are printed. Must be one of "text" or "json" ("text" is the default).
+打印诊断信息和错误消息的格式。必须是 "text" 或 "json" 之一（"text" 为默认值）。
 
 #### `--help`, `-h`
 
-Displays help information.
+显示帮助信息。
 
 #### `--help-hidden`
 
-Displays help for hidden options.
-
+显示隐藏选项的帮助信息。

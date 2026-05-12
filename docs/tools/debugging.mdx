@@ -1,298 +1,207 @@
 ---
-title: Debugging
+title: 调试
 sidebar_position: 2
-description: Debugging Mojo programs.
+description: 调试 Mojo 程序。
 ---
 
-The Mojo extension for Visual Studio Code enables you to use VS Code's built-in
-debugger with Mojo code. This page describes the features available through the
-VS Code Mojo extension, as well as current limitations of the Mojo debugger.
+Visual Studio Code 的 Mojo 扩展使你能够在 Mojo 代码中使用 VS Code 内置的调试器。本页介绍了 VS Code Mojo 扩展提供的功能以及 Mojo 调试器目前的限制。
 
-You can install the Mojo extension from either the
-[Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)
-or the
-[Open VSX Registry](https://open-vsx.org/extension/modular-mojotools/vscode-mojo).
+你可以从 [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo) 或 [Open VSX Registry](https://open-vsx.org/extension/modular-mojotools/vscode-mojo) 安装 Mojo 扩展。
 
-To use the Mojo extension, you must also
-[install the `mojo` package](/install/)—or, if you're developing for
-the MAX framework, [install the `modular` package](/max/packages), which
-includes the `mojo` package.
+要使用 Mojo 扩展，你还必须[安装 `mojo` 包](/install/)——或者，如果你正在为 MAX 框架开发，[安装 `modular` 包](/max/packages)，其中包含 `mojo` 包。
 
 :::note
 
-The Mojo extension relies on the Python extension for locating your Python
-environment. In some cases, this appears to default to your globally-installed
-environment, even when a virtual environment exists. If the Mojo extension
-cannot find your SDK installation, try invoking the "Python: Set Project
-Environment" command and selecting your virtual environment.
+Mojo 扩展依赖 Python 扩展来定位你的 Python 环境。在某些情况下，即使存在虚拟环境，它似乎也会默认使用全局安装的环境。如果 Mojo 扩展找不到你的 SDK 安装，请尝试调用"Python: Set Project Environment"命令并选择你的虚拟环境。
 
 :::
 
-For complete coverage of VS Code's debugging features, see
-[Debugging in Visual Studio Code](https://code.visualstudio.com/docs/editor/debugging).
+有关 VS Code 调试功能的完整介绍，请参阅 [Visual Studio Code 中的调试](https://code.visualstudio.com/docs/editor/debugging)。
 
-The `mojo` package includes the [LLDB debugger](https://lldb.llvm.org/) and a
-Mojo LLDB plugin. Together these provide the low-level debugging interface for
-the Mojo extension. You can also use the `mojo debug` command to start a
-command-line debugging session using LLDB or to launch a Mojo debugging session
-in VS Code.
+`mojo` 包包含 [LLDB 调试器](https://lldb.llvm.org/)和 Mojo LLDB 插件。它们共同为 Mojo 扩展提供底层调试接口。你也可以使用 `mojo debug` 命令启动使用 LLDB 的命令行调试会话，或在 VS Code 中启动 Mojo 调试会话。
 
-The `mojo` package also includes support for debugging Mojo programs running on
-GPU. This requires some extra software and configuration. Currently GPU
-debugging only works with NVIDIA GPUs. For details, see
-[GPU debugging](/docs/tools/gpu-debugging/).
+`mojo` 包还支持调试在 GPU 上运行的 Mojo 程序。这需要一些额外的软件和配置。目前 GPU 调试仅适用于 NVIDIA GPU。详情请参见 [GPU 调试](/docs/tools/gpu-debugging/)。
 
-## Start debugging
+## 开始调试
 
-There are several ways to start a debug session in VS Code.
+在 VS Code 中有多种启动调试会话的方式。
 
-To start debugging, you'll need to have a Mojo project to debug. There are a
-number of examples ranging from simple to complex in [our GitHub
-repo](https://github.com/modular/modular/tree/main/mojo/examples).
+要开始调试，你需要有一个 Mojo 项目来调试。[我们的 GitHub 仓库](https://github.com/modular/modular/tree/main/mojo/examples)中有许多从简单到复杂的示例。
 
-:::note[VS Code veteran?]
+:::note[VS Code 老手？]
 
-If you're already familiar with debugging in VS Code, the
-material in this section will mostly be review. You might want to skip ahead to
-[Launch configurations](#launch-configurations)
-or see [Using the debugger](#using-the-debugger) for notes on the features
-supported in the Mojo debugger.
+如果你已经熟悉 VS Code 中的调试，本节内容大部分是复习。你可能想直接跳到[启动配置](#launch-configurations)或查看[使用调试器](#using-the-debugger)了解 Mojo 调试器支持的功能说明。
 
 :::
 
-### Quick run or debug
+### 快速运行或调试
 
-If your active editor tab contains a Mojo file with an `def main()` entry point,
-one of the quickest ways to run or debug it is using the **Run or Debug** button
-in the Editor toolbar.
+如果你的活动编辑器标签页中包含带有 `def main()` 入口的 Mojo 文件，运行或调试它最快的方式之一是使用编辑器工具栏中的**运行或调试**按钮。
 
 ![](images/quick-run-or-debug-button.png)
 
-To start debugging the current file:
+要开始调试当前文件：
 
-- Open the **Run or Debug** dropdown menu and choose **Debug Mojo File** or
-  **Debug Mojo File in Dedicated Terminal**.
+- 打开**运行或调试**下拉菜单，选择**Debug Mojo File**或**Debug Mojo File in Dedicated Terminal**。
 
   ![](images/quick-run-or-debug-menu.png)
 
-The two debug configurations differ in how they handle input and output:
+这两种调试配置在处理输入和输出方面有所不同：
 
-- **Debug Mojo File** launches the Mojo program detached from any terminal.
-  Standard output and standard error output for the program are displayed in the
-  **Debug Console**. You can't write to the program's standard input, but you
-  can see the program's output and interact with the debugger in a single
-  location.
+- **Debug Mojo File** 在不附加任何终端的情况下启动 Mojo 程序。程序的标准输出和标准错误输出显示在**调试控制台**中。你无法写入程序的标准输入，但你可以在一个位置查看程序的输出并与调试器交互。
 
-- **Debug Mojo File in Dedicated Terminal** creates a new instance of VS Code's
-  integrated terminal and attaches the program's input and output to the
-  terminal. This lets you interact with the program's standard input, standard
-  output and standard error output in the terminal, while the **Debug Console**
-  is used only for interactions with the debugger.
+- **Debug Mojo File in Dedicated Terminal** 创建一个新的 VS Code 集成终端实例，并将程序的输入和输出附加到该终端。这让你可以在终端中与程序的标准输入、标准输出和标准错误输出交互，而**调试控制台**仅用于与调试器交互。
 
-The **Run or Debug** button uses predefined launch configurations. There's
-currently no way to modify the `args`, `env`, `cwd` or other settings for
-programs launched with the **Run or Debug** configurations. If you need to
-customize any of these things, see [Edit launch
-configurations](#edit-launch-configurations).
+**运行或调试**按钮使用预定义的启动配置。目前无法修改使用**运行或调试**配置启动的程序的 `args`、`env`、`cwd` 或其他设置。如果你需要自定义这些内容，请参见[编辑启动配置](#edit-launch-configurations)。
 
-After you choose one of the debug configurations, the button updates to show
-the debug symbol. Click the button to re-run the previous configuration.
+选择一种调试配置后，按钮会更新为显示调试符号。点击按钮可重新运行之前的配置。
 
 ![](images/quick-run-or-debug-button-debug.png).
 
-### Run and Debug view
+### 运行和调试视图
 
-The **Run and Debug** view includes a button to launch debug sessions and a
-menu to select debug configurations. It also has areas to display current
-variables, watch expressions, the current call stack, and breakpoints.
+**运行和调试**视图包含启动调试会话的按钮和选择调试配置的菜单。它还有显示当前变量、监视表达式、当前调用栈和断点的区域。
 
 <figure>
 
 ![](images/run-and-debug-view.png)
 
-<figcaption><b>Figure 1.</b> Run and Debug view</figcaption>
+<figcaption><b>图 1.</b> 运行和调试视图</figcaption>
 </figure>
 
-To open **Run and Debug** view, click the **Run and Debug** icon in the
-**Activity Bar** (on the left side of the VS Code window) or press
-<kbd>Control+Shift+D</kbd> (<kbd>Command+Shift+D</kbd> on macOS).
+要打开**运行和调试**视图，点击 VS Code 窗口左侧**活动栏**中的**运行和调试**图标，或按 <kbd>Control+Shift+D</kbd>（macOS 上为 <kbd>Command+Shift+D</kbd>）。
 
 ![](images/run-and-debug-icon.png)
 
-If you haven't created any launch configurations in the current project,
-VS Code shows the **Run start view**.
+如果你在当前项目中没有创建任何启动配置，VS Code 会显示**运行起始视图**。
 
 <figure>
 
 ![](images/run-start-view.png)
 
-<figcaption><b>Figure 2.</b> Run start view</figcaption>
+<figcaption><b>图 2.</b> 运行起始视图</figcaption>
 </figure>
 
-If you've already launched a debug session or created a `launch.json` file to
-define launch configurations, you'll see the **Launch configurations** menu,
-which lets you choose configurations and start debug sessions:
+如果你已经启动过调试会话或创建了 `launch.json` 文件来定义启动配置，你会看到**启动配置**菜单，让你选择配置并启动调试会话：
 
 <figure>
 
 ![](images/launch-configuration-menu.png)
 
-<figcaption><b>Figure 3.</b> Launch configurations menu</figcaption>
+<figcaption><b>图 3.</b> 启动配置菜单</figcaption>
 </figure>
 
-### Other ways to start a debug session
+### 其他启动调试会话的方式
 
-There are a number of other ways to start a debug session.
+还有许多其他启动调试会话的方式。
 
-#### Launching from the Command Palette
+#### 从命令面板启动
 
-If you have a Mojo file open in your active editor, you can also start a debug
-session from the **Command Palette**.
+如果你的活动编辑器中打开了 Mojo 文件，你也可以从**命令面板**启动调试会话。
 
-1. Click **View** > **Command Palette** or press <kbd>Control+Shift+P</kbd>
-   (<kbd>Command+Shift+P</kbd> on macOS).
+1. 点击**视图** > **命令面板**或按 <kbd>Control+Shift+P</kbd>（macOS 上为 <kbd>Command+Shift+P</kbd>）。
 
-2. Enter "Mojo" at the prompt to bring up the Mojo commands. You should see the
-   same debug configurations described in [Quick run or
-   debug](#quick-run-or-debug).
+2. 在提示符处输入"Mojo"以调出 Mojo 命令。你应该能看到[快速运行或调试](#quick-run-or-debug)中描述的相同调试配置。
 
-#### Launch from the File Explorer
+#### 从文件资源管理器启动
 
-To launch a debug session from the **File Explorer** view:
+要从**文件资源管理器**视图启动调试会话：
 
-1. Right-click on a Mojo file.
-2. Select a Mojo debug configuration.
+1. 右键点击 Mojo 文件。
+2. 选择一个 Mojo 调试配置。
 
-You should see the same debug configurations described in [Quick run or
-debug](#quick-run-or-debug).
+你应该能看到[快速运行或调试](#quick-run-or-debug)中描述的相同调试配置。
 
-#### Debug with F5
+#### 使用 F5 调试
 
-Press F5 to start a debug session using the current debug configuration.
+按 F5 使用当前调试配置启动调试会话。
 
-If you don't have any existing debug configurations available to select, and
-your active editor contains a Mojo file with an `def main()` entry point,
-pressing F5 will launch and debug the current file using the **Debug Mojo
-File** action described in [Quick run or debug](#quick-run-or-debug).
+如果你没有任何可选择的现有调试配置，且活动编辑器中包含带有 `def main()` 入口的 Mojo 文件，按 F5 将使用[快速运行或调试](#quick-run-or-debug)中描述的**Debug Mojo File**操作启动并调试当前文件。
 
-## Starting the debugger from the command line
+## 从命令行启动调试器
 
-Use the `mojo debug` command to start a debug session from the command line. You
-can choose from two debugging interfaces:
+使用 `mojo debug` 命令从命令行启动调试会话。你可以选择两种调试界面：
 
-- With the `--vscode` flag, `mojo debug` starts a debug session on VS Code if
-  it's running and the Mojo extension is enabled.
+- 使用 `--vscode` 标志，如果 VS Code 正在运行且 Mojo 扩展已启用，`mojo debug` 会在 VS Code 中启动调试会话。
 
-- Without the `--vscode` flag, `mojo debug` starts a command-line [LLDB
-  debugger](https://lldb.llvm.org/) session.
+- 不使用 `--vscode` 标志，`mojo debug` 启动命令行 [LLDB 调试器](https://lldb.llvm.org/)会话。
 
-You can choose to build and debug a Mojo file, run and debug a compiled binary,
-or to attach the debugger to a running process.
+你可以选择构建并调试 Mojo 文件、运行并调试已编译的二进制文件，或将调试器附加到正在运行的进程。
 
-:::note[Environment variables]
+:::note[环境变量]
 
-When you debug a program from the command line using `--vscode`, the program
-runs with the environment variables set in the terminal. When launching from
-inside VS Code via the GUI, the environment is defined by the VS Code
-[launch configuration](#launch-configurations).
+当你使用 `--vscode` 从命令行调试程序时，程序使用终端中设置的环境变量运行。当从 VS Code 内部通过 GUI 启动时，环境由 VS Code [启动配置](#launch-configurations)定义。
 
 :::
 
-For a full list of command-line options, see the [`mojo debug` reference
-page](/docs/cli/debug).
+有关命令行选项的完整列表，请参见 [`mojo debug` 参考页面](/docs/cli/debug)。
 
-### Start a debug session from the command line
+### 从命令行启动调试会话
 
-With VS Code open, run the following command (either from VS Code's integrated
-terminal or an external shell):
+在 VS Code 打开的情况下，运行以下命令（从 VS Code 的集成终端或外部 shell）：
 
 ```bash
 mojo debug --vscode myproject.mojo
 ```
 
-Or to debug a compiled binary:
+或者调试已编译的二进制文件：
 
 ```bash
 mojo debug --vscode myproject
 ```
 
-For best results, build with the `-O0 -g` command-line options when you build a
-binary that you intend to debug—this produces a binary with full debug info.
-(When you call `mojo debug` on a Mojo source file, it includes debug
-information by default.) See the [`mojo build` reference page](/docs/cli/build/)
-for details on compilation options.
+为获得最佳结果，在构建你打算调试的二进制文件时，请使用 `-O0 -g` 命令行选项——这会生成包含完整调试信息的二进制文件。（当你对 Mojo 源文件调用 `mojo debug` 时，默认包含调试信息。）有关编译选项的详情，请参见 [`mojo build` 参考页面](/docs/cli/build/)。
 
-### Attach the debugger to a running process from the command line
+### 从命令行将调试器附加到正在运行的进程
 
-You can also attach the debugger to a running process by specifying either the
-process ID or process name on the command line:
+你也可以通过在命令行上指定进程 ID 或进程名称来将调试器附加到正在运行的进程：
 
 ```bash
 mojo debug --vscode --pid <PROCESS_ID>
 ```
 
-Or:
+或者：
 
 ```bash
 mojo debug --vscode --process-name <PROCESS_NAME>
 ```
 
-## Launch configurations
+## 启动配置
 
-VS Code *launch configurations* let you define setup information for debugging
-your applications.
+VS Code *启动配置*让你定义调试应用程序的设置信息。
 
-The Mojo debugger provides the following launch configuration templates:
+Mojo 调试器提供以下启动配置模板：
 
-- Debug current Mojo file. Launches and debugs the Mojo file in the active
-  editor tab. Effectively the same as the **Debug Mojo File** action described
-  in [Quick run or debug](#quick-run-or-debug), but with more configuration
-  options.
+- 调试当前 Mojo 文件。启动并调试活动编辑器标签页中的 Mojo 文件。实际上与[快速运行或调试](#quick-run-or-debug)中描述的**Debug Mojo File**操作相同，但有更多配置选项。
 
-- Debug Mojo file. Like the previous entry, except that it identifies a
-  specific file to launch and debug, no matter what file is displayed in the
-  active editor.
+- 调试 Mojo 文件。与前一项类似，不同之处在于它指定一个特定文件来启动和调试，无论活动编辑器中显示的是什么文件。
 
-- Debug binary. This configuration operates on a prebuilt binary, which could
-  be written in any mixture of languages supported by LLDB (Mojo, C, C++, etc.).
-  You need to set the `program` field to the path of your binary.
+- 调试二进制文件。此配置操作预构建的二进制文件，可以是 LLDB 支持的任何语言混合（Mojo、C、C++ 等）。你需要将 `program` 字段设置为二进制文件的路径。
 
-- Attach to process. Launches a debug session attached to a running process. On
-  launch, you choose the process you want to debug from a list of running
-  processes.
+- 附加到进程。启动一个附加到正在运行进程的调试会话。启动时，你可以从正在运行的进程列表中选择要调试的进程。
 
-You can edit any of these templates to customize them. All VS Code launch
-configurations must contain the following attributes:
+你可以编辑任何这些模板来自定义它们。所有 VS Code 启动配置必须包含以下属性：
 
-- `name`. The name of the launch configuration, which shows up in the UI (for
-  example, "Run current Mojo file").
-- `request`. Can be either `launch` (to run a program from VS Code) or `attach`
-  (to attach to and debug a running file).
-- `type`. Use `mojo-lldb` for the Mojo debugger. Use `mojo-cuda-gdb` to debug on
-  GPU.
+- `name`。启动配置的名称，显示在 UI 中（例如"Run current Mojo file"）。
+- `request`。可以是 `launch`（从 VS Code 运行程序）或 `attach`（附加到并调试正在运行的文件）。
+- `type`。Mojo 调试器使用 `mojo-lldb`。GPU 调试使用 `mojo-cuda-gdb`。
 
-In addition, Mojo launch configurations can contain the following attributes:
+此外，Mojo 启动配置可以包含以下属性：
 
-- `args`. Any command-line arguments to be passed to the program.
-- `cwd`. The current working directory to run the program in.
-- `description`. A longer description of the configuration, not shown in the UI.
-- `env`. Environment variables to be set before running the program.
-- `mojoFile`. Path to a Mojo file to launch and debug.
-- `pid`. Process ID of the running process to attach to.
-- `program`. Path to a compiled binary to launch and debug, or the
-  program to attach to.
-- `runInTerminal`. True to run the program with a dedicated terminal, which
-  allows the program to receive standard input from the terminal. False to run
-  the program with its output directed to the **Debug Console**.
+- `args`。传递给程序的任何命令行参数。
+- `cwd`。运行程序的当前工作目录。
+- `description`。配置的较长描述，不在 UI 中显示。
+- `env`。运行程序前要设置的环境变量。
+- `mojoFile`。要启动和调试的 Mojo 文件路径。
+- `pid`。要附加到的正在运行进程的进程 ID。
+- `program`。要启动和调试的已编译二进制文件路径，或要附加到的程序。
+- `runInTerminal`。设为 True 以使用专用终端运行程序，允许程序从终端接收标准输入。设为 False 以将程序输出定向到**调试控制台**。
 
-Mojo GPU launch configurations can contain the following attributes:
+Mojo GPU 启动配置可以包含以下属性：
 
-- `breakOnLaunch`. Set to true to automatically break when a GPU kernel
-  launches.
+- `breakOnLaunch`。设为 true 以在 GPU 内核启动时自动中断。
 
-- `initCommands`. An array of commands to issue to the debugger on startup. To
-  use the classic CUDA-GDB debugger backend, add the following lines to your
-  configuration:
+- `initCommands`。启动时向调试器发出的命令数组。要使用经典 CUDA-GDB 调试器后端，请在配置中添加以下行：
 
   ```json
   "initCommands": [
@@ -300,246 +209,177 @@ Mojo GPU launch configurations can contain the following attributes:
   ],
   ```
 
-- `legacyDebugger`. Set to true to use the classic debugger backend.
+- `legacyDebugger`。设为 true 以使用经典调试器后端。
 
-If configuration is a `launch` request, the configuration must include either
-the `mojoFile` or `program` attribute.
+如果配置是 `launch` 请求，配置必须包含 `mojoFile` 或 `program` 属性。
 
-For `attach` requests, the configuration must include either the `pid` or
-`program` attribute.
+对于 `attach` 请求，配置必须包含 `pid` 或 `program` 属性。
 
-VS Code performs variable substitution on the launch configurations. You can
-use `${workspaceFolder}` to substitute the path to the current workspace, and
-`${file}` to represent the file in the active editor tab. For a complete list
-of variables, see the VS Code [Variables
-reference](https://code.visualstudio.com/docs/editor/variables-reference).
+VS Code 会对启动配置执行变量替换。你可以使用 `${workspaceFolder}` 替换当前工作区的路径，使用 `${file}` 表示活动编辑器标签页中的文件。有关变量的完整列表，请参见 VS Code [变量参考](https://code.visualstudio.com/docs/editor/variables-reference)。
 
-For more information, see the VS Code documentation for
-[Launch configurations](https://code.visualstudio.com/docs/editor/debugging#_launch-configurations).
+更多信息请参见 VS Code 文档中的[启动配置](https://code.visualstudio.com/docs/editor/debugging#_launch-configurations)。
 
-:::note[Compilation options]
+:::note[编译选项]
 
-Mojo launch configurations don't allow you to specify compilation options. If
-you need to specify compilation options, you can build the binary using [`mojo
-build`](/docs/cli/build), then use a launch configuration with the `program`
-option to launch the compiled binary. Or if you [start the debugger from the
-command line](#starting-the-debugger-from-the-command-line), you can pass
-compilation options to the `mojo debug` command.
+Mojo 启动配置不允许你指定编译选项。如果你需要指定编译选项，可以使用 [`mojo build`](/docs/cli/build) 构建二进制文件，然后使用带有 `program` 选项的启动配置来启动已编译的二进制文件。或者，如果你[从命令行启动调试器](#starting-the-debugger-from-the-command-line)，你可以将编译选项传递给 `mojo debug` 命令。
 
 :::
 
-### Edit launch configurations
+### 编辑启动配置
 
-To edit launch configurations:
+要编辑启动配置：
 
-1. If the **Run and Debug** view isn't already open, click the **Run and
-   Debug** icon in the **Activity Bar** (on the left side of the VS Code window)
-   or press <kbd>Control+Shift+D</kbd> (<kbd>Command+Shift+D</kbd> on macOS).
+1. 如果**运行和调试**视图尚未打开，点击 VS Code 窗口左侧**活动栏**中的**运行和调试**图标，或按 <kbd>Control+Shift+D</kbd>（macOS 上为 <kbd>Command+Shift+D</kbd>）。
 
    ![](images/run-and-debug-icon.png)
 
-2. Create or open the `launch.json` file:
-   1. If you see the **Run start view**, click **create a launch.json file**.
-   2. If you already have launch configurations set up, click the gear icon
-      next to the **Launch configurations** menu.
+2. 创建或打开 `launch.json` 文件：
+   1. 如果你看到**运行起始视图**，点击**create a launch.json file**。
+   2. 如果你已经设置了启动配置，点击**启动配置**菜单旁边的齿轮图标。
       ![](images/launch-configuration-menu.png)
 
-3. Select **Mojo** from the list of debuggers.
+3. 从调试器列表中选择**Mojo**。
 
-VS Code opens the new `launch.json` file in an editor tab, with templates for
-some common debug actions. Click **Add configuration** to add a new
-configuration template.
+VS Code 会在编辑器标签页中打开新的 `launch.json` 文件，其中包含一些常见调试操作的模板。点击**添加配置**以添加新的配置模板。
 
-## Using the debugger
+## 使用调试器
 
-When a debug session is running, use the debug toolbar to pause, continue, and
-step through the program.
+当调试会话运行时，使用调试工具栏暂停、继续和单步执行程序。
 
 ![](images/debug-toolbar.png)
 
-The buttons on the toolbar are:
+工具栏上的按钮有：
 
-- **Continue/Pause**: If the program is stopped, resume the normal execution of
-  the program up to the next breakpoint, signal or crash. Otherwise, pause all
-  the threads of the program at once.
+- **继续/暂停**：如果程序已停止，恢复程序的正常执行直到下一个断点、信号或崩溃。否则，同时暂停程序的所有线程。
 
-- **Step Over**: Execute the next line of code without stopping at function
-  calls.
+- **单步跳过**：执行下一行代码，不在函数调用处停止。
 
-- **Step Into**: Execute the next line of code and stop at the first function
-  call. If the program is stopped just before a function call, steps into the
-  function so you can step through it line-by-line.
+- **单步进入**：执行下一行代码并在第一个函数调用处停止。如果程序刚好停在函数调用之前，则进入函数以便你逐行单步执行。
 
-- **Step Out**: Finish the execution of the current function and stop right
-  after returning to the parent function.
+- **单步跳出**：完成当前函数的执行，在返回到父函数后立即停止。
 
-- **Restart**: If this is a `launch` session, terminate the current program and
-  restart the debug session. Otherwise, detach from the target process and
-  reattach to it.
+- **重新启动**：如果是 `launch` 会话，终止当前程序并重新启动调试会话。否则，从目标进程分离并重新附加。
 
-- **Stop**: If this is a `launch` session, terminate the current program.
-  Otherwise, detach from the target process without killing it.
+- **停止**：如果是 `launch` 会话，终止当前程序。否则，从目标进程分离而不终止它。
 
-The debugger currently has the following limitations:
+调试器目前有以下限制：
 
-- No support for breaking automatically on Mojo errors.
+- 不支持在 Mojo 错误上自动中断。
 
-- When stepping out of a function, the returned value is not displayed.
+- 跳出函数时，不显示返回值。
 
-- LLDB doesn't support stopping or resuming individual threads.
+- LLDB 不支持停止或恢复单个线程。
 
-### Breakpoints
+### 断点
 
-The Mojo debugger supports setting
-[standard breakpoints](https://code.visualstudio.com/docs/editor/debugging#_breakpoints),
-[logpoints](https://code.visualstudio.com/docs/editor/debugging#_logpoints),
-[function breakpoints](https://code.visualstudio.com/docs/editor/debugging#_function-breakpoints),
-[data breakpoints](https://code.visualstudio.com/docs/editor/debugging#_data-breakpoints),
-and
-[triggered breakpoints](https://code.visualstudio.com/docs/editor/debugging#_triggered-breakpoints),
-as described in the VS Code documentation. The Mojo debugger also supports
-*error breakpoints* (also known as "break on raise"), which break whenever a
-`raise` statement is executed.
+Mojo 调试器支持设置[标准断点](https://code.visualstudio.com/docs/editor/debugging#_breakpoints)、[日志断点](https://code.visualstudio.com/docs/editor/debugging#_logpoints)、[函数断点](https://code.visualstudio.com/docs/editor/debugging#_function-breakpoints)、[数据断点](https://code.visualstudio.com/docs/editor/debugging#_data-breakpoints)和[触发断点](https://code.visualstudio.com/docs/editor/debugging#_triggered-breakpoints)，如 VS Code 文档中所述。Mojo 调试器还支持*错误断点*（也称为"break on raise"），每当执行 `raise` 语句时就会中断。
 
-When debugging Mojo code, the debugger doesn't support conditional breakpoints
-based on an expression (it does
-support hit counts, which VS Code classifies as a kind of conditional
-breakpoint).
+调试 Mojo 代码时，调试器不支持基于表达式的条件断点（它确实支持命中次数，VS Code 将其归类为一种条件断点）。
 
-When editing a breakpoint, you're offered four options:
+编辑断点时，你会看到四个选项：
 
-- **Expression**. Set a conditional breakpoint (not currently supported).
-- **Hit Count**. Add a hit count to a breakpoint (supported).
-- **Log Message**. Add a logpoint (supported)
-- **Wait for Breakpoint**. Add a triggered breakpoint (supported).
+- **Expression**。设置条件断点（目前不支持）。
+- **Hit Count**。为断点添加命中次数（支持）。
+- **Log Message**。添加日志断点（支持）。
+- **Wait for Breakpoint**。添加触发断点（支持）。
 
-#### Set a hit count breakpoint
+#### 设置命中次数断点
 
-A hit count breakpoint is a breakpoint that only breaks execution after the
-debugger hits it a specified number of times.
+命中次数断点是一种只有在调试器命中指定次数后才会中断执行的断点。
 
-To add a hit count breakpoint:
+要添加命中次数断点：
 
-1. Right click in the left gutter of the editor where you want to place the
-   breakpoint, and select **Add Conditional Breakpoint.**
-2. Select **Hit Count** from the menu and enter the desired hit count.
+1. 在编辑器左侧边栏中你想放置断点的位置右键点击，选择**Add Conditional Breakpoint.**
+2. 从菜单中选择**Hit Count**并输入所需的命中次数。
 
-To change an existing breakpoint to a hit count breakpoint:
+要将现有断点更改为命中次数断点：
 
-1. Right click on the breakpoint in the left gutter of the editor and select
-   **Edit breakpoint**.
-2. Select **Hit Count** from the menu and enter the desired hit count.
+1. 在编辑器左侧边栏中右键点击断点，选择**Edit breakpoint**。
+2. 从菜单中选择**Hit Count**并输入所需的命中次数。
 
-You can also edit a breakpoint from the **Breakpoints** section of the **Run and
-Debug** view:
+你也可以从**运行和调试**视图的**断点**部分编辑断点：
 
-- Right-click on the breakpoint and select **Edit Condition**, or,
-- Click the **Edit Condition** icon next to the breakpoint.
+- 右键点击断点并选择**Edit Condition**，或者
+- 点击断点旁边的**Edit Condition**图标。
 
-This brings up the same menu, **next to the breakpoint in the editor tab**.
+这会调出相同的菜单，**在编辑器标签页的断点旁边**。
 
-#### Enable error breakpoints
+#### 启用错误断点
 
-You can enable and disable error breakpoints in VS Code by selecting "Mojo
-Raise" in the **Breakpoints** section of the **Run and Debug** view. If enabled
-during debugging, executing a `raise` statement causes the debugger to stop
-execution and highlight the line of code where the error was raised.
+你可以在 VS Code 中通过在**运行和调试**视图的**断点**部分选择"Mojo Raise"来启用和禁用错误断点。如果在调试期间启用，执行 `raise` 语句会导致调试器停止执行并高亮显示引发错误的代码行。
 
-![VS Code window showing a program paused in the debugger with the Run and Debug view visible. The program is paused at a raise statement.](images/break-on-raise.png)
+![VS Code 窗口显示程序在调试器中暂停，运行和调试视图可见。程序在 raise 语句处暂停。](images/break-on-raise.png)
 
-### View local variables
+### 查看局部变量
 
-When a program is paused in the debugger, the editor shows local variable values
-inline. You can also find them in the **Variables** section of the **Run and
-Debug** view.
+当程序在调试器中暂停时，编辑器会内联显示局部变量值。你也可以在**运行和调试**视图的**变量**部分找到它们。
 
 <figure>
 
-![VS Code window showing a program paused in the debugger, with the variables sections of the Run and Debug view visible. The edit shows three functions (nested2, nested1, and main). The program is paused at a breakpoint in nested2.](images/debugger-variables.png)
+![VS Code 窗口显示程序在调试器中暂停，运行和调试视图的变量部分可见。编辑器显示三个函数（nested2、nested1 和 main）。程序在 nested2 中的断点处暂停。](images/debugger-variables.png)
 
-<figcaption><b>Figure 4.</b> Local variable values displayed in the debugger</figcaption>
+<figcaption><b>图 4.</b> 调试器中显示的局部变量值</figcaption>
 </figure>
 
-### View the call stack
+### 查看调用栈
 
-When a program is paused in the debugger, the **Run and Debug** view shows the
-current call stack. (You may see multiple call stacks, one for each active
-thread in the program.)
+当程序在调试器中暂停时，**运行和调试**视图显示当前调用栈。（你可能会看到多个调用栈，程序中每个活动线程一个。）
 
 <figure>
 
-![VS Code window showing a program paused in the debugger, with the call stack and variables sections of the Run and Debug view visible. The call stack shows three functions (nested2, nested1, and main). The program is paused at a breakpoint in nested2; the parent function nested1 is selected in the call stack, and editor highlights the current line in nested1 (the call to nested2()).](images/debugger-call-stack-nested1.png)
+![VS Code 窗口显示程序在调试器中暂停，运行和调试视图的调用栈和变量部分可见。调用栈显示三个函数（nested2、nested1 和 main）。程序在 nested2 中的断点处暂停；调用栈中选择了父函数 nested1，编辑器高亮显示 nested1 中的当前行（对 nested2() 的调用）。](images/debugger-call-stack-nested1.png)
 
-<figcaption><b>Figure 5.</b> Call stack in Run and Debug view</figcaption>
+<figcaption><b>图 5.</b> 运行和调试视图中的调用栈</figcaption>
 </figure>
 
-The **Call Stack** section of the Run and Debug view shows a stack frame for
-each function call in the current call stack. Clicking on the name of the
-function highlights the current line in that function. For example, in Figure
-5, the program is paused at a breakpoint in `nested2()`, but the parent
-function, `nested1()` is selected in the call stack. The editor highlights the
-current line in `nested1()` (that is, the call to `nested2()`) and shows the
-current local variable values for `nested1()`.
+**运行和调试**视图的**调用栈**部分为当前调用栈中的每个函数调用显示一个栈帧。点击函数名会高亮显示该函数中的当前行。例如，在图 5 中，程序在 `nested2()` 中的断点处暂停，但调用栈中选择了父函数 `nested1()`。编辑器高亮显示 `nested1()` 中的当前行（即对 `nested2()` 的调用），并显示 `nested1()` 的当前局部变量值。
 
-### Use the Debug Console
+### 使用调试控制台
 
-The **Debug Console** gives you a command-line interface to the debugger. The
-**Debug Console** processes LLDB commands and Mojo expressions.
+**调试控制台**为你提供了调试器的命令行界面。**调试控制台**处理 LLDB 命令和 Mojo 表达式。
 
-Anything prefixed with a colon (`:`) is treated as an LLDB command. Any other
-input is treated as an expression.
+任何以冒号（`:`）为前缀的内容都被视为 LLDB 命令。任何其他输入都被视为表达式。
 
-Currently Mojo expressions are limited to inspecting variables and their fields.
-The console also supports subscript notation (`vector[index]`) for certain data
-structures in the standard library, including `List` and `SIMD`.
+目前 Mojo 表达式仅限于检查变量及其字段。控制台还支持标准库中某些数据结构的下标表示法（`vector[index]`），包括 `List` 和 `SIMD`。
 
-In the future, we intend to provide a way for arbitrary data structures to
-support subscript notation in the **Debug Console**.
+未来，我们打算提供一种方式让任意数据结构在**调试控制台**中支持下标表示法。
 
 :::note
 
-The **Debug Console** only accepts input when the program is paused.
+**调试控制台**仅在程序暂停时接受输入。
 
 :::
 
-## Tips and tricks
+## 技巧和窍门
 
-There are several features in the standard library that aren't directly related
-to the debugger, but which can help you debug your programs. These include:
+标准库中有一些与调试器不直接相关但可以帮助你调试程序的功能，包括：
 
-- Programmatic breakpoints.
-- Setting parameters from the Mojo command line.
+- 编程式断点。
+- 从 Mojo 命令行设置参数。
 
-### Set a programmatic breakpoint
+### 设置编程式断点
 
-To break at a specific point in your code, you can use the built-in
-[`breakpoint()`](/docs/std/builtin/breakpoint/breakpoint/) function:
+要在代码中的特定位置中断，你可以使用内置的 [`breakpoint()`](/docs/std/builtin/breakpoint/breakpoint/) 函数：
 
 ```mojo
 if some_value.is_valid():
    do_the_right_thing()
 else:
-   # We should never get here!
+   # 我们永远不应该到达这里！
    breakpoint()
 ```
 
-If you have VS Code open and run this code in debug mode (either using VS Code
-or `mojo debug`), hitting the `breakpoint()` call causes an error, which
-triggers the debugger.
+如果你在 VS Code 中打开并以调试模式运行此代码（使用 VS Code 或 `mojo debug`），命中 `breakpoint()` 调用会产生一个错误，从而触发调试器。
 
-:::note[Assertions]
+:::note[断言]
 
-The [`testing`](/docs/std/testing/testing/) module includes a number of
-ways to specify assertions. Assertions also trigger an error, so can open the
-debugger in the same way that a `breakpoint()` call will.
+[`testing`](/docs/std/testing/testing/) 模块包含多种指定断言的方式。断言也会触发错误，因此可以像 `breakpoint()` 调用一样打开调试器。
 
 :::
 
-### Set parameters from the Mojo command line
+### 从 Mojo 命令行设置参数
 
-You can use the [`sys`](/docs/std/sys/) module to retrieve
-parameter values specified on the Mojo command line. Among other things, this
-is an easy way to switch debugging logic on and off. For example:
+你可以使用 [`sys`](/docs/std/sys/) 模块检索在 Mojo 命令行上指定的参数值。除其他用途外，这是一种轻松开关调试逻辑的方式。例如：
 
 ```mojo
 from std.sys import is_defined
@@ -550,47 +390,33 @@ def some_function_with_issues():
         breakpoint()
 ```
 
-To activate this code, use the [`-D` command-line
-option](/docs/cli/debug#compilation-options) to define `DEBUG_ME`:
+要激活此代码，使用 [`-D` 命令行选项](/docs/cli/debug#compilation-options)定义 `DEBUG_ME`：
 
 ```bash
 mojo debug -D DEBUG_ME main.mojo
 ```
 
-The `is_defined()` function returns a compile-time true or false value based on
-whether the specified name is defined. Since the `breakpoint()` call is inside a
-[`comptime if` statement](/docs/manual/metaprogramming/comptime-evaluation/#comptime-if),
-it is only included in the compiled code when the `DEBUG_ME` name is defined on
-the command line.
+`is_defined()` 函数根据指定名称是否已定义返回编译时的 true 或 false 值。由于 `breakpoint()` 调用在 [`comptime if` 语句](/docs/manual/metaprogramming/comptime-evaluation/#comptime-if)内，只有当 `DEBUG_ME` 名称在命令行上定义时，它才会被包含在编译后的代码中。
 
-## Troubleshooting
+## 故障排除
 
 ### `error: can't connect to the RPC debug server socket`
 
-If using `mojo debug --vscode` gives you the message `error: can't connect to
-the RPC debug server socket: Connection refused`, try the following possible
-fixes:
+如果使用 `mojo debug --vscode` 时出现消息 `error: can't connect to the RPC debug server socket: Connection refused`，请尝试以下可能的修复方法：
 
-- Make sure VS Code is open.
-- If VS Code is already open, try restarting VS Code.
-- If there are other VS Code windows open, try closing them and then restarting.
-  This error can sometimes occur when multiple windows have opened and closed in
-  certain orders.
+- 确保 VS Code 已打开。
+- 如果 VS Code 已打开，尝试重启 VS Code。
+- 如果有其他 VS Code 窗口打开，尝试关闭它们然后重启。此错误有时会在多个窗口以特定顺序打开和关闭时发生。
 
 ### `error: couldn't get a valid response from the RPC server`
 
-If using `mojo debug --vscode` gives you the message `error: couldn't get a
-valid response from the RPC server`, try the following possible fixes:
+如果使用 `mojo debug --vscode` 时出现消息 `error: couldn't get a valid response from the RPC server`，请尝试以下可能的修复方法：
 
-- Make sure VS Code is open to a valid Mojo codebase. This error can sometimes
-  happen if the VS Code window is open to some other codebase.
-- If there are multiple VS Code windows open, try closing all but the one you
-  wish to debug in.
-- Restart VS Code.
-- Reinstall the SDK and restart VSCode.
-- If you are working on a development version of the SDK, make sure that all
-  SDK tools are properly built with your build system, and then reload VS Code.
-- As a last resort, restarting your entire computer can fix this problem.
+- 确保 VS Code 打开的是一个有效的 Mojo 代码库。此错误有时会在 VS Code 窗口打开的是其他代码库时发生。
+- 如果有多个 VS Code 窗口打开，尝试关闭除你要调试的窗口之外的所有窗口。
+- 重启 VS Code。
+- 重新安装 SDK 并重启 VS Code。
+- 如果你正在使用开发版本的 SDK，确保所有 SDK 工具都已通过你的构建系统正确构建，然后重新加载 VS Code。
+- 作为最后的手段，重启整个计算机可以解决此问题。
 
-If these steps don't help, please file an issue. We'd love your help identifying
-possible causes and fixes!
+如果这些步骤没有帮助，请提交问题。我们非常希望你的帮助来识别可能的原因和修复方法！

@@ -1,30 +1,28 @@
 ---
 title: "tensor_ops"
 sidebar_label: "tensor_ops"
-description: "This module provides tensor core operations and utilities for GPU computation.  The module includes functions for: - Tensor core based reductions (tc_reduce) supporting various data types and SIMD wid"
+description: "此模块提供 GPU 计算的张量核心操作和工具。该模块包括以下功能：- 基于张量核心的归约 (tc_reduce)，支持各种数据类型和 SIMD 宽度"
 ---
 
 # tensor_ops
 
-This module provides tensor core operations and utilities for GPU computation.
+此模块提供 GPU 计算的张量核心操作和工具。
 
-The module includes functions for:
-- Tensor core based reductions (tc_reduce) supporting various data types and SIMD widths
-- GEVM (General Matrix-Vector Multiplication) reductions using tensor cores
-- Efficient warp-level reductions leveraging tensor core operations
+该模块包括以下功能：
+- 基于张量核心的归约 (tc_reduce)，支持各种数据类型和 SIMD 宽度
+- 使用张量核心的 GEVM（通用矩阵-向量乘法）归约
+- 利用张量核心操作的高效 warp 级归约
 
-The tensor core operations are optimized for NVIDIA GPUs and support different data types
-including float32, float16, and bfloat16. The module provides both scalar and vector
-variants of reduction operations with different SIMD widths for maximum performance.
+张量核心操作针对 NVIDIA GPU 进行了优化，支持不同的数据类型，包括 float32、float16 和 bfloat16。该模块提供了标量和向量两种归约操作变体，具有不同的 SIMD 宽度以实现最佳性能。
 
-Key functions:
-- tc_reduce: Main tensor core reduction function supporting various types and widths
-- tc_reduce_gevm_8x: 8x GEVM reduction using tensor cores
-- tc_reduce_gevm_4x: 4x GEVM reduction using tensor cores
+关键函数：
+- tc_reduce：支持各种类型和宽度的主要张量核心归约函数
+- tc_reduce_gevm_8x：使用张量核心的 8x GEVM 归约
+- tc_reduce_gevm_4x：使用张量核心的 4x GEVM 归约
 
-Note:
-    Most operations require NVIDIA GPUs with tensor core support.
-    Operations are optimized for warp-level execution.
+注意：
+    大多数操作需要支持张量核心的 NVIDIA GPU。
+    操作针对 warp 级执行进行了优化。
 
 ## 函数
 

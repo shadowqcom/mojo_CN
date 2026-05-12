@@ -1,70 +1,61 @@
 ---
-title: Jupyter notebooks
+title: Jupyter 笔记本
 sidebar_position: 5
-description: Using Mojo in local and Colab Jupyter Notebooks
+description: 在本地和 Colab Jupyter 笔记本中使用 Mojo
 ---
 
-[Jupyter notebooks](https://jupyter.org) provide a web-based environment for
-creating and sharing Mojo computational documents. They combine code, results,
-and explanation so readers explore what you built, how you built it, and why it
-matters.
+[Jupyter 笔记本](https://jupyter.org)提供了一个基于 Web 的环境，用于创建和共享 Mojo 计算文档。它们将代码、结果和说明结合在一起，让读者可以探索你构建了什么、如何构建的以及为什么重要。
 
-You can run Mojo language notebooks locally or in GPU-backed Google Colab
-environments to accelerate workloads. For teaching, learning, and exploration,
-notebooks provide a hands-on, iterative workflow.
+你可以在本地或在支持 GPU 的 Google Colab 环境中运行 Mojo 语言笔记本，以加速工作负载。对于教学、学习和探索，笔记本提供了一种动手实践、迭代式的工作流程。
 
-This page assumes you'll work with Mojo notebooks in one of two ways:
+本页假设你将通过以下两种方式之一使用 Mojo 笔记本：
 
 - **Google Colab** <br />
-  Fast setup, optional GPU acceleration, ideal for quick experiments and for
-  learning GPU programming when you don't have a compatible GPU-enabled
-  computer on-hand.
-- **Local JupyterLab** <br />
-  Private environment with full control of code, data, and dependencies.
+  快速设置，可选 GPU 加速，非常适合快速实验以及在你没有兼容的 GPU 计算机时学习 GPU 编程。
+- **本地 JupyterLab** <br />
+  私有环境，完全控制代码、数据和依赖项。
 
-Both options use the same notebook model and the same Mojo cell magic.
+两种选项使用相同的笔记本模型和相同的 Mojo 单元魔法命令。
 
-## Using Mojo on Google Colab
+## 在 Google Colab 上使用 Mojo
 
-1. Create a Notebook:
+1. 创建笔记本：
 
-    Visit [Google Colab](https://colab.google) and create a new notebook.
+    访问 [Google Colab](https://colab.google) 并创建一个新笔记本。
 
-2. Install Mojo:
+2. 安装 Mojo：
 
-   For the nightly release:
+   对于 nightly 版本：
 
     ```python
     !pip install --pre mojo --extra-index-url https://whl.modular.com/nightly/simple/
     ```
 
-   For the stable release:
+   对于稳定版本：
 
     ```python
     !pip install mojo
     ```
 
-   Wait for the "Successfully installed" message.
+   等待"Successfully installed"消息。
 
-3. Enable Mojo:
+3. 启用 Mojo：
 
-    In the first cell, run:
+    在第一个单元格中运行：
 
     ```python
     import mojo.notebook
     ```
 
-    This adds the `%%mojo` cell magic, so you can compile and
-    run Mojo code.
+    这会添加 `%%mojo` 单元魔法命令，使你可以编译和运行 Mojo 代码。
 
-    Your Colab notebook is now ready to run Mojo programs.
+    你的 Colab 笔记本现在已准备好运行 Mojo 程序。
 
-## Using Mojo in Local Jupyter Notebooks
+## 在本地 Jupyter 笔记本中使用 Mojo
 
-Local notebooks use `pixi` to manage an environment with
-Jupyter and Mojo.
+本地笔记本使用 `pixi` 来管理包含 Jupyter 和 Mojo 的环境。
 
-1. Create a project:
+1. 创建项目：
 
     ```shell
     pixi init notebooks \
@@ -74,51 +65,50 @@ Jupyter and Mojo.
     pixi shell
     ```
 
-    This creates a project directory and enters the Pixi shell.
+    这会创建一个项目目录并进入 Pixi shell。
 
-2. Install required tools:
+2. 安装所需工具：
 
     ```shell
     pixi add mojo jupyterlab ipykernel
     ```
 
-    This installs:
+    这会安装：
    - Mojo
    - JupyterLab
-   - The Python kernel required for notebook execution
+   - 笔记本执行所需的 Python 内核
 
-3. Start JupyterLab:
+3. 启动 JupyterLab：
 
     ```shell
     jupyter lab
     ```
 
-    JupyterLab opens in your browser.
+    JupyterLab 会在浏览器中打开。
 
-4. Create a Python-backed notebook:
+4. 创建 Python 支持的笔记本：
 
-    In your web browser:
+    在 Web 浏览器中：
 
-   - Select _File > New > Notebook_.
-   - Choose the _Python_ kernel.
+   - 选择 _File > New > Notebook_。
+   - 选择 _Python_ 内核。
 
-5. Enable Mojo support:
+5. 启用 Mojo 支持：
 
-    In the first cell, run:
+    在第一个单元格中运行：
 
     ```python
     import mojo.notebook
     ```
 
-    This registers the `%%mojo` magic command.
-    Your local environment is now ready for interactive Mojo development.
+    这会注册 `%%mojo` 魔法命令。
+    你的本地环境现在已准备好进行交互式 Mojo 开发。
 
-## Writing and running Mojo code
+## 编写和运行 Mojo 代码
 
-Mojo code runs inside notebook cells marked with the `%%mojo` directive.
-Each Mojo cell must contain a complete program, including a `main()` function.
+Mojo 代码在标记有 `%%mojo` 指令的笔记本单元格中运行。每个 Mojo 单元格必须包含一个完整的程序，包括 `main()` 函数。
 
-### Example: Hello Mojo
+### 示例：Hello Mojo
 
 ```mojo
 %%mojo
@@ -127,32 +117,32 @@ def main():
   print("Hello Mojo")
 ```
 
-Output:
+输出：
 
 ```output
 Hello Mojo
 ```
 
-### Example: Parameterized compilation
+### 示例：参数化编译
 
 ```mojo
 %%mojo
 
-# Compiler-parameterized function
+# 编译器参数化函数
 def repeat[count: Int](msg: String):
     comptime for i in range(count):
         print(msg)
 
-# Compiler-argumented function
+# 编译器参数调用函数
 def threehello():
     repeat[3]("Hello 🔥!")
 
-# Run
+# 运行
 def main():
     threehello()
 ```
 
-Output:
+输出：
 
 ```output
 Hello 🔥!
@@ -160,16 +150,11 @@ Hello 🔥!
 Hello 🔥!
 ```
 
-## Using Mojo with GPU support
+## 使用 Mojo 的 GPU 支持
 
-Google Colab offers GPU-backed runtimes so you can run Mojo GPU
-examples even without local hardware. The specific accelerator
-available depends on your Colab tier; see
-[GPU compatibility](/docs/requirements/#gpu-compatibility) for the list
-of accelerators supported by Mojo. Before running GPU code, select
-_Runtime > Change runtime type > [GPU]_.
+Google Colab 提供支持 GPU 的运行时，让你即使没有本地硬件也可以运行 Mojo GPU 示例。可用的特定加速器取决于你的 Colab 套餐；有关 Mojo 支持的加速器列表，请参见 [GPU 兼容性](/docs/requirements/#gpu-compatibility)。在运行 GPU 代码之前，选择 _Runtime > Change runtime type > [GPU]_。
 
-### Example: GPU Hello World
+### 示例：GPU Hello World
 
 ```mojo
 %%mojo
@@ -180,21 +165,21 @@ def kernel():
     print("Hello from the GPU")
 
 def main() raises:
-    # Launch GPU kernel
+    # 启动 GPU 内核
     with DeviceContext() as ctx:
         ctx.enqueue_function[kernel](grid_dim=1, block_dim=1)
         ctx.synchronize()
 ```
 
-Output:
+输出：
 
 ```output
 Hello from the GPU
 ```
 
-### Example: Hello writing
+### 示例：Hello 写入
 
-This example writes a value to device memory and reads it back on the host:
+此示例向设备内存写入一个值，然后在主机端读回：
 
 ```mojo
 %%mojo
@@ -209,29 +194,28 @@ def kernel(value: UnsafePointer[Scalar[DType.int32], MutAnyOrigin]):
 
 def main() raises:
     with DeviceContext() as ctx:
-        # Build it
+        # 构建它
         var out = ctx.enqueue_create_buffer[DType.int32](1)
         out.enqueue_fill(`❌`)
 
-        # Run it
+        # 运行它
         ctx.enqueue_function[kernel](out, grid_dim=1, block_dim=1)
 
-        # Report the result
+        # 报告结果
         with out.map_to_host() as out_host:
             print("GPU responded:", \
                 "👋, 🔥" if out_host[0] == `✅` else "😢")
 ```
 
-Output:
+输出：
 
 ```output
 👋, 🔥
 ```
 
-### Example: GPU vector addition
+### 示例：GPU 向量加法
 
-This example runs elementwise vector addition on the GPU.
-Each GPU thread updates one element.
+此示例在 GPU 上运行逐元素向量加法。每个 GPU 线程更新一个元素。
 
 ```mojo
 %%mojo
@@ -246,7 +230,7 @@ comptime layout = row_major[VECTOR_WIDTH]()
 comptime active_dtype = DType.uint8
 
 
-# Elementwise vector addition on GPU threads
+# GPU 线程上的逐元素向量加法
 def vector_addition(
     left: TileTensor[active_dtype, type_of(layout), MutAnyOrigin],
     right: TileTensor[active_dtype, type_of(layout), MutAnyOrigin],
@@ -257,13 +241,13 @@ def vector_addition(
 
 
 def main() raises:
-    # Ensure a supported GPU (NVIDIA or AMD) is available
+    # 确保有支持的 GPU（NVIDIA 或 AMD）可用
     comptime assert has_accelerator(), "This example requires a supported GPU"
 
-    # Create GPU device context
+    # 创建 GPU 设备上下文
     var ctx = DeviceContext()
 
-    # Allocate buffers and tensors for left and right operands, and output
+    # 为左操作数、右操作数和输出分配缓冲区和张量
     var left_buffer = ctx.enqueue_create_buffer[active_dtype](VECTOR_WIDTH)
     var left_tensor = TileTensor(left_buffer, layout)
 
@@ -273,7 +257,7 @@ def main() raises:
     var output_buffer = ctx.enqueue_create_buffer[active_dtype](VECTOR_WIDTH)
     var output_tensor = TileTensor(output_buffer, layout)
 
-    # Initialize input buffers with sample data
+    # 用示例数据初始化输入缓冲区
     var message_bytes: List[UInt8] = [
         71, 100, 107, 107, 110, 31, 76, 110, 105, 110
     ]
@@ -283,7 +267,7 @@ def main() raises:
             mapped_tensor[idx] = message_bytes[idx]
     _ = right_buffer.enqueue_fill(1)
 
-    # Launch GPU kernel
+    # 启动 GPU 内核
     ctx.enqueue_function[vector_addition](
         left_tensor,
         right_tensor,
@@ -293,7 +277,7 @@ def main() raises:
     )
     ctx.synchronize()
 
-    # Read results back and print as ASCII
+    # 读回结果并打印为 ASCII
     with output_buffer.map_to_host() as mapped_buffer:
         var mapped_tensor = TileTensor(mapped_buffer, layout)
         for idx in range(VECTOR_WIDTH):
@@ -301,13 +285,12 @@ def main() raises:
         print()
 ```
 
-Output:
+输出：
 
 ```output
 Hello Mojo
 ```
 
 :::tip
-Learn Mojo GPU programming through the interactive
-[Mojo GPU Puzzles](https://puzzles.modular.com/introduction.html).
+通过交互式 [Mojo GPU Puzzles](https://puzzles.modular.com/introduction.html) 学习 Mojo GPU 编程。
 :::

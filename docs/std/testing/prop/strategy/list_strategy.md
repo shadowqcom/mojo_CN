@@ -1,12 +1,12 @@
 ---
 title: "list_strategy"
 sidebar_label: "list_strategy"
-description: "Implements the list strategy for generating random `List` values in property tests."
+description: "实现用于在属性测试中生成随机 `List` 值的列表策略。"
 ---
 
 # list_strategy
 
-Implements the list strategy for generating random `List` values in property tests.
+实现用于在属性测试中生成随机 `List` 值的列表策略。
 
 ## 类型
 

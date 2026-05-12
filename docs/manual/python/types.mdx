@@ -1,24 +1,16 @@
 ---
-title: Python types
+title: Python 类型
 sidebar_position: 4
-description: Using Mojo types in Python, and Python types in Mojo.
+description: 在 Python 中使用 Mojo 类型，以及在 Mojo 中使用 Python 类型。
 ---
 
-When calling Python methods, Mojo needs to convert back and forth between native
-Python objects and native Mojo objects. Most of these conversions happen
-automatically, but there are a number of cases that Mojo doesn't handle yet.
-In these cases you may need to do an explicit conversion, or call an extra
-method.
+在调用 Python 方法时，Mojo 需要在原生 Python 对象和原生 Mojo 对象之间进行来回转换。大多数转换会自动进行，但有许多情况 Mojo 尚未处理。在这些情况下，你可能需要进行显式转换，或调用额外的方法。
 
-## Mojo types in Python
+## Python 中的 Mojo 类型
 
-Mojo primitive types implicitly convert into Python objects. Today we support
-integers, floats, booleans, and strings.
+Mojo 原始类型会隐式转换为 Python 对象。目前我们支持整数、浮点数、布尔值和字符串。
 
-To demonstrate, the following example dynamically creates an in-memory Python
-module named `py_utils` containing a `type_printer()` function, which simply
-prints the type of a given value. Then you can see how different Mojo values
-convert into corresponding Python types.
+为了演示，以下示例动态创建了一个名为 `py_utils` 的内存中 Python 模块，其中包含一个 `type_printer()` 函数，该函数简单地打印给定值的类型。然后你可以看到不同的 Mojo 值如何转换为相应的 Python 类型。
 
 ```mojo
 from std.python import Python
@@ -43,30 +35,17 @@ def type_printer(value):
 <class 'str'>
 ```
 
-## Python types in Mojo
+## Mojo 中的 Python 类型
 
-You can also create and use Python objects from Mojo.
+你也可以从 Mojo 创建和使用 Python 对象。
 
-### Mojo wrapper objects
+### Mojo 包装对象
 
-When you use Python objects in your Mojo code, Mojo adds the
-[`PythonObject`](/docs/std/python/python_object/PythonObject/) wrapper around
-the Python object. This object exposes a number of common double underscore
-methods (dunder methods) like `__getitem__()` and `__getattr__()`, passing them
-through to the underlying Python object. Most of the time, you can treat the
-wrapped object just like you'd treat it in Python. You can use dot-notation to
-access attributes and call methods, and use the `[]` operator to access an item
-in a sequence.
+当你在 Mojo 代码中使用 Python 对象时，Mojo 会在 Python 对象外添加 [`PythonObject`](/docs/std/python/python_object/PythonObject/) 包装器。此对象暴露了许多常见的双下划线方法（dunder methods），如 `__getitem__()` 和 `__getattr__()`，将它们传递给底层的 Python 对象。大多数情况下，你可以像在 Python 中一样对待包装后的对象。你可以使用点号表示法访问属性和调用方法，使用 `[]` 运算符访问序列中的项。
 
-You can explicitly create a wrapped Python object by initializing a
-`PythonObject` with a Mojo integer, float, boolean, or string. Additionally, you
-can create several types of Python collections directly in Mojo using the
-[`Python.dict()`](/docs/std/python/python/Python/#dict),
-[`Python.list()`](/docs/std/python/python/Python/#list), and
-[`Python.tuple()`](/docs/std/python/python/Python/#tuple) static methods.
+你可以通过使用 Mojo 整数、浮点数、布尔值或字符串初始化 `PythonObject` 来显式创建包装的 Python 对象。此外，你可以使用 [`Python.dict()`](/docs/std/python/python/Python/#dict)、[`Python.list()`](/docs/std/python/python/Python/#list) 和 [`Python.tuple()`](/docs/std/python/python/Python/#tuple) 静态方法在 Mojo 中直接创建多种类型的 Python 集合。
 
-For example, to create a Python dictionary, use the
-[`Python.dict()`](/docs/std/python/python/Python/#dict) method:
+例如，要创建 Python 字典，使用 [`Python.dict()`](/docs/std/python/python/Python/#dict) 方法：
 
 ```mojo
 from std.python import Python
@@ -83,8 +62,7 @@ def main() raises:
 {'item_name': 'whizbang', 'price': 11.75, 'inventory': 100}
 ```
 
-With the [`Python.list()`](/docs/std/python/python/Python/#list) method, you
-can create a Python list and optionally initialize it:
+使用 [`Python.list()`](/docs/std/python/python/Python/#list) 方法，你可以创建 Python 列表并可选地初始化它：
 
 ```mojo
 from std.python import Python
@@ -103,8 +81,7 @@ n = 3.14159
 ['aardvark', 2, 3.14159, 4, 5]
 ```
 
-The [`Python.tuple()`](/docs/std/python/python/Python/#tuple) method creates a
-Python tuple of values:
+[`Python.tuple()`](/docs/std/python/python/Python/#tuple) 方法创建一个 Python 元组：
 
 ```mojo
 from std.python import Python
@@ -121,10 +98,7 @@ n = 3.1415
 Number of cats: 2
 ```
 
-If you want to construct a Python type that doesn't have a literal Mojo
-equivalent, you can also use the
-[`Python.evaluate()`](/docs/std/python/python/Python/#evaluate) method. For
-example, to create a Python `set`:
+如果你想构造一个没有对应 Mojo 字面量的 Python 类型，你也可以使用 [`Python.evaluate()`](/docs/std/python/python/Python/#evaluate) 方法。例如，创建一个 Python `set`：
 
 ```mojo
 from std.python import Python
@@ -142,14 +116,9 @@ def main() raises:
 Is 7 in the set: True
 ```
 
-`PythonObject` implements the [`Writable`](/docs/std/format/Writable/)
-trait. This allows you to print Python values using the built-in
-[`print()`](/docs/std/io/io/print/) function, as shown in several of the
-previous examples.
+`PythonObject` 实现了 [`Writable`](/docs/std/format/Writable/) 特征。这允许你使用内置的 [`print()`](/docs/std/io/io/print/) 函数打印 Python 值，如前面几个示例所示。
 
-However, most other Mojo APIs don't accept `PythonObject` values directly. In
-these cases you'll need to explicitly convert a Python value into a native Mojo
-value. For example:
+然而，大多数其他 Mojo API 不直接接受 `PythonObject` 值。在这些情况下，你需要将 Python 值显式转换为原生 Mojo 值。例如：
 
 ```mojo
 from std.python import Python
@@ -168,17 +137,11 @@ def main() raises:
     var mojo_float = Float64(py=py_float)
 ```
 
-### Comparing Python types in Mojo
+### 在 Mojo 中比较 Python 类型
 
-You can use Python objects in Mojo comparison expressions, and the Mojo `is`
-operator also works to compare the identity of two Python objects. Python values
-like `False` and `None` evaluate as false in Mojo boolean expressions as well.
+你可以在 Mojo 比较表达式中使用 Python 对象，Mojo 的 `is` 运算符也可以用于比较两个 Python 对象的标识。Python 值如 `False` 和 `None` 在 Mojo 布尔表达式中也会被评估为假值。
 
-If you need to know the type of the underlying Python object, you can use the
-[`Python.type()`](/docs/std/python/python/Python/#type) method, which is
-equivalent to the Python `type()` builtin. You can test if a Python
-object is of a particular type by performing an identity comparison against the
-type as shown below:
+如果你需要知道底层 Python 对象的类型，你可以使用 [`Python.type()`](/docs/std/python/python/Python/#type) 方法，它等价于 Python 内置的 `type()` 函数。你可以通过将 Python 对象与类型进行标识比较来测试它是否为特定类型，如下所示：
 
 ```mojo
 from std.python import Python
@@ -187,16 +150,16 @@ def main() raises:
     var value1 = PythonObject(3.7)
     value2 = Python.evaluate("10/3")
 
-    # Compare values
+    # 比较值
     print("Is value1 greater than 3:", value1 > 3)
     print("Is value1 greater than value2:", value1 > value2)
 
-    # Compare identities
+    # 比较标识
     value3 = value2
     print("value1 is value2:", value1 is value2)
     print("value2 is value3:", value2 is value3)
 
-    # Compare types
+    # 比较类型
     py_float_type = Python.evaluate("float")
     print("Python float type:", py_float_type)
     print("value1 type:", Python.type(value1))

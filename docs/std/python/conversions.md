@@ -1,14 +1,14 @@
 ---
 title: "conversions"
 sidebar_label: "conversions"
-description: "Implements conversion traits to and from PythonObject.  You can import these APIs from the `python` package. For example:  ```mojo from std.python import ConvertibleToPython ```"
+description: "实现与 PythonObject 之间的转换 trait。您可以从 `python` 包导入这些 API。例如：```mojo from std.python import ConvertibleToPython ```"
 ---
 
 # conversions
 
-Implements conversion traits to and from PythonObject.
+实现与 PythonObject 之间的转换 trait。
 
-You can import these APIs from the `python` package. For example:
+您可以从 `python` 包导入这些 API。例如：
 
 ```mojo
 from std.python import ConvertibleToPython

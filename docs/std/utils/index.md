@@ -1,15 +1,14 @@
 ---
 title: "index"
 sidebar_label: "index"
-description: "Implements `IndexList` which is commonly used to represent N-D indices.  You can import these APIs from the `utils` package. For example:  ```mojo from std.utils import IndexList ```"
+description: "实现 `IndexList`，通常用于表示 N 维索引。您可以从 `utils` 包导入这些 API。例如：```mojo from std.utils import IndexList ```"
 ---
 
 # index
 
-Implements `IndexList` which is commonly used to represent N-D
-indices.
+实现 `IndexList`，通常用于表示 N 维索引。
 
-You can import these APIs from the `utils` package. For example:
+您可以从 `utils` 包导入这些 API。例如：
 
 ```mojo
 from std.utils import IndexList

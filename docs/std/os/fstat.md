@@ -1,14 +1,14 @@
 ---
 title: "fstat"
 sidebar_label: "fstat"
-description: "Implements file system status operations.  You can import these APIs from the `os` package. For example:  ```mojo from std.os import stat ```"
+description: "实现文件系统状态操作。您可以从 `os` 包导入这些 API。例如：```mojo from std.os import stat ```"
 ---
 
 # fstat
 
-Implements file system status operations.
+实现文件系统状态操作。
 
-You can import these APIs from the `os` package. For example:
+您可以从 `os` 包导入这些 API。例如：
 
 ```mojo
 from std.os import stat

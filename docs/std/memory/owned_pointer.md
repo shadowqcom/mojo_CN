@@ -1,14 +1,14 @@
 ---
 title: "owned_pointer"
 sidebar_label: "owned_pointer"
-description: "Implements `OwnedPointer`, a safe, single-ownership smart pointer.  You can import these APIs from the `memory` package. For example:  ```mojo from std.memory import OwnedPointer ```"
+description: "实现 `OwnedPointer`，一种安全的单所有权智能指针。您可以从 `memory` 包导入这些 API。例如：```mojo from std.memory import OwnedPointer ```"
 ---
 
 # owned_pointer
 
-Implements `OwnedPointer`, a safe, single-ownership smart pointer.
+实现 `OwnedPointer`，一种安全的单所有权智能指针。
 
-You can import these APIs from the `memory` package. For example:
+您可以从 `memory` 包导入这些 API。例如：
 
 ```mojo
 from std.memory import OwnedPointer

@@ -1,14 +1,14 @@
 ---
 title: "arc_pointer"
 sidebar_label: "arc_pointer"
-description: "Reference-counted smart pointers.  You can import these APIs from the `memory` package. For example:  ```mojo from std.memory import ArcPointer ```"
+description: "引用计数智能指针。您可以从 `memory` 包导入这些 API。例如：```mojo from std.memory import ArcPointer ```"
 ---
 
 # arc_pointer
 
-Reference-counted smart pointers.
+引用计数智能指针。
 
-You can import these APIs from the `memory` package. For example:
+您可以从 `memory` 包导入这些 API。例如：
 
 ```mojo
 from std.memory import ArcPointer

@@ -1,14 +1,14 @@
 ---
 title: "string_literal"
 sidebar_label: "string_literal"
-description: "Implements the StringLiteral struct.  These are Mojo built-ins, so you don't need to import them."
+description: "实现 StringLiteral 结构体。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # string_literal
 
-Implements the StringLiteral struct.
+实现 StringLiteral 结构体。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

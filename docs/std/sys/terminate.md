@@ -1,12 +1,12 @@
 ---
 title: "terminate"
 sidebar_label: "terminate"
-description: "This module includes the exit functions."
+description: "此模块包含退出函数。"
 ---
 
 # terminate
 
-This module includes the exit functions.
+此模块包含退出函数。
 
 ## 函数
 

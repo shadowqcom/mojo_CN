@@ -1,26 +1,24 @@
 ---
 title: "type_info"
 sidebar_label: "type_info"
-description: "Provides function name introspection utilities.  For type-name introspection, use the static methods on `Reflected[T]` (obtained via `reflect[T]`):  - `reflect[T].name()` - returns the name of a type."
+description: "提供函数名称内省工具。对于类型名称内省，使用 `Reflected[T]` 上的静态方法（通过 `reflect[T]` 获取）：- `reflect[T].name()` - 返回类型名称。"
 ---
 
 # type_info
 
-Provides function name introspection utilities.
+提供函数名称内省工具。
 
-For type-name introspection, use the static methods on `Reflected[T]`
-(obtained via `reflect[T]`):
+对于类型名称内省，使用 `Reflected[T]` 上的静态方法（通过 `reflect[T]` 获取）：
 
-- `reflect[T].name()` - returns the name of a type.
-- `reflect[T].base_name()` - returns the unqualified name of a type's base
-  type.
+- `reflect[T].name()` - 返回类型名称。
+- `reflect[T].base_name()` - 返回类型基类型的非限定名称。
 
-This module exposes the function-side counterparts:
+此模块公开函数端的对应功能：
 
-- `get_function_name[func]()` - returns the source name of a function.
-- `get_linkage_name[func]()` - returns the symbol/linkage name of a function.
+- `get_function_name[func]()` - 返回函数的源名称。
+- `get_linkage_name[func]()` - 返回函数的符号/链接名称。
 
-Example:
+示例：
 
 ```mojo
 from std.reflection import reflect, get_function_name

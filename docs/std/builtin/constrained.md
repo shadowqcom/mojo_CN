@@ -1,12 +1,12 @@
 ---
 title: "constrained"
 sidebar_label: "constrained"
-description: "Implements compile-time constraint helpers used by trait conformance checks."
+description: "实现 trait 一致性检查使用的编译时约束助手。"
 ---
 
 # constrained
 
-Implements compile-time constraint helpers used by trait conformance checks.
+实现 trait 一致性检查使用的编译时约束助手。
 
 ## 类型
 

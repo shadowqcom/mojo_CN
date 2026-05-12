@@ -1,24 +1,16 @@
 ---
 title: "base64"
 sidebar_label: "base64"
-description: "Binary data encoding: base64 and base16 encode/decode functions.  The `base64` package provides functions for encoding and decoding binary data using Base64 and Base16 (hexadecimal) encoding schemes. "
+description: "二进制数据编码：base64 和 base16 编码/解码函数。`base64` 包提供了使用 Base64 和 Base16（十六进制）编码方案对二进制数据进行编码和解码的函数。"
 ---
 
 # base64
 
-Binary data encoding: base64 and base16 encode/decode functions.
+二进制数据编码：base64 和 base16 编码/解码函数。
 
-The `base64` package provides functions for encoding and decoding binary data
-using Base64 and Base16 (hexadecimal) encoding schemes. Base64 encoding
-converts binary data into ASCII text for transmission over text-based protocols,
-while Base16 provides a simpler hexadecimal representation. These encodings are
-essential for data interchange, embedding binary data in text formats, and
-ensuring data integrity across different systems.
+`base64` 包提供了使用 Base64 和 Base16（十六进制）编码方案对二进制数据进行编码和解码的函数。Base64 编码将二进制数据转换为 ASCII 文本，以便通过基于文本的协议传输，而 Base16 提供了更简单的十六进制表示。这些编码对于数据交换、在文本格式中嵌入二进制数据以及确保不同系统间的数据完整性至关重要。
 
-Use this package for encoding binary data in JSON or XML, transmitting binary
-data over text protocols (HTTP, email), embedding images or files in text
-formats, or converting between binary and text representations while preserving
-data integrity.
+此包适用于在 JSON 或 XML 中编码二进制数据、通过文本协议（HTTP、电子邮件）传输二进制数据、在文本格式中嵌入图像或文件，或在保持数据完整性的同时转换二进制和文本表示。
 
 ## 模块
 

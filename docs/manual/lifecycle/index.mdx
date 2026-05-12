@@ -1,85 +1,35 @@
 ---
-title: Intro to value lifecycle
+title: 值生命周期简介
 sidebar_position: 1
-description: An introduction to the value lifecycle.
+description: 值生命周期介绍。
 ---
 
-So far, we've explained how Mojo allows you to build high-performance code that
-is memory safe *without* manually managing memory, using Mojo's [ownership
-model](/docs/manual/values/ownership). However, Mojo is designed for
-[systems programming](https://en.wikipedia.org/wiki/Systems_programming), which
-often requires manual memory management for custom data types. So, Mojo lets
-you do that as you see fit. To be clear, Mojo has no reference counter and no
-garbage collector.
+到目前为止，我们已经解释了 Mojo 如何允许你构建高性能的内存安全代码，而无需手动管理内存，使用 Mojo 的[所有权模型](/docs/manual/values/ownership)。然而，Mojo 是为[系统编程](https://en.wikipedia.org/wiki/Systems_programming)设计的，这通常需要为自定义数据类型进行手动内存管理。因此，Mojo 让你根据自己的需要来做到这一点。需要明确的是，Mojo 没有引用计数器，也没有垃圾收集器。
 
-Mojo also has no built-in data types with special privileges. All data types
-in the standard library (such as [`Bool`](/docs/std/builtin/bool/Bool/),
-[`Int`](/docs/std/builtin/int/Int/), and
-[`String`](/docs/std/collections/string/string/String/)) are implemented as
-[structs](/docs/manual/structs/).
+Mojo 也没有任何具有特殊权限的内置数据类型。标准库中的所有数据类型（如 [`Bool`](/docs/std/builtin/bool/Bool/)、[`Int`](/docs/std/builtin/int/Int/) 和 [`String`](/docs/std/collections/string/string/String/)）都是作为[结构体](/docs/manual/structs/)实现的。
 
-What's great about the Mojo language is that it provides you these low-level
-tools for systems programming, but within a framework that helps you build
-things that are safe and easy to use from higher-level programs. That is, you
-can get under the hood and write all the "unsafe" code you want, but as long as
-you do so in accordance with Mojo's [value
-semantics](/docs/manual/values/value-semantics), the programmer instantiating
-your type/object doesn't need to think about memory management at all, and the
-behavior will be safe and predictable, thanks to [value
-ownership](/docs/manual/values/ownership).
+Mojo 语言的优点在于它为你提供了用于系统编程的低级工具，但在帮助你从高层程序构建既安全又易于使用的框架内。也就是说，你可以深入底层并编写所有你想要的"不安全"代码，但只要你按照 Mojo 的[值语义](/docs/manual/values/value-semantics)这样做，实例化你的类型/对象的程序员就根本不需要考虑内存管理，由于[值所有权](/docs/manual/values/ownership)，其行为将是安全和可预测的。
 
-In summary, it's the responsibility of the type author to manage the memory and
-resources for each value type, by implementing specific lifecycle methods, such
-as the constructor, copy constructor, move constructor, and destructor, as
-necessary. Mojo doesn't create any constructors by default, although it does
-add a trivial, no-op destructor for types that don't define their own.
+总之，类型作者有责任通过实现特定的生命周期方法来管理每个值类型的内存和资源，如构造函数、复制构造函数、移动构造函数和析构函数（如有必要）。Mojo 默认不创建任何构造函数，尽管它确实为没有定义自己的类型添加了一个简单的、无操作的析构函数。
 
-In the following pages, we'll explain exactly how to define these lifecycle
-methods in accordance with value semantics so your types play nicely with value
-ownership.
+在接下来的页面中，我们将准确解释如何按照值语义定义这些生命周期方法，以便你的类型与值所有权配合良好。
 
-## Lifecycles and lifetimes
+## 生命周期和生命周期
 
-First, let's clarify some terminology:
+首先，让我们澄清一些术语：
 
-- The "lifecycle" of a value is defined by various [dunder
-  methods](/docs/manual/structs#special-methods) in a struct.
-  Each lifecycle event is handled by a different method,
-  such as the constructor (`__init__()`), the destructor (`__del__()`), the copy
-  constructor (`__init__(copy=)`), and the move constructor (`__init__(take=)`).
-  All values that are declared with the same type have the same lifecycle.
+- 值的"生命周期"由结构体中的各种[dunder 方法](/docs/manual/structs#special-methods)定义。每个生命周期事件由不同的方法处理，如构造函数（`__init__()`）、析构函数（`__del__()`）、复制构造函数（`__init__(copy=)`）和移动构造函数（`__init__(take=)`）。所有使用相同类型声明的值都具有相同的生命周期。
 
-- The "lifetime" of a variable is defined by the span of time during
-  program execution in which the variable is considered valid. The life of a
-  variable begins when its value is initialized (via `__init__()`) and ends when
-  the value is destroyed
-  (`__del__()`), or consumed in some other way (for example, as part of a
-  `__init__(take=)` call).
+- 变量的"生命周期"由程序执行期间变量被视为有效的持续时间定义。变量的生命周期在其值被初始化（通过 `__init__()`）时开始，并在值被销毁（`__del__()`）或以其他方式消耗时结束（例如，作为 `__init__(take=)` 调用的一部分）。
 
-No two values have the exact same lifetime, because every value is created and
-destroyed at a different point in time (even if the difference is
-imperceptible).
+没有两个值具有完全相同的生命周期，因为每个值都是在不同的时间点创建和销毁的（即使差异难以察觉）。
 
-:::note[Origin type]
+:::note[来源类型]
 
-The concept of lifetimes is related to the `origin` type, a Mojo primitive
-used to track ownership. For most Mojo programming, you won't need to work with
-`origin` values directly. For information, see [Lifetimes, origins and
-references](/docs/manual/values/lifetimes).
+生命周期概念与 `origin` 类型相关，这是一个用于跟踪所有权的 Mojo 原始类型。对于大多数 Mojo 编程，你不需要直接与 `origin` 值一起工作。有关信息，请参阅[Lifetimes, origins and references](/docs/manual/values/lifetimes)。
 
 :::
 
-The life of a value in Mojo begins when a variable is initialized and continues
-up until the value is last used, at which point Mojo destroys it. Mojo destroys
-every value/object as soon as it's no longer used, using an "as soon as
-possible" (ASAP) destruction policy that runs after every sub-expression. The
-Mojo compiler takes care of releasing resources after last use when needed.
+Mojo 中值的生命周期在变量被初始化时开始，持续直到值最后一次使用，此时 Mojo 销毁它。Mojo 使用"尽可能快"（ASAP）销毁策略在每次子表达式后运行来立即销毁每个值/对象。Mojo 编译器在需要时负责在最后一次使用后释放资源。
 
-As you might imagine, keeping track of a value's life can be difficult if a
-value is shared across functions many times during the life of a program.
-However, Mojo makes this predictable partly through its [value
-semantics](/docs/manual/values/value-semantics) and [value
-ownership](/docs/manual/values/ownership) (both prerequisite readings for
-the following sections). The final piece of the puzzle for lifetime management
-is the value lifecycle: every value (defined in a struct) needs to implement
-key lifecycle methods that define how a value is created and destroyed.
+你可能可以想象，如果值在程序生命周期内多次在函数之间共享，跟踪值的生命周期可能会很困难。然而，Mojo 通过其[值语义](/docs/manual/values/value-semantics)和[值所有权](/docs/manual/values/ownership)（以下章节的先决条件阅读）使这种情况变得可预测。生命周期管理的最后一块拼图是值生命周期：每个值（在结构体中定义）都需要实现定义值如何创建和销毁的关键生命周期方法。

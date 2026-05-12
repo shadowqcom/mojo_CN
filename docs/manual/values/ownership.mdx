@@ -1,107 +1,56 @@
 ---
-title: Ownership
+title: 所有权
 sidebar_position: 3
-description: How Mojo shares references through function arguments.
+description: Mojo 如何通过函数参数共享引用。
 ---
 
-A challenge you might face when using some programming languages is that you
-must manually allocate and deallocate memory. When multiple parts of the
-program need access to the same memory, it becomes difficult to keep track of
-who "owns" a value and determine when is the right time to deallocate it. If
-you make a mistake, it may result in a "use-after-free" error, a "double free"
-error, or a "leaked memory" error, any one of which can be catastrophic.
+使用某些编程语言时，你可能会面临的一个挑战是必须手动分配和释放内存。当程序的多个部分需要访问同一内存时，很难跟踪谁"拥有"一个值并确定何时释放它是正确的。如果你犯错，可能会导致"释放后使用"错误、"双重释放"错误或"内存泄漏"错误，其中任何一个都可能是灾难性的。
 
-Mojo helps avoid these errors by ensuring there is only one variable that owns
-each value at a time, while still allowing you to share references with other
-functions. When the life span of the owner ends, Mojo [destroys the
-value](/docs/manual/lifecycle/death). Programmers are still responsible for
-making sure any type that allocates resources (including memory) also
-deallocates those resources in its destructor. Mojo's ownership system ensures
-that destructors are called promptly.
+Mojo 通过确保每个值在同一时间只有一个变量拥有，同时仍然允许你与其他函数共享引用来帮助避免这些错误。当所有者的生命周期结束时，Mojo[销毁值](/docs/manual/lifecycle/death)。程序员仍然负责确保任何分配资源的类型（包括内存）也在其析构函数中释放这些资源。Mojo 的所有权系统确保析构函数被及时调用。
 
-On this page, we'll explain the rules that govern this ownership model, and how
-to specify different argument conventions that define how values are passed into
-functions.
+在本页中，我们将解释管理此所有权模型的规则，以及如何指定定义值如何传递到函数的不同参数约定。
 
-## Ownership summary
+## 所有权总结
 
-The fundamental rules that make Mojo's ownership model work are the following:
+使 Mojo 所有权模型工作的基本规则如下：
 
-- Every value has only one owner at a time.
-- When the lifetime of the owner ends, Mojo destroys the value.
-- If there are existing references to a value, Mojo extends the lifetime of
-  the owner.
+- 每个值在同一时间只有一个所有者。
+- 当所有者的生命周期结束时，Mojo 销毁该值。
+- 如果有对值的现有引用，Mojo 会延长所有者的生命周期。
 
-### Variables and references
+### 变量和引用
 
-A variable *owns* its value. A struct owns its fields.
+变量*拥有*其值。结构体拥有其字段。
 
-A *reference* allows you to access a value owned by another variable. A
-reference has either mutable access or immutable access to that value.
+引用允许你访问由另一个变量拥有的值。引用对该值具有可变访问或不可变访问权限。
 
-Mojo references are created when you call a function: function arguments are
-passed as mutable or immutable references. A function can return a
-reference instead of returning a value. To capture a returned reference, you
-can use a reference binding:
+当你调用函数时，Mojo 会创建引用：函数参数作为可变或不可变引用传递。函数可以返回引用而不是返回值。要捕获返回的引用，你可以使用引用绑定：
 
 ```mojo
 ref value_ref = list[0]
 ```
 
-## Argument conventions
+## 参数约定
 
-In all programming languages, code quality and performance is heavily dependent
-upon how functions treat argument values. That is, whether a value received by
-a function is a unique value or a reference, and whether it's mutable or
-immutable, has a series of consequences that define the readability,
-performance, and safety of the language.
+在所有编程语言中，代码质量和性能在很大程度上取决于函数如何处理参数值。也就是说，函数接收的值是唯一值还是引用，以及它是可变还是不可变，有一系列定义语言的可读性、性能和安全的后果。
 
-In Mojo, we want to provide full [value
-semantics](/docs/manual/values/value-semantics) by default, which provides
-consistent and predictable behavior. But as a systems programming language, we
-also need to offer full control over memory optimizations, which generally
-requires reference semantics. The trick is to introduce reference semantics in
-a way that ensures all code is memory safe by tracking the lifetime of every
-value and destroying each one at the right time (and only once). All of this is
-made possible in Mojo through the use of argument conventions that ensure every
-value has only one owner at a time.
+在 Mojo 中，我们希望通过默认提供完整的[值语义](/docs/manual/values/value-semantics)，这提供了一致和可预测的行为。但作为一个系统编程语言，我们也需要提供对内存优化的完全控制，这通常需要引用语义。诀窍是以确保所有代码都是内存安全的方式引入引用语义，方法是跟踪每个值的生命周期并在正确的时间（且仅一次）销毁每个值。所有这些都通过使用参数约定在 Mojo 中实现，这些约定确保每个值同时只有一个所有者。
 
-An argument convention specifies whether an argument is mutable or immutable,
-and whether the function owns the value. Each convention is defined by a
-keyword at the beginning of an argument declaration:
+参数约定指定参数是可变还是不可变，以及函数是否拥有该值。每个约定由参数声明开头的关键字定义：
 
-- `read`: The function receives an **immutable reference**. This means the
-  function can read the original value (it's *not* a copy), but it can't
-  mutate (modify) it.
+- `read`：函数接收一个**不可变引用**。这意味着函数可以读取原始值（它不是副本），但它不能修改（改变）它。
 
-- `mut`: The function receives a **mutable reference**. This means the
-  function can read and mutate the original value (it's *not* a copy).
+- `mut`：函数接收一个**可变引用**。这意味着函数可以读取和修改原始值（它不是副本）。
 
-- `var`: The function takes **ownership** of a value. This means the function
-  has exclusive ownership of the argument. The caller might choose to transfer
-  ownership of an existing value to this function, but that's not always what
-  happens. The callee might receive a newly-created value, or a copy of an
-  existing value.
+- `var`：函数获取一个值的**所有权**。这意味着函数拥有参数的独占所有权。调用者可能选择将现有值的所有权转移到此函数，但这并不总是发生的情况。被调用者可能接收一个新创建的值，或现有值的副本。
 
-- `ref`: The function gets a reference with a parametric mutability: that is,
-  the reference is either mutable or immutable. You can think of `ref`
-  arguments as a generalization of the `read` and `mut` conventions.
-  `ref` arguments are an advanced topic, and they're described in more detail in
-  [Lifetimes, origins, and references](/docs/manual/values/lifetimes/).
+- `ref`：函数获得一个具有参数化可变性的引用：即，引用可以是可变的或不可变的。你可以将 `ref` 参数看作是 `read` 和 `mut` 约定的泛化。`ref` 参数是一个高级主题，在[Lifetimes, origins, and references](/docs/manual/values/lifetimes/)中有更详细的描述。
 
-- `out`: A special convention used for the `self` argument in
-  [constructors](/docs/manual/lifecycle/life/#constructor) and for
-  [named results](/docs/manual/functions/#named-results). An `out`
-  argument is uninitialized at the beginning of the function, and must be
-  initialized before the function returns. Although `out` arguments show up in
-  the argument list, they're never passed in by the caller.
+- `out`：用于[构造函数](/docs/manual/lifecycle/life/#constructor)中 `self` 参数和[命名结果](/docs/manual/functions/#named-results)的特殊约定。`out` 参数在函数开始时未初始化，必须在函数返回之前初始化。虽然 `out` 参数出现在参数列表中，但调用者永远不会传递它们。
 
-- `deinit`: A special convention used in the destructor and consuming-move
-  lifecycle methods. A `deinit` argument is initialized at the beginning of the
-  function, and uninitialized when the function returns.
+- `deinit`：在析构函数和消耗移动生命周期方法中使用的特殊约定。`deinit` 参数在函数开始时初始化，在函数返回时未初始化。
 
-For example, this function has one argument that's a mutable
-reference and one that's immutable:
+例如，此函数有一个可变引用参数和一个不可变参数：
 
 ```mojo
 def add(mut x: Int, read y: Int):
@@ -118,17 +67,13 @@ def main():
 3
 ```
 
-You've probably already seen some function arguments that don't declare a
-convention. By default, all arguments are `read`.
-In the following sections, we'll explain each of these argument conventions in
-more detail.
+你可能已经看到一些没有声明约定的函数参数。默认情况下，所有参数都是 `read`。在接下来的章节中，我们将更详细地解释每个这些参数约定。
 
-## Immutable arguments (`read`)
+## 不可变参数（`read`）
 
-The `read` convention is the default for all arguments. The callee receives an
-immutable reference to the argument value.
+`read` 约定是所有参数的默认值。被调用函数接收参数值的不可变引用。
 
-For example:
+例如：
 
 ```mojo
 def print_list(list: List[Int]):
@@ -143,42 +88,25 @@ def main():
 [1, 2, 3, 4]
 ```
 
-Here the `print_list()` function can read from the `list` argument, but not
-mutate it. `list` is a reference to `values` in the `main()` function, not a
-copy.
+这里，`print_list()` 函数可以从 `list` 参数读取，但不能修改它。`list` 是 `main()` 函数中 `values` 的引用，而不是副本。
 
-In general, passing an immutable reference is much more efficient
-when handling large or expensive-to-copy values, because the copy constructor
-and destructor aren't invoked for a `read` argument.
+一般来说，传递不可变引用在处理大型或复制成本高的值时要高效得多，因为对于 `read` 参数不会调用复制构造函数和析构函数。
 
-### Compared to C++ and Rust
+### 与 C++ 和 Rust 的比较
 
-Mojo's read argument convention is similar in some ways to passing an
-argument by `const&` in C++, which also avoids a copy of the value and disables
-mutability in the callee. However, the read convention differs from
-`const&` in C++ in two important ways:
+Mojo 的 read 参数约定在某些方面类似于在 C++ 中通过 `const&` 传递参数，这也避免了值的副本并禁用了被调用方中的可变性。然而，read 约定与 C++ 中的 `const&` 有两个重要区别：
 
-- The Mojo compiler implements a lifetime checker that ensures that values are
-  not destroyed when there are outstanding references to those values.
+- Mojo 编译器实现了生命周期检查器，确保当有对值的未完成引用时，值不会被销毁。
 
-- Small values like `Int`, `Float`, and `SIMD` are always passed in
-  machine registers. This provides a significant performance enhancement
-  compared to languages like C++ and Rust.
+- 像 `Int`、`Float` 和 `SIMD` 这样的小值始终在机器寄存器中传递。这提供了与 C++ 和 Rust 等语言相比的显著性能增强。
 
-The major difference between Rust and Mojo is that Mojo doesn't require a sigil
-on the caller side to pass by immutable reference. Also, Mojo is more efficient
-when passing small values, and Rust defaults to moving values instead of passing
-them around by borrow. These policy and syntax decisions allow Mojo to provide
-an easier-to-use programming model.
+Rust 和 Mojo 之间的主要区别在于，Mojo 不需要在调用方传递不可变引用时使用信号。此外，Mojo 在传递小值时更高效，而 Rust 默认移动值而不是通过借用传递它们。这些策略和语法决策使 Mojo 能够提供更易于使用的编程模型。
 
-## Mutable arguments (`mut`)
+## 可变参数（`mut`）
 
-If you'd like your function to receive a **mutable reference**, add the `mut`
-keyword in front of the argument name. You can think of `mut` like this: it
-means any changes to the value *in*side the function are visible *out*side the
-function.
+如果你希望函数接收一个**可变引用**，请在参数名称前添加 `mut` 关键字。你可以这样理解 `mut`：它意味着函数*内部*对值的任何更改在*外部*函数中都是可见的。
 
-For example, this `mutate()` function updates the original `list` value:
+例如，此 `mutate()` 函数更新原始 `list` 值：
 
 ```mojo
 def print_list(list: List[Int]):
@@ -198,14 +126,14 @@ def main():
 [1, 2, 3, 4, 5]
 ```
 
-That behaves like an optimized replacement for this:
+其行为就像以下内容的优化替代方案：
 
 ```mojo
 def print_list(list: List[Int]):
     print(list.__str__())
 
 def mutate_copy(l: List[Int]) -> List[Int]:
-    # def creates an implicit copy of the list because it's mutated
+    # def 创建列表的隐式副本，因为它被修改了
     l.append(5)
     return l
 
@@ -220,91 +148,63 @@ def main():
 [1, 2, 3, 4, 5]
 ```
 
-Although the code using `mut` isn't that much shorter, it's more memory
-efficient because it doesn't make a copy of the value.
+虽然使用 `mut` 的代码并没有短多少，但因为它不创建值的副本，所以更节省内存。
 
-However, remember that the values passed as `mut` must already be mutable.
-For example, if you try to take a `read` value and pass it to another
-function as `mut`, you'll get a compiler error because Mojo can't form a
-mutable reference from an immutable reference.
+但是，请记住，作为 `mut` 传递的值必须已经是可变的。例如，如果你尝试获取一个 `read` 值并将其作为 `mut` 传递给另一个函数，你会得到编译错误，因为 Mojo 无法从不可变引用形成可变引用。
 
 :::note
 
-You can't define [default
-values](/docs/manual/functions#optional-arguments) for `mut`
-arguments.
+你不能为 `mut` 参数定义[默认值](/docs/manual/functions#optional-arguments)。
 
 :::
 
-### Argument exclusivity
+### 参数独占性
 
-Mojo enforces *argument exclusivity* for mutable references. This means that if
-a function receives a mutable reference to a value (such as an `mut` argument),
-it can't receive any other references to the same value—mutable or immutable.
-That is, a mutable reference can't have any other references that *alias* it.
+Mojo 强制执行可变引用的*参数独占性*。这意味着如果一个函数接收一个值的可变引用（如 `mut` 参数），它不能接收任何其他对该值的引用——可变或不可变。也就是说，可变引用不能有任何其他*别名*它的引用。
 
-For example, consider the following code example:
+例如，考虑以下代码示例：
 
 ```mojo
 def append_twice(mut s: String, other: String):
-   # Mojo knows 's' and 'other' can't be the same string.
+   # Mojo 知道 's' 和 'other' 不能是同一个字符串。
    s += other
    s += other
 
 def invalid_access():
-  var my_string = "o"  # Create a run-time String value
+  var my_string = "o"  # 创建运行时 String 值
 
-  # error: passing `my_string` mut is invalid since it's also passed
-  # read.
+  # 错误：传递 `my_string` mut 是无效的，因为它也作为 read 传递。
   append_twice(my_string, my_string)
   print(my_string)
 ```
 
-This code is confusing because the user might expect the output to be `ooo`,
-but since the first addition mutates both `s` and `other`, the actual output
-would be `oooo`. Enforcing exclusivity of mutable references not only prevents
-coding errors, it also allows the Mojo compiler to optimize code in some cases.
+这段代码令人困惑，因为用户可能期望输出是 `ooo`，但由于第一个添加同时修改了 `s` 和 `other`，实际输出将是 `oooo`。强制执行可变引用的独占性不仅防止编码错误，还允许 Mojo 编译器在某些情况下优化代码。
 
-One way to avoid this issue when you do need both a mutable and an immutable
-reference (or need to pass the same value to two arguments) is to make a copy:
+当你确实需要可变和不可变引用（或需要将相同值传递给两个参数）时，避免此问题的一种方法是制作一个副本：
 
 ```mojo
 def valid_access():
-  var my_string = "o"           # Create a run-time String value
-  var other_string = my_string  # Create a copy of the String value
+  var my_string = "o"           # 创建运行时 String 值
+  var other_string = my_string  # 创建 String 值的副本
   append_twice(my_string, other_string)
   print(my_string)
 ```
 
-Note that argument exclusivity isn't enforced for register-passable trivial
-types (like `Int` and `Bool`) as they're always passed by copy. When
-passing the same value into two `Int` arguments, the callee receives two
-copies of the value.
+请注意，对于可传递到寄存器的简单类型（如 `Int` 和 `Bool`），不强制执行参数独占性，因为它们总是通过复制传递。当将相同值传递给两个 `Int` 参数时，被调用者接收该值的两个副本。
 
-## Transfer arguments (`var` and `^`)
+## 转移参数（`var` 和 `^`）
 
-And finally, if you'd like your function to receive value **ownership**, add the
-`var` keyword in front of the argument name.
+最后，如果你希望函数接收值**所有权**，请在参数名称前添加 `var` 关键字。
 
-This convention is often combined with use of the postfixed `^` "transfer"
-sigil on the variable that is passed into the function, which ends the
-lifetime of that variable.
+此约定通常与传递给函数的变量上的后缀 `^`"转移"信号结合使用，这结束该变量的生命周期。
 
-Technically, the `var` keyword doesn't guarantee that the received value is
-*the original value*—it guarantees only that the function
-gets unique ownership of a value. This happens in one of
-three ways:
+技术上讲，`var` 关键字并不保证接收的值是*原始值*——它只保证函数获得值的唯一所有权。这通过以下三种方式之一发生：
 
-- The caller passes the argument with the `^` transfer sigil, which ends the
-  lifetime of that variable (the variable becomes uninitialized) and ownership
-  is transferred into the function.
+- 调用者使用 `^` 转移信号传递参数，这结束该变量的生命周期（该变量变为未初始化）并将所有权转移到函数中。
 
-- The caller **doesn't** use the `^` transfer sigil, in which case, Mojo copies
-  the value. If the type isn't copyable, this is a compile-time error.
+- 调用者**不**使用 `^` 转移信号，在这种情况下，Mojo 复制该值。如果类型不可复制，这是一个编译时错误。
 
-- The caller passes in a newly-created "owned" value, such as a value returned
-  from a function. In this case, no variable owns the value and it's
-  transferred directly to the callee. For example:
+- 调用者传递新创建的"拥有"值，例如从函数返回的值。在这种情况下，没有变量拥有该值，它直接转移到被调用者。例如：
 
   ```mojo
   def take(var s: String):
@@ -314,8 +214,7 @@ three ways:
       take("A brand-new String!")
   ```
 
-The following code works by making a copy of the string, because `take_text()`
-uses the `var` convention, and the caller doesn't include the transfer sigil:
+以下代码通过复制字符串来工作，因为 `take_text()` 使用 `var` 约定，并且调用者不包含转移信号：
 
 ```mojo
 def take_text(var text: String):
@@ -323,7 +222,7 @@ def take_text(var text: String):
     print(text)
 
 def main():
-    var message = "Hello"  # Create a run-time String value
+    var message = "Hello"  # 创建运行时 String 值
     take_text(message)
     print(message)
 ```
@@ -333,21 +232,16 @@ Hello!
 Hello
 ```
 
-However, if you add the `^` transfer sigil when calling `take_text()`, the
-compiler complains about `print(message)`, because at that point, the `message`
-variable is no longer initialized. That is, this version doesn't compile:
+然而，如果你在调用 `take_text()` 时添加 `^` 转移信号，编译器会抱怨 `print(message)`，因为此时 `message` 变量不再初始化。也就是说，此版本不会编译：
 
 ```mojo
 def main():
-    var message = "Hello"  # Create a run-time String value
+    var message = "Hello"  # 创建运行时 String 值
     take_text(message^)
-    print(message)  # error: use of uninitialized value 'message'
+    print(message)  # 错误：使用未初始化的值 'message'
 ```
 
-This is a critical feature of Mojo's lifetime checker, because it ensures that
-no two variables have ownership of the same value. To fix the error, you must
-not use the `message` variable after you end its lifetime with the `^` transfer
-sigil. So here is the corrected code:
+这是 Mojo 生命周期检查器的一个关键功能，因为它确保没有两个变量拥有同一个值。要修复此错误，你必须在使用 `^` 转移信号结束 `message` 变量的生命周期后不再使用 `message` 变量。所以这是修正后的代码：
 
 ```mojo
 def take_text(var text: String):
@@ -355,7 +249,7 @@ def take_text(var text: String):
     print(text)
 
 def main():
-    var message = "Hello"  # Create a run-time String value
+    var message = "Hello"  # 创建运行时 String 值
     take_text(message^)
 ```
 
@@ -363,45 +257,28 @@ def main():
 Hello!
 ```
 
-Regardless of how it receives the value, when the function declares an argument
-as `var`, it's certain that it has unique mutable access to that value.
-Because the value is owned, the value is destroyed when the function
-exits—unless the function transfers the value elsewhere.
+无论它如何接收值，当函数将参数声明为 `var` 时，可以肯定它对该值有唯一可变访问权限。由于值被拥有，当函数退出时该值会被销毁——除非函数将值转移到其他地方。
 
-For example, in the following example, `add_to_list()` takes a string and
-appends it to the list. Ownership of the string is transferred to the list, so
-it's not destroyed when the function exits. On the other hand,
-`consume_string()` doesn't transfer its `var` value out, so the value is
-destroyed at the end of the function.
+例如，在以下示例中，`add_to_list()` 接收一个字符串并将其附加到列表中。字符串的所有权转移到列表，因此当函数退出时它不会被销毁。另一方面，`consume_string()` 不将其 `var` 值转移出去，因此该值在函数结束时被销毁。
 
 ```mojo
 def add_to_list(var name: String, mut list: List[String]):
     list.append(name^)
-    # name is uninitialized, nothing to destroy
+    # name 未初始化，无需销毁
 
 def consume_string(var s: String):
     print(s)
-    # s is destroyed here
+    # s 在这里被销毁
 ```
 
-### Transfer implementation details
+### 转移实现细节
 
-In Mojo, you shouldn't conflate "ownership transfer" with a "move
-operation"—these aren't strictly the same thing.
+在 Mojo 中，你不应该将"所有权转移"与"移动操作"混淆——它们并不严格相同。
 
-There are multiple ways that Mojo transfers ownership of a value:
+Mojo 有多种方式转移值的所有权：
 
-- If a type implements the [move
-  constructor](/docs/manual/lifecycle/life#move-constructor),
-  `__init__(take=)`, Mojo may invoke this method *if* a value of that type is
-  transferred into a function as a `var` argument, *and* the original
-  variable's lifetime ends at the same point (with or without use of the `^`
-  transfer sigil).
+- 如果一个类型实现了[移动构造函数](/docs/manual/lifecycle/life#move-constructor)、`__init__(take=)`，Mojo 可能会在将值作为 `var` 参数传递给函数时调用此方法*如果*该类型的值被转移，并且*并且*原始变量的生命周期在同一时间结束（使用或不使用 `^` 转移信号）。
 
-- In some cases, Mojo optimizes away the move operation entirely, leaving the
-  value in the same memory location but updating its ownership. In these cases,
-  a value transfers without invoking either the copy or move
-  constructors.
+- 在某些情况下，Mojo 完全优化掉移动操作，将值保留在相同的内存位置但更新其所有权。在这些情况下，值在不调用复制或移动构造函数的情况下转移。
 
-In order for the `var` convention to work *without* the transfer sigil, the
-value type must be copyable (via `__init__(out self, *, copy: Self)`).
+为了使 `var` 约定在没有转移信号的情况下工作，值类型必须是可复制的（通过 `__init__(out self, *, copy: Self)`）。

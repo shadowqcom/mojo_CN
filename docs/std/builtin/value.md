@@ -1,14 +1,14 @@
 ---
 title: "value"
 sidebar_label: "value"
-description: "Defines core value traits.  These are Mojo built-ins, so you don't need to import them."
+description: "定义核心值 trait。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # value
 
-Defines core value traits.
+定义核心值 trait。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## Traits
 

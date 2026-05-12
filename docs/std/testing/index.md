@@ -1,21 +1,16 @@
 ---
 title: "testing"
 sidebar_label: "testing"
-description: "Unit testing: Assertions (equal, true, raises) and test suites.  The `testing` package provides a unit testing framework for Mojo code. It includes assertion functions for validating conditions and va"
+description: "单元测试：断言（相等、真、抛出）和测试套件。`testing` 包提供 Mojo 代码的单元测试框架。"
 ---
 
 # testing
 
-Unit testing: Assertions (equal, true, raises) and test suites.
+单元测试：断言（相等、真、抛出）和测试套件。
 
-The `testing` package provides a unit testing framework for Mojo code. It
-includes assertion functions for validating conditions and values, plus
-infrastructure for organizing and running test suites. The framework follows
-familiar patterns from other testing libraries, making it straightforward to
-write and maintain tests.
+`testing` 包提供 Mojo 代码的单元测试框架。它包括用于验证条件和值的断言函数，以及用于组织和运行测试套件的基础设施。该框架遵循其他测试库的熟悉模式，使编写和维护测试变得简单。
 
-Use this package to write unit tests for your Mojo code, validate correctness,
-and catch regressions during development.
+使用此包为您的 Mojo 代码编写单元测试、验证正确性，并在开发过程中捕获回归问题。
 
 ## 模块
 

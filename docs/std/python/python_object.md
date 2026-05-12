@@ -1,14 +1,14 @@
 ---
 title: "python_object"
 sidebar_label: "python_object"
-description: "Implements PythonObject.  You can import these APIs from the `python` package. For example:  ```mojo from std.python import PythonObject ```"
+description: "实现 PythonObject。您可以从 `python` 包导入这些 API。例如：```mojo from std.python import PythonObject ```"
 ---
 
 # python_object
 
-Implements PythonObject.
+实现 PythonObject。
 
-You can import these APIs from the `python` package. For example:
+您可以从 `python` 包导入这些 API。例如：
 
 ```mojo
 from std.python import PythonObject

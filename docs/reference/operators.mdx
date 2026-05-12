@@ -1,158 +1,133 @@
 ---
-title: Mojo operator reference
-sidebar_label: Operators
+title: Mojo 运算符参考
+sidebar_label: 运算符
 sidebar_position: 4
 description: >-
-  Operator precedence, associativity, and symbols for Mojo.
+  Mojo 运算符优先级、结合性和符号。
 ---
 
-## Precedence table
+## 优先级表
 
 {/*  Source: ParserBase.h Precedence enum and  */}
 {/*  ParserExprs.cpp InfixInfo::get  */}
 
-Operator precedence and associativity. Higher-precedence operators bind
-tighter. Unless noted, operators associate left to right.
+运算符优先级和结合性。优先级越高的运算符绑定越紧密。除非另有说明，运算符从左到右结合。
 
-### From highest to lowest precedence
+### 从高到低优先级
 
-| Precedence | Operators                   | Notes                             |
-|------------|-----------------------------|-----------------------------------|
-| 1          | `()` `[]` `.`               | Call, subscript, attribute        |
-| 2          | `**`                        | Exponentiation, right-associative |
-| 3          | `+x` `-x` `~x`              | Unary prefix                      |
-| 4          | `*` `@` `/` `//` `%`        | Multiplicative                    |
-| 5          | `+` `-`                     | Additive (addition, subtraction)  |
-| 6          | `<<` `>>`                   | Bitwise shift (left, right)       |
-| 7          | `&`                         | Bitwise AND                       |
-| 8          | `^`                         | Bitwise XOR (not transfers)       |
-| 9          | `\|`                        | Bitwise OR                        |
-| 10         | `==` `!=` `<` `<=` `>` `>=` | Comparisons, chainable            |
-| 10         | `in` `not in`               | Membership, chainable             |
-| 10         | `is` `is not`               | Identity, chainable               |
-| 11         | `not`                       | Boolean NOT, prefix               |
-| 12         | `and`                       | Boolean AND, short-circuits       |
-| 13         | `or`                        | Boolean OR, short-circuits        |
-| 14         | `if`-`else`                 | Ternary, right-associative        |
-| 15         | `:=`                        | Walrus operator                   |
+| 优先级 | 运算符                     | 说明                   |
+|--------|----------------------------|------------------------|
+| 1      | `()` `[]` `.`              | 调用、下标、属性       |
+| 2      | `**`                       | 幂运算，右结合         |
+| 3      | `+x` `-x` `~x`             | 一元前缀               |
+| 4      | `*` `@` `/` `//` `%`       | 乘法类                 |
+| 5      | `+` `-`                    | 加法类（加法、减法）   |
+| 6      | `<<` `>>`                  | 按位移位（左、右）     |
+| 7      | `&`                        | 按位与                 |
+| 8      | `^`                        | 按位异或（非转移）     |
+| 9      | `\|`                       | 按位或                 |
+| 10     | `==` `!=` `<` `<=` `>` `>=`| 比较，可链式           |
+| 10     | `in` `not in`              | 成员测试，可链式       |
+| 10     | `is` `is not`              | 身份测试，可链式       |
+| 11     | `not`                      | 布尔非，前缀           |
+| 12     | `and`                      | 布尔与，短路           |
+| 13     | `or`                       | 布尔或，短路           |
+| 14     | `if`-`else`                | 三元，右结合           |
+| 15     | `:=`                       | 海象运算符             |
 
-_Prefix operators_: positive (`+x`), negative (`-x`), bitwise NOT
-complement (`~x`)
+_前缀运算符_：正（`+x`）、负（`-x`）、按位取反（`~x`）
 
-_Multiplicative operators_: times (`*`), matrix multiplication (`@`),
-divide (`/`, integer types round towards zero), truncating divide (`//`,
-integer types round towards negative infinity), modulo (`%`).
+_乘法类运算符_：乘（`*`）、矩阵乘（`@`）、除（`/`，整数类型向零取整）、截断除（`//`，整数类型向负无穷取整）、取模（`%`）。
 
-_Comparison operators_: equality (`==`), inequality (`!=`), less-than (`<`),
-less-than-or-equal (`<=`), greater-than (`>`), greater-than-or-equal (`>=`)
+_比较运算符_：等于（`==`）、不等于（`!=`）、小于（`<`）、小于等于（`<=`）、大于（`>`）、大于等于（`>=`）
 
 :::note
-Assignment operators (`=` `+=` `-=` `*=` `/=` `//=` `%=`
-`**=` `@=` `&=` `\|=` `^=` `<<=` `>>=`) are statements,
-not expressions. They are not part of expression precedence.
+赋值运算符（`=` `+=` `-=` `*=` `/=` `//=` `%=` `**=` `@=` `&=` `\|=` `^=` `<<=` `>>=`）是语句，不是表达式。它们不属于表达式优先级。
 :::
 
-## Right-associative operators
+## 右结合运算符
 
-Most operators are left-associative. For example, `a - b + c` groups as
-`(a - b) + c`. Two infix operators are right-associative: exponentiation
-(`a ** b`) and Mojo's ternary `if`-`else`.
+大多数运算符是左结合的。例如，`a - b + c` 分组为 `(a - b) + c`。两个中缀运算符是右结合的：幂运算（`**`）和 Mojo 的三元 `if`-`else`。
 
-### Exponentiation (`**`)
+### 幂运算（`**`）
 
 ```mojo
 2 ** 3 ** 4
 ```
 
-groups as
+分组为
 
 ```mojo
 2 ** (3 ** 4)
 ```
 
-Equivalent to `pow(2, 81)`. In Mojo `pow(a, b)` and `a ** b` are
-interchangeable.
+等同于 `pow(2, 81)`。在 Mojo 中，`pow(a, b)` 和 `a ** b` 可以互换。
 
-### Ternary (`if`-`else`)
+### 三元（`if`-`else`）
 
 ```mojo
 "low" if value < 10 else "high" if value > 100 else "mid"
 ```
 
-groups as
+分组为
 
 ```mojo
 "low" if value < 10 else ("high" if value > 100 else "mid")
 ```
 
-## Chaining operations
+## 链式操作
 
-All comparison operators can be chained:
+所有比较运算符都可以链式使用：
 
 ```mojo
-a < b < c        # equivalent to: (a < b) and (b < c)
-a == b == c      # equivalent to: (a == b) and (b == c)
-a < b == c       # equivalent to: (a < b) and (b == c)
-a < b <= c != d  # equivalent to: (a < b) and (b <= c) and (c != d)
+a < b < c        # 等价于：(a < b) and (b < c)
+a == b == c      # 等价于：(a == b) and (b == c)
+a < b == c       # 等价于：(a < b) and (b == c)
+a < b <= c != d  # 等价于：(a < b) and (b <= c) and (c != d)
 ```
 
-Each intermediate value is evaluated once.
+每个中间值只求值一次。
 
-- Chaining only applies between operators at the same precedence. `2 ** 3
-  == 8` isn't a chain. It evaluates as `(2 ** 3) == 8` since
-  exponentiation binds tighter than comparison.
+- 链式只适用于同一优先级的运算符之间。`2 ** 3 == 8` 不是链式。它求值为 `(2 ** 3) == 8`，因为幂运算比比较绑定更紧密。
 
-- Comparison, membership, and identity operators share the same
-  precedence and chain together. `5 != a < b in c` is valid and evaluates
-  as `(5 != a) and (a < b) and (b in c)`.
+- 比较、成员和身份运算符共享同一优先级并可以一起链式使用。`5 != a < b in c` 是有效的，求值为 `(5 != a) and (a < b) and (b in c)`。
 
-## Implementing operators for custom types
+## 为自定义类型实现运算符
 
-Mojo doesn't limit operators use to built-in types. Each operator has
-a set of dunder methods your custom types can implement. Once added,
-you can use operators in code instead of calling methods.
+Mojo 不限制运算符只能用于内置类型。每个运算符都有一组双下方法，你的自定义类型可以实现它们。添加后，你可以在代码中使用运算符而不是调用方法。
 
-### Infix operator method types
+### 中缀运算符方法类型
 
-Each infix operator has up to three forms that decide which operand's
-method will run. For `a op b`:
+每个中缀运算符最多有三种形式，决定哪个操作数的方法会运行。对于 `a op b`：
 
-- _Forward_: Mojo tries the forward method first. `a + b` calls
-  `a.__add__(b)`.
-- _Reversed_: If the forward method doesn't exist or can't handle `b`'s
-  type, Mojo falls back to the reversed method on `b`. `a + b` calls
-  `b.__radd__(a)`.
-- _In-place_: Called for compound assignment. `a += b` calls
-  `a.__iadd__(b)`.
+- _正向_：Mojo 首先尝试正向方法。`a + b` 调用 `a.__add__(b)`。
+- _反向_：如果正向方法不存在或无法处理 `b` 的类型，Mojo 回退到 `b` 上的反向方法。`a + b` 调用 `b.__radd__(a)`。
+- _原地_：用于复合赋值。`a += b` 调用 `a.__iadd__(b)`。
 
-For example, if `a` uses a `CustomVector` type:
+例如，如果 `a` 使用 `CustomVector` 类型：
 
-- `a + 5`: calls the forward method `a.__add__(5)`
-- `5 + a`: Int doesn't know custom types. Falls back to the reversed
-  method, `a.__radd__(5)`
-- `a += 5`: calls the in-place `a.__iadd__(5)` method
+- `a + 5`：调用正向方法 `a.__add__(5)`
+- `5 + a`：Int 不知道自定义类型。回退到反向方法 `a.__radd__(5)`
+- `a += 5`：调用原地方法 `a.__iadd__(5)`
 
-### Arithmetic
+### 算术运算
 
-Implement the methods directly on your struct to use `instance OP
-instance`, `instance OP= instance`.
+直接在结构体上实现方法以使用 `实例 OP 实例`、`实例 OP= 实例`。
 
-| Operator | Forward        | Reversed          | In-place          |
-|----------|----------------|-------------------|-------------------|
-| `+`      | `__add__()`    | `__radd__()`      | `__iadd__()`      |
-| `-`      | `__sub__()`    | `__rsub__()`      | `__isub__()`      |
-| `*`      | `__mul__()`    | `__rmul__()`      | `__imul__()`      |
-| `/`      | `__truediv__`  | `__rtruediv__()`  | `__itruediv__()`  |
-| `//`     | `__floordiv__` | `__rfloordiv__()` | `__ifloordiv__()` |
-| `%`      | `__mod__()`    | `__rmod__()`      | `__imod__()`      |
-| `**`     | `__pow__()`    | `__rpow__()`      | `__ipow__()`      |
-| `@`      | `__matmul__()` | `__rmatmul__()`   | `__imatmul__()`   |
+| 运算符 | 正向         | 反向           | 原地           |
+|--------|--------------|----------------|----------------|
+| `+`    | `__add__()`  | `__radd__()`   | `__iadd__()`   |
+| `-`    | `__sub__()`  | `__rsub__()`   | `__isub__()`   |
+| `*`    | `__mul__()`  | `__rmul__()`   | `__imul__()`   |
+| `/`    | `__truediv__`| `__rtruediv__()`| `__itruediv__()`|
+| `//`   | `__floordiv__`| `__rfloordiv__()`| `__ifloordiv__()`|
+| `%`    | `__mod__()`  | `__rmod__()`   | `__imod__()`   |
+| `**`   | `__pow__()`  | `__rpow__()`   | `__ipow__()`   |
+| `@`    | `__matmul__()`| `__rmatmul__()`| `__imatmul__()`|
 
-`__pow__()` and `__ipow__()` accept an optional third argument
-  (modulus).
+`__pow__()` 和 `__ipow__()` 接受可选的第三个参数（模数）。
 
-In-place operators are syntactic sugar for the operator applied to the
-variable with assignment:
+原地运算符是运算符应用于变量并赋值的语法糖：
 
 ```mojo
 x += y     # x = x + y
@@ -165,27 +140,23 @@ x **= y    # x = x ** y
 x @= y     # x = x @ y
 ```
 
-**Traits:**
+**Trait：**
 
-[`Powable`](/docs/std/math/math/Powable/) requires `__pow__()`, doesn't
-provide a default.
+[`Powable`](/docs/std/math/math/Powable/) 需要 `__pow__()`，不提供默认值。
 
-### Bitwise
+### 按位运算
 
-Implement the methods directly on your struct to use `a OP
-b`, `a OP= b`.
+直接在结构体上实现方法以使用 `a OP b`、`a OP= b`。
 
-| Operator | Forward        | Reversed        | In-place        |
-|----------|----------------|-----------------|-----------------|
-| `&`      | `__and__()`    | `__rand__()`    | `__iand__()`    |
-| `\|`     | `__or__()`     | `__ror__()`     | `__ior__()`     |
-| `^`      | `__xor__()`    | `__rxor__()`    | `__ixor__()`    |
-| `<<`     | `__lshift__()` | `__rlshift__()` | `__ilshift__()` |
-| `>>`     | `__rshift__()` | `__rrshift__()` | `__irshift__()` |
+| 运算符 | 正向         | 反向           | 原地           |
+|--------|--------------|----------------|----------------|
+| `&`    | `__and__()`  | `__rand__()`   | `__iand__()`   |
+| `\|`   | `__or__()`   | `__ror__()`    | `__ior__()`    |
+| `^`    | `__xor__()`  | `__rxor__()`   | `__ixor__()`   |
+| `<<`   | `__lshift__()`| `__rlshift__()`| `__ilshift__()`|
+| `>>`   | `__rshift__()`| `__rrshift__()`| `__irshift__()`|
 
-Bitwise operators are typically implemented on integer and flag types. Like
-arithmetic operators, in-place bitwise operators are syntactic sugar for
-the operator applied to the variable with assignment:
+按位运算符通常在整数和标志类型上实现。与算术运算符一样，原地按位运算符是运算符应用于变量并赋值的语法糖：
 
 ```mojo
 x &= y     # x = x & y
@@ -195,105 +166,87 @@ x <<= y    # x = x << y
 x >>= y    # x = x >> y
 ```
 
-### Unary operators
+### 一元运算符
 
-Implement the methods directly on your struct to support
-prefix operators like `-x`, `+x`, and `~x`.
+直接在结构体上实现方法以支持前缀运算符如 `-x`、`+x` 和 `~x`。
 
-| Operator | Method         |
-|----------|----------------|
-| `-x`     | `__neg__()`    |
-| `+x`     | `__pos__()`    |
-| `~x`     | `__invert__()` |
+| 运算符 | 方法          |
+|--------|---------------|
+| `-x`   | `__neg__()`   |
+| `+x`   | `__pos__()`   |
+| `~x`   | `__invert__()`|
 
-Mojo offers one postfix unary operator.
+Mojo 提供一个后缀一元运算符。
 
-| Operator | Method                       |
-|----------|------------------------------|
-| `x^`     | Compiler implementation only |
+| 运算符 | 方法                       |
+|--------|----------------------------|
+| `x^`   | 仅编译器实现               |
 
-Use the `^` sigil for ownership transfer. `consume(a^)` transfers
-ownership of `a` to the `consume` function.
+使用 `^` 符号进行所有权转移。`consume(a^)` 将 `a` 的所有权转移给 `consume` 函数。
 
-- If the `consume` argument uses the `var` convention, the transfer moves
-  the value.
-- If not, the value is copied and the original is left intact.
+- 如果 `consume` 参数使用 `var` 约定，转移会移动值。
+- 否则，值会被复制，原始值保持完整。
 
-After transfer, the `a` variable is uninitialized. You can't re-use the
-name until it's assigned a new value.
+转移后，`a` 变量未初始化。在赋新值之前不能重用该名称。
 
 ```mojo
-consume(a^) # transfers ownership of `a`'s value, leaving `a` uninitialized
+consume(a^) # 转移 `a` 值的所有权，使 `a` 未初始化
 ```
 
-**Disambiguation:** `^` means XOR when followed by a value, and transfer
-when used directly after a variable name.
+**消歧：** `^` 后跟值时表示异或，直接跟在变量名后时表示转移。
 
 ```mojo
-a ^ b   # XOR
-a^      # transfer
+a ^ b   # 异或
+a^      # 转移
 ```
 
-### Comparison operators
+### 比较运算符
 
-Implement the methods directly on your struct to use
-`a OP b`.
+直接在结构体上实现方法以使用 `a OP b`。
 
-| Operator | Method     | Trait        | Default? |
-|----------|------------|--------------|----------|
-| `==`     | `__eq__()` | `Equatable`  | Yes      |
-| `!=`     | `__ne__()` | `Equatable`  | Yes      |
-| `<`      | `__lt__()` | `Comparable` | No       |
-| `<=`     | `__le__()` | `Comparable` | Yes      |
-| `>`      | `__gt__()` | `Comparable` | Yes      |
-| `>=`     | `__ge__()` | `Comparable` | Yes      |
+| 运算符 | 方法       | Trait        | 默认？ |
+|--------|------------|--------------|--------|
+| `==`   | `__eq__()` | `Equatable`  | 是     |
+| `!=`   | `__ne__()` | `Equatable`  | 是     |
+| `<`    | `__lt__()` | `Comparable` | 否     |
+| `<=`   | `__le__()` | `Comparable` | 是     |
+| `>`    | `__gt__()` | `Comparable` | 是     |
+| `>=`   | `__ge__()` | `Comparable` | 是     |
 
-**Traits:**
+**Trait：**
 
-[`Equatable`](/docs/std/builtin/comparable/Equatable/) provides
-`__eq__()` if all your struct's fields conform to `Equatable` using
-pairwise field comparison. `__ne__()` derives from `__eq__()`.
+[`Equatable`](/docs/std/builtin/comparable/Equatable/) 如果所有结构体字段都符合 `Equatable`，则提供 `__eq__()`，使用成对字段比较。`__ne__()` 从 `__eq__()` 派生。
 
-[`Comparable`](/docs/std/builtin/comparable/Comparable/) provides
-`__le__()`, `__gt__()`, and `__ge__()`, all derived from `__lt__()` and
-`__eq__()`. You implement `__lt__()`.
+[`Comparable`](/docs/std/builtin/comparable/Comparable/) 提供 `__le__()`、`__gt__()` 和 `__ge__()`，都从 `__lt__()` 和 `__eq__()` 派生。你需要实现 `__lt__()`。
 
-`Comparable` refines `Equatable`, so conforming to
-`Comparable` requires both traits. If all your fields are
-`Equatable`, you implement `__lt__()` at a minimum.
+`Comparable` 细化 `Equatable`，所以符合 `Comparable` 需要两个 trait。如果所有字段都是 `Equatable`，你至少需要实现 `__lt__()`。
 
-### Identity and membership operators
+### 身份和成员运算符
 
-Implement the methods directly on your struct to use `a OP b`.
+直接在结构体上实现方法以使用 `a OP b`。
 
-| Operator | Method           | Trait          | Default? |
-|----------|------------------|----------------|----------|
-| `is`     | `__is__()`       | `Identifiable` | No       |
-| `is not` | `__isnot__()`    | `Identifiable` | Yes      |
-| `in`     | `__contains__()` | —              | No       |
-| `not in` | `__contains__()` | —              | No       |
+| 运算符   | 方法            | Trait          | 默认？ |
+|----------|-----------------|----------------|--------|
+| `is`     | `__is__()`      | `Identifiable` | 否     |
+| `is not` | `__isnot__()`   | `Identifiable` | 是     |
+| `in`     | `__contains__()`| —              | 否     |
+| `not in` | `__contains__()`| —              | 否     |
 
-`x in collection` calls `collection.__contains__(x)`. The method is on
-the **container**, not the element. `not in` calls the same method and
-negates the result.
+`x in collection` 调用 `collection.__contains__(x)`。方法在**容器**上，而不是元素上。`not in` 调用相同方法并取反结果。
 
-`is` tests object identity, not equality. Stdlib types that implement
-it include `ArcPointer`, `PythonObject`, and `Optional` (for `is None`
-checks).
+`is` 测试对象身份，而不是相等性。实现它的标准库类型包括 `ArcPointer`、`PythonObject` 和 `Optional`（用于 `is None` 检查）。
 
-**Traits:**
+**Trait：**
 
-[`Identifiable`](/docs/std/builtin/identifiable/Identifiable/) requires
-`__is__()`. `__isnot__()` is provided (calls `not (self is rhs)`).
+[`Identifiable`](/docs/std/builtin/identifiable/Identifiable/) 需要 `__is__()`。`__isnot__()` 已提供（调用 `not (self is rhs)`）。
 
-### Subscript operators
+### 下标运算符
 
-Implement the methods directly on your struct to use `a[key]`
-reads and `a[key] = b` assigns.
+直接在结构体上实现方法以使用 `a[key]` 读取和 `a[key] = b` 赋值。
 
-| Operation                | Method          |
-|--------------------------|-----------------|
-| `obj[key]` (read)        | `__getitem__()` |
-| `obj[key] = val` (write) | `__setitem__()` |
+| 操作                  | 方法           |
+|-----------------------|----------------|
+| `obj[key]`（读取）    | `__getitem__()`|
+| `obj[key] = val`（写）| `__setitem__()`|
 
-Both accept variadic arguments (for multi-dimensional indexing).
+两者都接受可变参数（用于多维索引）。

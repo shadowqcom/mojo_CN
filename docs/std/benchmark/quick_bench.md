@@ -1,17 +1,14 @@
 ---
 title: "quick_bench"
 sidebar_label: "quick_bench"
-description: "Provides simplified benchmarking interface with automatic boilerplate handling.  This module implements the `QuickBench` type, which wraps the full `Bench` infrastructure to provide a simpler interfac"
+description: "提供简化的基准测试接口，自动处理样板代码。此模块实现了 `QuickBench` 类型，它封装了完整的 `Bench` 基础设施，为常见基准测试任务提供更简单的接口。"
 ---
 
 # quick_bench
 
-Provides simplified benchmarking interface with automatic boilerplate handling.
+提供简化的基准测试接口，自动处理样板代码。
 
-This module implements the `QuickBench` type, which wraps the full `Bench`
-infrastructure to provide a simpler interface for common benchmarking tasks. It
-automatically handles `Bencher` setup and the `keep()` calls needed to prevent
-optimization, supporting functions with 0-10 arguments.
+此模块实现了 `QuickBench` 类型，它封装了完整的 `Bench` 基础设施，为常见基准测试任务提供更简单的接口。它自动处理 `Bencher` 设置和防止优化所需的 `keep()` 调用，支持 0-10 个参数的函数。
 
 ## 类型
 

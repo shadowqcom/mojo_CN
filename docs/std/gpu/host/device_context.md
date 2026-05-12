@@ -1,17 +1,12 @@
 ---
 title: "device_context"
 sidebar_label: "device_context"
-description: "This module provides functionality for interacting with accelerators. In particular the [`DeviceContext`](/docs/std/gpu/host/device_context/DeviceContext/) struct, which represents a single stream of "
+description: "此模块提供与加速器交互的功能。特别是 [`DeviceContext`](/docs/std/gpu/host/device_context/DeviceContext/) 结构体，它表示给定加速器上的单个执行流。"
 ---
 
 # device_context
 
-This module provides functionality for interacting with accelerators. In
-particular the
-[`DeviceContext`](/docs/std/gpu/host/device_context/DeviceContext/) struct,
-which represents a single stream of execution on a given accelerator. You can
-use this struct to allocate accelerator memory, copy data to and from the
-accelerator, and compile and execute functions on the accelerator.
+此模块提供与加速器交互的功能。特别是 [`DeviceContext`](/docs/std/gpu/host/device_context/DeviceContext/) 结构体，它表示给定加速器上的单个执行流。您可以使用此结构体分配加速器内存、在加速器之间复制数据，以及在加速器上编译和执行函数。
 
 ## 类型
 

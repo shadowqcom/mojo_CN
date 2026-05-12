@@ -1,14 +1,14 @@
 ---
 title: "memory"
 sidebar_label: "memory"
-description: "Implements `parallel_memcpy`.  You can import these APIs from the `algorithm` package. For example:  ```mojo from std.algorithm import parallel_memcpy ```"
+description: "实现 `parallel_memcpy`。您可以从 `algorithm` 包导入这些 API。例如：```mojo from std.algorithm import parallel_memcpy ```"
 ---
 
 # memory
 
-Implements `parallel_memcpy`.
+实现 `parallel_memcpy`。
 
-You can import these APIs from the `algorithm` package. For example:
+您可以从 `algorithm` 包导入这些 API。例如：
 
 ```mojo
 from std.algorithm import parallel_memcpy

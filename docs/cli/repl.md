@@ -4,29 +4,28 @@ sidebar_position: 8
 
 # mojo repl
 
-Launches the Mojo REPL.
+启动 Mojo REPL。
 
-## Synopsis
+## 用法概要
 
 ```
 mojo repl [lldb-options]
 ```
 
-## Description
+## 描述
 
-Launches a Mojo read-evaluate-print loop (REPL) environment, which provides interactive development in the terminal. You can also start the REPL by simply running `mojo`.
+启动 Mojo 读取-求值-打印循环（REPL）环境，在终端中提供交互式开发。您也可以通过简单地运行 `mojo` 来启动 REPL。
 
-Any number of options and arguments may be specified on the command line. These are then forwarded to the underlying lldb tool, which runs the REPL.
+可以在命令行上指定任意数量的选项和参数。然后将这些选项和参数转发给运行 REPL 的底层 lldb 工具。
 
-## Options
+## 选项
 
-### Common options
+### 通用选项
 
 #### `--help`, `-h`
 
-Displays help information.
+显示帮助信息。
 
 #### `--help-hidden`
 
-Displays help for hidden options.
-
+显示隐藏选项的帮助信息。

@@ -1,13 +1,24 @@
 ---
-title: '@implicit'
-description: Marks a constructor as eligible for implicit conversion.
-codeTitle: true
+title: '@implicit 装饰器'
+sidebar_label: '@implicit'
+sidebar_position: 11
+description: >
+  @implicit 装饰器参考。标记转换函数为隐式转换。
 ---
 
-You can add the `@implicit` decorator on any single-argument constructor to
-identify it as eligible for implicit conversion.
+{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
 
-For example:
+`@implicit` 装饰器标记转换函数为隐式转换。当类型不匹配时，编译器会自动调用标记的转换函数。
+
+## 语法
+
+```mojo
+@implicit
+def __init__(out self, ...):
+    ...
+```
+
+## 用法
 
 ```mojo
 struct MyInt:
@@ -17,48 +28,57 @@ struct MyInt:
     def __init__(out self, value: Int):
         self.value = value
 
-    def __init__(out self, value: Float64):
-        self.value = Int(value)
-```
-
-This implicit conversion constructor allows you to pass an `Int` to a function
-that takes a `MyInt` argument, or assign an `Int` to a variable of type `MyInt`.
-However, the constructor that takes a `Float64` value is **not** an implicit
-conversion constructor, so it must be invoked explicitly:
-
-```mojo
-def func(n: MyInt):
-    print("MyInt value: ", n.value)
+def process(x: MyInt):
+    print(x.value)
 
 def main():
-    func(Int(42))             # Implicit conversion from Int: OK
-    func(MyInt(Float64(4.2))) # Explicit conversion from Float64: OK
-    func(Float64(4.2))        # Error: can't convert Float64 to MyInt
+    process(42)  # 隐式转换 Int 到 MyInt
 ```
 
-## Deprecation
+## 示例
 
-Over time, you may decide that an implicit conversion is no longer appropriate
-for your code base. For example, it may hide complexity or cause ambiguous
-function overloads. In such cases, Mojo lets you mark a conversion as deprecated
-using its built-in `deprecated` argument on the @implicit decorator. Deprecation
-allows you to phase out the conversion gradually instead of causing abrupt
-behavior changes.
-
-Supply a Boolean value to the `deprecated` argument:
+### 类型包装
 
 ```mojo
-struct MyStruct:
-    @implicit(deprecated=True)
+struct Meters:
+    var value: Float64
+
+    @implicit
+    def __init__(out self, value: Float64):
+        self.value = value
+
+def measure(distance: Meters):
+    print(t"Distance: {distance.value}m")
+
+def main():
+    measure(10.5)  # 隐式转换
+```
+
+### 多种转换
+
+```mojo
+struct Flexible:
+    var value: Int
+
+    @implicit
     def __init__(out self, value: Int):
-        # ...
+        self.value = value
+
+    @implicit
+    def __init__(out self, value: Float64):
+        self.value = Int(value)
+
+def process(x: Flexible):
+    print(x.value)
+
+def main():
+    process(42)     # 从 Int 隐式转换
+    process(3.14)   # 从 Float64 隐式转换
 ```
 
-This tells the compiler to emit a warning when the conversion is used
-implicitly, without breaking existing code:
+## 注意事项
 
-```mojo
-_: MyStruct = 1  # Warns on implicit conversion
-
-_ = MyStruct(1)  # No warning. Conversion is explicit
-```
+- 过度使用隐式转换可能导致代码难以理解
+- 隐式转换可能有性能开销
+- 编译器只会尝试一次隐式转换
+- 避免创建循环转换链

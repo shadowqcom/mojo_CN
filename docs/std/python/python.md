@@ -1,14 +1,15 @@
 ---
 title: "python"
+slug: python
 sidebar_label: "python"
-description: "Implements Python interoperability.  You can import these APIs from the `python` package. For example:  ```mojo from std.python import Python ```"
+description: "实现 Python 互操作性。您可以从 `python` 包导入这些 API。例如：```mojo from std.python import Python ```"
 ---
 
 # python
 
-Implements Python interoperability.
+实现 Python 互操作性。
 
-You can import these APIs from the `python` package. For example:
+您可以从 `python` 包导入这些 API。例如：
 
 ```mojo
 from std.python import Python

@@ -1,17 +1,14 @@
 ---
 title: "uutils"
 sidebar_label: "uutils"
-description: "Utilities for doing unsigned division and modulo operations on `Int`.  These helpers allow performing unsigned division and modulo operations on Int arguments. This can provide better performance, as "
+description: "对 `Int` 执行无符号除法和取模操作的工具。这些辅助函数允许对 Int 参数执行无符号除法和取模操作。"
 ---
 
 # uutils
 
-Utilities for doing unsigned division and modulo operations on `Int`.
+对 `Int` 执行无符号除法和取模操作的工具。
 
-These helpers allow performing unsigned division and modulo operations on Int
-arguments. This can provide better performance, as these operations can be
-slower when performed using signed integers on some accelerators, as correctly
-handling negative values requires additional instructions.
+这些辅助函数允许对 Int 参数执行无符号除法和取模操作。这可以提供更好的性能，因为在某些加速器上使用有符号整数执行这些操作可能较慢，因为正确处理负值需要额外的指令。
 
 ## 函数
 

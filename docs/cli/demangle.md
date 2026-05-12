@@ -4,27 +4,26 @@ sidebar_position: 4
 
 # mojo demangle
 
-Demangles the given name.
+对给定名称进行反混淆。
 
-## Synopsis
+## 用法概要
 
 ```
 mojo demangle [options] <name>
 ```
 
-## Description
+## 描述
 
-If the given name is a mangled Mojo symbol name, prints the demangled name. If no name is provided, one is read from standard input.
+如果给定的名称是混淆的 Mojo 符号名称，则打印反混淆后的名称。如果未提供名称，则从标准输入读取。
 
-## Options
+## 选项
 
-### Common options
+### 通用选项
 
 #### `--help`, `-h`
 
-Displays help information.
+显示帮助信息。
 
 #### `--help-hidden`
 
-Displays help for hidden options.
-
+显示隐藏选项的帮助信息。

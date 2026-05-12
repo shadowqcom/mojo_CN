@@ -1,22 +1,22 @@
 ---
 title: "sync"
+slug: sync
 sidebar_label: "sync"
-description: "This module provides GPU synchronization primitives and barriers.  The module includes: - Block-level synchronization barriers (barrier()) - Warp-level synchronization (syncwarp()) - Memory barriers ("
+description: "此模块提供 GPU 同步原语和屏障。模块包括：- 块级同步屏障 (barrier()) - Warp 级同步 (syncwarp()) - 内存屏障 (mbarrier) 用于 NVIDIA GPU"
 ---
 
 # sync
 
-This module provides GPU synchronization primitives and barriers.
+此模块提供 GPU 同步原语和屏障。
 
-The module includes:
-- Block-level synchronization barriers (barrier())
-- Warp-level synchronization (syncwarp())
-- Memory barriers (mbarrier) for NVIDIA GPUs
-- Instruction scheduling controls for AMD GPUs
-- Asynchronous copy and bulk transfer synchronization
+模块包括：
+- 块级同步屏障 (barrier())
+- Warp 级同步 (syncwarp())
+- 内存屏障 (mbarrier) 用于 NVIDIA GPU
+- AMD GPU 的指令调度控制
+- 异步复制和批量传输同步
 
-The synchronization primitives help coordinate execution between threads within
-thread blocks and warps, and manage memory consistency across different memory spaces.
+同步原语帮助协调线程块和 warp 内线程之间的执行，并管理不同内存空间之间的内存一致性。
 
 ## 类型
 

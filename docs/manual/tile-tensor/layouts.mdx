@@ -1,39 +1,23 @@
 ---
-title: TileTensor layouts
+title: TileTensor 布局
 sidebar_position: 1
-description: Using layouts to describe multidimensional data.
+description: 使用布局描述多维数据。
 ---
 
-The `TileTensor` type is a flexible abstraction for working with
-multidimensional data. Every `TileTensor` has an associated *layout*
-that describes how logical tensor coordinates are mapped to memory
-locations. This section describes how to create and work with layouts
-for `TileTensor`. In particular, it discusses the following types:
+`TileTensor` 类型是用于处理多维数据的灵活抽象。每个 `TileTensor` 都有一个关联的*布局*，描述了逻辑张量坐标如何映射到内存位置。本节介绍如何为 `TileTensor` 创建和使用布局。具体来说，它讨论了以下类型：
 
-- The [`tile_layout.Layout`](/docs/layout/tile_layout/Layout/) struct
-  describes an arrangement of data in memory. A *layout* is a function that maps
-  a set of logical coordinates (like (*x*, *y*) in a two-dimensional array) to a
-  linear index value. Layouts can also describe more complex organizations, like
-  a matrix subdivided into tiles.
-- [`Coord`](/docs/layout/coord/Coord/) is a tuple-like container for
-  storing integer coordinates that supports both compile-time and run-time
-  values. It's used for defining logical coordinates and layout shapes, among
-  other things.
+- [`tile_layout.Layout`](/docs/layout/tile_layout/Layout/) 结构体描述了数据在内存中的排列方式。*布局*是一个函数，将一组逻辑坐标映射到一个线性索引值。布局还可以描述更复杂的组织方式，如细分为瓦片的矩阵。
+- [`Coord`](/docs/layout/coord/Coord/) 是一个类似元组的容器，用于存储整数坐标，同时支持编译时和运行时值。它用于定义逻辑坐标和布局形状等。
 
-## Example code and imports
+## 示例代码和导入
 
-You can find most of the code examples on this page in the
-[public GitHub repo](https://github.com/modular/modular/tree/main/mojo/docs/code/manual/tile-tensor/layouts/).
+你可以在[公共 GitHub 仓库](https://github.com/modular/modular/tree/main/mojo/docs/code/manual/tile-tensor/layouts/)中找到本页的大部分代码示例。
 
-Some of the concepts presented here can be a little hard to grasp from static
-examples, so we recommend downloading the example code and experimenting.
+这里呈现的一些概念仅从静态示例中可能不太容易理解，因此我们建议下载示例代码并进行实验。
 
-For brevity, the code examples on this page omit imports. Many of them
-are also short snippets, which need to be placed inside a function to
-be valid Mojo code.
+为简洁起见，本页的代码示例省略了导入语句。其中许多也是简短的代码片段，需要放在函数内部才能成为有效的 Mojo 代码。
 
-The following imports include all of the types and functions used
-on this page.
+以下导入包含了本页使用的所有类型和函数。
 
 ```mojo title=Imports
 from layout import Coord, coord, Idx, print_layout
@@ -46,48 +30,37 @@ from layout.tile_layout import (
 )
 ```
 
-## What's a Layout?
+## 什么是布局？
 
-A layout is a function that maps a set of logical coordinates to a single linear
-index value.
+布局是一个函数，将一组逻辑坐标映射到单个线性索引值。
 
-For example, a layout could describe a 2x4 row-major matrix, or a 6x6
-column-major matrix.
+例如，布局可以描述一个 2x4 的行主序矩阵，或一个 6x6 的列主序矩阵。
 
 ```mojo
 var row_major2x4 = row_major[2, 4]()
 var col_major6x6 = col_major[6, 6]()
 ```
 
-Layouts are made up of two sets of numbers: shape and stride, where shape
-describes the logical coordinate space and the stride determines the mapping to
-the linear index value. A simple layout can be written as (*shape*:*stride*).
-For example, a contiguous vector of length 4 can be represented as (4:1):
+布局由两组数字组成：形状和步幅，其中形状描述逻辑坐标空间，步幅决定到线性索引值的映射。一个简单的布局可以写为（*形状*:*步幅*）。例如，长度为 4 的连续向量可以表示为 (4:1)：
 
 <figure>
 
 ![](../images/layout/1d-layout-with-strides.png#light)
 ![](../images/layout/1d-layout-with-strides-dark.png#dark)
 
-<figcaption><b>Figure 1.</b> 1D layout (4:1)</figcaption>
+<figcaption><b>图 1.</b> 一维布局 (4:1)</figcaption>
 </figure>
 
-A 3x4 row-major layout can be represented as ((3, 4):(4, 1)). That is, the
-*shape* is 3x4 and the *strides* are 4 and 1. You can break this down into two
-sub-layouts or *modes*: a row mode and a column mode: 3 rows with a stride of 4
-(3:4, the first numbers from each tuple) and 4 columns with a stride of 1 (4:1,
-the second numbers from each tuple).
+一个 3x4 的行主序布局可以表示为 ((3, 4):(4, 1))。也就是说，*形状*为 3x4，*步幅*为 4 和 1。你可以将其分解为两个子布局或*模式*：行模式和列模式：3 行步幅为 4（3:4，每个元组的第一个数字）和 4 列步幅为 1（4:1，每个元组的第二个数字）。
 
-The [`print_layout()`](/docs/layout/layout/print_layout/) function
-generates an ASCII diagram of any 2D layout, showing the coordinates on the
-outside and the corresponding index values in the grid.
+[`print_layout()`](/docs/layout/layout/print_layout/) 函数生成任意二维布局的 ASCII 图表，外部显示坐标，网格内显示对应的索引值。
 
 ```mojo
 var row_major3x4 = row_major[3, 4]()
 print_layout(row_major3x4.to_layout())
 ```
 
-Output:
+输出：
 
 ```plaintext
 ((3, 4):(4, 1))
@@ -101,82 +74,62 @@ Output:
     +----+----+----+----+
 ```
 
-The coordinate to index mapping is performed by calculating the dot product of
-the logical coordinates and the corresponding strides. For example, given the
-coordinates (*i, j*) and the layout shown above, the index value is $i*4 + j*1$.
-So coordinate (1, 1) maps to 5, as shown in the diagram.
+坐标到索引的映射是通过计算逻辑坐标与对应步幅的点积来完成的。例如，给定坐标 (*i, j*) 和上面显示的布局，索引值为 $i*4 + j*1$。因此坐标 (1, 1) 映射到 5，如图表所示。
 
-The following example shows how to use a `Layout` to convert between coordinates
-and index values.
+以下示例展示了如何使用 `Layout` 在坐标和索引值之间进行转换。
 
 ```mojo
 var coords = coord[1, 1]()
 var idx = row_major3x4(coords)
-print("index at (1, 1): ", idx)
-print("coordinates at index 7:", row_major3x4.idx2crd(7))
+print("坐标 (1, 1) 处的索引：", idx)
+print("索引 7 处的坐标：", row_major3x4.idx2crd(7))
 ```
 
-Output:
+输出：
 
 ```plaintext
-index at coordinates (1, 1):  5
-coordinates at index 7: (1, 3)
+坐标 (1, 1) 处的索引： 5
+索引 7 处的坐标：(1, 3)
 ```
 
-As this example shows, the layout is a function that takes a set of integer
-coordinates and returns a single integer (the linear index). The `Layout` struct
-also provides an [`idx2crd()`](/docs/layout/tile_layout/Layout/#idx2crd)
-method that transforms a linear index into a set of logical coordinates.
+如本例所示，布局是一个接受一组整数坐标并返回单个整数（线性索引）的函数。`Layout` 结构体还提供了 [`idx2crd()`](/docs/layout/tile_layout/Layout/#idx2crd) 方法，将线性索引转换为一组逻辑坐标。
 
-When you use a `TileTensor`, you'll use the layout to define how the data is
-organized in memory, and then access data through the `TileTensor` interface.
-You won't usually need to convert coordinates to indexes yourself. But it's
-helpful to understand how it works.
+当你使用 `TileTensor` 时，你将使用布局来定义数据在内存中的组织方式，然后通过 `TileTensor` 接口访问数据。你通常不需要自己将坐标转换为索引。但了解其工作原理是有帮助的。
 
-:::note[Printing layouts]
+:::note[打印布局]
 
-You can use `print_layout()` to print a diagram of any 2D layout. This function
-currently only supports the legacy `Layout` type, so you'll need to call
-`.to_layout()` to convert a `TileTensor`-style layout to a legacy layout:
+你可以使用 `print_layout()` 打印任意二维布局的图表。此函数目前仅支持旧版 `Layout` 类型，因此你需要调用 `.to_layout()` 将 `TileTensor` 风格的布局转换为旧版布局：
 
 ```mojo
 print_layout(my_layout.to_layout())
 ```
 
-You can pass *any* layout to the built-in `print()` function to print a string
-representation of the layout in the form of a (*shape*:*stride*) pair.
+你可以将*任意*布局传递给内置的 `print()` 函数，以（*形状*:*步幅*）对的形式打印布局的字符串表示。
 
 :::
 
-### `Coord` and `Idx`: representing multidimensional coordinates
-Logical coordinates—and a layout's shape and size—are represented using the
-[`Coord`](/docs/layout/coord/Coord/) type, a tuple-like structure that
-can hold both compile-time and run-time integer values. Each element of a
-`Coord` is either an integer value or a nested tuple.
+### `Coord` 和 `Idx`：表示多维坐标
 
-You can create a simple `Coord` with all compile-time values or all run-time
-values using the [`coord()`](/docs/layout/coord/coord-function/) function:
+逻辑坐标——以及布局的形状和大小——使用 [`Coord`](/docs/layout/coord/Coord/) 类型表示，它是一个类似元组的结构，可以容纳编译时和运行时的整数值。`Coord` 的每个元素要么是整数值，要么是嵌套元组。
+
+你可以使用 [`coord()`](/docs/layout/coord/coord-function/) 函数创建一个全部为编译时值或全部为运行时值的简单 `Coord`：
 
 ```mojo
 var comptime_coords = coord[4, 4]()
 var runtime_coords = coord[DType.int32]((a, b, c))
 ```
 
-When you need to mix compile-time and run-time values, you can use the
-[`Idx()`](/docs/layout/coord/Idx/)
-function to generate a compile-time or run-time integer.
+当你需要混合编译时和运行时值时，可以使用 [`Idx()`](/docs/layout/coord/Idx/) 函数生成编译时或运行时整数。
 
 ```mojo
-comptime comptime_int = Idx[columns]()  # Compile-time int from parameter value
-comptime comptime_int2 = Idx(4)  # Compile-time int from Int literal
-var runtime_int = Idx(rows)  # Run-time int from dynamic value
+comptime comptime_int = Idx[columns]()  # 从参数值生成编译时整数
+comptime comptime_int2 = Idx(4)  # 从 Int 字面量生成编译时整数
+var runtime_int = Idx(rows)  # 从动态值生成运行时整数
 var mixed_shape = Coord((Idx(rows), Idx[columns]()))
 var mixed_layout = row_major((Idx(rows), Idx[columns]()))
 ```
 
-You can create nested `Coord` values by passing nested tuples to the
-constructor—either tuples of values constructed with `Idx`, or tuples
-of `Coord` values:
+你可以通过向构造函数传递嵌套元组来创建嵌套的 `Coord` 值——可以是使用 `Idx` 构造的值元组，也可以是 `Coord` 值的元组：
 
 ```mojo
 var shape1 = Coord((Idx[6](), Idx[8]()))
@@ -189,178 +142,129 @@ print(shape3)
 ((6, 8), ((2, 2), (3, 4)))
 ```
 
-The [`coord`](/docs/layout/coord/) package provides a number of
-functions for working with `Coords`.
+[`coord`](/docs/layout/coord/) 包提供了许多用于处理 `Coord` 的函数。
 
-### Modes
+### 模式
 
-A layout has one or more *modes*, where a mode is a shape:stride pair. For
-example, the 1D vector layout (8:1) has a single mode: 8 elements with a stride
-of 1:
+布局具有一个或多个*模式*，其中模式是一个形状:步幅对。例如，一维向量布局 (8:1) 具有单个模式：8 个步幅为 1 的元素：
 
 <figure>
 
 ![](../images/layout/1d-layout.png#light)
 ![](../images/layout/1d-layout-dark.png#dark)
 
-<figcaption><b>Figure 2.</b> 1D layout</figcaption>
+<figcaption><b>图 2.</b> 一维布局</figcaption>
 </figure>
 
-The 2D row-major matrix layout ((2, 4):(4, 1)) has two modes, 2:4 (the first
-numbers from each tuple) and 4:1 (the second numbers from each tuple). Taking
-them right to left, the second mode describes 4 columns with a stride of one.
-The first mode specifies that there are two of these groups with a stride of 4:
+二维行主序矩阵布局 ((2, 4):(4, 1)) 有两个模式，2:4（每个元组的第一个数字）和 4:1（每个元组的第二个数字）。从右到左来看，第二个模式描述了步幅为 1 的 4 列。第一个模式指定了步幅为 4 的两个这样的组：
 
 <figure>
 
 ![](../images/layout/2d-layout-with-strides.png#light)
 ![](../images/layout/2d-layout-with-strides-dark.png#dark)
 
-<figcaption><b>Figure 3.</b> 2D layout with strides</figcaption>
+<figcaption><b>图 3.</b> 带步幅的二维布局</figcaption>
 </figure>
 
-In a column-major layout, the row number varies the fastest, so a column-major
-2x4 matrix has the layout ((2, 4):(1, 2)) and looks like this:
+在列主序布局中，行号变化最快，因此一个 2x4 的列主序矩阵具有布局 ((2, 4):(1, 2))，如下所示：
 
 <figure>
 
 ![](../images/layout/2d-col-major-layout-with-strides.png#light)
 ![](../images/layout/2d-col-major-layout-with-strides-dark.png#dark)
 
-<figcaption><b>Figure 4.</b> 2D column-major layout with strides</figcaption>
+<figcaption><b>图 4.</b> 带步幅的二维列主序布局</figcaption>
 </figure>
 
-A layout's *rank* is the number of dimensions in its shape, which is equivalent
-to the number of top-level modes in the layout. A rank-1 (or 1D) layout
-describes a vector. A rank-2 layout describes a 2D matrix, and so on.
+布局的*秩*是其形状中的维度数，等同于布局中顶层模式的数量。秩为 1（或一维）的布局描述一个向量。秩为 2 的布局描述一个二维矩阵，以此类推。
 
-A layout's *size* is defined as the product of all of the modes in the layout's
-shape. To put it another way, it's the number of elements that the layout
-addresses: that is, the *domain* of the layout function.
+布局的*大小*定义为布局形状中所有模式的乘积。换句话说，它是布局寻址的元素数量：即布局函数的*定义域*。
 
-Modes can also be nested to represent more complicated strides along a
-dimension. For example, the layout (8:1) represents a 1D vector of 8 elements.
+模式也可以嵌套以表示沿维度更复杂的步幅。例如，布局 (8:1) 表示一个 8 个元素的一维向量。
 
 <figure>
 
 ![](../images/layout/1d-layout.png#light)
 ![](../images/layout/1d-layout-dark.png#dark)
 
-<figcaption><b>Figure 5.</b> 1D vector layout</figcaption>
+<figcaption><b>图 5.</b> 一维向量布局</figcaption>
 </figure>
 
-The layout (((4, 2):(1, 4))) is *also* a 1D vector of 8 elements. The extra set
-of parentheses indicates a nested or hierarchical mode. Instead of being
-represented by a single mode like 8:1, this layout's single dimension is
-represented by the multi-mode (4, 2):(1, 4):
+布局 (((4, 2):(1, 4))) *也*是一个 8 个元素的一维向量。额外的括号表示嵌套或层次模式。此布局的单一维度不是由 8:1 这样的单个模式表示，而是由多模式 (4, 2):(1, 4) 表示：
 
 <figure>
 
 ![](../images/layout/1d-multi-modal-layout.png#light)
 ![](../images/layout/1d-multi-modal-layout-dark.png#dark)
 
-<figcaption><b>Figure 6.</b> 1D layout with nested modes</figcaption>
+<figcaption><b>图 6.</b> 具有嵌套模式的一维布局</figcaption>
 </figure>
 
-Note that in the nested modes, there's no notion of row and column. You can
-think of the first mode as the "inner" mode (defining a group) and the next mode
-as an "outer" mode (defining a repeat of the group) as shown above.
+请注意，在嵌套模式中，没有行和列的概念。你可以将第一个模式视为"内部"模式（定义一个组），将下一个模式视为"外部"模式（定义组的重复），如上所示。
 
-A set of nested modes (a *multi-mode*) counts as a single mode when considering
-the parent layout's rank. For example, the layouts (8:1) and (((4, 2):(1, 4)))
-are both 1D, or rank-1 layouts. A layout's *flat rank* counts the **total**
-number of modes in the layout, so (8:1) has a flat rank of 1, while (((4, 2):(1,
-4))) has a flat rank of 2.
+一组嵌套模式（一个*多模式*）在考虑父布局的秩时算作单个模式。例如，布局 (8:1) 和 (((4, 2):(1, 4))) 都是一维或秩为 1 的布局。布局的*扁平秩*计算布局中的**总**模式数，因此 (8:1) 的扁平秩为 1，而 (((4, 2):(1, 4))) 的扁平秩为 2。
 
-This gets more interesting when we move to two dimensions. Consider the
-following 2D layouts:
+当我们进入二维时，这变得更有趣。考虑以下二维布局：
 
 <figure>
 
 ![](../images/layout/multi-modal-layout.png#light)
 ![](../images/layout/multi-modal-layout-dark.png#dark)
 
-<figcaption><b>Figure 7.</b> Two 2D layouts</figcaption>
+<figcaption><b>图 7.</b> 两个二维布局</figcaption>
 </figure>
 
-Layouts A and B are both 2D matrix layouts with the same overall 2D shape, but
-with the elements in a different order. Layout B is *tiled*, so instead of being
-in row-major or column-major order, four consecutive indices are grouped into
-each 2x2 tile. This is sometimes called *tile-major order*.
+布局 A 和 B 都是具有相同整体二维形状的二维矩阵布局，但元素的顺序不同。布局 B 是*瓦片化*的，因此不是按行主序或列主序排列，而是将四个连续索引分组到每个 2x2 瓦片中。这有时被称为*瓦片主序*。
 
-We can break this tiled layout into two modes, one for the rows and one for the
-columns:
+我们可以将这个瓦片布局分解为两个模式，一个用于行，一个用于列：
 
-- Layout B has a row mode of (2, 2):(1, 4). We can further break this into two
-  sub-modes: the inner mode, 2:1, defines a group of two rows with a stride of
-  one. The outer mode, 2:4, specifies that the group occurs twice with a stride
-  of 4.
-- The column has the mode (2, 2):(2, 8). Once again we can break this into two
-  sub-modes: (2:2) defines a group of two columns with a stride of two, and the
-  group occurs twice with a stride of 8 (2:8).
+- 布局 B 的行模式为 (2, 2):(1, 4)。我们可以进一步将其分解为两个子模式：内部模式 2:1 定义了步幅为 1 的两行组。外部模式 2:4 指定该组以步幅 4 重复两次。
+- 列的模式为 (2, 2):(2, 8)。同样我们可以将其分解为两个子模式：(2:2) 定义了步幅为 2 的两列组，该组以步幅 8 重复两次 (2:8)。
 
-  If all of those modes are swimming before your eyes, take a moment to study
-  the figure and trace out the strides yourself.
+  如果所有这些模式让你眼花缭乱，请花点时间研究图表并自己追踪步幅。
 
-## Making layouts
+## 创建布局
 
-There are multiple ways to create layouts. The
-[`row_major()`](/docs/layout/tile_layout/row_major/) and
-[`col_major()`](/docs/layout/tile_layout/col_major/) functions are
-probably the simplest ways to create a layout. The `row_major()` function
-creates a generalized row-major layout: that is, the rightmost coordinate varies
-the fastest. The `col_major()` function creates a generalized column-major
-layout, where the leftmost coordinate varies the fastest.
+有多种创建布局的方式。[`row_major()`](/docs/layout/tile_layout/row_major/) 和 [`col_major()`](/docs/layout/tile_layout/col_major/) 函数可能是创建布局最简单的方式。`row_major()` 函数创建广义行主序布局：即最右侧坐标变化最快。`col_major()` 函数创建广义列主序布局，其中最左侧坐标变化最快。
 
-There are two ways to call these functions. You can either pass in a set of
-compile-time dimensions as variadic parameter values:
+有两种调用这些函数的方式。你可以将一组编译时维度作为可变参数值传入：
 
 ```mojo
 comptime row_major3d = row_major[4, 4, 4]()
 comptime col_major3d = col_major[4, 4, 4]()
 ```
 
-Or you can pass in a `Coord` defining the shape of the layout.
+或者你可以传入一个定义布局形状的 `Coord`。
 
 ```mojo
 var from_coords = row_major(coord[6, 8]())
 ```
 
-Defining a layout using `Coord` values lets you define both compile-time
-and run-time dimensions, as discussed in the next section.
+使用 `Coord` 值定义布局可以让你定义编译时和运行时维度，如下一节所述。
 
-### Run-time layouts
+### 运行时布局
 
-Layouts with compile-time known dimensions are more efficient, especially on
-GPU. However, sometimes you don't know the shape of the data—or you know
-the width of the data but not the number of rows.
+具有编译时已知维度的布局更高效，尤其是在 GPU 上。然而，有时你不知道数据的形状——或者你知道数据的宽度但不知道行数。
 
-As described in the section on [`Coord` and `Idx`](#coord-and-idx), you can
-define a `Coord` using the `Coord` constructor or the `coord()` convenience
-function. Using `Coord`, you can define layouts with all compile-time
-dimensions, all run-time dimensions, or a mixture of the two.
+如 [`Coord` 和 `Idx`](#coord-and-idx) 部分所述，你可以使用 `Coord` 构造函数或 `coord()` 便捷函数定义 `Coord`。使用 `Coord`，你可以定义全部为编译时维度、全部为运行时维度或两者混合的布局。
 
 ```mojo
-# Layout with compile-time dimensions
+# 具有编译时维度的布局
 comptime row_major_comptime = row_major(coord[16, 8]())
 
-# Layout with run-time dimensions
+# 具有运行时维度的布局
 var a, b = 4, 8
 var row_major_runtime = row_major(coord[DType.int32]((a, b)))
 
-# Mixed layout with one run-time dimension and one compile-time dimension
+# 混合布局：一个运行时维度和一个编译时维度
 var row_major_mixed = row_major((Idx(rows), Idx[columns]()))
 ```
 
-### Tiled layouts
+### 瓦片布局
 
-Sometimes you need a more complicated memory layout. For example, to
-improve the efficiency of memory accesses, you may want to load your
-data into memory using a tile-major layout. "tile-major" describes a
-layout where a the overall layout is divided into rectangular "tiles"
-and elements inside a tile are laid out consecutively in memory.
+有时你需要更复杂的内存布局。例如，为了提高内存访问效率，你可能希望使用瓦片主序布局将数据加载到内存中。"瓦片主序"描述了一种布局，其中整体布局被划分为矩形"瓦片"，瓦片内的元素在内存中连续排列。
 
-The following is an example of a tile-major layout:
+以下是瓦片主序布局的示例：
 
 ```plaintext
 
@@ -381,43 +285,34 @@ The following is an example of a tile-major layout:
     +----+----+----+----+----+----+----+----+----+----+
 ```
 
-This 6x10 tile-major is indexed vertically in 2
-groups of 3 rows (3, 2) : (1, 6) and horizontally in 5 groups of 2 columns (2,
-5):(3, 12).
+这个 6x10 的瓦片主序布局在垂直方向上被索引为 2 组 3 行 (3, 2) : (1, 6)，在水平方向上被索引为 5 组 2 列 (2, 5):(3, 12)。
 
-If you know a layout's shape and strides in advance, you can create the layout
-using the `Layout` constructor. But calculating the strides for a complicated
-layout is far from intuitive.
+如果你事先知道布局的形状和步幅，可以使用 `Layout` 构造函数创建布局。但计算复杂布局的步幅远非直观。
 
-An easier way to generate this type of tiled layout is the
-[`blocked_product()`](/docs/layout/tile_layout/blocked_product/)
-function. `blocked_product()` takes two layouts: a *tile* layout and a *tiler*
-layout: essentially, every element in the tiler layout is replaced by a tile.
-The following example generates the same tiled layout using `blocked_product()`.
-It also prints out the two input layouts.
+生成这种瓦片布局的一种更简单的方法是 [`blocked_product()`](/docs/layout/tile_layout/blocked_product/) 函数。`blocked_product()` 接受两个布局：一个*瓦片*布局和一个*瓦片化器*布局：本质上，瓦片化器布局中的每个元素都被一个瓦片替换。以下示例使用 `blocked_product()` 生成相同的瓦片布局。它还打印了两个输入布局。
 
 ```mojo
 def use_blocked_product():
     print("blocked product")
-    # Define 3x2 tile
+    # 定义 3x2 瓦片
     var tile = col_major[3, 2]()
-    # Define a 2x5 tiler
+    # 定义 2x5 瓦片化器
     var tiler = col_major[2, 5]()
     var blocked = blocked_product(tile, tiler)
 
-    print("Tile:")
+    print("瓦片：")
     print_layout(tile.to_layout())
-    print("\nTiler:")
+    print("\n瓦片化器：")
     print_layout(tiler.to_layout())
-    print("\nTiled layout:")
+    print("\n瓦片布局：")
     print_layout(blocked.to_layout())
     print()
 ```
 
-Output:
+输出：
 
 ```plaintext
-Tile:
+瓦片：
 ((3, 2):(1, 3))
       0   1
     +---+---+
@@ -428,7 +323,7 @@ Tile:
  2  | 2 | 5 |
     +---+---+
 
-Tiler:
+瓦片化器：
 ((2, 5):(1, 2))
        0    1    2    3    4
     +----+----+----+----+----+
@@ -437,7 +332,7 @@ Tiler:
  1  |  1 |  3 |  5 |  7 |  9 |
     +----+----+----+----+----+
 
-Tiled layout:
+瓦片布局：
 (((3, 2), (2, 5)):((1, 6), (3, 12)))
        0    1    2    3    4    5    6    7    8    9
     +----+----+----+----+----+----+----+----+----+----+
@@ -455,14 +350,9 @@ Tiled layout:
     +----+----+----+----+----+----+----+----+----+----+
 ```
 
-As you can see, `blocked_product()` combines two simple layouts to generate a
-more complex one.
+如你所见，`blocked_product()` 将两个简单布局组合生成一个更复杂的布局。
 
-The layout produced by `blocked_product()` places items in the same tile
-consecutively in memory. But addressing individual tiles is inconvenient.
-The [`zipped_divide()`](/docs/layout/tile_layout/zipped_divide/)
-function, by contrast, tiles a 2D tensor such that
-each column represents a tile worth of data.
+`blocked_product()` 生成的布局将同一瓦片中的项在内存中连续放置。但寻址单个瓦片不太方便。相比之下，[`zipped_divide()`](/docs/layout/tile_layout/zipped_divide/) 函数将二维张量进行瓦片化，使得每列代表一个瓦片的数据量。
 
 ```mojo
 var base = row_major[6, 4]()
@@ -500,59 +390,41 @@ print_layout(result.to_layout())
     +----+----+----+----+----+----+
 ```
 
-Similar to `blocked_product()`, the first tile of the new layout consists of the
-values from the top-left corner of the base layout (0, 4, 1, 5). However, in
-this case, the tiled layout is reshaped so that each column holds a single tile
-worth of data. This layout makes it very easy to address individual tiles of
-data.
+与 `blocked_product()` 类似，新布局的第一个瓦片由基础布局左上角的值（0, 4, 1, 5）组成。然而，在这种情况下，瓦片布局被重新整形，使得每列持有一个瓦片的数据量。这种布局使得寻址单个数据瓦片非常方便。
 
-## Non-contiguous layouts
+## 非连续布局
 
-All of the examples so far have been dense layouts, where all of the elements
-are contiguous in memory. However, layouts can also describe sparse logical
-arrays. For example, a (4:2) layout is a sparse 1D array:
+到目前为止的所有示例都是密集布局，其中所有元素在内存中连续。然而，布局也可以描述稀疏逻辑数组。例如，(4:2) 布局是一个稀疏的一维数组：
 
 <figure>
 
 ![](../images/layout/1d-sparse-layout.png#light)
 ![](../images/layout/1d-sparse-layout-dark.png#dark)
 
-<figcaption><b>Figure 8.</b> 1D sparse layout (4:2)</figcaption>
+<figcaption><b>图 8.</b> 一维稀疏布局 (4:2)</figcaption>
 </figure>
 
-A layout's *cosize* is the size of the layout's codomain, which you can think of
-as the size of the smallest contiguous array that can contain all of the
-layout's elements. The cosize is the largest linear index value generated by the
-layout plus 1. So in the example in Figure 8, the layout has a size of 4, but a
-cosize of 7.
+布局的*余大小*（cosize）是布局余域的大小，你可以将其视为能容纳布局所有元素的最小连续数组的大小。余大小是布局生成的最大线性索引值加 1。因此在图 8 的示例中，布局的大小为 4，但余大小为 7。
 
-## Alternate coordinates
+## 替代坐标
 
-Coordinates for layouts can be written in the same format as the shape `Coord`.
-For example, given a layout with the shape ((2, 2), (2, 2)) shown earlier:
+布局的坐标可以以与形状 `Coord` 相同的格式编写。例如，给定前面展示的形状为 ((2, 2), (2, 2)) 的布局：
 
 <figure>
 
 ![](../images/layout/multi-modal-layout-coords.png#light)
 ![](../images/layout/multi-modal-layout-coords-dark.png#dark)
 
-<figcaption><b>Figure 9.</b> Natural and 2D coordinates</figcaption>
+<figcaption><b>图 9.</b> 自然坐标与二维坐标</figcaption>
 </figure>
 
-The coordinates for the layout in Figure 9 above can be written ((*i, j*), (*k,
-l*)). However, this layout can also be addressed as a logical 2D matrix. So ((0,
-1), (0, 1)) and (2, 2) are both valid coordinates that map to the same index.
+图 9 中布局的坐标可以写为 ((*i, j*), (*k, l*))。然而，此布局也可以作为逻辑二维矩阵进行寻址。因此 ((0, 1), (0, 1)) 和 (2, 2) 都是映射到相同索引的有效坐标。
 
-In fact, this is true for any layout: the layout can be addressed with 1D or 2D
-coordinates as well as its "natural" coordinates. When mapping coordinates, the
-dimensions are traversed in *colexicographical* order (that is, a generalized
-column-major order, where the leftmost coordinate varies fastest). Table 1 shows
-how different 1D and 2D coordinates map to the "natural" coordinates of the ((2,
-2), (2, 2)) shape shown above:
+事实上，这对任何布局都成立：布局可以用一维或二维坐标以及其"自然"坐标进行寻址。在映射坐标时，维度按*余字典序*（即广义列主序，最左侧坐标变化最快）遍历。表 1 展示了不同的一维和二维坐标如何映射到上面展示的 ((2, 2), (2, 2)) 形状的"自然"坐标：
 
 <figure>
 
-| 1D  | 2D     | Natural          |
+| 一维  | 二维     | 自然坐标          |
 |-----|:-------|:-----------------|
 | 0   | (0, 0) | ((0, 0), (0, 0)) |
 | 1   | (1, 0) | ((1, 0), (0, 0)) |
@@ -566,9 +438,7 @@ how different 1D and 2D coordinates map to the "natural" coordinates of the ((2,
 | ... | ...    | ...              |
 | 15  | (3, 3) | ((1, 1), (1, 1)) |
 
-<figcaption><b>Table 1.</b> Mapping between 1D, 2D, and natural coordinates</figcaption>
+<figcaption><b>表 1.</b> 一维、二维和自然坐标之间的映射</figcaption>
 </figure>
 
-The layout function takes any of these coordinates and returns the linear
-index value. The layout's `idx2crd()` method takes a linear index and returns
-the natural coordinates for that index.
+布局函数接受这些坐标中的任何一个并返回线性索引值。布局的 `idx2crd()` 方法接受一个线性索引并返回该索引的自然坐标。

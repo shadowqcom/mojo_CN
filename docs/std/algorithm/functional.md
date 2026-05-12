@@ -1,14 +1,14 @@
 ---
 title: "functional"
 sidebar_label: "functional"
-description: "Implements higher-order functions.  You can import these APIs from the `algorithm` package. For example:  ```mojo from std.algorithm import map ```"
+description: "实现高阶函数。您可以从 `algorithm` 包导入这些 API。例如：```mojo from std.algorithm import map ```"
 ---
 
 # functional
 
-Implements higher-order functions.
+实现高阶函数。
 
-You can import these APIs from the `algorithm` package. For example:
+您可以从 `algorithm` 包导入这些 API。例如：
 
 ```mojo
 from std.algorithm import map

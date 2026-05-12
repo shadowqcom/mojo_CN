@@ -1,22 +1,19 @@
 ---
-title: Lifetimes, origins, and references
+title: 生命周期、来源和引用
 sidebar_position: 4
-description: Working with origins and references.
+description: 使用来源和引用。
 ---
 
-The Mojo compiler includes a lifetime checker, a compiler pass that analyzes
-dataflow through your program. It identifies when variables are valid and
-inserts destructor calls when a variable's lifetime ends.
+Mojo 编译器包含一个生命周期检查器，这是一个分析程序数据流的编译器传递。它确定变量何时有效，并在变量生命周期结束时插入析构函数调用。
 
-The Mojo compiler uses a special value called an *origin* to track the lifetime
-of variables and the validity of references.
+Mojo 编译器使用一个称为*来源*的特殊值来跟踪变量和引用的有效性。
 
-Specifically, an origin answers two questions:
+具体来说，来源回答两个问题：
 
-- What variable "owns" this value?
-- Can the value be mutated using this reference?
+- 哪个变量"拥有"这个值？
+- 可以使用此引用修改该值吗？
 
-For example, consider the following code:
+例如，考虑以下代码：
 
 ```mojo
 def print_str(s: String):
@@ -31,57 +28,34 @@ def main():
 Joan
 ```
 
-The line `name = "Joan"` declares a variable with an identifier (`name`)
-and logical storage space for a `String` value. When you pass `name` into the
-`print_str()` function, the function gets an immutable reference to the value.
-So both `name` and `s` refer to the same logical storage space, and have
-associated origin values that lets the Mojo compiler reason about them.
+`name = "Joan"` 这一行声明了一个具有标识符（`name`）和 `String` 值的逻辑存储空间的变量。当你将 `name` 传递给 `print_str()` 函数时，函数获得该值的不可变引用。因此，`name` 和 `s` 都指向同一个逻辑存储空间，并且具有关联的来源值，这使得 Mojo 编译器能够对它们进行推理。
 
-Origin tracking and lifetime checking is done at compile time, so origins don't
-track the actual storage space allocated for the `name` variable, for example.
-Instead, origins track variables symbolically, so the compiler tracks that
-`print_str()` is called with a value owned by `name` in the caller's scope. By
-tracking how owned data flows through the program, the compiler can identify
-the lifetimes of values.
+来源跟踪和生命周期检查在编译时完成，因此来源不会跟踪为 `name` 变量分配的实际存储空间。相反，来源符号地跟踪变量，因此编译器跟踪 `print_str()` 是在调用者的作用域中用由 `name` 拥有的值调用的。通过跟踪所有权的数据如何在程序中流动，编译器可以识别值的生命周期。
 
-Most of the time, origins are handled automatically by the compiler.
-However, in some cases you'll need to interact with origins directly:
+大多数情况下，来源由编译器自动处理。然而，在某些情况下，你需要直接与来源交互：
 
-- When working with references—specifically `ref` arguments and `ref` return
-  values.
+- 当处理引用时——特别是 `ref` 参数和 `ref` 返回值。
 
-- When working with types like
-  [`Pointer`](/docs/std/memory/pointer/Pointer/) or
-  [`Span`](/docs/std/memory/span/Span/) which are parameterized on the
-  origin of the data they refer to.
+- 当处理像 [`Pointer`](/docs/std/memory/pointer/Pointer/) 或 [`Span`](/docs/std/memory/span/Span/) 这样的类型时，它们的数据引用的来源是参数化的。
 
-This section also covers [`ref` arguments](#ref-arguments) and
-[`ref` return values](#ref-return-values), which let functions take arguments
-and provide return values as references with parametric origins.
+本节还涵盖 [`ref` 参数](#ref-arguments)和[`ref` 返回值](#ref-return-values)，它们允许函数作为具有参数化来源的引用接收参数并提供返回值。
 
-## Working with origins
+## 使用来源
 
-Mojo's origin values are mostly created by the
-compiler, so you can't just create your own origin value—you usually need to
-derive an origin from an existing value.
+Mojo 的来源值主要由编译器创建，因此你不能直接创建自己的来源值——你通常需要从现有值派生一个来源。
 
-Among other things, Mojo uses origins to extend the lifetimes of referenced
-values, so values aren't destroyed prematurely.
+此外，Mojo 使用来源来延长被引用值的生命周期，以便值不会过早被销毁。
 
-### Origin types
+### 来源类型
 
-Mojo supplies a struct and a set of type aliases (`comptime` values) that you
-can use to specify origin types. As the names suggest, the `ImmutOrigin` and
-`MutOrigin` `comptime` values represent immutable and mutable origins,
-respectively:
+Mojo 提供了一个结构体和一组类型别名（`comptime` 值），你可以用来指定来源类型。顾名思义，`ImmutOrigin` 和 `MutOrigin` `comptime` 值分别表示不可变和可变来源：
 
 ```mojo
 struct ImmutRef[origin: ImmutOrigin]:
     pass
 ```
 
-Or you can use the [`Origin`](/docs/std/builtin/type_aliases/Origin/)
-struct to specify an origin with parametric mutability:
+或者你可以使用 [`Origin`](/docs/std/builtin/type_aliases/Origin/) 结构体来指定具有参数化可变性的来源：
 
 ```mojo
 struct ParametricRef[
@@ -92,16 +66,9 @@ struct ParametricRef[
     pass
 ```
 
-Origin types carry the mutability of a reference as a boolean parameter value,
-indicating whether the origin is mutable, immutable, or even with mutability
-depending on a parameter specified by the enclosing API.
+来源类型将引用的可变性作为布尔参数值携带，指示来源是可变的、不可变的，还是根据封装 API 指定的参数具有可变性。
 
-The `is_mutable` parameter here is an [infer-only
-parameter](/docs/manual/parameters/#infer-only-parameters). The `origin` value
-is often inferred, as well. For example, the following code creates a
-[`Pointer`](/docs/std/memory/pointer/Pointer/) to an existing value, but
-doesn't need to specify an origin—the `origin` is inferred from the existing
-value.
+这里的 `is_mutable` 参数是一个[仅推断参数](/docs/manual/parameters/#infer-only-parameters)。`origin` 值通常也被推断。例如，以下代码创建一个到现有值的 [`Pointer`](/docs/std/memory/pointer/Pointer/)，但不需要指定来源——`origin` 从现有值中推断。
 
 ```mojo
 from std.memory import Pointer
@@ -111,53 +78,39 @@ def use_pointer():
     ptr = Pointer(to=a)
 ```
 
-### Origin sets
+### 来源集
 
-An `OriginSet` is not a type of origin, it represents a group of origins. Origin
-sets are used for tracking the lifetimes of values captured in closures.
+`OriginSet` 不是一种来源类型，它代表一组来源。来源集用于跟踪在闭包中捕获的值的生命周期。
 
-### Origin values
+### 来源值
 
-Most origin values are created by the compiler. As a developer, there are a
-few ways to specify origin values:
+大多数来源值由编译器创建。作为开发人员，有几种指定来源值的方法：
 
-- Static origin. The `StaticConstantOrigin` `comptime` value
-  represents immutable values that last for the duration of the program.
-  String literal values have a `StaticConstantOrigin`.
-- Derived origin. The `origin_of()` magic function returns the origin
-  associated with the value (or values) passed in.
-- Inferred origin. You can use inferred parameters to capture the origin of a
-  value passed in to a function.
-- External origins. The external origins, `MutExternalOrigin` and
-  `ImmutExternalOrigin` represent values that are not tracked by the lifetime
-  checker, such as dynamically-allocated memory.
-- Wildcard origins. The `ImmutAnyOrigin` and `MutAnyOrigin` `comptime` values
-  are special cases indicating a reference that might access any live value.
+- 静态来源。`StaticConstantOrigin` `comptime` 值表示持续整个程序持续时间的不可变值。字符串字面量值具有 `StaticConstantOrigin`。
 
-#### Static origins
+- 派生来源。`origin_of()` 魔法函数返回与传递的值（或值）关联的来源。
 
-You can use the static origin `StaticConstantOrigin` when you have a
-value that exists for the entire duration of the program.
+- 推断来源。你可以使用推断参数来捕获传递给函数的值的来源。
 
-For example, the `StringLiteral` method
-[`as_string_slice()`](/docs/std/builtin/string_literal/StringLiteral/#as_string_slice)
-returns a
-[`StringSlice`](/docs/std/collections/string/string_slice/StringSlice/) pointing
-to the original string literal. String literals are static—they're allocated at
-compile time and never destroyed—so the slice is created with an immutable,
-static origin.
+- 外部来源。外部来源 `MutExternalOrigin` 和 `ImmutExternalOrigin` 表示不被生命周期检查器跟踪的值，例如动态分配的内存。
 
-#### Derived origins
+- 通配符来源。`ImmutAnyOrigin` 和 `MutAnyOrigin` `comptime` 值是特殊情况，表示可能访问任何活动值的引用。
 
-Use the `origin_of(value)` operator to obtain a value's origin. An argument
-to `origin_of()` can take an arbitrary expression that yields one of the
-following:
+#### 静态来源
 
-- An origin value.
+当你有一个在整个程序持续时间内存在的值时，可以使用静态来源 `StaticConstantOrigin`。
 
-- A value with a memory location.
+例如，`StringLiteral` 方法 [`as_string_slice()`](/docs/std/builtin/string_literal/StringLiteral/#as_string_slice) 返回一个指向原始字符串字面量的 [`StringSlice`](/docs/std/collections/string/string_slice/StringSlice/)。字符串字面量是静态的——它们在编译时分配并且从不被销毁——因此切片是用不可变的静态来源创建的。
 
-For example:
+#### 派生来源
+
+使用 `origin_of(value)` 运算符获取值的来源。`origin_of()` 的参数可以采用生成以下之一的任意表达式：
+
+- 一个来源值。
+
+- 一个具有内存位置的值。
+
+例如：
 
 ```mojo
 origin_of(self)
@@ -165,15 +118,9 @@ origin_of(x.y)
 origin_of(foo())
 ```
 
-The `origin_of()` operator is analyzed statically at compile time;
-The expressions passed to `origin_of()` are never evaluated. (For example,
-when the compiler analyzes `origin_of(foo())`, it doesn't run the `foo()`
-function.)
+`origin_of()` 运算符在编译时静态分析；传递给 `origin_of()` 的表达式永远不会被求值。（例如，当编译器分析 `origin_of(foo())` 时，它不会运行 `foo()` 函数。）
 
-The following struct stores a string value using a
-[`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/): a smart
-pointer that holds an owned value. The `as_ptr()` method returns a `Pointer` to
-the stored string, using the same origin as the original `OwnedPointer`.
+以下结构体使用 [`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) 存储字符串值——一个持有拥有值的智能指针。`as_ptr()` 方法返回一个 `Pointer` 到存储的字符串，使用与原始 `OwnedPointer` 相同的来源。
 
 ```mojo
 from std.memory import OwnedPointer, Pointer
@@ -188,132 +135,84 @@ struct BoxedString:
         return Pointer(to=self.o_ptr[])
 ```
 
-Note that the `as_ptr()` method takes its `self` argument as `mut self`. If it
-used the default `read` argument convention, it would be immutable, and the
-derived origin (`origin_of(self.o_ptr)`) would also be immutable.
+请注意，`as_ptr()` 方法将 `self` 参数作为 `mut self`。如果它使用默认的 `read` 参数约定，它将是不可变的，并且派生来源（`origin_of(self.o_ptr)`）也将是不可变的。
 
-You can also pass multiple expressions to `origin_of()` to express the union
-of two or more origins:
+你也可以将多个表达式传递给 `origin_of()` 以表达两个或更多来源的并集：
 
 `origin_of(a, b)`
 
-#### Origin unions
+#### 来源并集
 
-The union of two or more origins creates a new origin that references all of
-the original origins for the purposes of lifetime extension (so a union of the
-origins of `a` and `b` extends both lifetimes).
+两个或更多来源的并集创建一个新的来源，为了生命周期扩展的目的，它引用所有原始来源（因此 `a` 和 `b` 的来源的并集扩展两个生命周期）。
 
-An origin union is mutable if and only if all of its constituent origins are
-mutable. For an example, see
-[Return values with union origins](#return-values-with-union-origins).
+来源并集是可变的，当且仅当其所有组成部分来源都是可变的。有关示例，请参阅[具有并集来源的返回值](#return-values-with-union-origins)。
 
-#### Inferred origins
+#### 推断来源
 
-Since origins are parameters, the compiler can *infer* an origin value from
-the argument passed to a function or method, as described in
-[Parameter inference](/docs/manual/parameters/#parameter-inference). This allows
-a function to return a value that has the same origin as the argument passed to
-it.
+由于来源是参数，编译器可以从传递给函数或方法的参数中*推断*一个来源值，如[参数推断](/docs/manual/parameters/#parameter-inference)中所述。这允许函数返回一个与传递给它的参数具有相同来源的值。
 
-See the section on [`ref` arguments](#ref-arguments) for an example using an
-inferred origin.
+有关使用推断来源的示例，请参阅[`ref` 参数](#ref-arguments)部分。
 
-#### External origins
+#### 外部来源
 
-The external origins, `MutExternalOrigin` and `ImmutExternalOrigin` represent
-values that do not alias any existing value. That is, they point to memory that
-is not owned by any other variable, and are therefore not tracked by the
-lifetime checker. For example, the
-[`alloc()`](/docs/std/memory/unsafe_pointer/alloc/) function returns an
-`UnsafePointer` to a new dynamically-allocated block of memory, with the origin
-`MutExternalOrigin`. The origin indicates that the memory is not managed by the
-Mojo ownership system. When you use an unsafe API like this, you're responsible
-for managing the lifetime yourself: for example, a struct that allocates memory
-should generally free that memory in its destructor.
+外部来源 `MutExternalOrigin` 和 `ImmutExternalOrigin` 表示不与任何现有值别名的值。也就是说，它们指向不由任何其他变量拥有的内存，因此不被生命周期检查器跟踪。例如，[`alloc()`](/docs/std/memory/unsafe_pointer/alloc/) 函数返回一个到新动态分配内存块的 `UnsafePointer`，来源为 `MutExternalOrigin`。该来源指示该内存不由 Mojo 所有权系统管理。当你使用像这样的不安全 API 时，你有责任自己管理生命周期：例如，分配内存的结构体通常应该在析构函数中释放该内存。
 
-#### Wildcard origins
+#### 通配符来源
 
-The wildcard origins, `ImmutAnyOrigin` and `MutAnyOrigin`, are special cases
-indicating a reference that might access any live value. These were previously
-widely used for unsafe pointers. Using a pointer with a wildcard origin into a
-scope effectively disables Mojo's ASAP destruction for any values in that scope,
-as long as the pointer is live. Accordingly, the use of wildcard origins is
-discouraged, and should be used as a last resort.
+通配符来源 `ImmutAnyOrigin` 和 `MutAnyOrigin` 是特殊情况，表示可能访问任何活动值的引用。这些以前广泛用于不安全指针。使用具有通配符来源的指针有效地禁用了该作用域内任何值的 Mojo 即时销毁，只要指针是活动的。因此，不鼓励使用通配符来源，应作为最后手段使用。
 
-## Working with references
+## 使用引用
 
-You can use the `ref` keyword with arguments and return values to specify a
-reference with parametric mutability. That is, they can be either mutable or
-immutable.
+你可以使用 `ref` 关键字与参数和返回值一起使用，以指定具有参数化可变性的引用。也就是说，它们可以是可变的或不可变的。
 
-From inside the called function, a `ref` argument looks like a `read` or
-`mut` argument.
+在被调用函数内部，`ref` 参数看起来像 `read` 或 `mut` 参数。
 
-A `ref` return value looks like any other return value to the calling function,
-but it is a *reference* to an existing value, not a copy.
+`ref` 返回值看起来像调用函数的任何其他返回值，但它是对现有值的*引用*，而不是副本。
 
-### `ref` arguments
+### `ref` 参数
 
-The `ref` argument convention lets you specify an argument of parametric
-mutability: that is, you don't need to know in advance whether the passed
-argument will be mutable or immutable. There are several reasons you might want
-to use a `ref` argument:
+`ref` 参数约定允许你指定具有参数化可变性的参数：也就是说，你不需要预先知道传递的参数将是可变的还是不可变的。你可能想使用 `ref` 参数有几个原因：
 
-- You want to accept an argument with parametric mutability.
+- 你想接受具有参数化可变性的参数。
 
-- You want to tie the lifetime of one argument to the lifetime of another
-  argument.
+- 你想将一个参数的生命周期绑定到另一个参数的生命周期。
 
-- When you want an argument that is guaranteed to be passed in memory: this can
-  be important and useful for generic arguments that need an identity,
-  irrespective of whether the concrete type is register passable.
+- 当你需要一个保证在内存中传递的参数时：这对于需要身份的泛型参数可能很重要，无论具体类型是否可传递到寄存器。
 
-The syntax for a `ref` argument is:
+`ref` 参数的语法是：
 
 <code><strong>ref</strong> <var>arg_name</var>: <var>arg_type</var></code>
 
-Or:
+或者：
 
 <code><strong>ref[</strong><var>origin_specifier(s)</var><strong>] </strong>
 <var>arg_name</var>: <var>arg_type</var></code>
 
-In the first form, the origin and mutability of the `ref` argument is inferred
-from the value passed in. The second form includes an origin clause, consisting
-of one or more origin specifiers inside square brackets. An origin
-specifier can be either:
+在第一种形式中，`ref` 参数的来源和可变性从传递的值中推断。第二种形式包含一个来源子句，由方括号内的一个或多个来源说明符组成。来源说明符可以是：
 
-- An origin value.
+- 一个来源值。
 
-- An arbitrary expression, which is treated as shorthand for
-  `origin_of(expression)`. In other words, the following declarations are
-  equivalent:
+- 一个任意表达式，它被视为 `origin_of(expression)` 的简写。换句话说，以下声明是等效的：
 
   ```mojo
   ref[origin_of(self)]
   ref[self]
   ```
 
-- An [`AddressSpace`](/docs/std/memory/pointer/AddressSpace/) value.
+- 一个 [`AddressSpace`](/docs/std/memory/pointer/AddressSpace/) 值。
 
-- An underscore character (`_`) to indicate that the origin is *unbound*. This
-  is equivalent to omitting the origin specifier.
+- 下划线字符（`_`）表示来源是*未绑定的*。这等同于省略来源说明符。
 
   ```mojo
   def add_ref(ref a: Int, b: Int) -> Int:
     return a+b
   ```
 
-You can also name the origin explicitly. This is useful if you want to
-restrict the argument to either a `ImmutOrigin` or `MutOrigin`, or if
-you want to bind a function's return value to the origin of an argument.
+你也可以显式命名来源。如果你想将参数限制为 `ImmutOrigin` 或 `MutOrigin`，或者如果你想将函数的返回值绑定到参数的来源，这很有用。
 
-For example, the `Span` type is a non-owning view of contiguous data (like a
-substring of a string, or a subset of a list). Because it points to data that it
-doesn't own, it is parameterized on an origin value that represents the lifetime
-and ownership of the data it points to.
+例如，`Span` 类型是连续数据（如字符串的子字符串或列表的子集）的非拥有视图。因为它指向它不拥有的数据，所以它在其指向的数据的来源值上进行参数化，该来源值代表数据的生命周期和所有权。
 
-In the following example, the `to_byte_span()` function takes a `List[Byte]` and
-returns a `Span[Byte]` with the same origin as the list:
+在以下示例中，`to_byte_span()` 函数接收一个 `List[Byte]` 并返回一个与列表具有相同来源的 `Span[Byte]`：
 
 ```mojo
 from std.collections import List
@@ -331,48 +230,33 @@ def main():
     _ = to_byte_span(list)
 ```
 
-In this example, the `origin` parameter is inferred from the `list` argument,
-and then used as the origin for the returned `Span`.
+在这个例子中，`origin` 参数从 `list` 参数推断，然后用作返回的 `Span` 的来源。
 
-Since the `Span` takes on the origin of the `list` argument, the Mojo compiler
-can identify the span's data as owned by the list. The span will have the same
-lifetime as the list, and the span will be mutable if the list is mutable.
+由于 `Span` 采用 `list` 参数的来源，Mojo 编译器可以将 span 的数据识别为由列表拥有。span 将具有与列表相同的生命周期，并且如果列表是可变的，则 span 将是可变的。
 
-### `ref` return values
+### `ref` 返回值
 
-Like `ref` arguments, `ref` return values allow a function to return a mutable
-or immutable reference to a value. The syntax for a `ref` return value is:
+与 `ref` 参数一样，`ref` 返回值允许函数返回一个可变或不可变引用。`ref` 返回值的语法是：
 
 <code><strong>-> ref[</strong><var>origin_specifier(s)</var><strong>] </strong>
  <var>arg_type</var></code>
 
-Note that you **must** provide an origin specifier for a `ref` return value. The
-values allowed for origin specifiers are the same as the ones listed for
-[`ref` arguments](#ref-arguments).
+请注意，你必须为 `ref` 返回值提供来源说明符。来源说明符允许的值与[`ref` 参数](#ref-arguments)列出的值相同。
 
-`ref` return values can be an efficient way to handle updating items in a
-collection. The standard way to do this is by implementing the `__getitem__()`
-and `__setitem__()` dunder methods. These are invoked to read from and write to
-a subscripted item in a collection:
+`ref` 返回值可以是处理更新集合中项的高效方法。执行此操作的标准方法是实现 `__getitem__()` 和 `__setitem__()` dunder 方法。这些方法被调用以从集合中的下标项读取和写入：
 
 ```mojo
 value = list[a]
 list[b] += 10
 ```
 
-With a `ref` argument, `__getitem__()` can return a mutable reference that can
-be modified directly. This has pros and cons compared to using a `__setitem__()`
-method:
+使用 `ref` 参数，`__getitem__()` 可以返回一个可被直接修改的可变引用。这与使用 `__setitem__()` 方法相比有优点和缺点：
 
-- The mutable reference is more efficient—a single update isn't broken up across
-  two methods. However, the referenced value must be in memory.
+- 可变引用更高效——单个更新不会在两个方法之间拆分。然而，被引用的值必须在内存中。
 
-- A `__getitem__()`/`__setitem__()` pair allows for arbitrary code to be run
-  when values are retrieved and set. For example, `__setitem__()` can validate
-  or constrain input values.
+- `__getitem__()`/`__setitem__()` 对允许在检索和设置值时运行任意代码。例如，`__setitem__()` 可以验证或约束输入值。
 
-For example, in the following example, `NameList` has a `__getitem__()` method
-that returns a reference:
+例如，在以下示例中，`NameList` 有一个返回引用的 `__getitem__()` 方法：
 
 ```mojo
 struct NameList:
@@ -402,37 +286,29 @@ Dana
 Dana?
 ```
 
-Note the use of the `ref name` syntax to create a reference binding.
+请注意使用 `ref name` 语法来创建引用绑定。
 
-If you assign a `ref` return value to a variable, the variable receives a
-*copy* of the referenced item. Use a
-[reference binding](/docs/manual/variables/#reference-bindings) if you need to
-capture the reference for future use:
+如果你将 `ref` 返回值赋给一个变量，该变量接收被引用项的*副本*。如果你需要捕获引用以备将来使用，请使用[引用绑定](/docs/manual/variables/#reference-bindings)：
 
 ```mojo
-var name_copy = list[2]  # owned copy of list[2]
-ref name_ref = list[2]  # reference to list[2]
+var name_copy = list[2]  # list[2] 的拥有副本
+ref name_ref = list[2]  # list[2] 的引用
 ```
 
-#### Parametric mutability of return values
+#### 返回值的参数化可变性
 
-Another advantage of `ref` return arguments is the ability to support parametric
-mutability. For example, recall the signature of the `__getitem__()` method
-above:
+`ref` 返回参数的另一个优点是支持参数化可变性的能力。例如，回想上面 `__getitem__()` 方法的签名：
 
 ```mojo
 def __getitem__(ref self, index: Int) raises -> ref[self] String:
 ```
 
-Since the `origin` of the return value is tied to the origin of `self`, the
-returned reference will be mutable if the method was called using a
-mutable reference. The method still works if you have an immutable reference
-to the `NameList`, but it returns an immutable reference:
+由于返回值的 `origin` 与 `self` 的 `origin` 绑定，如果使用可变引用调用该方法，返回的引用将是可变的。如果你有 `NameList` 的不可变引用，该方法仍然有效，但它返回一个不可变引用：
 
 ```mojo
 def pass_immutable_list(list: NameList) raises:
     print(list[2])
-    # list[2] += "?" # Error, this list is immutable
+    # list[2] += "?" # 错误，此列表是不可变的
 
 def main() raises:
     list = NameList("Sophie", "Jack", "Diana")
@@ -443,24 +319,17 @@ def main() raises:
 Diana
 ```
 
-Without parametric mutability, you'd need to write two versions of
-`__getitem__()`, one that accepts an immutable `self` and another that accepts
-a mutable `self`.
+没有参数化可变性，你需要编写两个版本的 `__getitem__()`，一个接受不可变的 `self`，另一个接受可变的 `self`。
 
-#### Return values with union origins
+#### 具有并集来源的返回值
 
-A `ref` return value can include multiple values in its origin specifier, which
-yields the union of the origins. For example, the following `pick_one()`
-function returns a reference to one of the two input strings, with an origin
-that's a union of both origins.
+`ref` 返回值可以在其来源说明符中包含多个值，这产生来源的并集。例如，以下 `pick_one()` 函数返回两个输入字符串之一的引用，其来源是两个来源的并集。
 
 ```mojo
 def pick_one(cond: Bool, ref a: String, ref b: String) -> ref[a, b] String:
     return a if cond else b
 ```
 
-Because the compiler can't statically determine which branch will be picked,
-this function must use the union origin `[a, b]`. This ensures that the compiler
-extends the lifetime of *both* values as long as the returned reference is live.
+由于编译器无法静态确定将选择哪个分支，此函数必须使用并集来源 `[a, b]`。这确保编译器在返回引用活动时扩展*两个*值的生命周期。
 
-The returned reference is mutable if **both** `a` and `b` are mutable.
+如果**两个** `a` 和 `b` 都是可变的，则返回的引用是可变的。

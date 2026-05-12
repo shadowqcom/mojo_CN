@@ -1,28 +1,24 @@
 ---
 title: "random"
+slug: random
 sidebar_label: "random"
-description: "Provides functions for pseudorandom numbers.  You can import these APIs from the `random` package. For example:  ```mojo from std.random import seed ```  These functions use a shared, global pseudoran"
+description: "提供伪随机数函数。您可以从 `random` 包导入这些 API。例如：```mojo from std.random import seed ``` 这些函数使用共享的全局伪随机数生成器状态。"
 ---
 
 # random
 
-Provides functions for pseudorandom numbers.
+提供伪随机数函数。
 
-You can import these APIs from the `random` package. For example:
+您可以从 `random` 包导入这些 API。例如：
 
 ```mojo
 from std.random import seed
 ```
 
-These functions use a shared, global pseudorandom number generator (PRNG)
-state. The global random state is shared across threads and concurrent
-access can cause race conditions and undefined behavior.
+这些函数使用共享的全局伪随机数生成器 (PRNG) 状态。全局随机状态在多个线程间共享，并发访问可能导致竞争条件和未定义行为。
 
-Warning:
-    NOT cryptographically secure. This PRNG is suitable for simulations,
-    games, and general statistical purposes, but shouldn't be used for
-    security-sensitive applications such as generating passwords,
-    authentication tokens, or encryption keys.
+警告：
+    不具备加密安全性。此 PRNG 适用于模拟、游戏和一般统计用途，但不应用于安全敏感的应用程序，如生成密码、身份验证令牌或加密密钥。
 
 ## 函数
 

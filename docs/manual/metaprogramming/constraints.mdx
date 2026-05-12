@@ -1,211 +1,155 @@
 ---
-title: Comptime constraints and assertions
-sidebar_label: Constraints
-description: How to use Mojo's constraint system to express program guarantees.
+title: Comptime 约束和断言
+sidebar_label: 约束
+description: 如何使用 Mojo 的约束系统来表达程序保证。
 ---
 
-Mojo's constraint system lets you express program guarantees that go beyond
-what the type system provides. This page explains how to use this system
-effectively.
+Mojo 的约束系统让您能够表达类型系统提供的程序保证之外的内容。本页面解释如何有效地使用此系统。
 
-A constraint, defined with the `where` keyword, represents a precondition for
-calling a function or instantiating a struct:
+约束是用 `where` 关键字定义的，它表示调用函数或实例化结构体的前置条件：
 
 ```mojo
 def pow2[n: Int]() -> Int where n >= 0:
     ...
 ```
 
-Here the `pow2()` function requires its `n` parameter to be greater than or
-equal to 0. The expression `n >= 0` is called a *proposition*. With the
-exception of very simple expressions, Mojo doesn't evaluate these propositions
-literally. Instead, it analyzes them symbolically, tracking a list of
-propositions that are known to be true in the current scope. Understanding this
-system of symbolic propositions is key to using constraints effectively.
+在这里，`pow2()` 函数要求其 `n` 参数大于或等于 0。表达式 `n >= 0` 被称为*命题*。除了非常简单的表达式外，Mojo 不会字面求值这些命题。相反，它符号地分析它们，跟踪在当前作用域中已知为真的命题列表。理解这个命题符号系统是有效使用约束的关键。
 
-Mojo also supports *compile-time assertions*, which test a proposition at
-compile time—if the assertion evaluates to false, compilation fails:
+Mojo 还支持*编译时断言*，它在编译时测试一个命题——如果断言求值为 false，编译失败：
 
 ```mojo
-comptime assert x >= 0, "x must be greater than or equal to 0."
+comptime assert x >= 0, "x 必须大于或等于 0。"
 ```
 
-## Defining constraints
+## 定义约束
 
-You can use constraints in the following contexts:
+您可以在以下上下文中使用约束：
 
-- At the end of a function, method, or in the parameters of struct
-  declaration, to constrain the values that you can bind to one or more
-  parameters.
+- 在函数、方法末尾，或在结构体声明参数中，以约束您可以绑定到一个或多个参数的值。
 
   `def pow2[n: Int]() -> Int where n >= 0:`
 
-  A single `where` clause can constrain multiple parameters:
+  单个 `where` 子句可以约束多个参数：
 
   `def subspan[start: Int, end: Int](self) -> Self where end > start:`
 
-  Methods can gate their availability on parameters of the parent struct:
+  方法可以在父结构体的参数上限制其可用性：
 
   `def sort() where conforms_to(Self.T, Comparable):`
 
-- In the trait conformance list for a struct, to declare that a struct conforms
-  to a trait only when certain conditions are met.
+- 在结构体的特性实现列表中，以声明仅在满足某些条件时结构体才符合特性。
 
   `struct MyContainer[T: AnyType](Copyable where conforms_to(T, Copyable)):`
 
-  You'll use this form, called *conditional trait conformance*, when defining
-  generic types. For details, see the section on
-  [conditional trait conformances](/docs/manual/generics/#conditional-trait-conformance).
+  当定义泛型类型时，您将使用这种形式，称为*条件特性实现*。有关详细信息，请参阅[条件特性实现](/docs/manual/generics/#conditional-trait-conformance)章节。
 
-## Symbolic propositions
+## 命题
 
-The constraint system works with *symbolic* propositions.
+约束系统与*符号*命题一起工作。
 
 ```mojo
 def first[size: Int](array: InlineArray[_, size]) -> array.T where size > 0:
   ...
 ```
 
-In this case, `size > 0` is a proposition that the constraint system tracks.
+在这种情况下，`size > 0` 是约束系统跟踪的命题。
 
-By analogy, when you annotate a type on an argument you ask the compiler to
-ensure callers only pass that type. When you annotate a constraint on a
-function, you ask the compiler to ensure that the proposition is true at the
-call site.
+类比地说，当您在参数上注释类型时，您要求编译器确保调用者只传递该类型。当您在函数上注释约束时，您要求编译器确保命题在调用点为真。
 
-But the compiler can't test every proposition at every call site without running
-or interpreting unbounded amounts of code, which would vastly expand compile
-times. Instead, callers need to explicitly introduce "knowledge" into the
-constraint system.
+但是，编译器无法在不运行或解释无界代码量的情况下测试每个调用点的每个命题，这将大大扩展编译时间。相反，调用者需要显式地将"知识"引入约束系统。
 
-### Introducing knowledge
+### 引入知识
 
-The compiler tracks knowledge by scopes: each scope contains a set of known
-true propositions, also known as "knowledge," and nested scopes accumulate
-knowledge from outer scopes.
+编译器通过作用域跟踪知识：每个作用域包含一组已知为真的命题，也称为"知识"，嵌套作用域从外部作用域累积知识。
 
-There are four ways to introduce knowledge to the system:
+有四种方式将知识引入系统：
 
-- Inside a struct declaration, all constraints declared on the struct are
-  known, because concrete instances of the struct type can only be
-  created when the proposition is true:
+- 在结构体声明内部，在结构体上声明的所有约束都是已知的，因为结构体类型的具体实例只能在命题为真时创建：
 
     ```mojo
     struct List[size: Int where size >= 0]:
-      # Knowledge base:
+      # 知识库：
       # - `size >= 0`
     ```
 
-- Inside a function, all constraints declared on the function are known,
-  because callers can only call the function if they guarantee the constraint
-  holds:
+- 在函数内部，在函数上声明的所有约束都是已知的，因为调用者只有在保证约束成立时才能调用该函数：
 
     ```mojo
     def create_list[size: Int]() -> List[size] where size >= 0:
-      # Knowledge base:
+      # 知识库：
       # - `size >= 0`
     ```
 
-- Inside a `comptime if`, the `if` condition is known, because the code within
-  the body is only instantiated if the condition is true:
+- 在 `comptime if` 内部，`if` 条件是已知的，因为条件的主体只有在条件为真时才会实例化：
 
     ```mojo
     comptime if size >= 0:
-      # Knowledge base:
+      # 知识库：
       # - `size >= 0`
 
       comptime if size.is_even():
-        # Knowledge base:
+        # 知识库：
         # - `size >= 0`
         # - `size.is_even()`
     ```
 
-- After a `comptime assert`, the asserted condition is known, because the
-  compiler won't instantiate a function if a `comptime assert` condition is
-  false. So any code after it is only instantiated if the assertion didn't
-  fire:
+- 在 `comptime assert` 之后，断言的条件是已知的，因为如果 `comptime assert` 条件为 false，编译器不会实例化函数。因此，它后面的任何代码只有在断言没有触发时才会实例化：
 
     ```mojo
     comptime assert size >= 0
-    # Knowledge base:
+    # 知识库：
     # - `size >= 0`
 
     comptime assert size.is_even()
-    # Knowledge base:
+    # 知识库：
     # - `size >= 0`
     # - `size.is_even()`
     ```
 
-### Satisfying constraints with knowledge
+### 使用知识满足约束
 
-Any time you call a function that has constraints, the system inspects the set
-of known-true propositions at the call site and determines whether *the known
-set of propositions* is a superset of *the required set of propositions*
-declared on the callee.
+每当您调用具有约束的函数时，系统会检查调用点的已知为真命题集，并确定*已知命题集*是否是被调用函数上声明的*所需命题集*的超集。
 
-The constraint system treats all propositions symbolically: it doesn't know or
-care what the expression means and doesn't interpret the code. With a few very
-simple exceptions (discussed later), the system doesn't perform symbolic math on
-your behalf. Instead, it treats these propositions as opaque and only uses
-knowledge you've explicitly introduced in the calling scope.
+约束系统将所有命题视为符号：它不知道或关心表达式意味着什么，也不解释代码。除了几个非常简单的例外（稍后讨论），系统不会为您执行符号数学。相反，它将这些命题视为不透明的，并且只使用您在调用作用域中显式引入的知识。
 
 ```mojo
-# A function that wants a non-empty list.
+# 一个想要非空列表的函数。
 def print_first[size: Int](l: InlineArray[Int, size]) where size >= 1:
     ...
 
 
-# A wrapper that wants a size >= 2 list.
+# 一个想要大小 >= 2 列表的包装器。
 def print_first_two[size: Int](l: InlineArray[Int, size]) where size >= 2:
-     # Error: invalid call to 'print_first': lacking evidence to prove
-     # correctness
+     # 错误：对 'print_first' 的无效调用：缺乏证明正确性的证据
     print_first[size](l)
     # ...
 ```
 
-Mojo checks constraints without knowing all the call sites, and these
-expressions can reference symbolic parameter values-for example `is_prime(x)`
-where `x` is unknown. Because of this, Mojo can't interpret `is_prime()` for all
-possible values of `x`, nor can it make logical deductions. For example if
-`is_prime(x)` and `x > 2` are true, it can't deduce that `is_odd(x)` must also
-be true.
+Mojo 在不知道所有调用点的情况下检查约束，并且这些表达式可以引用符号参数值——例如 `is_prime(x)`，其中 `x` 是未知的。由于此原因，Mojo 无法对 `x` 的所有可能值解释 `is_prime()`，也无法进行逻辑推导。例如，如果 `is_prime(x)` 和 `x > 2` 为真，它无法推导出 `is_odd(x)` 也必须为真。
 
-## Compile-time assertions
+## 编译时断言
 
-Use `comptime assert` to introduce a known-true proposition at a specific
-point in the code:
+使用 `comptime assert` 在代码中的特定点引入一个已知为真的命题：
 
 ```mojo
-comptime assert x > 0, "x must be greater than 0."
+comptime assert x > 0, "x 必须大于 0。"
 ```
 
-The message is optional. If the condition evaluates to false at compile time,
-compilation fails and the compiler shows the message (or a generic message if
-none is specified).
+消息是可选的。如果条件在编译时求值为 false，编译失败，编译器会显示消息（如果没有指定，则显示通用消息）。
 
-Mojo adds the asserted condition to the list of "known true" propositions for
-any code following the assertion.
+Mojo 将断言的条件添加到断言之后任何代码的"已知为真"命题列表中。
 
-Constraints and assertions serve complementary roles: a `where` clause exposes
-a *requirement* that callers must prove, and `comptime assert` is one way to
-satisfy that requirement.
+约束和断言起着互补的作用：`where` 子句暴露了调用者必须证明的*要求*，而 `comptime assert` 是满足该要求的一种方式。
 
-## Limited evaluation of propositions
+## 命题的有限求值
 
-In general, it's safe to assume that the constraint system doesn't evaluate
-propositions directly, and that all knowledge needs to be provided explicitly.
-However, the constraint system does apply a *very
-limited* amount of "smartness" for very common cases. These are provided as a
-convenience and should not be treated as the norm.
+一般来说，可以安全地假设约束系统不会直接求值命题，并且所有知识都需要显式提供。然而，约束系统确实为非常常见的情况应用了一*定程度的*"智能"。这些是作为便利提供的，不应视为常态。
 
-The goal is to provide a consistent, predictable experience so users can
-recognize these patterns as they become more familiar with the system.
+目标是提供一致、可预测的体验，以便用户在更熟悉系统时可以识别这些模式。
 
-### Simple implication
+### 简单蕴含
 
-A known proposition of the form `A and B` can satisfy a requirement of `A` by
-itself (or `B` by itself), even though symbolically they aren't identical
-propositions.
+形式为 `A and B` 的已知命题可以单独满足 `A` 的要求（或单独满足 `B` 的要求），尽管符号上它们不是相同的命题。
 
 ```mojo
 def create_list[T: Copyable, size: Int]() -> List[T] where size >= 0:
@@ -214,35 +158,30 @@ def create_list[T: Copyable, size: Int]() -> List[T] where size >= 0:
 def create_even_list[T: Copyable, size: Int]() -> List[T] where (
     size >= 0 and (size / 2) * 2 == size
 ):
-    # No need to individually prove `size >= 0` — it's part of the
-    # `and` above, so the call to `create_list` type-checks.
+    # 不需要单独证明 `size >= 0` — 它是上面的 `and` 的一部分，所以对 `create_list` 的调用通过类型检查。
     return create_list[T, size=size]()
 
 def main():
     var l1 = create_even_list[Int, 4]()
     print(len(l1) % 2)
-    # Prints 0, since the list has an even number of elements.
+    # 打印 0，因为列表具有偶数个元素。
 
-    # var l2 = create_even_list[Int, 5]()  # Won't compile: 5 isn't even.
+    # var l2 = create_even_list[Int, 5]()  # 不会编译：5 不是偶数。
 ```
 
-Similarly, `A` implies `A or B` for any `B`.
+同样，对于任何 `B`，`A` 都蕴含 `A or B`。
 
-### Canonicalization
+### 规范化
 
-Sometimes there is more than one way to write the same expression. The system
-always simplifies expressions into a normal form internally, so expressions
-that aren't identical on the surface may be seen as identical by the system.
+有时有不止一种方式编写相同的表达式。系统总是在内部将表达式简化为规范形式，因此表面上看不相同的表达式可能被系统视为相同。
 
-The following are self-explanatory (assume `x: Int`):
+以下内容不言自明（假设 `x: Int`）：
 
 - `x > 0` == `x >= 1`
 - `x >= 2` == `not (x < 2)`
 - `x + x` == `2 * x`
 
-There's a special case for function calls. When invoking functions as part of
-a proposition, the system treats the entire function call as opaque. Only two
-identical function calls are the same.
+函数调用有一个特殊情况。当作为命题的一部分调用函数时，系统将整个函数调用视为不透明。只有两个相同的函数调用才是相同的。
 
 ```mojo
 def is_even(x: Int) -> Bool:
@@ -252,28 +191,21 @@ def needs_even[x: Int]() where is_even(x):
   pass
 
 def forward_even_bad[x: Int]() where x % 2 == 0:
-  # ERROR: Needs evidence for `is_even(x)`.
+  # 错误：需要 `is_even(x)` 的证据。
   needs_even[x]()
 
 def forward_even_good[x: Int]() where is_even(x):
-  # SUCCESS
+  # 成功
   needs_even[x]()
 ```
 
-:::note[Builtin functions]
+:::note[内置函数]
 
-Some functions in the standard library can be evaluated in `where` clauses.
-These functions implement simple operations on core types (for example, `Int`
-numerics), which are known to the compiler. These functions and can be inlined
-into the calling expression when called in a parameter context.
+标准库中的某些函数可以在 `where` 子句中求值。这些函数在核心类型（例如 `Int` 数值）上实现简单操作，这些操作对编译器是已知的。这些函数可以在参数上下文中调用时内联到调用表达式中。
 
-However, there's no way to identify these builtin functions without looking at
-the source code, and whether a given function is builtin may change without
-notice.
+然而，如果没有查看源代码，就无法识别这些内置函数，并且给定的函数是否为内置可能会在未通知的情况下更改。
 
-If you need a predicate that works transparently rather than opaquely, consider
-implementing it as a parametric comptime value instead, which is always
-inlined.
+如果您需要可透明工作的谓词而不是不透明的谓词，请考虑将其实现为参数化 comptime 值，它总是内联的。
 
 ```mojo
 comptime is_even[x: Int]: Bool = x % 2 == 0
@@ -281,59 +213,49 @@ comptime is_even[x: Int]: Bool = x % 2 == 0
 
 :::
 
-### Context-free folding
+### 上下文无关折叠
 
-This is more of an extreme case of canonicalization than a separate category,
-but may catch people by surprise.
+这比规范化更像是规范化的极端情况，而不是单独的类别，但可能会让人感到惊讶。
 
-Certain primitive operations on constants can be canonicalized into a new
-constant. For example:
+常量上的某些原始操作可以规范化为新常量。例如：
 
 - `1 + 1` == `2`
 - `4 % 2` == `0`
 - `1 == 1` == `True`
 
-This extends to expressions with a mix of constants and non-constants:
+这扩展到常量和非常量混合的表达式：
 
 - `1 + x + 1` == `2 + x`
 
-Concretely, this means you may omit explicitly providing knowledge for
-propositions that are simple operations on constants:
+具体来说，这意味着您可以省略为在常量上简单操作的命题显式提供知识：
 
 ```mojo
 def create_my_list() -> List[2]:
-  # No need to provide evidence for `2 >= 0`.
+  # 不需要为 `2 >= 0` 提供证据。
   return create_list[2]()
 ```
 
-## Best practices
+## 最佳实践
 
-The examples here focus on functions (declaring constraints when writing
-functions and satisfying constraints when calling functions), but the tips
-generalize to other forms of constraints such as struct parameter constraints
-and conditional trait conformances.
+这里的示例侧重于函数（在编写函数时声明约束以及在调用函数时满足约束），但这些技巧也适用于其他形式的约束，如结构体参数约束和条件特性实现。
 
-### Writing functions
+### 编写函数
 
-When writing a function, how do you decide whether a `where` clause is right
-for you?
+在编写函数时，如何决定 `where` 子句是否适合您？
 
 <figure>
 
 ![](../images/metaprogramming/constraint-decisions.png#light)
 ![](../images/metaprogramming/constraint-decisions-dark.png#dark)
 
-<figcaption><b>Figure 1.</b> Deciding when to use constraints</figcaption>
+<figcaption><b>图 1.</b> 决定何时使用约束</figcaption>
 </figure>
 
-#### Q1: Does your function handle the entire domain of its input types?
+#### Q1：您的函数处理其输入类型的整个域吗？
 
-If you can write your function so that it returns a result or throws an error
-on all inputs, you don't need to care about constraints at all. Just write
-your function as usual.
+如果您可以编写函数，使其在所有输入上返回结果或抛出错误，您根本不需要关心约束。只需像往常一样编写函数。
 
-For example, the following functions do *not* need constraints since they're
-guaranteed to return or throw:
+例如，以下函数*不需要*约束，因为它们保证返回或抛出：
 
 ```mojo
 def create_list_opt[size: Int]() -> Optional[List[size]]:
@@ -347,143 +269,98 @@ def create_list_raise[size: Int]() raises -> List[size]:
   return ...
 ```
 
-Constraints are only for cases where you don't want to check for exceptional
-cases at execution time.
+约束仅用于您不想在执行时检查异常情况的情况。
 
-- Constraints ask the type checker to rule out exceptional cases so that a
-  type-checked program guarantees you (as the function author) don't need to
-  handle these cases in your function body using run-time resources.
-- As always, enforcing static guarantees isn't free. You're trading off
-  run-time error checking logic for compile-time proof writing. In the
-  absence of hard limits that prevent you from error checking at run
-  time, it comes down to your preference for user experience.
+- 约束要求类型检查器排除异常情况，以便类型检查的程序保证您（作为函数作者）不需要在函数主体中使用运行时资源处理这些情况。
+- 像往常一样，强制执行静态保证不是免费的。您正在用编译时证明编写交换运行时错误检查逻辑。在没有阻止您在运行时进行错误检查的硬性限制的情况下，这归结为您的用户体验偏好。
 
-#### Q2: Is this limitation a central concept of your code?
+#### Q2：这个限制是您代码的核心概念吗？
 
-If the condition represents a concept that is central to your code, a
-dedicated type may be easier than sprinkling `where` everywhere.
+如果条件代表您代码中的核心概念，那么专用类型可能比在到处撒 `where` 更容易。
 
-Examples:
+示例：
 
-- A SIMD library that needs to represent SIMD width values, which aren't
-  arbitrary integers.
-- A filesystem library that needs to represent paths that follow specific
-  format rules.
-- A network library that needs to represent port numbers, which must be in
-  the valid range.
+- 需要表示 SIMD 宽度值的 SIMD 库，这些值不是任意整数。
+- 需要表示遵循特定格式规则的路径的文件系统库。
+- 需要表示必须在有效范围内的端口号的网络库。
 
-This is a good approach because the constraint is proven once (at construction)
-and the refined value can be passed around unconstrained until it needs to be
-disassembled. Your APIs stay simpler: fewer `where` clauses, fewer repeated
-asserts.
+这是一个好的方法，因为约束在构造时证明一次（在构造时），并且精炼的值可以在需要解构之前不受约束地传递。您的 API 保持更简单：更少的 `where` 子句，更少的重复断言。
 
-A new type doesn't come for free though, as it's no longer freely
-interoperable with the original type. Make sure that the semantics are distinct
-enough to warrant the extra code. For example, writing a new type usually means
-implementing dunder methods corresponding to common operators (addition,
-subtraction, equality, and so on), which preserve the semantics of the new
-type.
+然而，新类型并不免费获得，因为它不再与原始类型自由互操作。确保语义足够独特以证明额外代码的合理性。例如，编写新类型通常意味着实现对应于常见操作的双下划线方法（加法、减法、相等性等），这些方法保留新类型的语义。
 
-#### Q3: Is the constraint understandable and provable by the caller?
+#### Q3：约束对调用者来说是可理解和可证明的吗？
 
-If yes, use constraints.
+如果是，使用约束。
 
-Make the condition part of the function's contract so that callers must prove
-it.
+使条件成为函数契约的一部分，以便调用者必须证明它。
 
-This tends to be the right choice when:
+这通常是正确的选择：
 
-- The condition is a user-facing requirement that the user can understand.
-- Callers typically already need to handle the "bad" case themselves (for
-  example, they may already have a `comptime if` that branches on this
-  condition).
+- 条件是用户可以理解的面向用户的约束。
+- 调用者通常已经需要自己处理"坏"情况（例如，他们可能已经有基于此条件的 `comptime if` 分支）。
 
-Example:
+示例：
 
 ```mojo
 def take_prefix[n: Int, len: Int](...) -> ... where 0 <= n <= len:
   ...
 ```
 
-One practical heuristic: if a user can read the function signature and
-immediately understand *what they did wrong* when the constraint fails,
-`where` is likely the right tool.
+一个实用的启发式方法：如果用户可以读取函数签名并立即理解*当约束失败时他们做错了什么*，`where` 可能是正确的工具。
 
-If the constraint is *not* understandable or *not* provable by the
-user, use `assert` or `abort`.
+如果约束*不*可理解或*不*可由用户证明，请使用 `assert` 或 `abort`。
 
-If the "bad case" isn't something users would understand, adding a `where`
-constraint only causes more confusion, as users can't reasonably prove it
-themselves.
+如果"坏情况"不是用户会理解的东西，添加 `where` 约束只会引起更多混淆，因为用户无法合理地自己证明它。
 
-- This typically happens when your library returns a value that has some
-  internal constraints on it and expects users to pass it back with those
-  constraints. For example, a communication library passes a device handle to
-  the user as an `Int`, which has properties that are only known internally (for
-  example, non-negative, special bits). Library APIs accepting this handle can't
-  expect the user to prove these.
-- There are usually more type-safe ways to achieve the same thing, so only do
-  this if you don't care about type safety. For example, a more type-safe
-  approach is to introduce a new type for the device handle so users are less
-  likely to accidentally pass another `Int` or modify the returned value
-  unexpectedly.
+- 这通常发生在您的库返回具有某些内部约束的值并期望用户用这些约束传递回它时。例如，通信库将设备句柄作为 `Int` 传递给用户，它具有仅在内部已知（例如，非负，特殊位）的属性。接受此句柄的库 API 无法期望用户证明这些。
+- 通常有更多类型安全的方式来实现相同的事情，因此只有在您不关心类型安全时才这样做。例如，更类型安全的方法是为设备句柄引入一个新类型，这样用户更不容易意外传递另一个 `Int` 或意外修改返回值。
 
-#### Summary
+#### 总结
 
-- Use a dedicated type when the condition is a common refinement that should
-  be proven once and reused everywhere.
-- Use `where` when the condition is a user-understandable precondition.
-- Use `comptime assert` or `abort` for internal inconsistencies in your library
-  where a user can't do anything with the failure.
+- 当条件是应证明一次并到处重用的常见精炼时，使用专用类型。
+- 当条件是用户可理解的前置条件时，使用 `where`。
+- 对于库中的内部不一致，其中用户无法对失败做任何事情，使用 `comptime assert` 或 `abort`。
 
-### Calling functions
+### 调用函数
 
-When calling a function, how do you show proof that you've satisfied the
-constraint?
+在调用函数时，如何显示您已满足约束的证据？
 
-This is where the constraint system actively guides you into handling
-exceptional cases.
+这是约束系统积极引导您处理异常情况的地方。
 
 <figure>
 
 ![](../images/metaprogramming/constraint-propagation.png#light)
 ![](../images/metaprogramming/constraint-propagation-dark.png#dark)
 
-<figcaption><b>Figure 2.</b> Using constrained APIs</figcaption>
+<figcaption><b>图 2.</b> 使用约束 API</figcaption>
 </figure>
 
-#### Q1: Do the constrained parameters come from a parent parameter list?
+#### Q1：约束参数来自父参数列表吗？
 
-If the constrained parameter you're passing is from the function's parameter
-list, or is a parameter on the enclosing struct, you're basically "forwarding"
-a value from one parameter list to another. Go to Q2.
+如果您传递的约束参数来自函数的参数列表，或者是封闭结构体上的参数，您基本上是在将值从参数列表"转发"到另一个参数列表。转到 Q2。
 
-If not, you computed the value inside the function body, and you're in
-"construction" territory. Go to Q3.
+如果不是，您在函数体中计算了值，并且您处于"构造"领域。转到 Q3。
 
-#### Q2: Does the same limitation apply to your function?
+#### Q2：相同的限制也适用于您的函数吗？
 
-If you're forwarding a constrained parameter into another constrained API,
-it's usually a hint to **propagate** the same requirement onto your own
-function.
+如果您将约束参数转发到另一个约束 API，它通常是一个提示，要求**传播**相同的约束到您自己的函数。
 
-For example, to propagate the constraint to your callers:
+例如，要将约束传播给调用者：
 
 ```mojo
 def create_list[T: Copyable, size: Int]() -> List[T] where size >= 0:
   return List[T](capacity = size)
 
-# This function is also only meaningful when size >= 0.
-# Make that part of the contract too.
+# 此函数也只有在 size >= 0 时才有意义。
+# 让这也是契约的一部分。
 def create_list_and_process[T: Copyable, size: Int](value: T) where size >= 0:
   comptime xs = create_list[T, size=size]()
   ...
 ```
 
-But if you want your function to accept a *wider* input domain, your job is
-to **handle both cases** explicitly using a `comptime if`.
+但是，如果您希望您的函数接受*更宽的*输入域，您的工作是使用 `comptime if` 显式处理这两种情况。
 
-For example, narrow the domain by checking before the call:
+例如，通过在调用前检查来缩小域：
 
 ```mojo
 def create_list_and_fill[size: Int]() -> Optional[List[size]]:
@@ -493,41 +370,34 @@ def create_list_and_fill[size: Int]() -> Optional[List[size]]:
     return None
 ```
 
-#### Q3: Do you know that the parameter already satisfies this condition?
+#### Q3：您知道参数已经满足此条件吗？
 
-If the parameter didn't come from a parent parameter list, it must
-have been computed in the body.
+如果参数不是来自父参数列表，它一定是在体中计算的。
 
-Decide whether the desired constraint **holds by construction**.
+确定所需的约束**构造时成立**。
 
-If it does, indicate this to the constraint system via a `comptime assert`.
-Note that this is you explicitly taking over the burden of proof.
+如果成立，通过 `comptime assert` 向约束系统指示这一点。请注意，这是您显式承担证明的负担。
 
-Don't be afraid to write these asserts. The symbolic nature of the constraint
-system means that it is conservative—logical deductions that are obvious to
-you aren't always "obvious" to it. Adding `comptime assert` is not a
-code smell, but rather an inseparable part of working within the constraint
-system.
+不要害怕编写这些断言。约束系统的符号性质意味着它是保守的——对您来说显而易见的逻辑推导并不总是对它来说"显而易见"。添加 `comptime assert` 不是代码异味，而是工作在约束系统中不可或缺的一部分。
 
-For example, given a computed parameter that is always valid:
+例如，给定一个总是有效的计算参数：
 
 ```mojo
-# The constraint on hi & lo guarantees a valid size.
-# Introduce this piece of knowledge explicitly.
+# hi & lo 上的约束保证有效的大小。
+# 显式引入这一部分知识。
 
   comptime size = hi - lo
-  comptime assert size >= 0, "span is guaranteed non-negative"
+  comptime assert size >= 0, "span 保证非负"
   return create_list[size]()
 ```
 
-But if the constraint does *not* necessarily hold, insert a `comptime if` and
-handle both cases explicitly.
+但如果约束*不*一定成立，插入 `comptime if` 并显式处理这两种情况。
 
-For example, a computed parameter that may be invalid:
+例如，一个可能无效的计算参数：
 
 ```mojo
-# This version does NOT have a constraint on its inputs.
-# Branch on the computation to handle both cases.
+# 此版本没有输入约束。
+# 对计算进行分支以处理这两种情况。
 def create_list_from_span[lo: Int, hi: Int]() -> Optional[List[hi - lo]]:
   comptime size = hi - lo
   comptime if size >= 0:
@@ -536,15 +406,13 @@ def create_list_from_span[lo: Int, hi: Int]() -> Optional[List[hi - lo]]:
     return None
 ```
 
-## Summary
+## 总结
 
-- Constraints are part of the API contract.
-  - A `where` clause is a precondition that the **API author** requires the
-    **caller** to prove.
-- The compiler doesn't automatically derive evidence for callers.
-  - The caller must explicitly provide evidence that the precondition is always
-    satisfied.
-- If a caller gets a "lacking evidence" error, they can:
-  1. Add a constraint to push the requirement onto their own callers.
-  2. Branch on the condition (`comptime if`).
-  3. Assert an invariant (`comptime assert`).
+- 约束是 API 契约的一部分。
+  - `where` 子句是 API 作者要求**调用者**证明的前置条件。
+- 编译器不会自动为调用者推导证据。
+  - 调用者必须显式提供证据，证明前置条件始终满足。
+- 如果调用者收到"缺乏证据"错误，他们可以：
+  1. 添加约束以将要求推送到他们自己的调用者。
+  2. 对条件进行分支（`comptime if`）。
+  3. 断言不变量（`comptime assert`）。

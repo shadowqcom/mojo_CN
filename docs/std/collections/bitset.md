@@ -1,17 +1,17 @@
 ---
 title: "bitset"
 sidebar_label: "bitset"
-description: "Provides a compact set of non-negative integers backed by inline storage.  Optimized for space (1 bit per element) and speed (O(1) operations). Offers set/clear/test/toggle and fast population count. "
+description: "提供由内联存储支持的非负整数紧凑集合。针对空间（每个元素 1 位）和速度（O(1) 操作）进行了优化。提供设置/清除/测试/切换和快速人口计数。"
 ---
 
 # bitset
 
-Provides a compact set of non-negative integers backed by inline storage.
+提供由内联存储支持的非负整数紧凑集合。
 
-Optimized for space (1 bit per element) and speed (O(1) operations).
-Offers set/clear/test/toggle and fast population count.
+针对空间（每个元素 1 位）和速度（O(1) 操作）进行了优化。
+提供设置/清除/测试/切换和快速人口计数。
 
-Example:
+示例：
 ```mojo
 from std.collections import BitSet
 

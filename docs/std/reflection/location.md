@@ -1,49 +1,45 @@
 ---
 title: "location"
 sidebar_label: "location"
-description: "Implements utilities to capture and represent source code location.  This module provides compile-time and runtime introspection of source locations:  - `SourceLocation` - A struct holding file name, "
+description: "实现捕获和表示源代码位置的工具。此模块提供源代码位置的编译时和运行时内省：- `SourceLocation` - 保存文件名、行号和列号信息的结构体。"
 ---
 
 # location
 
-Implements utilities to capture and represent source code location.
+实现捕获和表示源代码位置的工具。
 
-This module provides compile-time and runtime introspection of source locations:
+此模块提供源代码位置的编译时和运行时内省：
 
-- `SourceLocation` - A struct holding file name, line, and column information.
-- `source_location()` - Returns the location where this function is called.
-- `call_location()` - Returns the caller's location (for use in inlined functions).
+- `SourceLocation` - 保存文件名、行号和列号信息的结构体。
+- `source_location()` - 返回调用此函数的位置。
+- `call_location()` - 返回调用者的位置（用于内联函数）。
 
-These utilities are useful for error reporting, logging, debugging, and building
-custom assertion functions that report meaningful locations to users.
+这些工具对于错误报告、日志记录、调试以及构建向用户报告有意义位置的自定义断言函数非常有用。
 
-Example using `source_location()` to get the current location:
+使用 `source_location()` 获取当前位置的示例：
 
 ```mojo
 from std.reflection import source_location
 
 def main():
     var loc = source_location()
-    print(loc)  # Prints: /path/to/file.mojo:5:15
+    print(loc)  # 打印：/path/to/file.mojo:5:15
     print("Line:", loc.line(), "Column:", loc.column())
 ```
 
-Example using `call_location()` for a custom assertion that reports the
-caller's location. Note that `@always_inline` is required for `call_location()`
-to work - the function must be inlined so the compiler can capture the caller's
-location:
+使用 `call_location()` 构建报告调用者位置的自定义断言的示例。注意 `@always_inline` 是 `call_location()` 工作所必需的——函数必须内联，以便编译器可以捕获调用者的位置：
 
 ```mojo
 from std.reflection import call_location
 
-@always_inline  # Required for call_location() to work
+@always_inline  # call_location() 工作所必需
 def my_assert(cond: Bool, msg: String = "assertion failed") raises:
     if not cond:
         raise Error(call_location().prefix(msg))
 
 def main() raises:
     var x = 5
-    my_assert(x > 10, "x must be > 10")  # Error points to THIS line
+    my_assert(x > 10, "x must be > 10")  # 错误指向此行
 ```
 
 ## 类型

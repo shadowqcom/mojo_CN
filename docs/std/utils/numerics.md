@@ -1,14 +1,14 @@
 ---
 title: "numerics"
 sidebar_label: "numerics"
-description: "Defines utilities to work with numeric types.  You can import these APIs from the `utils` package. For example:  ```mojo from std.utils.numerics import FPUtils ```"
+description: "定义处理数值类型的工具。您可以从 `utils` 包导入这些 API。例如：```mojo from std.utils.numerics import FPUtils ```"
 ---
 
 # numerics
 
-Defines utilities to work with numeric types.
+定义处理数值类型的工具。
 
-You can import these APIs from the `utils` package. For example:
+您可以从 `utils` 包导入这些 API。例如：
 
 ```mojo
 from std.utils.numerics import FPUtils

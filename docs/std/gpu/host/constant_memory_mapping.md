@@ -1,15 +1,14 @@
 ---
 title: "constant_memory_mapping"
 sidebar_label: "constant_memory_mapping"
-description: "This module provides functionality for mapping constant memory between host and device.  The module includes the `ConstantMemoryMapping` struct which represents a mapping of constant memory that can b"
+description: "此模块提供在主机和设备之间映射常量内存的功能。该模块包括 `ConstantMemoryMapping` 结构体，表示可用于主机和 GPU 设备之间高效数据传输的常量内存映射。"
 ---
 
 # constant_memory_mapping
 
-This module provides functionality for mapping constant memory between host and device.
+此模块提供在主机和设备之间映射常量内存的功能。
 
-The module includes the `ConstantMemoryMapping` struct which represents a mapping of
-constant memory that can be used for efficient data transfer between host and GPU device.
+该模块包括 `ConstantMemoryMapping` 结构体，表示可用于主机和 GPU 设备之间高效数据传输的常量内存映射。
 
 ## 类型
 

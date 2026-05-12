@@ -1,14 +1,14 @@
 ---
 title: "float_literal"
 sidebar_label: "float_literal"
-description: "Implements the FloatLiteral class.  These are Mojo built-ins, so you don't need to import them."
+description: "实现 FloatLiteral 类。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # float_literal
 
-Implements the FloatLiteral class.
+实现 FloatLiteral 类。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

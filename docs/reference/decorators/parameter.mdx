@@ -1,77 +1,86 @@
 ---
-title: '@parameter'
-description: Executes a function or if statement at compile time.
-codeTitle: true
+title: '@parameter 装饰器'
+sidebar_label: '@parameter'
+sidebar_position: 13
+description: >
+  @parameter 装饰器参考。标记函数为参数函数。
 ---
 
-You can add the `@parameter` decorator on a nested function to create a
-[parametric closure](#parametric-closure).
+{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
 
-:::note
+`@parameter` 装饰器标记函数为参数函数。参数函数在编译时求值，用于编译时计算。
 
-The `@parameter` decorator also works to create compile-time `if` and `for`
-statements, but this usage is deprecated in favor of the
-[`comptime if`](/docs/manual/metaprogramming/comptime-evaluation/#comptime-if)
-and
-[`comptime for`](/docs/manual/metaprogramming/comptime-evaluation/#comptime-for)
-statements.
-
-:::
-
-## Parametric closure
-
-You can add `@parameter` on a nested function to create a "parametric"
-capturing closure. This means you can create a closure function that captures
-values from the outer scope (regardless of whether they are variables or
-parameters), and then use that closure as a parameter. For example:
+## 语法
 
 ```mojo
-def use_closure[func: fn(Int) capturing [_] -> Int](num: Int) -> Int:
-    return func(num)
-
-def create_closure():
-    var x = 1
-
-    @parameter
-    def add(i: Int) -> Int:
-        return x + i
-
-    var y = use_closure[add](2)
-    print(y)
-
-create_closure()
+@parameter
+def function_name(...):
+    ...
 ```
 
-```output
-3
-```
-
-Note the `[_]` in the function type:
+## 用法
 
 ```mojo
-def use_closure[func: fn(Int) capturing [_] -> Int](num: Int) -> Int:
+@parameter
+def factorial(n: Int) -> Int:
+    if n <= 1:
+        return 1
+    return n * factorial(n - 1)
+
+def main():
+    comptime result = factorial(5)  # 编译时计算
+    print(result)  # 120
 ```
 
-This origin specifier represents the set of origins for the values captured by
-the parametric closure. This allows the compiler to correctly extend the
-lifetimes of those values. For more information on lifetimes and origins, see
-[Lifetimes, origins and references](/docs/manual/values/lifetimes/).
+## 示例
 
-If you leave the `@parameter` decorator off the `add()` function above, you'll
-get a compiler error:
+### 编译时常量
 
-```output
-invalid call to 'use_closure': failed to infer parameter '__origins__'
+```mojo
+@parameter
+def compute_size() -> Int:
+    return 1024 * 1024
+
+def main():
+    var buffer: Array[UInt8, compute_size()]
 ```
 
-## Parametric `if` statement
+### 类型计算
 
-The `@parameter if` syntax is deprecated, please use `comptime if` instead. For
-more information, see the section on
-[compile-time conditionals](/docs/manual/metaprogramming/comptime-evaluation/#comptime-if).
+```mojo
+@parameter
+def select_type[use_float: Bool]() -> type:
+    if use_float:
+        return Float64
+    return Int64
 
-## Parametric `for` statement
+def main():
+    var x: select_type[True]() = 3.14
+```
 
-The `@parameter for` syntax is deprecated, please use `comptime for` instead.
-For details, see the section on
-[compile-time loop unrolling](/docs/manual/metaprogramming/comptime-evaluation/#comptime-for).
+### 编译时断言
+
+```mojo
+@parameter
+def static_assert(condition: Bool, message: StringLiteral):
+    if not condition:
+        _compile_error(message)
+
+def main():
+    static_assert(size_of[Int]() == 8, "Expected 64-bit Int")
+```
+
+## 与运行时函数对比
+
+| 特性         | 参数函数         | 运行时函数       |
+|--------------|------------------|------------------|
+| 求值时机     | 编译时           | 运行时           |
+| 参数要求     | 编译时已知       | 任意             |
+| 性能         | 无运行时开销     | 有调用开销       |
+| 用途         | 编译时计算       | 运行时逻辑       |
+
+## 注意事项
+
+- 参数函数的参数必须是编译时已知的
+- 不能有副作用
+- 递归深度受编译器限制

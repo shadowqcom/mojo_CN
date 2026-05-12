@@ -1,14 +1,14 @@
 ---
 title: "polynomial"
 sidebar_label: "polynomial"
-description: "Provides two implementations for evaluating polynomials.  You can import these APIs from the `math` package. For example:  ```mojo from std.math.polynomial import polynomial_evaluate ```"
+description: "提供两种多项式求值实现。您可以从 `math` 包导入这些 API。例如：```mojo from std.math.polynomial import polynomial_evaluate ```"
 ---
 
 # polynomial
 
-Provides two implementations for evaluating polynomials.
+提供两种多项式求值实现。
 
-You can import these APIs from the `math` package. For example:
+您可以从 `math` 包导入这些 API。例如：
 
 ```mojo
 from std.math.polynomial import polynomial_evaluate

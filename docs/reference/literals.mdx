@@ -1,34 +1,29 @@
 ---
-title: Mojo literals reference
-sidebar_label: Literals
+title: Mojo 字面量参考
+sidebar_label: 字面量
 sidebar_position: 2
 description: >
-  Complete reference for Mojo literal syntax. Covers integer,
-  floating-point, string, t-string, boolean, None, Self,
-  discard, and ellipsis literals with lexical rules and
-  examples.
+  Mojo 字面量语法完整参考。涵盖整数、浮点数、字符串、t-string、
+  布尔值、None、Self、丢弃和省略号字面量，包括词法规则和示例。
 ---
 
 {/*  VERIFIED: Lexer.cpp lexInteger(), lexFloat(), lexString(), lexTString(),
      processEscapeSequences(), ExprNode.h, TokenKinds.def  */}
 
-A *literal* is a value written directly in source code: `42`, `"hello"`,
-`True`. Literals produce values without reading variables or calling
-functions. Each section below covers one literal type, its syntax, and
-any rules the lexer enforces.
+*字面量*是直接在源代码中写入的值：`42`、`"hello"`、`True`。字面量产生值而无需读取变量或调用函数。以下各节涵盖每种字面量类型、其语法和词法分析器强制执行的任何规则。
 
-## Integer literals
+## 整数字面量
 
-*Integer literals* represent whole numbers in four bases:
+*整数字面量*以四种进制表示整数：
 
 ```mojo
-42        # Decimal
-0xFF      # Hexadecimal (0x or 0X prefix)
-0o52      # Octal (0o or 0O prefix)
-0b101010  # Binary (0b or 0B prefix)
+42        # 十进制
+0xFF      # 十六进制（0x 或 0X 前缀）
+0o52      # 八进制（0o 或 0O 前缀）
+0b101010  # 二进制（0b 或 0B 前缀）
 ```
 
-Integer literals follow these lexical rules:
+整数字面量遵循以下词法规则：
 
 ```text
 integer     → decinteger | bininteger | octinteger | hexinteger
@@ -38,49 +33,44 @@ octinteger  → "0" ("o" | "O") ("_" | octdigit)+
 hexinteger  → "0" ("x" | "X") ("_" | hexdigit)+
 ```
 
-Integer literals are always non-negative. `-1024` is the unary negation
-operator `-` applied to the literal `1024`.
+整数字面量总是非负的。`-1024` 是一元取负运算符 `-` 应用于字面量 `1024`。
 
-Underscores can appear between digits for readability. Mojo is more
-permissive than Python here. Consecutive and trailing underscores are
-allowed:
+下划线可以出现在数字之间以提高可读性。Mojo 在这方面比 Python 更宽松。允许连续和尾随下划线：
 
 ```mojo
-1_000_000  # Readable grouping
-1__000_    # Also valid (consecutive and trailing underscores OK)
+1_000_000  # 可读的分组
+1__000_    # 也有效（连续和尾随下划线都可以）
 ```
 
-Leading zeros in decimal literals are not allowed. Use the `0o` prefix for
-octal:
+十进制字面量中不允许前导零。八进制请使用 `0o` 前缀：
 
 ```mojo
-0123   # Error: leading zeros in decimal integer literals are not permitted
-0o123  # OK: octal
+0123   # 错误：十进制整数字面量中不允许前导零
+0o123  # OK：八进制
 ```
 
-A base prefix must be followed by at least one digit:
+进制前缀后必须至少跟一个数字：
 
 ```mojo
-0x  # Error: no digits specified for hex literal
-0b  # Error: no digits specified for binary literal
-0o  # Error: no digits specified for octal literal
+0x  # 错误：十六进制字面量未指定数字
+0b  # 错误：二进制字面量未指定数字
+0o  # 错误：八进制字面量未指定数字
 ```
 
-## Floating-point literals
+## 浮点字面量
 
-*Floating-point literals* represent numbers with a fractional or exponent
-part:
+*浮点字面量*表示带有小数或指数部分的数字：
 
 ```mojo
 1.0
 3.14159
-.5       # Fraction only (no integer part)
-2.       # Integer part with decimal point
-2.5e-3   # With exponent
-1E10     # Capital E works too
+.5       # 只有小数部分（无整数部分）
+2.       # 带小数点的整数部分
+2.5e-3   # 带指数
+1E10     # 大写 E 也可以
 ```
 
-Floating-point literals follow these lexical rules:
+浮点字面量遵循以下词法规则：
 
 ```text
 floatnumber   → pointfloat | exponentfloat
@@ -91,29 +81,25 @@ exponent      → ("e" | "E") ("+" | "-")? digitpart
 digitpart     → digit ("_" | digit)*
 ```
 
-Floating-point literals are always non-negative. `-3.14` is the unary
-negation operator `-` applied to the literal `3.14`.
+浮点字面量总是非负的。`-3.14` 是一元取负运算符 `-` 应用于字面量 `3.14`。
 
-When included, an exponent marker (`e` or `E`) must be followed by at least
-one digit:
+包含时，指数标记（`e` 或 `E`）后必须至少跟一个数字：
 
 ```mojo
-2.5e    # Error: expecting a digit after the exponent
-2.5e-   # Error: expecting a digit after the exponent
+2.5e    # 错误：指数后需要数字
+2.5e-   # 错误：指数后需要数字
 2.5e-3  # OK
 ```
 
-Underscores in floating-point literals work as they do in integers. Place
-them anywhere that enhances readability:
+浮点字面量中的下划线与整数中的工作方式相同。将它们放在任何提高可读性的地方：
 
 ```mojo
 1_000.000_5
 ```
 
-## String literals
+## 字符串字面量
 
-*String literals* represent text values. Mojo supports single and double
-quotes, and a triple-quote form for multi-line strings:
+*字符串字面量*表示文本值。Mojo 支持单引号和双引号，以及用于多行字符串的三引号形式：
 
 ```mojo
 "Hello"
@@ -124,38 +110,35 @@ string"""
 multi-line'''
 ```
 
-String literals on adjacent lines are joined into a single string. This
-works on one line or across lines when the continuation is indented:
+相邻行的字符串字面量连接成单个字符串。这在同一行或跨行（当续行缩进时）都有效：
 
 ```mojo
 "Hello, " "World"        # "Hello, World"
 
 x = "line one "
-    "line two"           # "line one line two" (indented continuation)
+    "line two"           # "line one line two"（缩进续行）
 ```
 
-Prefix with `r` or `R` to create a *raw string* that disables escape
-processing:
+使用 `r` 或 `R` 前缀创建*原始字符串*，禁用转义处理：
 
 ```mojo
-r"C:\path\to\file"  # Backslashes treated literally
+r"C:\path\to\file"  # 反斜杠按字面处理
 ```
 
-### Escape sequences
+### 转义序列
 
-Mojo recognizes these escape sequences in non-raw string literals:
+Mojo 在非原始字符串字面量中识别这些转义序列：
 
-| Sequence | Meaning         | Sequence    | Meaning                          |
-|----------|-----------------|-------------|----------------------------------|
-| `\\`     | Backslash       | `\a`        | Bell                             |
-| `\"`     | Double quote    | `\b`        | Backspace                        |
-| `\'`     | Single quote    | `\f`        | Form feed                        |
-| `\n`     | Newline         | `\v`        | Vertical tab                     |
-| `\r`     | Carriage return | `\xHH`      | Hex value (exactly 2 hex digits) |
-| `\t`     | Tab             | `\0`–`\377` | Octal value (1–3 octal digits)   |
+| 序列  | 含义           | 序列     | 含义                     |
+|-------|----------------|----------|--------------------------|
+| `\\`  | 反斜杠         | `\a`     | 响铃                     |
+| `\"`  | 双引号         | `\b`     | 退格                     |
+| `\'`  | 单引号         | `\f`     | 换页                     |
+| `\n`  | 换行           | `\v`     | 垂直制表符               |
+| `\r`  | 回车           | `\xHH`   | 十六进制值（恰好 2 位）   |
+| `\t`  | 制表符         | `\0`–`\377` | 八进制值（1-3 位）     |
 
-A backslash at the end of a line inside a triple-quoted string suppresses the
-newline, joining the next line directly:
+三引号字符串内行尾的反斜杠抑制换行，直接连接下一行：
 
 ```mojo
 x = """\
@@ -163,9 +146,9 @@ x = """\
     """
 ```
 
-## T-string literals
+## T-string 字面量
 
-*T-string literals* support expression interpolation using `{}`:
+*T-string 字面量*支持使用 `{}` 进行表达式插值：
 
 ```mojo
 name = "World"
@@ -173,28 +156,25 @@ t"Hello, {name}!"   # "Hello, World!"
 t"1 + 1 = {1 + 1}"  # "1 + 1 = 2"
 ```
 
-Expressions inside `{}` are evaluated at runtime. Adjacent t-string literals
-are joined, just like regular string literals.
+`{}` 内的表达式在运行时求值。相邻的 t-string 字面量会连接，就像常规字符串字面量一样。
 
-T-strings can be triple-quoted and combined with the raw prefix (`rt`, `tr`,
-`rT`, `tR`):
+T-string 可以三引号化并与原始前缀组合（`rt`、`tr`、`rT`、`tR`）：
 
 ```mojo
 t"""
 Hello, {name}!
 """
 
-rt"Path: {base}\subdir"  # Raw t-string: backslashes are literal
+rt"Path: {base}\subdir"  # 原始 t-string：反斜杠是字面量
 ```
 
-Use `{{` and `}}` to include literal braces in a t-string:
+使用 `{{` 和 `}}` 在 t-string 中包含字面大括号：
 
 ```mojo
 t"Use {{braces}} in t-strings"  # "Use {braces} in t-strings"
 ```
 
-T-strings can be nested. An interpolation expression can itself contain
-t-strings, up to 20 levels deep.
+T-string 可以嵌套。插值表达式本身可以包含 t-string，最多 20 层深度。
 
 ```mojo
 var name = "world"
@@ -202,26 +182,24 @@ var greeting = t"Hello, {t"dear {name}"}!"
 print(greeting) # "Hello, dear world!"
 ```
 
-## Boolean literals
+## 布尔字面量
 
-`True` and `False` represent boolean truth values.
+`True` 和 `False` 表示布尔真值。
 
 ```mojo
 x = True
 y = False
 ```
 
-## None literal
+## None 字面量
 
-`None` represents the absence of a value. It is the only value of type
-`NoneType`.
+`None` 表示值的缺失。它是 `NoneType` 类型的唯一值。
 
 ```mojo
 x: NoneType = None
 ```
 
-A function without an explicit return type returns `None`. These two
-declarations are equivalent:
+没有显式返回类型的函数返回 `None`。这两个声明是等价的：
 
 ```mojo
 def greet():
@@ -231,43 +209,39 @@ def greet() -> None:
     print("hello")
 ```
 
-## Self literal
+## Self 字面量
 
-`Self` refers to the enclosing type inside a struct or trait definition:
+`Self` 在结构体或 trait 定义内引用封闭类型：
 
 ```mojo
 struct Point:
     var x: Float64
     var y: Float64
 
-    def create() -> Self:          # Self refers to Point
+    def create() -> Self:          # Self 引用 Point
         return Self(0.0, 0.0)
 
-    def distance(self) -> Float64: # self is an argument name, not Self
+    def distance(self) -> Float64: # self 是参数名，不是 Self
         return (self.x ** 2 + self.y ** 2).sqrt()
 ```
 
-`Self` (capital S) is a keyword that refers to the type. `self` (lowercase)
-is a conventional argument name for the instance.
+`Self`（大写 S）是引用类型的关键字。`self`（小写）是实例的常规参数名。
 
-## Discard pattern
+## 丢弃模式
 
-The underscore `_` discards a value in an assignment:
+下划线 `_` 在赋值中丢弃值：
 
 ```mojo
-_, y = get_pair()  # Ignore the first element
+_, y = get_pair()  # 忽略第一个元素
 ```
 
-## Ellipsis literal
+## 省略号字面量
 
-`...` marks a trait method as required. Conforming types must provide their
-own implementation. It is only valid inside trait definitions:
+`...` 将 trait 方法标记为必需。一致类型必须提供自己的实现。它只在 trait 定义内有效：
 
 ```mojo
 trait Drawable:
-    def draw(self) -> None: ...   # Required: conforming types must implement
+    def draw(self) -> None: ...   # 必需：一致类型必须实现
 ```
 
-`...` and `pass` are not interchangeable. `pass` is a no-op statement that
-provides an empty body. `...` is a requirement marker that means "you must
-implement this."
+`...` 和 `pass` 不可互换。`pass` 是提供空主体的空操作语句。`...` 是表示"你必须实现这个"的要求标记。

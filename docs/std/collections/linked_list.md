@@ -1,18 +1,14 @@
 ---
 title: "linked_list"
 sidebar_label: "linked_list"
-description: "Implements a doubly-linked list data structure.  This module provides the `LinkedList` type, a doubly-linked list where each element points to both the next and previous elements. This structure enabl"
+description: "实现双向链表数据结构。此模块提供 `LinkedList` 类型，这是一个双向链表，其中每个元素都指向下一个和上一个元素。"
 ---
 
 # linked_list
 
-Implements a doubly-linked list data structure.
+实现双向链表数据结构。
 
-This module provides the `LinkedList` type, a doubly-linked list where each
-element points to both the next and previous elements. This structure enables
-efficient insertion and deletion at any position, though random access requires
-traversal. The implementation includes iterator support for forward and reverse
-traversal.
+此模块提供 `LinkedList` 类型，这是一个双向链表，其中每个元素都指向下一个和上一个元素。此结构能够在任何位置高效插入和删除，尽管随机访问需要遍历。该实现包括用于正向和反向遍历的迭代器支持。
 
 ## 类型
 

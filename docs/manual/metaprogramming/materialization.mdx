@@ -1,63 +1,51 @@
 ---
-title: Materializing compile-time values at run time
-sidebar_label: Materialization
-description: How to use compile-time values at run time.
+title: 在运行时实例化编译时值
+sidebar_label: 实例化
+description: 如何在运行时使用编译时值。
 ---
 
-Mojo's compile-time metaprogramming makes it easy to make calculations at
-compile time for later use. The process of making a *compile-time value*
-available at run time is called *materialization*. For types that can be
-trivially copied, this isn't an issue. The compiler can simply insert the value
-into the compiled program wherever it's needed.
+Mojo 的编译时元编程使其易于在编译时进行计算以供以后使用。在运行时使*编译时值*可用称为*实例化*。对于可以轻松复制的类型，这不是问题。编译器可以简单地将其值插入到需要它的已编译程序中。
 
 ```mojo
-comptime threshold: Int = some_calculation()  # calculate at compile time
+comptime threshold: Int = some_calculation()  # 在编译时计算
 
 for i in range(1000):
-    my_function(i, threshold)  # use value at runtime
+    my_function(i, threshold)  # 在运行时使用值
 ```
 
-However, Mojo also allows you to create instances of much more complex types at
-compile-time: types that dynamically allocate memory, like `List` and `Dict`.
-Re-using these values at run time presents some questions, like where the memory
-is allocated, who owns the values, and when the values are destroyed.
+然而，Mojo 还允许您在编译时创建更复杂类型的实例：那些动态分配内存的类型，如 `List` 和 `Dict`。在运行时重用这些值会带来一些问题，比如内存在哪里分配，谁拥有值，以及何时销毁值。
 
-This page describes when Mojo materializes values, and presents some techniques
-for avoiding unnecessary materialization of complex values.
+本页面描述了 Mojo 何时实例化值，并介绍了一些避免不必要实例化复杂值的技术。
 
-## Implicit and explicit materialization
+## 隐式和显式实例化
 
-When you use a `comptime` value at run time, you're explicitly or implicitly
-copying the value into a run-time variable:
+当您在运行时使用 `comptime` 值时，您是显式或隐式地将值复制到运行时变量中：
 
 ```mojo
 comptime comptime_value = 1000
 var runtime_value = comptime_value
 ```
 
-This process of moving a compile-time value to a run-time variable is called
-*materialization*. If the value is implicitly copyable, like an `Int` or `Bool`,
-Mojo treats it as *implicitly materializable* as well.
+将编译时值移动到运行时变量的这个过程称为*实例化*。如果值是隐式可复制的，如 `Int` 或 `Bool`，Mojo 将其视为*隐式可实例化*。
 
-But types that **aren't** implicitly copyable present other challenges. Consider
-the following code:
+但那些**不是**隐式可复制的类型会带来其他挑战。考虑以下代码：
 
 ```mojo
 def lookup_fn(count: Int):
     comptime list_of_values = [1, 3, 5, 7]
 
     for i in range(count):
-        # Some computation, doesn't matter what it is.
+        # 一些计算，无论它是什么。
         idx = dynamic_function(i)
 
-        # Look up another value
+        # 查找另一个值
         lookup = list_of_values[idx]
 
-        # Use the value
+        # 使用值
         process(lookup)
 ```
 
-This looks reasonable, but compiling it produces an error on this line:
+这看起来是合理的，但编译它会在这一行产生错误：
 
 ```mojo
 lookup = list_of_values[idx]
@@ -68,12 +56,9 @@ cannot materialize comptime value of type 'List[Int]' to runtime
 because it is not 'ImplicitlyCopyable'
 ```
 
-Just like Mojo forces you to explicitly copy a value that's expensive to
-copy, it forces you to explicitly materialize values that are expensive to
-materialize, by calling the
-[`materialize()`](/docs/std/builtin/value/materialize/) function.
+就像 Mojo 强制您显式复制昂贵复制的值一样，它强制您通过调用 [`materialize()`](/docs/std/builtin/value/materialize/) 函数显式实例化昂贵实例化的值。
 
-Here's the code above with explicit materialization added:
+这是添加了显式实例化的上面的代码：
 
 ```mojo
 def lookup_fn(count: Int):
@@ -82,21 +67,17 @@ def lookup_fn(count: Int):
     for i in range(count):
         idx = dynamic_function(i)
 
-        # This is the problem
+        # 这是问题所在
         var tmp: List[Int] = materialize[list_of_values]()
         lookup = tmp[idx]
-        # tmp is destroyed here
+        # tmp 在这里被销毁
 
         process(lookup)
 ```
 
-This code materializes the list of values *inside* of the loop, which includes
-dynamically allocating heap memory and storing the four elements into that
-memory. Because the last use of `tmp` is on the next line, the memory then gets
-deallocated before the loop iterates. This creates and destroys the list on
-every iteration of the loop, which is clearly wasteful.
+此代码在循环*内部*实例化值列表，这包括动态分配堆内存并将四个元素存储到该内存中。由于 `tmp` 的最后一次使用在下一行，内存然后在循环迭代之前被释放。这会在循环的每次迭代中创建和销毁列表，这显然是浪费的。
 
-A more efficient version would materialize the list *outside* of the loop:
+更高效的版本会在循环*外部*实例化列表：
 
 ```mojo
 def lookup_fn(count: Int):
@@ -109,30 +90,18 @@ def lookup_fn(count: Int):
         lookup = list[idx]
 
         process(lookup)
-    # materialized list is destroyed here
+    # 实例化的列表在这里被销毁
 ```
 
-This is why Mojo requires you to explicitly materialize non-trivial values; it
-puts you in control of when your program allocates resources.
+这就是为什么 Mojo 要求您显式实例化非平凡值；它让您控制程序何时分配资源。
 
-## Global lookup tables
+## 全局查找表
 
-Mojo doesn't currently have a general-purpose mechanism for creating global
-static data. This is a problem for some performance-sensitive code where you
-want to use a static lookup table. Even if you declare the table as a `comptime`
-value, you need to materialize it each time you want to use the data.
+Mojo 目前没有创建全局静态数据的通用机制。这对于某些性能敏感的代码来说是个问题，您想使用静态查找表。即使您将表声明为 `comptime` 值，您也需要在每次想使用数据时实例化它。
 
-The [`global_constant()`](/docs/std/builtin/globals/global_constant/) function
-provides a solution for storing a compile-time value into static global storage,
-so you can access it without repeatedly materializing the value. However, this
-currently only works for self-contained values which don't include pointers to
-other locations in memory. That rules out using collection types like `List` and
-`Dict`.
+[`global_constant()`](/docs/std/builtin/globals/global_constant/) 函数提供了将编译时值存储到静态全局存储的解决方案，因此您可以在不重复实例化值的情况下访问它。然而，这目前仅适用于不包含指向内存中其他位置的指针的自包含值。这排除了使用 `List` 和 `Dict` 等集合类型。
 
-The easiest way to use `global_constant()` is with
-[`InlineArray`](/docs/std/collections/inline_array/InlineArray/), which
-allocates a statically sized array of elements on the stack. The following code
-uses `global_constant()` to create a static lookup table.
+使用 `global_constant()` 的最简单方法是使用 [`InlineArray`](/docs/std/collections/inline_array/InlineArray/)，它在堆栈上分配静态大小的元素数组。以下代码使用 `global_constant()` 创建静态查找表。
 
 ```mojo
 from std.builtin.globals import global_constant
@@ -151,63 +120,46 @@ def main():
 
 ```
 
-At compile time, Mojo allocates the `numbers` array, and then the
-`global_constant()` function copies it into static constant memory, where the
-code can reference it without requiring any dynamic logic to create or populate
-the array. At run time, the `lookup_table` identifier receives an immutable
-reference to this memory.
+在编译时，Mojo 分配 `numbers` 数组，然后 `global_constant()` 函数将其复制到静态常量内存中，代码可以在其中引用它，而无需任何动态逻辑来创建或填充数组。在运行时，`lookup_table` 标识符接收对此内存的不可变引用。
 
-Note the use of `ref lookup_table` to bind the reference returned by
-`global_constant()`. Using `var lookup_table` would cause a compiler error,
-because it would trigger a copy, and `InlineArray` doesn't support implicit
-copying.
+注意使用 `ref lookup_table` 来绑定 `global_constant()` 返回的引用。使用 `var lookup_table` 会导致编译器错误，因为它会触发复制，而 `InlineArray` 不支持隐式复制。
 
-## Using the `comptime` keyword
+## 使用 `comptime` 关键字
 
-Another approach that you can use to avoid materializing a complex value is to
-use the `comptime` keyword to control when Mojo evaluates an expression.
-Assigning an expression to a `comptime` value causes Mojo to evaluate the
-expression at compile time.
+您可以使用的另一种避免实例化复杂值的方法是使用 `comptime` 关键字来控制 Mojo 何时求值表达式。将表达式赋值给 `comptime` 值会导致 Mojo 在编译时求值表达式。
 
-For example, if you want to force a function to run at compile time:
+例如，如果您想强制函数在编译时运行：
 
 ```mojo
-comptime tmp = calculate_something()  # executed at compile time
-var y = x * tmp  # executed at run time
+comptime tmp = calculate_something()  # 在编译时执行
+var y = x * tmp  # 在运行时执行
 ```
 
-If you're only creating a `comptime` value for a single use, you can use a
-`comptime` sub-expression instead:
+如果您只为单次使用创建 `comptime` 值，您可以使用 `comptime` 子表达式代替：
 
 ```mojo
 var y = x * comptime (calculate_something())
 ```
 
-This works exactly like the previous example, without creating a named temporary
-value. The `comptime` keyword here tells Mojo to evaluate the expression inside
-the parentheses (`calculate_something()`) at compile time.
+这完全像前面的示例一样工作，而没有创建命名临时值。这里的 `comptime` 关键字告诉 Mojo 在括号内（`calculate_something()`）求值表达式。
 
-For example, you can use a `comptime` sub-expression when working with the
-`Layout` type, which determines how you store and retrieve data in a
-`LayoutTensor`. Materializing a `Layout` requires dynamic allocation, which
-isn't supported on GPUs. So calling this code on a GPU produces an error:
+例如，您可以在使用 `Layout` 类型时使用 `comptime` 子表达式，它确定您如何存储和检索 `LayoutTensor` 中的数据。实例化 `Layout` 需要动态分配，这在 GPU 上不支持。因此，在 GPU 上调用此代码会产生错误：
 
 ```mojo
 comptime layout = Layout.row_major(16, 8)
-var x = layout.size() // WARP_SIZE  # Can't implicitly materialize layout
+var x = layout.size() // WARP_SIZE  # 无法隐式实例化布局
 ```
 
-A `comptime` sub-expression fixes this issue:
+`comptime` 子表达式修复了这个问题：
 
 ```mojo
 comptime layout = Layout.row_major(16, 8)
 var x = comptime (layout.size()) // WARP_SIZE
 ```
 
-Now, the expression `layout.size()` gets evaluated at compile time, so there's
-no need to materialize the layout.
+现在，表达式 `layout.size()` 在编译时求值，因此不需要实例化布局。
 
-You could also achieve the same effect using a named `comptime` value.
+您还可以使用命名的 `comptime` 值实现相同的效果。
 
 ```mojo
 comptime layout = Layout.row_major(16, 8)
@@ -215,21 +167,16 @@ comptime layout_size = layout.size()
 var x = layout_size // WARP_SIZE
 ```
 
-The `comptime` sub-expression is just a more compact way to express the same
-thing.
+`comptime` 子表达式只是表达同一事物的更紧凑方式。
 
-## Materializing literals
+## 实例化字面量
 
-Literal values, like string literals and numeric literals are also materialized
-to their run-time equivalents, but this is mostly handled automatically by the
-compiler:
+字面量值，如字符串字面量和数值字面量也会实例化为它们的运行时等价物，但这主要由编译器自动处理：
 
 ```mojo
-comptime str_literal = "Hello"  # at compile time, a StringLiteral
-var str = str_literal  # at run time, a String.
-var static_str: StaticString = str_literal  # or a StaticString
+comptime str_literal = "Hello"  # 在编译时，一个 StringLiteral
+var str = str_literal  # 在运行时，一个 String。
+var static_str: StaticString = str_literal  # 或一个 StaticString
 ```
 
-Both `String` and `StaticString` can be implicitly created from a
-`StringLiteral`, but without a type annotation, Mojo defaults to materializing
-`StringLiteral` as a `String`.
+`String` 和 `StaticString` 都可以从 `StringLiteral` 隐式创建，但没有类型注释，Mojo 默认将 `StringLiteral` 实例化为 `String`。

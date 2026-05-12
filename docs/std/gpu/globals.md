@@ -1,20 +1,16 @@
 ---
 title: "globals"
 sidebar_label: "globals"
-description: "This module provides GPU-specific global constants and configuration values.  The module defines hardware-specific constants like warp size and thread block limits that are used throughout the GPU pro"
+description: "此模块提供 GPU 特定的全局常量和配置值。该模块定义硬件特定的常量，如 warp 大小和线程块限制，这些常量在整个 GPU 编程接口中使用。"
 ---
 
 # globals
 
-This module provides GPU-specific global constants and configuration values.
+此模块提供 GPU 特定的全局常量和配置值。
 
-The module defines hardware-specific constants like warp size and thread block limits
-that are used throughout the GPU programming interface. It handles both NVIDIA and AMD
-GPU architectures, automatically detecting and configuring the appropriate values based
-on the available hardware.
+该模块定义硬件特定的常量，如 warp 大小和线程块限制，这些常量在整个 GPU 编程接口中使用。它处理 NVIDIA 和 AMD GPU 架构，根据可用硬件自动检测和配置适当的值。
 
-The constants are resolved at compile time based on the target GPU architecture and
-are used to optimize code generation and ensure hardware compatibility.
+这些常量在编译时根据目标 GPU 架构解析，用于优化代码生成并确保硬件兼容性。
 
 ## 函数
 

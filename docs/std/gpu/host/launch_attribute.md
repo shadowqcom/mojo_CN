@@ -1,27 +1,23 @@
 ---
 title: "launch_attribute"
 sidebar_label: "launch_attribute"
-description: "GPU Launch Attributes for Kernel Execution Control.  This module provides structures for configuring GPU kernel execution through launch attributes. It implements a Mojo interface to CUDA's launch att"
+description: "GPU 启动属性用于内核执行控制。此模块提供通过启动属性配置 GPU 内核执行的结构。它实现了 CUDA 启动属性系统的 Mojo 接口。"
 ---
 
 # launch_attribute
 
-GPU Launch Attributes for Kernel Execution Control.
+GPU 启动属性用于内核执行控制。
 
-This module provides structures for configuring GPU kernel execution through launch attributes.
-It implements a Mojo interface to CUDA's launch attribute system, allowing fine-grained control
-over kernel execution characteristics such as memory access policies, synchronization behavior,
-cluster dimensions, and resource allocation.
+此模块提供通过启动属性配置 GPU 内核执行的结构。它实现了 CUDA 启动属性系统的 Mojo 接口，允许对内核执行特性进行精细控制，例如内存访问策略、同步行为、集群维度和资源分配。
 
-The main components include:
-- `LaunchAttributeID`: Identifies different types of launch attributes
-- `LaunchAttributeValue`: Stores the value for a specific attribute type
-- `LaunchAttribute`: Combines an ID and value to form a complete attribute
-- `AccessPolicyWindow`: Configures memory access patterns and caching behavior
-- `AccessProperty`: Defines cache persistence properties for memory access
+主要组件包括：
+- `LaunchAttributeID`：标识不同类型的启动属性
+- `LaunchAttributeValue`：存储特定属性类型的值
+- `LaunchAttribute`：将 ID 和值组合成完整属性
+- `AccessPolicyWindow`：配置内存访问模式和缓存行为
+- `AccessProperty`：定义内存访问的缓存持久性属性
 
-These structures enable optimizing GPU kernel performance by controlling execution parameters
-at a granular level, similar to CUDA's native launch attribute system.
+这些结构支持通过在细粒度级别控制执行参数来优化 GPU 内核性能，类似于 CUDA 的原生启动属性系统。
 
 ## 类型
 

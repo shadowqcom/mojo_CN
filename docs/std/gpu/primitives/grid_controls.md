@@ -1,27 +1,21 @@
 ---
 title: "grid_controls"
 sidebar_label: "grid_controls"
-description: "Grid Dependent Control primitives for NVIDIA Hopper (SM90+) GPUs.  This module provides low-level primitives for managing grid dependencies on NVIDIA Hopper architecture and newer GPUs. It enables eff"
+description: "NVIDIA Hopper (SM90+) GPU 的网格依赖控制原语。此模块提供在 NVIDIA Hopper 架构及更新 GPU 上管理网格依赖的底层原语。它支持高效编排多网格工作负载。"
 ---
 
 # grid_controls
 
-Grid Dependent Control primitives for NVIDIA Hopper (SM90+) GPUs.
+NVIDIA Hopper (SM90+) GPU 的网格依赖控制原语。
 
-This module provides low-level primitives for managing grid dependencies on NVIDIA
-Hopper architecture and newer GPUs. It enables efficient orchestration of multi-grid
-workloads by allowing grids to launch dependent grids and synchronize with them.
+此模块提供在 NVIDIA Hopper 架构及更新 GPU 上管理网格依赖的底层原语。它支持高效编排多网格工作负载，允许网格启动依赖网格并与其同步。
 
-The module includes functions that map directly to CUDA grid dependency control
-instructions, providing fine-grained control over grid execution order:
+该模块包含直接映射到 CUDA 网格依赖控制指令的函数，提供对网格执行顺序的精细控制：
 
-- `launch_dependent_grids()`: Triggers execution of grids that depend on the
-  current grid
-- `wait_on_dependent_grids()`: Blocks until all dependent grids complete execution
+- `launch_dependent_grids()`：触发依赖于当前网格的网格执行
+- `wait_on_dependent_grids()`：阻塞直到所有依赖网格完成执行
 
-These primitives are essential for implementing complex GPU execution pipelines where
-multiple kernels need to execute in a specific order with minimal overhead. They
-eliminate the need for host-side synchronization when orchestrating dependent GPU work.
+这些原语对于实现复杂的 GPU 执行流水线至关重要，其中多个内核需要以特定顺序执行且开销最小。它们消除了在编排依赖 GPU 工作时进行主机端同步的需要。
 
 ## 类型
 

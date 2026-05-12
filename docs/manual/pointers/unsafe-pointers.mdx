@@ -1,36 +1,22 @@
 ---
-title: Unsafe pointers
-description: Using unsafe pointers to access dynamically-allocated memory.
+title: 不安全指针
+description: 使用不安全指针访问动态分配的内存。
 ---
 
-The [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) type
-is one of several pointer types available in the standard library to indirectly
-reference locations in memory.
+[`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 类型是标准库中可用的几种指针类型之一，用于间接引用内存中的位置。
 
-You can use an `UnsafePointer` to dynamically allocate and free memory, or to
-point to memory allocated by some other piece of code. You can use these
-pointers to write code that interacts with low-level interfaces, to interface
-with other programming languages, or to build array-like data structures.
-But as the name suggests, they're inherently *unsafe*. For example, when using
-unsafe pointers, you're responsible for ensuring that memory gets allocated and
-freed correctly.
+你可以使用 `UnsafePointer` 来动态分配和释放内存，或者指向由其他代码分配的内存。你可以使用这些指针来编写与低级接口交互的代码、与其他编程语言交互，或构建类数组数据结构。但顾名思义，它们本质上是不安全的。例如，使用不安全指针时，你需要负责确保内存被正确分配和释放。
 
-In general, you should prefer safe pointer types when possible, reserving
-`UnsafePointer` for those use cases where no other pointer type works.
-For a comparison of standard library pointer types, see [Intro to
-pointers](/docs/manual/pointers/).
+通常，你应该尽可能优先使用安全指针类型，将 `UnsafePointer` 保留给其他指针类型无法胜任的用例。有关标准库指针类型的比较，请参阅[指针简介](/docs/manual/pointers/)。
 
-## Unsafe pointer basics
+## 不安全指针基础
 
-An `UnsafePointer` is a type that holds an address to memory. You can store
-and retrieve values in that memory. The `UnsafePointer` type is *generic*—it can
-point to any type of value, and the value type is specified as a parameter. The
-value pointed to by a pointer is sometimes called a *pointee*.
+`UnsafePointer` 是一种持有内存地址的类型。你可以在该内存中存储和检索值。`UnsafePointer` 类型是_泛型_的——它可以指向任何类型的值，值类型以参数的形式指定。指针所指向的值有时被称为_被指物_（pointee）。
 
 ```mojo
-# Allocate memory to hold a value
+# 分配内存以存储一个值
 var ptr = alloc[Int](1)
-# Initialize the allocated memory
+# 初始化已分配的内存
 ptr.init_pointee_copy(100)
 ```
 
@@ -40,18 +26,16 @@ ptr.init_pointee_copy(100)
 ![](../images/pointer-diagram.png#light)
 ![](../images/pointer-diagram-dark.png#dark)
 
-<figcaption><b>Figure 1.</b> Pointer and pointee</figcaption>
+<figcaption><b>图 1.</b> 指针与被指物</figcaption>
 </figure>
 {/*  markdownlint-enable MD033 MD045  */}
 
-Accessing the memory—to retrieve or update a value—is called
-*dereferencing* the pointer. You can dereference a pointer by following the
-variable name with an empty pair of square brackets:
+访问内存——检索或更新值——被称为_解引用_指针。你可以在变量名后跟一对空的方括号来解引用指针：
 
 ```mojo
-# Update an initialized value
+# 更新已初始化的值
 ptr[] += 10
-# Access an initialized value
+# 访问已初始化的值
 print(ptr[])
 ```
 
@@ -59,66 +43,50 @@ print(ptr[])
 110
 ```
 
-You can also allocate memory to hold multiple values to build array-like
-structures. For details, see
-[Storing multiple values](#storing-multiple-values).
+你还可以分配内存来存储多个值，以构建类数组结构。详情请参阅[存储多个值](#storing-multiple-values)。
 
-## Lifecycle of a pointer
+## 指针的生命周期
 
-At any given time, a pointer can be in one of several states. An
-`UnsafePointer` is non-nullable. It can be *uninitialized*, *dangling*,
-or point to a memory location:
+在任何给定时间，指针可以处于几种状态之一。`UnsafePointer` 是不可空的。它可以是_未初始化的_、_悬空的_，或指向某个内存位置：
 
-- Uninitialized. Just like any variable, a variable of type `UnsafePointer` can
-  be declared but uninitialized.
+- 未初始化。就像任何变量一样，`UnsafePointer` 类型的变量可以被声明但未初始化。
 
   ```mojo
   var ptr: UnsafePointer[Int, MutExternalOrigin]
   ```
 
-- Pointing to allocated, uninitialized memory. The `alloc()` function
-  returns a pointer to a newly-allocated block of memory with space for the
-  specified number of elements of the pointee's type.
+- 指向已分配但未初始化的内存。`alloc()` 函数返回一个指向新分配内存块的指针，该内存块有足够空间存储指定数量的被指物类型的元素。
 
   ```mojo
   ptr = alloc[Int](1)
   ```
 
-  Trying to dereference a pointer to uninitialized memory results in undefined
-  behavior.
+  尝试解引用指向未初始化内存的指针会导致未定义行为。
 
-- Pointing to initialized memory. You can initialize an allocated, uninitialized
-  pointer by moving or copying an existing value into the memory. Or you can get
-  a pointer to an existing value by calling the constructor with the `to`
-  keyword argument.
+- 指向已初始化的内存。你可以通过将现有值移动或复制到内存中来初始化已分配但未初始化的指针。或者你可以通过使用 `to` 关键字参数调用构造函数来获取指向现有值的指针。
 
   ```mojo
   ptr.init_pointee_copy(value)
-  # or
+  # 或
   ptr.init_pointee_move(value^)
-  # or
+  # 或
   ptr = UnsafePointer(to=value)
   ```
 
-  Once the value is initialized, you can read or mutate it using the dereference
-  syntax:
+  值初始化后，你可以使用解引用语法来读取或修改它：
 
   ```mojo
   var oldValue = ptr[]
   ptr[] = newValue
   ```
 
-- Dangling. When you free the pointer's allocated memory, you're left with a
-  *dangling pointer*. The address still points to its previous location, but the
-  memory is no longer allocated to this pointer. Trying to dereference the
-  pointer, or calling any method that would access the memory location results
-  in undefined behavior.
+- 悬空。当你释放指针分配的内存时，你会得到一个_悬空指针_。地址仍然指向其之前的位置，但内存已不再分配给该指针。尝试解引用该指针或调用任何会访问该内存位置的方法会导致未定义行为。
 
   ```mojo
   ptr.free()
   ```
 
-The following diagram shows the lifecycle of an `UnsafePointer`:
+下图展示了 `UnsafePointer` 的生命周期：
 
 {/*  markdownlint-disable MD033 MD045  */}
 <figure>
@@ -126,73 +94,61 @@ The following diagram shows the lifecycle of an `UnsafePointer`:
 ![](../images/pointer-lifecycle.png#light)
 ![](../images/pointer-lifecycle-dark.png#dark)
 
-<figcaption><b>Figure 2.</b> Lifecycle of an <code>UnsafePointer</code></figcaption>
+<figcaption><b>图 2.</b> <code>UnsafePointer</code> 的生命周期</figcaption>
 </figure>
 {/*  markdownlint-enable MD033 MD045  */}
 
-### Allocating memory
+### 分配内存
 
-Use the `alloc()` function to allocate memory. This function returns a new
-pointer pointing to the requested memory. You can allocate space for one or
-more values of the pointee's type. Allocation failure traps the program.
-The `alloc()` function always returns a valid, non-null pointer:
+使用 `alloc()` 函数来分配内存。此函数返回一个指向所请求内存的新指针。你可以分配一个或多个被指物类型值的空间。分配失败会陷阱终止程序。`alloc()` 函数总是返回一个有效的、非空的指针：
 
 ```mojo
-var ptr = alloc[Int](10) # Allocate space for 10 Int values
+var ptr = alloc[Int](10) # 分配空间存储 10 个 Int 值
 ```
 
-The allocated space is *uninitialized*—like a variable that's been declared but
-not initialized.
+分配的空间是_未初始化的_——就像一个已声明但未初始化的变量。
 
-### Initializing the pointee
+### 初始化被指物
 
-To initialize allocated memory, `UnsafePointer` provides the
+要初始化已分配的内存，`UnsafePointer` 提供了
 [`init_pointee_copy()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#init_pointee_copy)
-and
+和
 [`init_pointee_move()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#init_pointee_move)
-methods. For example:
+方法。例如：
 
 ```mojo
 ptr.init_pointee_copy(my_value)
 ```
 
-To move a value into the pointer's memory location, use
-`init_pointee_move()`:
+要将值移动到指针的内存位置，请使用 `init_pointee_move()`：
 
 ```mojo
 str_ptr.init_pointee_move(my_string^)
 ```
 
-Note that to move the value, you usually need to add the transfer sigil
-(`^`), unless the value is a [trivial
-type](/docs/manual/traits#register-passable) (like `Int`) or a
-newly-constructed, "owned" value:
+注意，要移动值，你通常需要添加转移符号（`^`），除非该值是[平凡类型](/docs/manual/traits#register-passable)（如 `Int`）或新构造的"拥有"值：
 
 ```mojo
 str_ptr.init_pointee_move("Owned string")
 ```
 
-Alternately, you can get a pointer to an existing value by calling the
-`UnsafePointer` constructor with the keyword `to` argument. This is useful for
-getting a pointer to a value on the stack, for example.
+或者，你可以通过使用 `to` 关键字参数调用 `UnsafePointer` 构造函数来获取指向现有值的指针。这对于获取栈上值的指针很有用，例如。
 
 ```mojo
 var counter: Int = 5
 var ptr = UnsafePointer(to=counter)
 ```
 
-Note that when calling `UnsafePointer(to=value)`, you don't need to allocate
-memory, since you're pointing to an existing value.
+注意，当调用 `UnsafePointer(to=value)` 时，你不需要分配内存，因为你指向的是一个现有值。
 
-### Dereferencing pointers
+### 解引用指针
 
-Use the `[]` dereference operator to access the value stored at a pointer (the
-"pointee").
+使用 `[]` 解引用运算符来访问指针存储的值（"被指物"）。
 
 ```mojo
-# Read from pointee
+# 从被指物读取
 print(ptr[])
-# mutate pointee
+# 修改被指物
 ptr[] = 0
 ```
 
@@ -200,97 +156,59 @@ ptr[] = 0
 5
 ```
 
-If you've allocated space for multiple values, you can use subscript syntax to
-access the values, as if they were an array, like `ptr[3]`. The empty subscript
-`[]` has the same meaning as `[0]`.
+如果你已为多个值分配了空间，你可以使用下标语法来访问这些值，就像它们是数组一样，例如 `ptr[3]`。空下标 `[]` 与 `[0]` 含义相同。
 
 :::caution
 
-The dereference operator assumes that the memory being dereferenced is
-initialized. Dereferencing uninitialized memory results in undefined behavior.
+解引用运算符假设被解引用的内存已初始化。解引用未初始化的内存会导致未定义行为。
 
 :::
 
-You cannot safely use the dereference operator on uninitialized memory, even to
-*initialize* a pointee. This is because assigning to a dereferenced pointer
-calls lifecycle methods on the existing pointee (such as the destructor, move
-constructor or copy constructor).
+你不能安全地对未初始化的内存使用解引用运算符，即使是为了_初始化_被指物。这是因为对解引用的指针赋值会调用现有被指物上的生命周期方法（如析构函数、移动构造函数或复制构造函数）。
 
 ```mojo
 var str_ptr = alloc[String](1)
-# str_ptr[] = "Testing" # Undefined behavior!
+# str_ptr[] = "Testing" # 未定义行为！
 str_ptr.init_pointee_move("Testing")
-str_ptr[] += " pointers" # Works now
+str_ptr[] += " pointers" # 现在可以正常工作
 ```
 
-### Destroying or removing values
+### 销毁或移除值
 
-The
-[`take_pointee()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#take_pointee)
-method moves a pointee from the memory location pointed to by `ptr`. This is a
-consuming move. It invokes `__init__(take=)` on the destination value. It leaves
-the memory location uninitialized.
+[`take_pointee()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#take_pointee) 方法将一个被指物从 `ptr` 指向的内存位置移出。这是一个消费性移动。它在目标值上调用 `__init__(take=)`。它使该内存位置变为未初始化状态。
 
-The
-[`destroy_pointee()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#destroy_pointee)
-method calls the destructor on the pointee, and leaves the memory location
-pointed to by `ptr` uninitialized.
+[`destroy_pointee()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#destroy_pointee) 方法在被指物上调用析构函数，并使 `ptr` 指向的内存位置变为未初始化状态。
 
-Both `take_pointee()` and `destroy_pointee()` require that the pointer is
-non-null, and the memory location contains a valid, initialized value of the
-pointee's type; otherwise the function results in undefined behavior.
+`take_pointee()` 和 `destroy_pointee()` 都要求指针非空，且内存位置包含被指物类型的有效、已初始化的值；否则该函数会导致未定义行为。
 
-Calling
-[`init_pointee_move_from(self, src)`](/docs/std/memory/unsafe_pointer/UnsafePointer/#init_pointee_move_from)
-moves the value pointed to by `src` into the memory location pointed to by
-`self`. After this operation, ownership of that value transfers from `src` to
-`self` and the memory at `src` is uninitialized: do not read from it, and do not
-invoke destructors on it. To make the memory valid again, initialize it with a
-new value using one of the `init_pointee_*()` operations.
+调用 [`init_pointee_move_from(self, src)`](/docs/std/memory/unsafe_pointer/UnsafePointer/#init_pointee_move_from) 将 `src` 指向的值移动到 `self` 指向的内存位置。此操作后，该值的所有权从 `src` 转移到 `self`，`src` 处的内存变为未初始化状态：不要从中读取数据，也不要对其调用析构函数。要使内存再次有效，请使用 `init_pointee_*()` 操作之一用新值初始化它。
 
 :::note
-Mojo assumes the destination memory is uninitialized.
-It does not destroy existing contents before writing the value from `src`.
+Mojo 假设目标内存是未初始化的。它不会在写入 `src` 的值之前销毁现有内容。
 :::
 
-### Freeing memory
+### 释放内存
 
-Calling [`free()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#free) on a
-pointer frees the memory allocated by the pointer. It doesn't call the
-destructors on any values stored in the memory—you need to do that explicitly
-(for example, using
-[`destroy_pointee()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#destroy_pointee)
-or one of the other functions described in
-[Destroying or removing values](#destroying-or-removing-values)).
+对指针调用 [`free()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#free) 会释放该指针分配的内存。它不会对存储在内存中的任何值调用析构函数——你需要显式地执行此操作（例如，使用 [`destroy_pointee()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#destroy_pointee) 或[销毁或移除值](#destroying-or-removing-values)中描述的其他函数之一）。
 
-Disposing of a pointer without freeing the associated memory can result in a
-memory leak—where your program keeps taking more and more memory, because not
-all allocated memory is being freed.
+释放指针而不释放关联的内存可能导致内存泄漏——你的程序会不断占用越来越多的内存，因为并非所有分配的内存都被释放了。
 
-On the other hand, if you have multiple copies of a pointer accessing the same
-memory, you need to make sure you only call `free()` on one of them. Freeing the
-same memory twice is also an error.
+另一方面，如果你有多个指针副本访问同一块内存，你需要确保只对其中一个调用 `free()`。两次释放同一块内存也是一个错误。
 
-After freeing a pointer's memory, you're left with a dangling pointer—its
-address still points to the freed memory. Any attempt to access the memory,
-like dereferencing the pointer results in undefined behavior.
+释放指针的内存后，你会得到一个悬空指针——其地址仍然指向已释放的内存。任何访问该内存的尝试，如解引用指针，都会导致未定义行为。
 
-## Storing multiple values
+## 存储多个值
 
-As mentioned in [Allocating memory](#allocating-memory), you can use an
-`UnsafePointer` to allocate memory for multiple values. The memory is allocated
-as a single, contiguous block. Pointers support arithmetic: adding an integer
-to a pointer returns a new pointer offset by the specified number of values from
-the original pointer:
+如[分配内存](#allocating-memory)中所述，你可以使用 `UnsafePointer` 为多个值分配内存。内存作为单个连续块分配。指针支持算术运算：给指针加上一个整数会返回一个新指针，该指针从原始指针偏移指定数量的值：
 
 ```mojo
 var third_ptr = first_ptr + 2
 ```
 
-Pointers also support subtraction, as well as in-place addition and subtraction:
+指针还支持减法，以及原地加法和减法：
 
 ```mojo
-# Advance the pointer one element:
+# 将指针前进一个元素：
 ptr += 1
 ```
 
@@ -300,12 +218,11 @@ ptr += 1
 ![](../images/pointer-offset.png#light)
 ![](../images/pointer-offset-dark.png#dark)
 
-<figcaption><b>Figure 3.</b> Pointer arithmetic</figcaption>
+<figcaption><b>图 3.</b> 指针算术</figcaption>
 </figure>
 {/*  markdownlint-enable MD033 MD045  */}
 
-For example, the following example allocates memory to store 6 `Float64`
-values, and initializes them all to zero.
+例如，以下示例分配内存来存储 6 个 `Float64` 值，并将它们全部初始化为零。
 
 ```mojo
 var float_ptr = alloc[Float64](6)
@@ -313,7 +230,7 @@ for offset in range(6):
     (float_ptr+offset).init_pointee_copy(0.0)
 ```
 
-Once the values are initialized, you can access them using subscript syntax:
+值初始化后，你可以使用下标语法访问它们：
 
 ```mojo
 float_ptr[2] = 3.0
@@ -325,40 +242,24 @@ for offset in range(6):
 0.0, 0.0, 3.0, 0.0, 0.0, 0.0,
 ```
 
-## `UnsafePointer` and origins
+## `UnsafePointer` 与来源
 
-The `UnsafePointer` struct has an `origin` parameter to track the
-origin of the memory it points to.
+`UnsafePointer` 结构体有一个 `origin` 参数，用于跟踪其指向的内存的来源。
 
-For pointers initialized with the `to` keyword argument, the origin is set to
-the origin of the pointee. For example, in the following code, `s_ptr.origin` is
-the same as the origin of `s`:
+对于使用 `to` 关键字参数初始化的指针，来源设置为被指物的来源。例如，在以下代码中，`s_ptr.origin` 与 `s` 的来源相同：
 
 ```mojo
 s = "Testing"
 s_ptr = UnsafePointer(to=s)
 ```
 
-When allocating memory with the `alloc()` function, the returned pointer has an
-`origin` value of `MutExternalOrigin`. This value represents an origin that is
-mutable and doesn't *alias* existing values. For example, it doesn't point to
-the memory allocated for any other variable. That means the compiler won't
-unnecessarily extend the lifetimes of unrelated values. This memory isn't
-tracked by Mojo's lifetime checker and you're responsible for freeing it.
+当使用 `alloc()` 函数分配内存时，返回的指针的 `origin` 值为 `MutExternalOrigin`。此值表示一个可变的且不_别名_现有值的来源。例如，它不指向为任何其他变量分配的内存。这意味着编译器不会不必要地延长不相关值的生命周期。此内存不被 Mojo 的生命周期检查器跟踪，你需要负责释放它。
 
-If you're using a pointer in the implementation of a struct, you usually don't
-have to worry about the origin, as long as the pointer isn't exposed outside of
-of the struct. For example, if you implement a static array type that allocates
-memory in its constructor, deallocates it in its destructor, and doesn't expose
-the pointer outside of the struct, the default origin is fine.
+如果你在结构体的实现中使用指针，只要指针不暴露在结构体之外，你通常不需要关心来源。例如，如果你实现一个静态数组类型，在其构造函数中分配内存，在其析构函数中释放内存，并且不将指针暴露在结构体之外，那么默认来源就可以了。
 
-But if the struct exposes a pointer to that memory, you need to set the origin
-appropriately. For example, the `List` type has an `unsafe_ptr()` method that
-returns an `UnsafePointer` to the underlying storage. In this case, the returned
-pointer should share the origin of the list, since the list is the logical owner
-of the storage.
+但如果结构体暴露了指向该内存的指针，你需要适当地设置来源。例如，`List` 类型有一个 `unsafe_ptr()` 方法，返回指向底层存储的 `UnsafePointer`。在这种情况下，返回的指针应该共享列表的来源，因为列表是存储的逻辑所有者。
 
-That method looks something like this:
+该方法类似于以下代码：
 
 ```mojo
 def unsafe_ptr(
@@ -368,69 +269,49 @@ def unsafe_ptr(
     return self.data.unsafe_origin_cast[origin_of(self)]()
 ```
 
-This returns a copy of the original pointer, with the origin set to match the
-origin and mutability of the `self` value.
+这返回原始指针的副本，其来源设置为匹配 `self` 值的来源和可变性。
 
-A method like this is unsafe, but setting the correct origin makes it safer,
-since the compiler knows that the pointer is referring to data owned by the
-list.
+这样的方法是不安全的，但设置正确的来源使其更安全，因为编译器知道指针引用的是列表拥有的数据。
 
-## Working with nullability
+## 使用可空性
 
-`UnsafePointer` is a non-nullable type. To model a null pointer, wrap it
-in `Optional`:
+`UnsafePointer` 是不可空类型。要模拟空指针，请将其包装在 `Optional` 中：
 
 ```mojo
   var ptr = Optional[UnsafePointer[Int, MutExternalOrigin]]()
 ```
 
-This creates an `Optional` with a value of `None`, which is equivalent
-to a null pointer. `Optional[UnsafePointer]` has the same memory layout
-as a raw pointer, so you can pass it across FFI boundaries as `NULL`.
+这创建了一个值为 `None` 的 `Optional`，等同于空指针。`Optional[UnsafePointer]` 与原始指针具有相同的内存布局，因此你可以将其作为 `NULL` 跨 FFI 边界传递。
 
-To check whether an optional pointer is null, use `Optional` methods:
+要检查可选指针是否为空，请使用 `Optional` 方法：
 
 ```mojo
 if ptr:
-    # ptr is not None — safe to unwrap
+    # ptr 不是 None — 可以安全解包
     var p = ptr.value()
 ```
 
-When you need a non-null sentinel for deferred initialization, use
-`unsafe_dangling()` instead:
+当你需要一个非空的哨兵值用于延迟初始化时，请改用 `unsafe_dangling()`：
 
 ```mojo
   var ptr = UnsafePointer[Int, MutExternalOrigin].unsafe_dangling()
 ```
 
-For a practical example of optional pointers in a data structure, see
-[Self-referential structs](/docs/manual/structs/reference/).
+有关可选指针在数据结构中的实际示例，请参阅[自引用结构体](/docs/manual/structs/reference/)。
 
-## Working with foreign pointers
+## 使用外部指针
 
-When exchanging data with other programming languages, you may need to construct
-an `UnsafePointer` from a foreign pointer. Mojo restricts creating
-`UnsafePointer` instances from arbitrary addresses, to avoid users accidentally
-creating pointers that *alias* each other (that is, two pointers that refer to
-the same location). However, there are specific methods you can use to get an
-`UnsafePointer` from a Python or C/C++ pointer.
+在与其他编程语言交换数据时，你可能需要从外部指针构造 `UnsafePointer`。Mojo 限制从任意地址创建 `UnsafePointer` 实例，以避免用户意外创建相互_别名_的指针（即两个指向同一位置的指针）。但是，有特定的方法可以从 Python 或 C/C++ 指针获取 `UnsafePointer`。
 
-When dealing with memory allocated elsewhere, you need to be aware of who's
-responsible for freeing the memory. Freeing memory allocated elsewhere
-can result in undefined behavior.
+在处理由其他地方分配的内存时，你需要了解谁负责释放该内存。释放在其他地方分配的内存可能导致未定义行为。
 
-When working with some foreign functions, you may need to supply a pointer with
-no specific type (a type-erased pointer, or "void pointer" in C/C++). This is
-equivalent to a Mojo `OpaquePointer`.
+在使用某些外部函数时，你可能需要提供一个没有特定类型的指针（类型擦除指针，或 C/C++ 中的"void 指针"）。这等同于 Mojo 的 `OpaquePointer`。
 
-You also need to be aware of the format of the data stored in memory, including
-data types and byte order. For more information, see
-[Converting data: bitcasting and byte order](#converting-data-bitcasting-and-byte-order).
+你还需要了解存储在内存中的数据格式，包括数据类型和字节顺序。更多信息请参阅[转换数据：位转换和字节顺序](#converting-data-bitcasting-and-byte-order)。
 
-### Creating a Mojo pointer from a raw memory address
+### 从原始内存地址创建 Mojo 指针
 
-You can create a `UnsafePointer` from a raw memory address using the
-`unsafe_from_address` initializer.
+你可以使用 `unsafe_from_address` 初始化器从原始内存地址创建 `UnsafePointer`。
 
 ```mojo
 def write_to_address(mmio_address: Int, value: Int32):
@@ -438,25 +319,21 @@ def write_to_address(mmio_address: Int, value: Int32):
       unsafe_from_address=mmio_address
     )
 
-     # Writing to a raw memory address may require a volatile load/store as the
-     # operation may have side effects not visible to the compiler.
-     # You can specify this using the `volatile` parameter.
+     # 写入原始内存地址可能需要易失性加载/存储，因为
+     # 操作可能有编译器不可见的副作用。
+     # 你可以使用 `volatile` 参数来指定这一点。
     ptr.store[volatile = True](value)
 ```
 
-This is unsafe, as the caller must ensure the address is valid before writing to
-it, and that the memory is initialized before reading from it. The caller must
-also ensure the pointer's origin and mutability is valid for the address,
-failure to do so may result in undefined behavior.
+这是不安全的，因为调用者必须确保地址在写入之前是有效的，并且在读取之前内存已初始化。调用者还必须确保指针的来源和可变性对该地址有效，否则可能导致未定义行为。
 
-### Creating a Mojo pointer from a Python pointer
+### 从 Python 指针创建 Mojo 指针
 
-The `PythonObject` type defines an
+`PythonObject` 类型定义了一个
 [`unsafe_get_as_pointer()`](/docs/std/python/python_object/PythonObject/#unsafe_get_as_pointer)
-method to construct an `UnsafePointer` from a Python address.
+方法，用于从 Python 地址构造 `UnsafePointer`。
 
-For example, the following code creates a NumPy array and then accesses the
-data using a Mojo pointer:
+例如，以下代码创建一个 NumPy 数组，然后使用 Mojo 指针访问数据：
 
 ```mojo
 from std.python import Python
@@ -477,123 +354,87 @@ def main() raises:
 1, 2, 3, 4, 5, 6, 7, 8, 9,
 ```
 
-This example uses the NumPy
+此示例使用 NumPy 的
 [`ndarray.ctype`](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.ctypes.html#numpy.ndarray.ctypes)
-attribute to access the raw pointer to the underlying storage
-(`ndarray.ctype.data`). The `unsafe_get_as_pointer()` method constructs an
-`UnsafePointer` to this address.
+属性来访问底层存储的原始指针（`ndarray.ctype.data`）。`unsafe_get_as_pointer()` 方法构造一个指向该地址的 `UnsafePointer`。
 
-### Working with C/C++ pointers
+### 使用 C/C++ 指针
 
-If you call a C/C++ function that returns a pointer using the
-[`external_call`](/docs/std/ffi/external_call/) function, you can specify
-the return type as an `UnsafePointer`, and Mojo will handle the type conversion
-for you.
+如果你使用
+[`external_call`](/docs/std/ffi/external_call/)
+函数调用返回指针的 C/C++ 函数，你可以将返回类型指定为 `UnsafePointer`，Mojo 会为你处理类型转换。
 
-Notably, the `origin` parameter when working across FFI boundaries should often
-be set to `(Mut/Immut)ExternalOrigin`, since the pointer points to memory
-external to the mojo program.
+值得注意的是，跨 FFI 边界工作时，`origin` 参数通常应设置为 `(Mut/Immut)ExternalOrigin`，因为指针指向的是 mojo 程序外部的内存。
 
 ```mojo
 from std.ffi import external_call
 
 def get_foreign_pointer() -> UnsafePointer[Int, MutExternalOrigin]:
     var ptr = external_call[
-        "my_c_function", # external function name
-        UnsafePointer[Int, MutExternalOrigin] # return type
+        "my_c_function", # 外部函数名
+        UnsafePointer[Int, MutExternalOrigin] # 返回类型
     ]()
     return ptr
 ```
 
-### Opaque pointers
+### 不透明指针
 
-The `OpaquePointer` type is a pointer that does not have a specific type. In
-other languages, this is usually called a type-erased pointer or a void pointer.
-Opaque pointers are usually used when interfacing with non-Mojo code, such as a
-C library function that takes a void pointer.
+`OpaquePointer` 类型是一种没有特定类型的指针。在其他语言中，这通常被称为类型擦除指针或 void 指针。不透明指针通常在与非 Mojo 代码交互时使用，例如接受 void 指针的 C 库函数。
 
-`OpaquePointer` is actually a type alias for `UnsafePointer[NoneType]`, so it
-has the same API as any other `UnsafePointer`.
+`OpaquePointer` 实际上是 `UnsafePointer[NoneType]` 的类型别名，因此它具有与任何其他 `UnsafePointer` 相同的 API。
 
-You can't dereference an opaque pointer, but you can cast it to a specific type
-using the `bitcast()` method. Similarly, you can create an opaque pointer from
-an existing pointer by bitcasting to `NoneType`. For example:
+你不能解引用不透明指针，但可以使用 `bitcast()` 方法将其转换为特定类型。类似地，你可以通过位转换到 `NoneType` 从现有指针创建不透明指针。例如：
 
 ```mojo
 var str = "Hello, world!"
 var str_ptr = UnsafePointer(to=str)
 var opaque_ptr = str_ptr.bitcast[NoneType]()
-# ... call some foreign function that takes a void pointer
+# ... 调用某个接受 void 指针的外部函数
 ```
 
-## Converting data: bitcasting and byte order
+## 转换数据：位转换和字节顺序
 
-Bitcasting a pointer returns a new pointer that has the same memory location,
-but a new data type. This can be useful if you need to access different types of
-data from a single area of memory. This can happen when you're reading binary
-files, like image files, or receiving data over the network.
+位转换指针会返回一个具有相同内存位置但新数据类型的指针。如果你需要从单个内存区域访问不同类型的数据，这会很有用。这种情况可能发生在读取二进制文件（如图像文件）或从网络接收数据时。
 
-The following sample processes a format that consists of chunks of data,
-where each chunk contains a variable number of 32-bit integers.
-Each chunk begins with an 8-bit integer that identifies the number of values
-in the chunk.
+以下示例处理一种由数据块组成的格式，其中每个数据块包含可变数量的 32 位整数。每个数据块以一个 8 位整数开头，标识该数据块中的值数量。
 
 ```mojo
 def read_chunks(
   var ptr: UnsafePointer[mut=False, UInt8],
 ) -> List[List[UInt32]]:
     chunks = List[List[UInt32]]()
-    # A chunk size of 0 indicates the end of the data
+    # 数据块大小为 0 表示数据结束
     chunk_size = Int(ptr[])
     while (chunk_size > 0):
-        # Skip the 1 byte chunk_size and get a pointer to the first
-        # UInt32 in the chunk
+        # 跳过 1 字节的 chunk_size 并获取指向数据块中第一个
+        # UInt32 的指针
         ui32_ptr = (ptr + 1).bitcast[UInt32]()
         chunk = List[UInt32](capacity=chunk_size)
         for i in range(chunk_size):
             chunk.append(ui32_ptr[i])
         chunks.append(chunk)
-        # Move our pointer to the next byte after the current chunk
+        # 将指针移动到当前数据块之后的下一个字节
         ptr += (1 + 4 * chunk_size)
-        # Read the size of the next chunk
+        # 读取下一个数据块的大小
         chunk_size = Int(ptr[])
     return chunks
 ```
 
-When dealing with data read in from a file or from the network, you may also
-need to deal with byte order. Most systems use little-endian byte order (also
-called least-significant byte, or LSB) where the least-significant byte in a
-multibyte value comes first. For example, the number 1001 can be represented in
-hexadecimal as 0x03E9, where E9 is the least-significant byte. Represented as a
-16-bit little-endian integer, the two bytes are ordered E9 03. As a 32-bit
-integer, it would be represented as E9 03 00 00.
+在处理从文件或网络读入的数据时，你可能还需要处理字节顺序。大多数系统使用小端字节顺序（也称为最低有效字节，或 LSB），其中多字节值中的最低有效字节排在前面。例如，数字 1001 可以用十六进制表示为 0x03E9，其中 E9 是最低有效字节。表示为 16 位小端整数时，两个字节的顺序为 E9 03。表示为 32 位整数时，它表示为 E9 03 00 00。
 
-Big-endian or most-significant byte (MSB) ordering is the opposite: in the
-32-bit case, 00 00 03 E9. MSB ordering is frequently used in file formats and
-when transmitting data over the network. You can use the
-[`byte_swap()`](/docs/std/bit/bit/byte_swap/) function to swap the byte
-order of a SIMD value from big-endian to little-endian or the reverse. For
-example, if the method above was reading big-endian data, you'd just need to
-change a single line:
+大端或最高有效字节（MSB）顺序则相反：在 32 位情况下，为 00 00 03 E9。MSB 顺序常用于文件格式和网络数据传输。你可以使用 [`byte_swap()`](/docs/std/bit/bit/byte_swap/) 函数来交换 SIMD 值的字节顺序，从大端到小端或反之。例如，如果上面的方法读取的是大端数据，你只需更改一行：
 
 ```mojo
 chunk.append(byte_swap(ui32_ptr[i]))
 ```
 
-## Working with SIMD vectors
+## 使用 SIMD 向量
 
-The `UnsafePointer` type includes
-[`load()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#load) and
-[`store()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#store) methods for
-performing aligned loads and stores of scalar values. It also has methods
-supporting strided load/store and gather/scatter.
+`UnsafePointer` 类型包含
+[`load()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#load) 和
+[`store()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#store) 方法，用于执行标量值的对齐加载和存储。它还支持跨步加载/存储和聚集/分散的方法。
 
-Strided load loads values from memory into a SIMD vector using an offset (the
-"stride") between successive memory addresses. This can be useful for
-extracting rows or columns from tabular data, or for extracting individual
-values from structured data. For example, consider the data for an RGB image,
-where each pixel is made up of three 8-bit values, for red, green, and blue. If
-you want to access just the red values, you can use a strided load or store.
+跨步加载使用偏移量（"步幅"）在连续内存地址之间将值从内存加载到 SIMD 向量中。这对于从表格数据中提取行或列，或从结构化数据中提取单个值很有用。例如，考虑 RGB 图像的数据，其中每个像素由三个 8 位值组成，分别表示红色、绿色和蓝色。如果你只想访问红色值，可以使用跨步加载或存储。
 
 {/*  markdownlint-disable MD033 MD045  */}
 <figure>
@@ -601,51 +442,41 @@ you want to access just the red values, you can use a strided load or store.
 ![](../images/strided-load-storage.png#light)
 ![](../images/strided-load-storage-dark.png#dark)
 
-<figcaption><b>Figure 4.</b> Strided load</figcaption>
+<figcaption><b>图 4.</b> 跨步加载</figcaption>
 </figure>
 {/*  markdownlint-enable MD033 MD045  */}
 
-The following function uses the
+以下函数使用
 [`strided_load()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#strided_load)
-and
+和
 [`strided_store()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#strided_store)
-methods to invert the red pixel values in an image, 8 values at a time. (Note
-that this function only handles images where the number of pixels is evenly
-divisible by eight.)
+方法来反转图像中的红色像素值，每次处理 8 个值。（注意，此函数仅处理像素数可被八整除的图像。）
 
 ```mojo
 def invert_red_channel(ptr: UnsafePointer[mut=True, UInt8], pixel_count: Int):
-    # number of values loaded or stored at a time
+    # 每次加载或存储的值数量
     comptime simd_width = 8
-    # bytes per pixel, which is also the stride size
+    # 每像素字节数，也是步幅大小
     bpp = 3
     for i in range(0, pixel_count * bpp, simd_width * bpp):
         red_values = (ptr + i).strided_load[width=simd_width](bpp)
-        # Invert values and store them in their original locations
+        # 反转值并将其存储回原始位置
         (ptr + i).strided_store[width=simd_width](~red_values, bpp)
 ```
 
-The [`gather()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#gather) and
-[`scatter()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#scatter) methods
-let you load or store a set of values that are stored in arbitrary locations.
-You do this by passing in a SIMD vector of *offsets* to the current pointer. For
+[`gather()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#gather) 和
+[`scatter()`](/docs/std/memory/unsafe_pointer/UnsafePointer/#scatter) 方法
+让你可以加载或存储存储在任意位置的一组值。你通过传入一个相对于当前指针的_偏移量_ SIMD 向量来实现这一点。
 {/*  markdownlint-disable MD033  */}
-example, when using `gather()`, the <var>n</var>th value in the vector is loaded
-from (pointer address) + <var>offset[n]</var>.
+例如，使用 `gather()` 时，向量中的第 <var>n</var> 个值从（指针地址）+ <var>offset[n]</var> 加载。
 {/*  markdownlint-enable MD033  */}
 
-## Safety
+## 安全性
 
-Unsafe pointers are unsafe for several reasons:
+不安全指针之所以不安全，有以下几个原因：
 
-- Memory management is up to the user. You need to manually allocate
-  and free memory, and/or be aware of when other APIs are allocating or freeing
-  memory for you.
+- 内存管理由用户负责。你需要手动分配和释放内存，和/或了解其他 API 何时在为你分配或释放内存。
 
-- `UnsafePointer` values are non-nullable, but they're not guaranteed to
-  point to *initialized* memory. You're responsible for ensuring memory is
-  initialized before you dereference it.
+- `UnsafePointer` 值是不可空的，但不保证指向_已初始化_的内存。你需要负责确保在解引用之前内存已初始化。
 
-- `UnsafePointer` does have an `origin` parameter so Mojo can track the origin
-  of the data it points to, but it also provides unsafe APIs. For example, when
-  you do pointer arithmetic, the compiler doesn't do any bounds checking.
+- `UnsafePointer` 确实有 `origin` 参数，以便 Mojo 可以跟踪其指向的数据的来源，但它也提供了不安全的 API。例如，当你进行指针算术运算时，编译器不会做任何边界检查。

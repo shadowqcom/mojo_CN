@@ -1,14 +1,14 @@
 ---
 title: "swap"
 sidebar_label: "swap"
-description: "Implements the built-in `swap` function.  These are Mojo built-ins, so you don't need to import them."
+description: "实现内置的 `swap` 函数。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # swap
 
-Implements the built-in `swap` function.
+实现内置的 `swap` 函数。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 函数
 

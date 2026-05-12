@@ -1,11 +1,10 @@
 ---
-title: Mojo compound statements reference
-sidebar_label: Compound statements
+title: Mojo 复合语句参考
+sidebar_label: 复合语句
 sidebar_position: 6
 description: >
-  Complete reference for Mojo compound statements. Covers if statements,
-  loops, error handling with try/except, context managers with with,
-  and compile-time control flow with comptime if/for.
+  Mojo 复合语句完整参考。涵盖 if 语句、循环、try/except 错误处理、
+  with 上下文管理器，以及 comptime if/for 编译时控制流。
 ---
 
 {/*  VERIFIED: ParserStmts.cpp parseIfStmt(), parseWhileStmt(),
@@ -13,29 +12,26 @@ description: >
      parseComptimeCompoundStmt(), parseParamIf(), parseParamFor(),
      parseSuite()  */}
 
-A *compound statement* has a header and a body. The header ends
-with `:` and is followed by an indented block with the body.
+*复合语句*由头部和主体组成。头部以 `:` 结尾，后面跟着缩进的主体块。
 
-The body can contain simple statements, other compound
-statements, or both.
+主体可以包含简单语句、其他复合语句，或两者兼有。
 
 ```mojo
-if condition:       # Header
-    do_something()  # Body
+if condition:       # 头部
+    do_something()  # 主体
 ```
 
-The body must be indented more than the header. The first body statement
-sets the indentation for the rest of the body:
+主体的缩进必须比头部更深。第一个主体语句设定了其余主体的缩进级别：
 
 ```mojo
 if condition:
     do_something()
-      do_more()    # Error: statement has excess indentation
+      do_more()    # 错误：语句缩进过多
 ```
 
-## If statements
+## If 语句
 
-An `if` statement executes a block conditionally:
+`if` 语句根据条件执行代码块：
 
 ```mojo
 if x > 0:
@@ -48,30 +44,26 @@ else:
     print("you should never get here")
 ```
 
-Conditions are evaluated in order. Add as many as needed.
-The first true condition runs its block, and the statement exits.
-The `else` block runs if no condition is true.
+条件按顺序求值。可以添加任意多个条件。第一个为真的条件执行其代码块，然后语句退出。如果没有条件为真，则执行 `else` 代码块。
 
-When the body is a single simple statement, you can write it
-on a single line, although this is not normally recommended in
-many house styles:
+当主体只有一条简单语句时，可以将其写在同一行，但这在许多编码规范中通常不推荐：
 
 ```mojo
 if x > 0: print("positive")
 ```
 
-Common shortcuts from other languages won't work in Mojo:
+其他语言中的常见快捷方式在 Mojo 中不起作用：
 
 ```mojo
-x > 0 and print("positive")  # Error: 'None' does not implement
-                              # the '__bool__' method
+x > 0 and print("positive")  # 错误：'None' 未实现
+                              # '__bool__' 方法
 
-print("positive") if x > 0 else pass # Error: unexpected token in expression
+print("positive") if x > 0 else pass # 错误：表达式中出现意外的标记
 ```
 
-## While loops
+## While 循环
 
-The `while` loop repeats its body while a condition is true:
+`while` 循环在条件为真时重复执行其主体：
 
 ```mojo
 var count = 0
@@ -80,22 +72,21 @@ while count < 10:
     count += 1
 ```
 
-Use `break` to exit the loop early and `continue` to skip to the next
-iteration:
+使用 `break` 提前退出循环，使用 `continue` 跳到下一次迭代：
 
 ```mojo
 while True:
     var item = get_next()
     if item is None:
-        break       # Exit loop if no more items
+        break       # 如果没有更多项则退出循环
     if not is_valid(item):
-        continue    # Skip invalid items
-    process(item)  # Only runs for valid items
+        continue    # 跳过无效项
+    process(item)  # 只处理有效项
 ```
 
-## For loops
+## For 循环
 
-The `for` statement iterates over a sequence:
+`for` 语句遍历一个序列：
 
 ```mojo
 for item in items:
@@ -105,24 +96,18 @@ for i in range(10):   # [0, 10)
     print(i)
 ```
 
-To support iteration, a sequence must implement `__iter__()` and
-`__next__()`. A `for` loop desugars to a `while` loop that uses these
-methods.
+要支持迭代，序列必须实现 `__iter__()` 和 `__next__()`。`for` 循环会脱糖为使用这些方法的 `while` 循环。
 
-Destructuring works directly in the loop target. This lets you unpack tuple
-elements as you iterate. In this example, each item in `pairs` is unpacked
-into `key` and `value` for every iteration:
+解构可以直接在循环目标中使用。这允许你在迭代时解包元组元素。在这个例子中，`pairs` 中的每个元素在每次迭代时都被解包为 `key` 和 `value`：
 
 ```mojo
-for key, value in pairs:  # For example, [("a", 1), ("b", 2), ...]
+for key, value in pairs:  # 例如，[("a", 1), ("b", 2), ...]
     print(key, value)
 ```
 
-## Loops and else clauses
+## 循环和 else 子句
 
-An optional `else` clause runs when the loop exits normally,
-when the condition becomes false. It does not run if the loop
-exits with `break`:
+可选的 `else` 子句在循环正常退出时运行，即条件变为假时。如果循环通过 `break` 退出，则不会运行：
 
 ```mojo
 var found = False
@@ -131,14 +116,14 @@ for item in items:
         found = True
         break
 else:
-    print("not found")  # Only runs if break was never hit
+    print("not found")  # 只有在从未触发 break 时才运行
 ```
 
-Both `for` and `while` loops support `else`.
+`for` 和 `while` 循环都支持 `else`。
 
-## Error handling
+## 错误处理
 
-A `try` statement executes code that may raise errors.
+`try` 语句执行可能引发错误的代码。
 
 ```mojo
 try:
@@ -147,43 +132,40 @@ except e:
     handle(e)
 ```
 
-### Structure
+### 结构
 
-Each `try` statement requires at least one `except` or `finally` clause:
+每个 `try` 语句至少需要一个 `except` 或 `finally` 子句：
 
 ```mojo
 try:
     operation()
 except e:
-    handle_error(e)   # Runs if an error occurs
+    handle_error(e)   # 如果发生错误则运行
 else:
-    on_success()      # Runs only if no error occurred
+    on_success()      # 只有在没有错误时才运行
 finally:
-    cleanup()         # Always runs
+    cleanup()         # 总是运行
 ```
 
-Execution proceeds in a fixed order:
+执行按固定顺序进行：
 
-1. The `try` block runs first.
-1. If an error occurs, the matching `except` block runs.
-1. If no error occurs, the `else` block (if present) runs after the `try`
-   block.
-1. If included, a `finally` block always runs last.
+1. 首先运行 `try` 代码块。
+2. 如果发生错误，运行匹配的 `except` 代码块。
+3. 如果没有错误发生，`else` 代码块（如果存在）在 `try` 代码块之后运行。
+4. 如果包含 `finally` 代码块，它总是最后运行。
 
-### Error binding
+### 错误绑定
 
-Bind the error to a name with `except name`:
+使用 `except name` 将错误绑定到一个名称：
 
 ```mojo
 try:
     risky()
 except e:
-    print(e)   # e is the caught error
+    print(e)   # e 是捕获的错误
 ```
 
-Without a binding, the error is caught but not accessible. There is no
-default error variable. This is useful when you want to respond to an
-error state without needing the error details:
+如果没有绑定，错误会被捕获但无法访问。没有默认的错误变量。当你想响应错误状态而不需要错误详情时，这很有用：
 
 ```mojo
 try:
@@ -192,10 +174,9 @@ except:
     print("something went wrong")
 ```
 
-### Typed errors
+### 类型化错误
 
-When a function declares a specific error type with `raises ErrorType`,
-the bound variable's type is inferred:
+当函数使用 `raises ErrorType` 声明特定错误类型时，绑定变量的类型会被推断：
 
 ```mojo
 @fieldwise_init
@@ -208,55 +189,45 @@ def fetch() raises NetworkError -> String:
 
 try:
     result = fetch()
-except e:              # e is inferred as `NetworkError`
-    print(e.message)   # Known types supports direct field access
+except e:              # e 被推断为 `NetworkError`
+    print(e.message)   # 已知类型支持直接字段访问
     print(e.code)
 ```
 
-A `try` block handles one error type. The compiler raises an
-error if code in the `try` block can raise more than one
-error type.
+一个 `try` 代码块处理一种错误类型。如果 `try` 代码块中的代码可能引发多种错误类型，编译器会报错。
 
-## Context managers
+## 上下文管理器
 
-A `with` statement manages resources using context managers. *Context
-managers* define setup (`__enter__`) and cleanup (`__exit__`) operations.
-The cleanup always runs when the block exits, even if an error occurs:
+`with` 语句使用上下文管理器管理资源。*上下文管理器*定义设置（`__enter__`）和清理（`__exit__`）操作。无论是否发生错误，清理总是在代码块退出时运行：
 
 ```mojo
 with open("file.txt") as f:
     content = f.read()
-# File is closed here, even if an error occurred
+# 文件在这里关闭，即使发生了错误
 ```
 
-Multiple context managers can share a single `with` statement:
+多个上下文管理器可以共享一个 `with` 语句：
 
 ```mojo
 with open("input.txt") as f_in, open("output.txt", "w") as f_out:
     f_out.write(f_in.read())
 ```
 
-This is equivalent to nested `with` statements.
+这等同于嵌套的 `with` 语句。
 
-### How context managers work
+### 上下文管理器的工作原理
 
-When a `with` block is entered, `__enter__()` is called on the context
-manager expression. The result is bound to the `as` target if present.
-When the block exits, `__exit__()` is called. A context manager that
-defines only `__enter__()` is valid — `__exit__()` is optional.
+当进入 `with` 代码块时，会在上下文管理器表达式上调用 `__enter__()`。如果存在 `as` 目标，结果会绑定到它。当代码块退出时，调用 `__exit__()`。只定义 `__enter__()` 的上下文管理器是有效的——`__exit__()` 是可选的。
 
-## Compile-time control flow
+## 编译时控制流
 
-`comptime if` and `comptime for` run at compile time. The condition
-or sequence must be a compile-time value or expression.
+`comptime if` 和 `comptime for` 在编译时运行。条件或序列必须是编译时值或表达式。
 
-Use them to generate code based on compile-time conditions. You
-cannot use runtime values in `comptime` statements.
+使用它们根据编译时条件生成代码。你不能在 `comptime` 语句中使用运行时值。
 
 ### comptime if
 
-`comptime if` selects a branch at compile time, pruning the unselected
-branches. Only the selected branch appears in the compiled program.
+`comptime if` 在编译时选择一个分支，剪除未选择的分支。只有选中的分支出现在编译后的程序中：
 
 ```mojo
 from std.sys import size_of
@@ -267,60 +238,52 @@ else:
     print("Probably 32-bit")
 ```
 
-The condition must be a compile-time expression. In this example,
-`runtime_value` is not available at compile time, so the code errors
-during compilation:
+条件必须是编译时表达式。在这个例子中，`runtime_value` 在编译时不可用，所以代码在编译期间会报错：
 
 ```mojo
-comptime if runtime_value > 0:   # Error: 'comptime if' requires a
-    pass                         # parameter expression as a condition
+comptime if runtime_value > 0:   # 错误：'comptime if' 需要
+    pass                         # 参数表达式作为条件
 ```
 
-`comptime if` supports `elif` and `else` like the regular `if` statement.
+`comptime if` 支持像普通 `if` 语句一样的 `elif` 和 `else`。
 
 ### comptime for
 
-`comptime for` unrolls a loop at compile time. Each iteration is
-compiled as separate code. This creates a bigger binary but improves
-runtime performance by eliminating loop overhead and enabling further
-optimizations.
+`comptime for` 在编译时展开循环。每次迭代都编译为独立的代码。这会创建更大的二进制文件，但通过消除循环开销和启用进一步优化来提高运行时性能：
 
 ```mojo
 comptime for i in range(3):
-    print(i)   # Compiled as: print(0); print(1); print(2)
+    print(i)   # 编译为：print(0); print(1); print(2)
 ```
 
-Use `comptime for` to generate repeated code patterns or iterate over
-compile-time sequences.
+使用 `comptime for` 生成重复的代码模式或遍历编译时序列。
 
-## Scopes
+## 作用域
 
-Each compound statement body creates a new scope. Variables declared
-inside a body are not visible outside it:
+每个复合语句的主体都会创建一个新的作用域。在主体内声明的变量在主体外不可见：
 
 ```mojo
 if condition:
     var x = 10
-print(x)   # Error: x is not in scope
+print(x)   # 错误：x 不在作用域内
 ```
 
-`with` statement variables bound with `as` are scoped to the `with` block:
+使用 `as` 绑定的 `with` 语句变量作用域限于 `with` 代码块：
 
 ```mojo
 with open("file.txt") as f:
     data = f.read()
-# f is not accessible here
+# f 在这里不可访问
 ```
 
-Nested functions create their own scope and can capture variables from
-enclosing functions with the `capturing` keyword:
+嵌套函数创建自己的作用域，可以使用 `capturing` 关键字捕获外部函数的变量：
 
 ```mojo
 def outer():
     count = 0
 
     def inner() capturing:
-        count += 1   # Captures count from outer
+        count += 1   # 从 outer 捕获 count
 
     inner()
     print(count)     # 1

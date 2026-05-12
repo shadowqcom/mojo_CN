@@ -1,30 +1,20 @@
 ---
-title: Value destruction
+title: 值销毁
 sidebar_position: 3
-description: An explanation of when and how Mojo destroys values.
+description: 解释 Mojo 何时以及如何销毁值。
 ---
 
-As soon as a value/object is no longer used, Mojo destroys it. Mojo does *not*
-wait until the end of a code block—or even until the end of an expression—to
-destroy an unused value. It destroys values using an "as soon as possible"
-(ASAP) destruction policy that runs after every sub-expression. Even within an
-expression like `a+b+c+d`, Mojo destroys the intermediate values as soon as
-they're no longer needed.
+一旦值/对象不再被使用，Mojo 就会销毁它。Mojo *不*等待代码块结束——甚至等待表达式结束——来销毁未使用的值。它使用"尽可能快"（ASAP）销毁策略在每次子表达式后运行来销毁值。即使在像 `a+b+c+d` 这样的表达式中，Mojo 也会在值不再需要时立即销毁中间值。
 
-Mojo uses static analysis at compile-time to determine the last use of a value.
-At that point, it immediately ends the value's lifetime and calls the *implicit*
-`__del__()` destructor. You can override `__del__()` in your structs to perform
-any required cleanup.
+Mojo 在编译时使用静态分析来确定值的最后一次使用。在那时，它立即结束值的生命周期并调用*隐式* `__del__()` 析构函数。你可以在结构体中重写 `__del__()` 以执行任何必需的清理。
 
 :::note
-For types that require stronger guarantees, Mojo also supports *explicit*
-compiler-checked destructors, which provide an additional layer of safety for
-managing cleanup. For details, read about [explicit
-destruction](#explicitly-destroyed-types) below.
+
+对于需要更强保证的类型，Mojo 还支持*显式*编译器检查的析构函数，这提供了管理清理的额外安全层。有关详细信息，请阅读下面的[显式销毁](#explicitly-destroyed-types)。
+
 :::
 
-For example, notice when the `__del__()` destructor is called for each instance
-of `Balloon`:
+例如，注意 `Balloon` 的每个实例何时调用 `__del__()` 析构函数：
 
 ```mojo
 @fieldwise_init
@@ -42,13 +32,13 @@ def main():
     var a = Balloon("red")
     var b = Balloon("blue")
     print(a)
-    # a.__del__() runs here for "red" Balloon
+    # a.__del__() 在这里为 "red" Balloon 运行
 
     a = Balloon("green")
-    # a.__del__() runs immediately because "green" Balloon is never used
+    # a.__del__() 立即运行，因为 "green" Balloon 从未使用
 
     print(b)
-    # b.__del__() runs here
+    # b.__del__() 在这里运行
 ```
 
 ```output
@@ -59,85 +49,40 @@ a blue balloon
 Destroyed a blue balloon
 ```
 
-Notice that each initialization of a value is matched with a call to the
-destructor, and `a` is actually destroyed multiple times—once for each time it
-receives a new value.
+请注意，每个值的初始化都匹配一个析构函数的调用，并且 `a` 实际上被销毁多次——每次它接收新值时一次。
 
-Also notice that this `__del__()` implementation doesn't actually do
-anything. Most structs don't require a custom destructor, and Mojo automatically
-adds a no-op destructor if you don't define one.
+还要注意，这个 `__del__()` 实现实际上不执行任何操作。大多数结构体不需要自定义析构函数，如果你不定义一个，Mojo 会自动添加一个无操作析构函数。
 
-The `__del__()` method takes its argument using the `deinit`
-[argument convention](/docs/manual/values/ownership/#argument-conventions),
-which indicates that the value is being deinitialized.
+`__del__()` 方法使用 `deinit`[参数约定](/docs/manual/values/ownership#argument-conventions)接收其参数，这指示该值正在被反初始化。
 
-## Default destruction behavior
+## 默认销毁行为
 
-You may be wondering how Mojo can destroy a type without a custom destructor, or
-why a no-op destructor is useful. If a type is simply a collection of fields,
-like the `Balloon` example, Mojo only needs to destroy the fields: `Balloon`
-doesn't dynamically allocate memory or use any long-lived resources (like file
-handles). There's no special action to take when a `Balloon` value is destroyed.
+你可能想知道 Mojo 如何在没有自定义析构函数的情况下销毁类型，或者为什么无操作析构函数有用。如果一个类型只是字段的集合，如 `Balloon` 示例，Mojo 只需要销毁字段：`Balloon` 不动态分配内存或不使用任何长寿命资源（如文件句柄）。当 `Balloon` 值被销毁时，没有特殊操作需要执行。
 
-When a `Balloon` value is destroyed, the `String` value in its `color` field is
-no longer used, and it is also immediately destroyed.
+当 `Balloon` 值被销毁时，其 `color` 字段中的 `String` 值不再被使用，它也被立即销毁。
 
-The `String` value is a little more complicated. Mojo strings are mutable. The
-`String` object has an internal buffer—a
-[`List`](/docs/std/collections/list/List/) field,
-which holds the characters that make up the string. A `List` stores
-its contents in dynamically allocated memory on the heap, so the string can
-grow or shrink. The string itself doesn't have any special destructor logic,
-but when Mojo destroys a string, it calls the destructor for the
-`List` field, which de-allocates the memory.
+`String` 值稍微复杂一些。Mojo 字符串是可变的。`String` 对象有一个内部缓冲区——一个 [`List`](/docs/std/collections/list/List/) 字段，它保存组成字符串的字符。`List` 在堆上动态分配的内存中存储其内容，因此字符串可以增长或收缩。字符串本身没有任何特殊的析构函数逻辑，但当 Mojo 销毁字符串时，它调用 `List` 字段的析构函数，该析构函数释放内存。
 
-Since `String` doesn't require any custom destructor logic, it has a no-op
-destructor: literally, a `__del__()` method that doesn't do anything.
-This may seem pointless, but it means that Mojo can call the destructor on any
-value when its lifetime ends. This makes it easier to write generic containers
-and algorithms.
+由于 `String` 不需要任何自定义析构函数逻辑，它有一个无操作析构函数：字面上，一个不执行任何操作的 `__del__()` 方法。这看起来可能毫无意义，但这意味着 Mojo 可以在任何值生命周期结束时调用析构函数。这使得编写泛型容器和算法更容易。
 
-### Benefits of ASAP destruction
+### ASAP 销毁的好处
 
-Similar to other languages, Mojo follows the principle that objects/values
-acquire resources in a constructor (`__init__()`) and release resources in a
-destructor (`__del__()`). However, Mojo's ASAP destruction has some advantages
-over scope-based destruction (such as the C++ [RAII
-pattern](https://en.cppreference.com/w/cpp/language/raii), which waits until
-the end of the code scope to destroy values):
+与其他语言类似，Mojo 遵循对象/值在构造函数（`__init__()`）中获取资源并在析构函数（`__del__()`）中释放资源的原则。然而，Mojo 的 ASAP 销毁相比基于作用域的销毁（如 C++ [RAII 模式](https://en.cppreference.com/w/cpp/language/raii)，它等待代码作用域结束来销毁值）有一些优势：
 
-- Destroying values immediately at last-use composes nicely with the "move"
-  optimization, which transforms a "copy+del" pair into a "move" operation.
+- 在最后一次使用时立即销毁值与"移动"优化配合良好，该优化将"复制+删除"对转换为"移动"操作。
 
-- Destroying values at end-of-scope in C++ is problematic for some common
-  patterns like tail recursion, because the destructor call happens after the
-  tail call. This can be a significant performance and memory problem for
-  certain functional programming patterns, which is not a problem in Mojo,
-  because the destructor call always happens before the tail call.
+- 在 C++ 中在作用域结束时销毁值对于某些常见模式（如尾递归）来说是有问题的，因为析构函数调用发生在尾调用之后。对于某些函数式编程模式，这可能是性能和内存的重大问题，这在 Mojo 中不是问题，因为析构函数调用总是在尾调用之前。
 
-The Mojo destruction policy is more similar to how Rust and Swift work, because
-they both have strong value ownership tracking and provide memory safety. One
-difference is that Rust and Swift require the use of a [dynamic "drop
-flag"](https://doc.rust-lang.org/nomicon/drop-flags.html)—they maintain hidden
-shadow variables to keep track of the state of your values to provide safety.
-These are often optimized away, but the Mojo approach eliminates this overhead
-entirely, making the generated code faster and avoiding ambiguity.
+Mojo 销毁策略与 Rust 和 Swift 的工作方式更相似，因为它们都有强值所有权跟踪并提供内存安全。一个区别是 Rust 和 Swift 需要使用[动态"丢弃标志"](https://doc.rust-lang.org/nomicon/drop-flags.html)——它们维护隐藏的阴影变量来跟踪你的值的状态以提供安全。这些通常被优化掉，但 Mojo 方法完全消除了这种开销，使生成的代码更快并避免歧义。
 
-## Destructors
-Mojo calls a value's destructor (`__del__()` method) when the value's lifetime
-ends (typically the point at which the value is last used). As we mentioned
-earlier, Mojo provides a default, no-op destructor for all types, so in most
-cases you don't need to define the `__del__()` method.
+## 析构函数
+Mojo 在值的生命周期结束时调用值的析构函数（`__del__()` 方法）（通常是值最后一次使用的时间点）。如前所述，Mojo 为所有类型提供默认的无操作析构函数，因此在大多数情况下你不需要定义 `__del__()` 方法。
 
-You should define the `__del__()` method to perform any kind of cleanup the
-type requires. Usually, that includes freeing memory for any fields where you
-dynamically allocated memory (for example, via `UnsafePointer`) and
-closing any long-lived resources such as file handles.
+你应该定义 `__del__()` 方法来执行类型所需的任何清理。通常，这包括为任何动态分配内存的字段释放内存（例如，通过 `UnsafePointer`）和关闭任何长寿命资源，如文件句柄。
 
-However, any struct that is just a simple collection of other types does not
-need to implement the destructor.
+然而，任何只是其他类型简单集合的结构体都不需要实现析构函数。
 
-For example, consider this simple struct:
+例如，考虑这个简单结构体：
 
 ```mojo
 @fieldwise_init
@@ -146,13 +91,9 @@ struct Balloons:
     var count: Int
 ```
 
-There's no need to define the `__del__()` destructor for this, because it's a
-simple collection of other types (`String` and `Int`), and it doesn't
-dynamically allocate memory.
+不需要为此定义 `__del__()` 析构函数，因为它只是其他类型（`String` 和 `Int`）的简单集合，并且它不动态分配内存。
 
-Whereas, the following struct must define the `__del__()` method to free the
-memory allocated by its
-[`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/):
+相反，以下结构体必须定义 `__del__()` 方法来释放其 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 分配的内存：
 
 ```mojo
 struct HeapArray(Writable):
@@ -190,32 +131,19 @@ def main():
 Destroying 4 elements
 ```
 
-The destructor takes its `self` argument using the `deinit` [argument
-convention](/docs/manual/values/ownership#argument-conventions), which
-grants exclusive ownership of the value and marks it as destroyed at the
-end of the function. (For more information on the `deinit` convention, see
-[Instance initialization](/docs/manual/lifecycle/initialization/)).
+析构函数使用 `deinit`[参数约定](/docs/manual/values/ownership#argument-conventions)接收其 `self` 参数，该约定授予值的独占所有权并在函数结束时将其标记为已销毁。（有关 `deinit` 约定的更多信息，请参阅[实例初始化](/docs/manual/lifecycle/initialization/)）。
 
-Note that a pointer doesn't *own* any values in the memory it points to, so
-when a pointer is destroyed, Mojo doesn't call the destructors on those values.
+请注意，指针不*拥有*其指向的内存中的任何值，因此当指针被销毁时，Mojo 不会调用这些值上的析构函数。
 
-So in the `HeapArray` example above, calling `free()` on the pointer releases
-the memory, but doesn't call the destructors on the stored values. To invoke
-the destructors, use the `destroy_pointee()` method provided by the
-`UnsafePointer` type.
+所以在上面的 `HeapArray` 示例中，在指针上调用 `free()` 释放内存，但不会调用存储值上的析构函数。要调用析构函数，请使用 `UnsafePointer` 类型提供的 `destroy_pointee()` 方法。
 
 :::note
 
-You shouldn't call the destructor explicitly. If you need to ensure that a
-destructor is called at a specific point, use the discard pattern described in
-[explicit lifetime extension](#explicit-lifetime-extension).
+你不应该显式调用析构函数。如果你需要确保析构函数在特定点被调用，请使用[显式生命周期扩展](#explicit-lifetime-extension)中描述的丢弃模式。
 
 :::
 
-It's important to notice that the `__del__()` method is an "extra" cleanup
-event, and your implementation does not override any default destruction
-behaviors. For example, Mojo still destroys all the fields in `Balloons` even
-if you add a `__del__()` method that to do nothing:
+重要的是要注意，`__del__()` 方法是一个"额外"的清理事件，你的实现不会覆盖任何默认销毁行为。例如，即使你添加一个什么都不做的 `__del__()` 方法，Mojo 仍然会销毁 `Balloons` 中的所有字段：
 
 ```mojo
 @fieldwise_init
@@ -224,67 +152,36 @@ struct Balloons:
     var count: Int
 
     def __del__(deinit self):
-        # Mojo destroys all the fields when they're last used
+        # Mojo 在字段最后一次使用时销毁所有字段
         pass
 ```
 
-However, the `self` value inside the `__del__()` destructor is still whole (so
-all fields are still usable) until the destructor returns, as we'll discuss
-more in the following section.
+然而，`__del__()` 析构函数中的 `self` 值仍然是完整的（因此所有字段仍然可用），直到析构函数返回，正如我们在下一节中讨论的更多内容。
 
-## Explicitly-destroyed types
+## 显式销毁的类型
+Mojo 支持隐式和显式值销毁。每种方法在安全性、性能和开销方面平衡不同的需求。
 
-Mojo supports both implicit and explicit value destruction. Each approach
-balances different needs around safety, performance, and overhead.
+考虑显式销毁类型的一种方式是，它们创建了一个未来要求，一个行动承诺。创建实例会承诺你在值没有进一步用途时执行特定操作（例如，刷新、关闭、提交或丢弃）。
 
-One way to think about explicitly destroyed types is that they create a
-future requirement, a promise of action. Creating an instance commits you
-to performing specific actions (for example, flushing, closing, committing,
-or discarding) when the value has no further uses.
+这种"控制未来"的能力是开发人员的一个强大工具。它允许将拆卸要求直接添加到类型系统中。它引导用户走向有效的清理路径，使跳过这些路径的程序无法编译，并将安全销毁提升为值生命周期的第一类部分。
 
-This ability to "control the future" is a powerful tool for developers.
-It allows teardown requirements to be added directly into the type
-system. It guides users toward valid cleanup paths, making programs that
-skip those paths impossible to compile and elevating safe destruction
-to a first-class part of a value's lifecycle.
+使用*隐式销毁*，编译器管理清理。它基于生命周期分析自动在值没有进一步用途时调用 `__del__()`。你不自己调用析构函数。
 
-With *implicit destruction*, the compiler manages cleanup. It automatically
-calls `__del__()` when a value has no further uses, based on lifetime analysis.
-You do not invoke the destructor yourself.
+使用*显式销毁*，你接管清理责任。你必须定义并调用一个命名的清理方法（如 `cleanup()` 或 `save_and_close()`），并且必须在你的值所在的作用域结束之前调用该清理方法。编译器禁用自动销毁。它要求你消耗该值。未能这样做会导致编译错误。
 
-With *explicit destruction*, you take over cleanup responsibilities. You must
-define and call a named cleanup method (such as `cleanup()` or
-`save_and_close()`) and you must call that cleanup method before the end of the
-scope in which your value lives. The compiler disables automatic destruction. It
-requires you to consume the value. Failing to do so results in a compiler error.
+### 使用 `@explicit_destroy`
 
-### Using `@explicit_destroy`
+大多数类型使用隐式销毁。当值的生命周期结束时，Mojo 自动调用 `__del__()` 来清理。这对大多数情况有效：内存被释放，简单资源被自动释放。
 
-Most types use implicit destruction. When a value's lifetime ends, Mojo
-automatically calls `__del__()` to clean up. This works for most cases: memory
-is freed and simple resources are released automatically.
+某些类型需要更多控制。缓冲文件写入器必须在关闭前刷新。事务必须提交或回滚。锁必须使用适当的错误处理程序显式释放。这些操作可能会失败，需要特定的顺序，或取决于关于清理如何发生的深思熟虑的决定。
 
-Some types need more control. A buffered file writer must flush before closing.
-A transaction must commit or roll back. A lock must be released explicitly with
-proper error handling. These operations may fail, require a specific order, or
-depend on deliberate decisions about how cleanup occurs.
+`@explicit_destroy` 装饰器禁用自动销毁。相反，你定义必须有意调用的命名的析构函数方法。编译器强制执行此要求：未能销毁值会产生编译时错误。
 
-The `@explicit_destroy` decorator disables automatic destruction. Instead, you
-define named destructor methods that must be called intentionally. The compiler
-enforces this requirement: failing to destroy the value produces a
-compile-time error.
+### 构建显式销毁
 
-### Building explicit destruction
+要构建显式销毁，定义一个接受 `deinit self` 参数的方法，并使用 `@explicit_destroy` 装饰类型。这为你的反初始化程序启用编译时检查，并为你提供空间来添加必须在销毁之前执行的操作。
 
-To build explicit destruction, define a method that takes a `deinit self`
-argument and decorate the type with `@explicit_destroy`. This enables
-compile-time checks for your deinitializers and gives you space to add actions
-that must be performed before destruction.
-
-Unlike the `__del__()` method, named explicit destructors can raise errors.
-This gives you control over how an instance is deallocated. If a destructor
-raises an error, the call stack can return to logic that selects an alternative
-cleanup path, such as invoking a secondary destructor.
+与 `__del__()` 方法不同，命名的显式析构函数可以引发错误。这使你能够控制实例如何被释放。如果析构函数引发错误，调用堆栈可以返回到选择替代清理路径的逻辑，例如调用辅助析构函数。
 
 ```mojo
 @explicit_destroy("Must call save_and_close() or discard()")
@@ -299,120 +196,115 @@ struct FileBuffer:
     def write(mut self, content: String):
         self.data += content
 
-    # Choose one cleanup path from these two options
+    # 从这两个选项中选择一个清理路径
     def save_and_close(deinit self) raises:
         write_to_disk(self.path, self.data)
 
     def discard(deinit self):
-        # Abandon buffered data without writing
+        # 丢弃缓冲的数据而不写入
         pass
 ```
 
-When used, you must invoke one of the destructors:
+使用时，你必须调用其中一个析构函数：
 
 ```mojo
 def write_log(path: String, message: String) raises:
     var buffer = FileBuffer(path)
     buffer.write(message)
-    buffer^.save_and_close()  # Required: explicit destruction
+    buffer^.save_and_close()  # 必需：显式销毁
 ```
 
-The compiler verifies that a destructor is called for each explicitly destroyed
-value and emits an error if it cannot find one. If you supply a custom message
-to `@explicit_destroy`, that message appears in the error output.
+编译器验证每个显式销毁值是否调用了析构函数，如果找不到则发出错误。如果你为 `@explicit_destroy` 提供自定义消息，该消息将出现在错误输出中。
 
 ```mojo
 def broken_write(path: String, message: String):
     var buffer = FileBuffer(path)
     buffer.write(message)
-    # ERROR: error: 'buffer' abandoned without being explicitly destroyed:
+    # 错误：错误：'buffer' 被放弃而未显式销毁：
     #                Must call save_and_close() or discard()
 ```
 
-### When to use explicit destruction
+### 何时使用显式销毁
 
-Use `@explicit_destroy` when cleanup cannot be handled automatically and must be
-controlled in code. Common cases include:
+当清理无法自动处理并且必须在代码中控制时，使用 `@explicit_destroy`。常见情况包括：
 
-- Cleanup can fail and requires error handling.
-- Multiple cleanup paths are possible.
-- The order of cleanup operations matters.
-- Cleanup is expensive and should be deliberate.
+- 清理可能会失败并需要错误处理。
 
-Examples:
+- 可能存在多个清理路径。
+
+- 清理操作的顺序很重要。
+
+- 清理是昂贵的，应该是深思熟虑的。
+
+示例：
 
 ```mojo
-# Multiple cleanup paths
+# 多个清理路径
 @explicit_destroy("Use commit() or rollback()")
 struct Transaction:
-    def commit(deinit self) raises: # Requires error handling
+    def commit(deinit self) raises: # 需要错误处理
         ...
     def rollback(deinit self):
         ...
 
-# Order matters
+# 顺序很重要
 @explicit_destroy("Use unlock()")
 struct MutexGuard:
-    # Must be called to release the lock before other operations
+    # 必须调用以在其他操作之前释放锁
     def unlock(deinit self):
     ...
 
-# Cleanup is expensive
+# 清理是昂贵的
 @explicit_destroy("Use finalize() to commit expensive computation")
 struct BatchProcessor:
-    # Expensive operation user should explicitly trigger
+    # 昂贵操作用户应该显式触发
     def finalize(deinit self) raises:
         ...
 ```
 
-### Explicit destruction in generic code
+### 泛型代码中的显式销毁
 
-Generic code parameterized over `AnyType` can accept both implicitly and
-explicitly destructible values. However, it cannot automatically destroy
-values that require explicit destruction.
+参数化为 `AnyType` 的泛型代码可以接受隐式和显式可销毁的值。但是，它不能自动销毁需要显式销毁的值。
 
-Because explicit destructors are type-specific, generic code has no way
-to name or invoke them unless the type is constrained:
+由于显式析构函数是类型特定的，泛型代码无法命名或调用它们，除非对该类型进行约束：
 
 ```mojo
 def generic_function_1[T: AnyType](var value: T):
-    # ERROR: 'value' abandoned without being explicitly destroyed:
+    # 错误：'value' 被放弃而未显式销毁：
     #        Unhandled explicitly destroyed type AnyType
-    pass  # value abandoned here
+    pass  # value 在这里被放弃
 
 def generic_function_2[T: ImplicitlyDestructible](var value: T):
-    # OK: T can be implicitly destroyed
-    pass  # value.__del__() called automatically
+    # OK：T 可以被隐式销毁
+    pass  # value.__del__() 被自动调用
 ```
 
-If a generic function may consume its argument, it must ensure that the value
-can be safely destroyed at the end of its lifetime. Generic code has no way to
-invoke type-specific explicit destructors unless that behavior is constrained.
-Choose one of the following approaches:
+如果泛型函数可能消耗其参数，它必须确保值可以在其生命周期结束时被安全销毁。泛型代码无法调用类型特定的显式析构函数，除非对该行为进行约束。选择以下方法之一：
 
-- Accept the value by mutable or immutable reference instead of by ownership,
-  so the function does not consume it.
-- Return the value or transfer ownership instead of consuming it.
-- Require implicit destruction with the ImplicitlyDestructible trait, which
-  guarantees that a `__del__()` destructor is available and can be called
-  automatically:
+- 通过可变或不可变引用而不是通过所有权接受值，以便函数不消耗它。
+
+- 返回值或转移所有权而不是消耗它。
+
+- 使用 ImplicitlyDestructible trait 要求隐式销毁，它保证 `__del__()` 析构函数可用并被自动调用：
 
   ```mojo
   def generic_function_3[T: ImplicitlyDestructible](var value: T):
-      pass  # value.__del__() called automatically
+      pass  # value.__del__() 被自动调用
   ```
 
-## The `deinit` argument convention
+## `deinit` 参数约定
 
-In a method, adding the `deinit` convention to `self` means
-the method fully consumes the value by the time it returns.
-Specifically, `deinit self` signals that:
+在方法中，向 `self` 添加 `deinit` 约定意味着方法在返回时完全消耗值。具体来说，`deinit self` 信号表示：
 
-- The method takes ownership of `self`.
-- No automatic destructor is called after the method returns.
-- Fields may be transferred or explicitly destroyed inside the method.
-- Additional cleanup work may take place within the method.
-- The value is considered destroyed when the method completes.
+- 方法获取 `self` 的所有权。
+
+- 方法返回后不调用自动析构函数。
+
+- 字段可以在方法内部被转移或显式销毁。
+
+- 可能在方法内部进行额外的清理工作。
+
+- 当方法完成时，值被视为已销毁。
 
 ```mojo
 @explicit_destroy
@@ -420,33 +312,28 @@ struct Example:
     var field: String
 
     def consume_example(deinit self, mut other: Self):
-        # Can transfer field values
+        # 可以转移字段值
         other.field = self.field^
-        # No automatic destructor called
-        # self is considered destroyed when method returns
+        # 不调用自动析构函数
+        # self 在方法返回时被视为已销毁
 ```
 
-Methods marked with `deinit self` can transfer ownership of `self` to
-other `deinit` methods. Chaining deinitialization methods allows cleanup
-responsibilities to be delegated:
+使用 `deinit self` 标记的方法可以将 `self` 的所有权转移到其他 `deinit` 方法。链接反初始化方法允许将清理责任委托：
 
 ```mojo
 def cleanup_method1(deinit self):
     self^.cleanup_method2()
 
 def cleanup_method2(deinit self):
-    # Actually perform the cleanup
+    # 实际执行清理
     pass
 ```
 
-## Field lifetimes
+## 字段生命周期
 
-In addition to tracking the lifetime of all objects in a program, Mojo also
-tracks each field of a structure independently. That is, Mojo keeps track of
-whether a "whole object" is fully or partially initialized/destroyed, and it
-destroys each field independently with its ASAP destruction policy.
+除了跟踪程序中所有对象的生命周期外，Mojo 还独立跟踪结构体的每个字段。也就是说，Mojo 跟踪"整个对象"是完全或部分初始化/销毁的，并且它使用其 ASAP 销毁策略独立销毁每个字段。
 
-For example, consider this code that changes the value of a field:
+例如，考虑此更改字段值的代码：
 
 ```mojo
 @fieldwise_init
@@ -458,17 +345,14 @@ struct Balloons:
 def main():
     var balloons = Balloons("red", 5)
     print(balloons.color)
-    # balloons.color.__del__() runs here, because this instance is
-    # no longer used; it's replaced below
+    # balloons.color.__del__() 在这里运行，因为此实例不再被使用；它被替换为以下内容
 
-    balloons.color = "blue"  # Overwrite balloons.color
+    balloons.color = "blue"  # 覆盖 balloons.color
     print(balloons.color)
-    # balloons.__del__() runs here
+    # balloons.__del__() 在这里运行
 ```
 
-The `balloons.color` field is destroyed after the first `print()`, because Mojo
-knows that it will be overwritten below. You can also see this behavior when
-using the transfer sigil:
+`balloons.color` 字段在第一个 `print()` 之后被销毁，因为 Mojo 知道它将在下面被覆盖。当你使用转移信号时也可以看到此行为：
 
 ```mojo
 def consume(var arg: String):
@@ -480,84 +364,58 @@ def use(arg: Balloons):
 def consume_and_use():
     var balloons = Balloons("blue", 8)
     consume(balloons.color^)
-    # String(take=) runs here, which invalidates balloons.color
-    # Now balloons is only partially initialized
+    # String(take=) 在这里运行，这使 balloons.color 无效
+    # 现在 balloons 只是部分初始化
 
-    # use(balloons)  # This fails because balloons.color is uninitialized
+    # use(balloons)  # 这会失败，因为 balloons.color 未初始化
 
-    balloons.color = String("orange")  # All together now
-    use(balloons)  # This is ok
-    # balloons.__del__() runs here (and only if the object is whole)
+    balloons.color = String("orange")  # 现在全部在一起
+    use(balloons)  # 这没问题
+    # balloons.__del__() 在这里运行（并且只有在对象是完整的时）
 ```
 
-Notice that the code transfers ownership of the `color` field to `consume()`.
-For a period of time after that, the `color` field is uninitialized. Then
-`color` is reinitialized before it is passed to the `use()` function. If you try
-calling `use()` before `color` is re-initialized, Mojo rejects the code with an
-uninitialized field error.
+请注意，代码将 `color` 字段的所有权转移到 `consume()`。在此之后的一段时间内，`color` 字段未初始化。然后 `color` 在传递给 `use()` 函数之前被重新初始化。如果你尝试在 `color` 被重新初始化之前调用 `use()`，Mojo 会拒绝代码并出现未初始化字段错误。
 
-Also, if you don't re-initialize `color` by the end of the `balloons` lifetime,
-the compiler complains because it's unable to destroy a partially initialized
-object.
+此外，如果你在 `balloons` 生命周期结束前没有重新初始化 `color`，编译器会抱怨，因为它无法销毁部分初始化的对象。
 
-Mojo's policy here is powerful and intentionally straight-forward: fields can
-be temporarily transferred, but the "whole object" must be constructed with the
-aggregate type's initializer and destroyed with the aggregate destructor. This
-means it's impossible to create an object by initializing only its fields, and
-it's likewise impossible to destroy an object by destroying only its fields.
+Mojo 在这里的政策是强大且有意的：字段可以暂时转移，但"整个对象"必须使用聚合类型的初始化程序构造并使用聚合析构函数销毁。这意味着不可能通过仅初始化其字段来创建对象，同样也不可能通过仅销毁其字段来销毁对象。
 
-### Field lifetimes during move and destruction
-Both the consuming move constructor and the destructor take their operand
-with the `deinit` argument convention. This grants exclusive ownership of
-the value and marks it as destroyed at the end of the function. Within the
-function body, Mojo's ASAP policy still applies to fields: each field is
-destroyed immediately after its last use.
+### 移动和销毁期间的字段生命周期
 
-To read more about the `deinit` convention, see
-[Instance initialization](/docs/manual/lifecycle/initialization/).
+消耗移动构造函数和析构函数都使用 `deinit` 参数约定接收其操作数。这授予值的独占所有权并在函数结束时将其标记为已销毁。在函数体内，Mojo 的 ASAP 策略仍然适用于字段：每个字段在其最后一次使用后立即被销毁。
 
-## Explicit lifetime extension
+要了解更多关于 `deinit` 约定的信息，请参阅[实例初始化](/docs/manual/lifecycle/initialization/)。
 
-Most of the time, Mojo's ASAP destruction "just works." Very rarely, you may
-need to explicitly mark the last use of a value to control when its destructor
-runs. Think of this as an explicit last-use marker for the lifetime checker, not
-a general-purpose pattern.
+## 显式生命周期扩展
 
-You might do this:
+大多数情况下，Mojo 的 ASAP 销毁"正常工作"。非常罕见的是，你可能需要显式标记值的最后一次使用以控制其析构函数何时运行。将其视为生命周期检查器的显式最后使用标记，而不是通用模式。
 
-- When writing tests that intentionally create otherwise-unused values (to avoid
-  warnings or dead-code elimination).
+你可能这样做：
 
-- When writing unsafe/advanced code (for example, code that manipulates a
-  value's [origin](/docs/manual/values/lifetimes/)).
+- 在编写有意识地创建其他方式未使用值的测试时（以避免警告或死代码消除）。
 
-- When you need deterministic destructor timing relative to specific side
-  effects (such as logging or profiling).
+- 在编写不安全/高级代码时（例如，操作值的[来源](/docs/manual/values/lifetimes/)的代码）。
 
-Mark the last use by assigning the value to the `_` discard pattern at the point
-where it is okay to destroy it. This sets the last use at that line, so the
-destructor runs immediately after the statement:
+- 当你需要相对于特定副作用确定析构函数计时时（例如，日志记录或分析）。
+
+通过在可以销毁它的地方将值分配给 `_` 丢弃模式来标记最后一次使用。这在该行设置最后一次使用，因此析构函数在语句后立即运行：
 
 ```mojo
-# Without explicit extension: s is last used in the print() call, so it is
-# destroyed immediately afterwards.
+# 没有显式扩展：s 在 print() 调用中最后一次使用，因此它
+# 在其后立即被销毁。
 var s = "abc"
-print(s)  # s.__del__() runs after this line
+print(s)  # s.__del__() 在此行之后运行
 
-# With explicit extension: push last-use to the discard line.
+# 使用显式扩展：将最后一次使用推送到丢弃行。
 var t = "xyz"
 print(t)
 
-# ... some time later
-_ = t  # t.__del__() runs after this line
+# ... 一段时间后
+_ = t  # t.__del__() 在此行之后运行
 ```
 
 :::note
 
-Previous versions of Mojo required the transfer sigil (`^`) when discarding a
-move-only type. This is no longer required, since the compiler doesn't actually
-move the discarded value. For more information on the transfer sigil, see the
-section on
-[ownership transfer](/docs/manual/values/ownership/#transfer-arguments-var-and-).
+Mojo 的早期版本在丢弃仅可移动类型时需要转移信号（`^`）。这不再需要，因为编译器实际上不会移动被丢弃的值。有关转移信号的更多信息，请参阅关于[所有权转移](/docs/manual/values/ownership/#transfer-arguments-var-and-)的部分。
 
 :::

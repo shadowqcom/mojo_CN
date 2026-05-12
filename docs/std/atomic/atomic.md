@@ -1,14 +1,15 @@
 ---
 title: "atomic"
+slug: atomic
 sidebar_label: "atomic"
-description: "Implements the `Atomic` struct.  You can import these APIs from the `atomic` package. For example:  ```mojo from std.atomic import Atomic ```"
+description: "实现 `Atomic` 结构体。您可以从 `atomic` 包导入这些 API。例如：```mojo from std.atomic import Atomic ```"
 ---
 
 # atomic
 
-Implements the `Atomic` struct.
+实现 `Atomic` 结构体。
 
-You can import these APIs from the `atomic` package. For example:
+您可以从 `atomic` 包导入这些 API。例如：
 
 ```mojo
 from std.atomic import Atomic

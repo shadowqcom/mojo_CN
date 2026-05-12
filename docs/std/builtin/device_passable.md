@@ -1,12 +1,12 @@
 ---
 title: "device_passable"
 sidebar_label: "device_passable"
-description: "Implements the `DevicePassable` trait for types transferable to accelerator devices."
+description: "为可传输到加速器设备的类型实现 `DevicePassable` trait。"
 ---
 
 # device_passable
 
-Implements the `DevicePassable` trait for types transferable to accelerator devices.
+为可传输到加速器设备的类型实现 `DevicePassable` trait。
 
 ## Traits
 

@@ -1,20 +1,16 @@
 ---
 title: "tma"
 sidebar_label: "tma"
-description: "NVIDIA Tensor Memory Accelerator (TMA) module.  Provides types and functions for working with NVIDIA's Tensor Memory Accelerator, which enables efficient asynchronous data movement between global and "
+description: "NVIDIA 张量内存加速器 (TMA) 模块。提供用于处理 NVIDIA 张量内存加速器的类型和函数，支持 Hopper 架构及更新 GPU 上全局内存和共享内存之间的高效异步数据移动。"
 ---
 
 # tma
 
-NVIDIA Tensor Memory Accelerator (TMA) module.
+NVIDIA 张量内存加速器 (TMA) 模块。
 
-Provides types and functions for working with NVIDIA's Tensor Memory Accelerator,
-which enables efficient asynchronous data movement between global and shared memory
-on GPUs with Hopper architecture and newer.
+提供用于处理 NVIDIA 张量内存加速器的类型和函数，支持 Hopper 架构及更新 GPU 上全局内存和共享内存之间的高效异步数据移动。
 
-The TMA hardware provides hardware-accelerated multi-dimensional memory copies with
-features like swizzling for bank conflict avoidance, L2 cache promotion hints, and
-support for various data types and memory layouts.
+TMA 硬件提供硬件加速的多维内存复制，具有避免存储体冲突的交错、L2 缓存提升提示以及支持各种数据类型和内存布局等功能。
 
 ## 类型
 

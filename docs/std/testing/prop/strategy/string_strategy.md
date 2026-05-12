@@ -1,12 +1,12 @@
 ---
 title: "string_strategy"
 sidebar_label: "string_strategy"
-description: "Implements the string strategy for generating random `String` values in property tests."
+description: "实现用于在属性测试中生成随机 String 值的字符串策略。"
 ---
 
 # string_strategy
 
-Implements the string strategy for generating random `String` values in property tests.
+实现用于在属性测试中生成随机 String 值的字符串策略。
 
 ## 类型
 

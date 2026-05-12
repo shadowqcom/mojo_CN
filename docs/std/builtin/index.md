@@ -1,24 +1,16 @@
 ---
 title: "builtin"
 sidebar_label: "builtin"
-description: "Language foundation: built-in types, traits, and fundamental operations.  The `builtin` package provides the core types, traits, and operations that form the foundation of the Mojo language. It define"
+description: "语言基础：内置类型、trait 和基本操作。`builtin` 包提供了构成 Mojo 语言基础的核心类型、trait 和操作。它定义了基本类型。"
 ---
 
 # builtin
 
-Language foundation: built-in types, traits, and fundamental operations.
+语言基础：内置类型、trait 和基本操作。
 
-The `builtin` package provides the core types, traits, and operations that form
-the foundation of the Mojo language. It defines fundamental types like integers,
-booleans, and strings, essential traits for type behavior (`Copyable`, `Movable`,
-`Comparable`), and basic operations used throughout all Mojo code. Most symbols
-from this package are automatically available without explicit imports through
-the prelude.
+`builtin` 包提供了构成 Mojo 语言基础的核心类型、trait 和操作。它定义了基本类型，如整数、布尔值和字符串，类型行为的基本 trait（`Copyable`、`Movable`、`Comparable`），以及所有 Mojo 代码中使用的基本操作。此包中的大多数符号通过 prelude 自动可用，无需显式导入。
 
-This package is implicitly imported. It
-defines the core vocabulary of Mojo programming that every developer uses
-without thinking about imports. Library authors implement traits from this
-package to integrate custom types with language features.
+此包是隐式导入的。它定义了每个开发人员无需考虑导入即可使用的 Mojo 编程核心词汇。库作者实现此包中的 trait，以将自定义类型与语言功能集成。
 
 ## 模块
 

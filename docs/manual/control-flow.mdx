@@ -1,16 +1,13 @@
 ---
-title: Control flow
-description: Mojo control flow statements.
+title: 控制流
+description: Mojo 控制流语句。
 ---
 
-Mojo includes several traditional control flow structures for conditional and
-repeated execution of code blocks.
+Mojo 包含几种传统的控制流结构，用于条件执行和重复执行代码块。
 
-## The `if` statement
+## `if` 语句
 
-Mojo supports the `if` statement for conditional code execution. With it you can
-conditionally execute an indented code block if a given
-[boolean](/docs/manual/types/#booleans) expression evaluates to `True`.
+Mojo 支持 `if` 语句进行条件代码执行。使用它，当给定的[布尔](/docs/manual/types/#booleans)表达式求值为 `True` 时，可以有条件地执行一个缩进的代码块。
 
 ```mojo
 temp_celsius = Float64(25)
@@ -24,12 +21,11 @@ It is warm.
 The temperature is 77.0 Fahrenheit.
 ```
 
-You can write the entire `if` statement as a single line if all you need to
-execute conditionally is a single, short statement.
+如果你只需要有条件地执行一条简短的语句，可以将整个 `if` 语句写成一行。
 
 ```mojo
 temp_celsius = 22
-if temp_celsius < 15: print("It is cool.") # Skipped because condition is False
+if temp_celsius < 15: print("It is cool.") # 跳过，因为条件为 False
 if temp_celsius > 20: print("It is warm.")
 ```
 
@@ -37,14 +33,9 @@ if temp_celsius > 20: print("It is warm.")
 It is warm.
 ```
 
-Optionally, an `if` statement can include any number of additional `elif`
-clauses, each specifying a boolean condition and associated code block to
-execute if `True`. The conditions are tested in the order given. When a
-condition evaluates to `True`, the associated code block is executed and no
-further conditions are tested.
+可选地，`if` 语句可以包含任意数量的附加 `elif` 子句，每个子句指定一个布尔条件和在条件为 `True` 时执行的关联代码块。条件按给定顺序进行测试。当某个条件求值为 `True` 时，执行关联的代码块，不再测试后续条件。
 
-Additionally, an `if` statement can include an optional `else` clause providing
-a code block to execute if all conditions evaluate to `False`.
+此外，`if` 语句可以包含一个可选的 `else` 子句，提供在所有条件求值为 `False` 时执行的代码块。
 
 ```mojo
 temp_celsius = 25
@@ -64,17 +55,13 @@ It is warm.
 
 :::note[TODO]
 
-Mojo currently does not support the equivalent of a Python `match` or C `switch`
-statement for pattern matching and conditional execution.
+Mojo 目前不支持类似于 Python 的 `match` 或 C 的 `switch` 语句的模式匹配和条件执行。
 
 :::
 
-### Short-circuit evaluation
+### 短路求值
 
-Mojo follows
-[short-circuit evaluation](https://en.wikipedia.org/wiki/Short-circuit_evaluation)
-semantics for boolean operators. If the first argument to an `or` operator
-evaluates to `True`, the second argument is not evaluated.
+Mojo 遵循布尔操作符的[短路求值](https://en.wikipedia.org/wiki/Short-circuit_evaluation)语义。如果 `or` 操作符的第一个参数求值为 `True`，则不会对第二个参数求值。
 
 ```mojo
 def true_func() -> Bool:
@@ -96,8 +83,7 @@ Executing true_func
 True result
 ```
 
-If the first argument to an `and` operator evaluates to `False`, the second
-argument is not evaluated.
+如果 `and` 操作符的第一个参数求值为 `False`，则不会对第二个参数求值。
 
 ```mojo
 print('Short-circuit "and" evaluation')
@@ -110,14 +96,10 @@ Short-circuit "and" evaluation
 Executing false_func
 ```
 
-### Conditional expressions
+### 条件表达式
 
-Mojo also supports conditional expressions (or what is sometimes called a
-[*ternary conditional operator*](https://en.wikipedia.org/wiki/Ternary_conditional_operator))
-using the syntax<code><var>true_result</var> if <var>boolean_expression</var>
-else <var>false_result</var></code>, just as in Python. This is most often used
-as a concise way to assign one of two different values to a variable, based on a
-boolean condition.
+Mojo 还支持条件表达式（有时被称为[*三元条件操作符*](https://en.wikipedia.org/wiki/Ternary_conditional_operator)），使用语法<code><var>true_result</var> if <var>boolean_expression</var>
+else <var>false_result</var></code>，与 Python 相同。这最常用于根据布尔条件简洁地将两个不同的值之一赋给变量。
 
 ```mojo
 temp_celsius = 15
@@ -129,7 +111,7 @@ print("The forecast for today is", forecast)
 The forecast for today is cool
 ```
 
-The alternative, written as a multi-line `if` statement, is more verbose.
+替代方案是写成多行 `if` 语句，但更为冗长。
 
 ```mojo
 if temp_celsius > 20:
@@ -143,11 +125,9 @@ print("The forecast for today is", forecast)
 The forecast for today is cool
 ```
 
-## The `while` statement
+## `while` 语句
 
-The `while` loop repeatedly executes a code block while a given boolean
-expression evaluates to `True`. For example, the following loop prints values
-from the Fibonacci series that are less than 50.
+`while` 循环在给定布尔表达式求值为 `True` 时重复执行代码块。例如，以下循环打印斐波那契数列中小于 50 的值。
 
 ```mojo
 fib_prev = 0
@@ -163,8 +143,7 @@ while fib_curr < 50:
 0, 1, 1, 2, 3, 5, 8, 13, 21, 34
 ```
 
-A `continue` statement skips execution of the rest of the code block and
-resumes with the loop test expression.
+`continue` 语句跳过代码块剩余部分的执行，并回到循环测试表达式。
 
 ```mojo
 n = 0
@@ -179,7 +158,7 @@ while n < 5:
 1, 2, 4, 5,
 ```
 
-A `break` statement terminates execution of the loop.
+`break` 语句终止循环的执行。
 
 ```mojo
 n = 0
@@ -194,9 +173,7 @@ while n < 5:
 1, 2,
 ```
 
-Optionally, a `while` loop can include an `else` clause. The body of the `else`
-clause executes when the loop's boolean condition evaluates to `False`, even if
-it occurs the first time tested.
+可选地，`while` 循环可以包含一个 `else` 子句。`else` 子句的主体在循环的布尔条件求值为 `False` 时执行，即使是在第一次测试时就为 `False`。
 
 ```mojo
 n = 5
@@ -214,8 +191,7 @@ Loop completed
 
 :::note
 
-The `else` clause does *not* execute if a `break` or `return` statement
-exits the `while` loop.
+如果 `break` 或 `return` 语句退出了 `while` 循环，`else` 子句*不会*执行。
 
 :::
 
@@ -235,22 +211,16 @@ else:
 2
 ```
 
-## The `for` statement
+## `for` 语句
 
-The `for` loop iterates over a sequence, executing a code block for each
-element in the sequence.
-The Mojo `for` loop can iterate over any type that implements an `__iter__()`
-method that returns a type that defines `__next__()` and `__len__()` methods.
+`for` 循环遍历一个序列，为序列中的每个元素执行一个代码块。
+Mojo 的 `for` 循环可以遍历任何实现了 `__iter__()` 方法且该方法返回一个定义了 `__next__()` 和 `__len__()` 方法的类型的类型。
 
-### Iterating over Mojo collections
+### 遍历 Mojo 集合
 
-All of the collection types in the [`collections`](/docs/std/collections/)
-module support `for` loop iteration. See the
-[Collection types](/docs/manual/types/#collection-types) documentation for more
-information on Mojo collection types.
+[`collections`](/docs/std/collections/) 模块中的所有集合类型都支持 `for` 循环遍历。有关 Mojo 集合类型的更多信息，请参阅[集合类型](/docs/manual/types/#collection-types)文档。
 
-The following shows an example of iterating over a Mojo
-[`List`](/docs/std/collections/list/List/).
+以下展示了遍历 Mojo [`List`](/docs/std/collections/list/List/) 的示例。
 
 ```mojo
 states = ["California", "Hawaii", "Oregon"]
@@ -264,8 +234,7 @@ Hawaii
 Oregon
 ```
 
-The same technique works for iterating over a Mojo
-[`Set`](/docs/std/collections/set/Set/).
+同样的技术适用于遍历 Mojo [`Set`](/docs/std/collections/set/Set/)。
 
 ```mojo
 from std.collections import Set
@@ -280,9 +249,7 @@ for item in values:
 0
 ```
 
-There are two techniques for iterating over a Mojo
-[`Dict`](/docs/std/collections/dict/Dict/). The first is to iterate directly
-using the `Dict`, which produces a sequence of the dictionary's keys.
+遍历 Mojo [`Dict`](/docs/std/collections/dict/Dict/) 有两种技术。第一种是直接使用 `Dict` 进行遍历，这会产生字典键的序列。
 
 ```mojo
 var capitals: Dict[String, String] = {
@@ -301,11 +268,7 @@ Honolulu, Hawaii
 Salem, Oregon
 ```
 
-The second approach to iterating over a Mojo `Dict` is to invoke its
-[`items()`](/docs/std/collections/dict/Dict/#items) method, which produces a
-sequence of [`DictEntry`](/docs/std/collections/dict/#dictentry) objects.
-Within the loop body, you can then access the `key` and `value` fields of the
-entry.
+遍历 Mojo `Dict` 的第二种方法是调用其 [`items()`](/docs/std/collections/dict/Dict/#items) 方法，这会产生一个 [`DictEntry`](/docs/std/collections/dict/#dictentry) 对象的序列。在循环体内，你可以访问条目的 `key` 和 `value` 字段。
 
 ```mojo
 for item in capitals.items():
@@ -318,15 +281,11 @@ Honolulu, Hawaii
 Salem, Oregon
 ```
 
-#### Iterating using references
+#### 使用引用遍历
 
-The Mojo collection iterators all return
-[references](/docs/manual/values/lifetimes/#working-with-references), which
-are captured immutably into the loop variable. If you'd like to get a reference
-to a mutable element, add the `ref` keyword in front of the loop variable to
-create a reference binding that matches the element reference.
+Mojo 集合迭代器都返回[引用](/docs/manual/values/lifetimes/#working-with-references)，这些引用被不可变地捕获到循环变量中。如果你想获取可变元素的引用，可以在循环变量前添加 `ref` 关键字来创建与元素引用匹配的引用绑定。
 
-This can be useful if you want to mutate the value in the collection:
+如果你想要修改集合中的值，这会很有用：
 
 ```mojo
 var values = [1, 4, 7, 3, 6, 11]
@@ -340,15 +299,9 @@ print(values)
 [0, 4, 6, 2, 6, 10]
 ```
 
-### Iterating ranges
+### 遍历范围
 
-Another type of iterable provided by the Mojo standard library is a *range*,
-which is a sequence of integers generated by the
-[`range()`](/docs/std/builtin/range/range/) function. It differs from the
-collection types shown above in that it's implemented as a
-[generator](https://en.wikipedia.org/wiki/Generator_\(computer_programming\)),
-producing each value as needed rather than materializing the entire sequence
-in memory. For example:
+Mojo 标准库提供的另一种可迭代类型是*范围*，它是由 [`range()`](/docs/std/builtin/range/range/) 函数生成的整数序列。它与上面展示的集合类型不同，它被实现为[生成器](https://en.wikipedia.org/wiki/Generator_\(computer_programming\))，按需生成每个值，而不是在内存中物化整个序列。例如：
 
 ```mojo
 for i in range(5):
@@ -359,10 +312,9 @@ for i in range(5):
 0, 1, 2, 3, 4,
 ```
 
-### `for` loop control statements
+### `for` 循环控制语句
 
-A `continue` statement skips execution of the rest of the code block and
-resumes the loop with the next element of the collection.
+`continue` 语句跳过代码块剩余部分的执行，并使用集合的下一个元素继续循环。
 
 ```mojo
 for i in range(5):
@@ -375,7 +327,7 @@ for i in range(5):
 0, 1, 2, 4,
 ```
 
-A `break` statement terminates execution of the loop.
+`break` 语句终止循环的执行。
 
 ```mojo
 for i in range(5):
@@ -388,8 +340,7 @@ for i in range(5):
 0, 1, 2,
 ```
 
-Optionally, a `for` loop can include an `else` clause. The body of the `else`
-clause executes after iterating over all of the elements in a collection.
+可选地，`for` 循环可以包含一个 `else` 子句。`else` 子句的主体在遍历完集合中的所有元素后执行。
 
 ```mojo
 for i in range(5):
@@ -403,7 +354,7 @@ else:
 Finished executing 'for' loop
 ```
 
-The `else` clause executes even if the collection is empty.
+即使集合为空，`else` 子句也会执行。
 
 ```mojo
 from std.collections import List
@@ -421,8 +372,7 @@ Finished executing 'for' loop
 
 :::note
 
-The `else` clause does *not* execute if a `break` or `return` statement
-terminates the `for` loop.
+如果 `break` 或 `return` 语句终止了 `for` 循环，`else` 子句*不会*执行。
 
 :::
 
@@ -442,23 +392,19 @@ else:
 Found a dog
 ```
 
-### Iterating over Python collections
+### 遍历 Python 集合
 
-The Mojo `for` loop supports iterating over Python collection types. Each item
-retrieved by the loop is a
-[`PythonObject`](/docs/std/python/python_object/PythonObject/) wrapper around
-the Python object. Refer to the [Python types](/docs/manual/python/types/)
-documentation for more information on manipulating Python objects from Mojo.
+Mojo 的 `for` 循环支持遍历 Python 集合类型。循环检索到的每个项都是 Python 对象的 [`PythonObject`](/docs/std/python/python_object/PythonObject/) 包装器。有关从 Mojo 操作 Python 对象的更多信息，请参阅 [Python 类型](/docs/manual/python/types/)文档。
 
-The following is a simple example of iterating over a mixed-type Python list.
+以下是遍历混合类型 Python 列表的简单示例。
 
 ```mojo
 from std.python import Python
 
 def main() raises:
-    # Create a mixed-type Python list
+    # 创建一个混合类型的 Python 列表
     py_list = Python.list(42, "cat", 3.14159)
-    for py_obj in py_list:  # Each element is of type "PythonObject"
+    for py_obj in py_list:  # 每个元素的类型为 "PythonObject"
         print(py_obj)
 ```
 
@@ -468,16 +414,15 @@ cat
 3.14159
 ```
 
-There are two techniques for iterating over a Python dictionary. The first is to
-iterate directly using the dictionary, which produces a sequence of its keys.
+遍历 Python 字典有两种技术。第一种是直接使用字典进行遍历，这会产生其键的序列。
 
 ```mojo
 from std.python import Python
 
 def main() raises:
-    # Create a mixed-type Python dictionary
+    # 创建一个混合类型的 Python 字典
     py_dict = Python.evaluate("{'a': 1, 'b': 2.71828, 'c': 'sushi'}")
-    for py_key in py_dict:  # Each key is of type "PythonObject"
+    for py_key in py_dict:  # 每个键的类型为 "PythonObject"
         print(py_key, py_dict[py_key])
 ```
 
@@ -487,17 +432,15 @@ b 2.71828
 c sushi
 ```
 
-The second approach to iterating over a Python dictionary is to invoke its
-`items()` method, which produces a sequence of 2-tuple objects.
-Within the loop body, you can then access the key and value by index.
+遍历 Python 字典的第二种方法是调用其 `items()` 方法，这会产生一个二元组对象的序列。在循环体内，你可以通过索引访问键和值。
 
 ```mojo
 from std.python import Python
 
 def main() raises:
-    # Create a mixed-type Python dictionary
+    # 创建一个混合类型的 Python 字典
     py_dict = Python.evaluate("{'a': 1, 'b': 2.71828, 'c': 'sushi'}")
-    for py_tuple in py_dict.items():  # Each 2-tuple is of type "PythonObject"
+    for py_tuple in py_dict.items():  # 每个二元组的类型为 "PythonObject"
         print(py_tuple[0], py_tuple[1])
 ```
 

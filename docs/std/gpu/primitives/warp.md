@@ -1,30 +1,28 @@
 ---
 title: "warp"
 sidebar_label: "warp"
-description: "GPU warp-level operations and utilities.  This module provides warp-level operations for NVIDIA and AMD GPUs, including:  - Shuffle operations to exchange values between threads in a warp:   - shuffle"
+description: "GPU warp 级操作和工具。此模块提供 NVIDIA 和 AMD GPU 的 warp 级操作，包括：- 洗牌操作，用于在 warp 中的线程之间交换值：- shuffle_idx：从源通道复制值到其他通道"
 ---
 
 # warp
 
-GPU warp-level operations and utilities.
+GPU warp 级操作和工具。
 
-This module provides warp-level operations for NVIDIA and AMD GPUs, including:
+此模块提供 NVIDIA 和 AMD GPU 的 warp 级操作，包括：
 
-- Shuffle operations to exchange values between threads in a warp:
-  - shuffle_idx: Copy value from source lane to other lanes
-  - shuffle_up: Copy from lower lane IDs
-  - shuffle_down: Copy from higher lane IDs
-  - shuffle_xor: Exchange values in butterfly pattern
+- 洗牌操作，用于在 warp 中的线程之间交换值：
+  - shuffle_idx：从源通道复制值到其他通道
+  - shuffle_up：从较低通道 ID 复制
+  - shuffle_down：从较高通道 ID 复制
+  - shuffle_xor：以蝴蝶模式交换值
 
-- Warp-wide reductions:
-  - sum: Compute sum across warp
-  - max: Find maximum value across warp
-  - min: Find minimum value across warp
-  - broadcast: Broadcast value to all lanes
+- Warp 级归约：
+  - sum：计算 warp 内的总和
+  - max：查找 warp 内的最大值
+  - min：查找 warp 内的最小值
+  - broadcast：将值广播到所有通道
 
-The module handles both NVIDIA and AMD GPU architectures through architecture-specific
-implementations of the core operations. It supports various data types including
-integers, floats, and half-precision floats, with SIMD vectorization.
+该模块通过核心操作的架构特定实现处理 NVIDIA 和 AMD GPU 架构。它支持各种数据类型，包括整数、浮点数和半精度浮点数，具有 SIMD 向量化。
 
 ## 函数
 

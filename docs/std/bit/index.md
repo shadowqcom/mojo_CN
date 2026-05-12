@@ -1,23 +1,16 @@
 ---
 title: "bit"
 sidebar_label: "bit"
-description: "Bitwise operations: manipulation, counting, rotation, and power-of-two utilities.  The `bit` package provides low-level bitwise operations and utilities for efficient bit manipulation on integer value"
+description: "位操作：操作、计数、旋转和 2 的幂次工具。`bit` 包提供了低级位操作和工具，用于对整数值和 SIMD 向量进行高效的位操作。"
 ---
 
 # bit
 
-Bitwise operations: manipulation, counting, rotation, and power-of-two utilities.
+位操作：操作、计数、旋转和 2 的幂次工具。
 
-The `bit` package provides low-level bitwise operations and utilities for
-efficient bit manipulation on integer values and SIMD vectors. It includes
-functions for counting bits, reversing bit patterns, byte swapping, rotating
-bits, and computing power-of-two boundaries. These operations are fundamental
-for systems programming, cryptography, data compression, and performance-critical
-algorithms.
+`bit` 包提供了低级位操作和工具，用于对整数值和 SIMD 向量进行高效的位操作。它包括用于计数位、反转位模式、字节交换、旋转位和计算 2 的幂边界的函数。这些操作对于系统编程、加密、数据压缩和性能关键算法至关重要。
 
-Use this package for low-level bit manipulation, implementing custom hash
-functions, optimizing memory layouts, working with packed data structures, or
-any algorithm requiring direct bit-level control.
+此包适用于低级位操作、实现自定义哈希函数、优化内存布局、处理打包数据结构或任何需要直接位级控制的算法。
 
 ## 模块
 

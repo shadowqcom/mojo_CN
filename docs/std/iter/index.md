@@ -1,46 +1,38 @@
 ---
 title: "iter"
 sidebar_label: "iter"
-description: "Iteration traits and utilities: Iterable, IterableOwned, Iterator, enumerate, zip, map.  This package defines the core iteration protocol for Mojo through the `Iterable`, `IterableOwned`, and `Iterato"
+description: "迭代 trait 和工具：Iterable、IterableOwned、Iterator、enumerate、zip、map。此包通过 Iterable、IterableOwned 和 Iterator trait 定义了 Mojo 的核心迭代协议。"
 ---
 
 # iter
 
-Iteration traits and utilities: Iterable, IterableOwned, Iterator,
-enumerate, zip, map.
+迭代 trait 和工具：Iterable、IterableOwned、Iterator、enumerate、zip、map。
 
-This package defines the core iteration protocol for Mojo through the
-`Iterable`, `IterableOwned`, and `Iterator` traits. Types that conform to
-these traits can be used with `for` loops and iteration utilities like
-`enumerate()`, `zip()`, and `map()`.
+此包通过 `Iterable`、`IterableOwned` 和 `Iterator` trait 定义了 Mojo 的核心迭代协议。符合这些 trait 的类型可以用于 `for` 循环以及 `enumerate()`、`zip()` 和 `map()` 等迭代工具。
 
-The iteration protocol consists of three key traits:
+迭代协议由三个关键 trait 组成：
 
-- `Iterable`: Types that can produce an iterator by borrowing (`ref self`).
-  The iterator borrows the collection and yields references or copies of
-  elements without consuming the source.
-- `IterableOwned`: Types that can produce an iterator by taking ownership
-  (`var self`). The iterator consumes the collection, taking ownership of
-  its elements.
-- `Iterator`: Types that can produce a sequence of values one at a time.
+- `Iterable`：可以通过借用（`ref self`）产生迭代器的类型。迭代器借用集合并产生元素的引用或副本，而不消耗源数据。
+- `IterableOwned`：可以通过获取所有权（`var self`）产生迭代器的类型。迭代器消耗集合，获取其元素的所有权。
+- `Iterator`：可以逐个产生值序列的类型。
 
-Examples:
+示例：
 
 ```mojo
 from std.iter import enumerate, zip, map
 
-# Enumerate with index
+# 带索引枚举
 var items = ["a", "b", "c"]
 for index, value in enumerate(items):
     print(index, value)
 
-# Zip multiple iterables
+# 合并多个可迭代对象
 var numbers = [1, 2, 3]
 var letters = ["x", "y", "z"]
 for num, letter in zip(numbers, letters):
     print(num, letter)
 
-# Map a function over an iterable
+# 对可迭代对象应用函数
 def square(x: Int) -> Int:
     return x * x
 var values = [1, 2, 3, 4]

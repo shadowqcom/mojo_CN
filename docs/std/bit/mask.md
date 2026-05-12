@@ -1,14 +1,14 @@
 ---
 title: "mask"
 sidebar_label: "mask"
-description: "Provides functions for bit masks.  You can import these APIs from the `bit` package. For example:  ```mojo from std.bit.mask import is_negative ```"
+description: "提供位掩码函数。您可以从 `bit` 包导入这些 API。例如：```mojo from std.bit.mask import is_negative ```"
 ---
 
 # mask
 
-Provides functions for bit masks.
+提供位掩码函数。
 
-You can import these APIs from the `bit` package. For example:
+您可以从 `bit` 包导入这些 API。例如：
 
 ```mojo
 from std.bit.mask import is_negative

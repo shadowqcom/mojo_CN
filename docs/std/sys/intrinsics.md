@@ -1,14 +1,14 @@
 ---
 title: "intrinsics"
 sidebar_label: "intrinsics"
-description: "Defines intrinsics.  You can import these APIs from the `sys` package. For example:  ```mojo from std.sys import PrefetchLocality ```"
+description: "定义内部函数。您可以从 `sys` 包导入这些 API。例如：```mojo from std.sys import PrefetchLocality ```"
 ---
 
 # intrinsics
 
-Defines intrinsics.
+定义内部函数。
 
-You can import these APIs from the `sys` package. For example:
+您可以从 `sys` 包导入这些 API。例如：
 
 ```mojo
 from std.sys import PrefetchLocality

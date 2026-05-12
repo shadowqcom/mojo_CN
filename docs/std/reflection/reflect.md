@@ -1,32 +1,27 @@
 ---
 title: "reflect"
 sidebar_label: "reflect"
-description: "Provides the unified `reflect[T]` / `Reflected[T]` reflection API.  `reflect[T]` is a `comptime` alias for the `Reflected[T]` handle type, which exposes type introspection through static methods. The "
+description: "提供统一的 `reflect[T]` / `Reflected[T]` 反射 API。`reflect[T]` 是 `Reflected[T]` 句柄类型的 `comptime` 别名，通过静态方法公开类型内省。"
 ---
 
 # reflect
 
-Provides the unified `reflect[T]` / `Reflected[T]` reflection API.
+提供统一的 `reflect[T]` / `Reflected[T]` 反射 API。
 
-`reflect[T]` is a `comptime` alias for the `Reflected[T]` handle type, which
-exposes type introspection through static methods. The handle has no runtime
-state — `T` is carried entirely in the compile-time parameter — so all queries
-are spelled as `reflect[T].method()` (no parens after `[T]`).
+`reflect[T]` 是 `Reflected[T]` 句柄类型的 `comptime` 别名，通过静态方法公开类型内省。句柄没有运行时状态——`T` 完全由编译时参数携带——因此所有查询都写为 `reflect[T].method()`（`[T]` 后没有括号）。
 
-- `is_struct()` - whether `T` is a Mojo struct type.
-- `field_count()` - number of fields.
-- `field_names()` - `InlineArray[StaticString, N]` of field names.
-- `field_types()` - a `TypeList` of field types.
-- `field_index[name]()` - index of the named field.
-- `field_type[name]` - `Reflected[FieldT]` for the named field's type.
-- `field_offset[name=...]()` / `field_offset[index=...]()` - byte offset.
-- `field_ref[idx](s)` - reference to field at index `idx` in value `s`.
+- `is_struct()` - `T` 是否为 Mojo 结构体类型。
+- `field_count()` - 字段数量。
+- `field_names()` - 字段名的 `InlineArray[StaticString, N]`。
+- `field_types()` - 字段类型的 `TypeList`。
+- `field_index[name]()` - 命名字段的索引。
+- `field_type[name]` - 命名字段类型的 `Reflected[FieldT]`。
+- `field_offset[name=...]()` / `field_offset[index=...]()` - 字节偏移。
+- `field_ref[idx](s)` - 值 `s` 中索引 `idx` 处字段的引用。
 
-`reflect` is auto-imported via the prelude, so it is available without
-an explicit import. `Reflected[T]` must be imported from `std.reflection`
-when named in signatures.
+`reflect` 通过 prelude 自动导入，因此无需显式导入即可使用。当在签名中命名时，必须从 `std.reflection` 导入 `Reflected[T]`。
 
-Example:
+示例：
 
 ```mojo
 struct Point:
@@ -42,13 +37,12 @@ def main():
     print_fields[Point]()
 ```
 
-The wrapped type is exposed as the `T` parameter, so the result of
-`field_type[name]` can be used as a type directly:
+包装类型作为 `T` 参数公开，因此 `field_type[name]` 的结果可以直接用作类型：
 
 ```mojo
 def main():
     comptime y_type = reflect[Point].field_type["y"]
-    var v: y_type.T = 3.14  # y_type.T is Float64
+    var v: y_type.T = 3.14  # y_type.T 是 Float64
 ```
 
 ## 类型

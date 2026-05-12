@@ -1,14 +1,14 @@
 ---
 title: "tuple"
 sidebar_label: "tuple"
-description: "Implements the Tuple type.  These are Mojo built-ins, so you don't need to import them."
+description: "实现 Tuple 类型。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # tuple
 
-Implements the Tuple type.
+实现 Tuple 类型。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

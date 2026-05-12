@@ -1,14 +1,14 @@
 ---
 title: "none"
 sidebar_label: "none"
-description: "Defines the builtin `NoneType`.  These are Mojo built-ins, so you don't need to import them."
+description: "定义内置的 `NoneType`。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # none
 
-Defines the builtin `NoneType`.
+定义内置的 `NoneType`。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

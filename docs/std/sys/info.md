@@ -1,14 +1,14 @@
 ---
 title: "info"
 sidebar_label: "info"
-description: "Implements methods for querying the host target info.  You can import these APIs from the `sys` package. For example:  ```mojo from std.sys import CompilationTarget  print(CompilationTarget.is_x86()) "
+description: "实现查询主机目标信息的方法。您可以从 `sys` 包导入这些 API。例如：```mojo from std.sys import CompilationTarget  print(CompilationTarget.is_x86()) "
 ---
 
 # info
 
-Implements methods for querying the host target info.
+实现查询主机目标信息的方法。
 
-You can import these APIs from the `sys` package. For example:
+您可以从 `sys` 包导入这些 API。例如：
 
 ```mojo
 from std.sys import CompilationTarget

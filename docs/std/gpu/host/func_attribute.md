@@ -1,24 +1,20 @@
 ---
 title: "func_attribute"
 sidebar_label: "func_attribute"
-description: "GPU Kernel Function Attributes Module.  This module provides structures for defining and managing GPU kernel function attributes. It implements functionality similar to CUDA's CUfunction_attribute enu"
+description: "GPU 内核函数属性模块。此模块提供用于定义和管理 GPU 内核函数属性的结构。它实现类似于 CUDA CUfunction_attribute 枚举的功能。"
 ---
 
 # func_attribute
 
-GPU Kernel Function Attributes Module.
+GPU 内核函数属性模块。
 
-This module provides structures for defining and managing GPU kernel function attributes.
-It implements functionality similar to CUDA's CUfunction_attribute enum, allowing
-for querying and setting various attributes that control kernel execution behavior
-and resource allocation.
+此模块提供用于定义和管理 GPU 内核函数属性的结构。它实现类似于 CUDA CUfunction_attribute 枚举的功能，允许查询和设置控制内核执行行为和资源分配的各种属性。
 
-The module includes:
-- `Attribute`: A value type representing different GPU kernel function attribute types
-- `FuncAttribute`: A structure that pairs an attribute type with its value
+该模块包括：
+- `Attribute`：表示不同 GPU 内核函数属性类型的值类型
+- `FuncAttribute`：将属性类型与其值配对的结构
 
-These structures enable fine-grained control over GPU kernel execution parameters
-such as shared memory allocation, cache behavior, and cluster configuration.
+这些结构支持对 GPU 内核执行参数进行精细控制，例如共享内存分配、缓存行为和集群配置。
 
 ## 类型
 

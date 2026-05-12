@@ -1,14 +1,15 @@
 ---
 title: "io"
+slug: io
 sidebar_label: "io"
-description: "Provides utilities for working with input/output.  These are Mojo built-ins, so you don't need to import them."
+description: "提供输入/输出工具。这些是 Mojo 内置功能，无需导入。"
 ---
 
 # io
 
-Provides utilities for working with input/output.
+提供输入/输出工具。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置功能，无需导入。
 
 ## 类型
 

@@ -1,20 +1,16 @@
 ---
 title: "id"
 sidebar_label: "id"
-description: "This module provides GPU thread and block indexing functionality.  It defines aliases and functions for accessing GPU grid, block, thread and cluster dimensions and indices. These are essential primit"
+description: "此模块提供 GPU 线程和块索引功能。它定义用于访问 GPU 网格、块、线程和集群维度及索引的别名和函数。这些是 GPU 编程的基本原语。"
 ---
 
 # id
 
-This module provides GPU thread and block indexing functionality.
+此模块提供 GPU 线程和块索引功能。
 
-It defines aliases and functions for accessing GPU grid, block, thread and cluster
-dimensions and indices. These are essential primitives for GPU programming that allow
-code to determine its position and dimensions within the GPU execution hierarchy.
+它定义用于访问 GPU 网格、块、线程和集群维度及索引的别名和函数。这些是 GPU 编程的基本原语，允许代码确定其在 GPU 执行层次结构中的位置和维度。
 
-Most functionality is architecture-agnostic, with some NVIDIA-specific features clearly marked.
-The module is designed to work seamlessly across different GPU architectures while providing
-optimal performance through hardware-specific optimizations where applicable.
+大多数功能是架构无关的，一些 NVIDIA 特定功能已明确标记。该模块设计为跨不同 GPU 架构无缝工作，同时通过适用的硬件特定优化提供最佳性能。
 
 ## 类型
 

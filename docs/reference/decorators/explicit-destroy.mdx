@@ -1,94 +1,75 @@
 ---
-title: '@explicit_destroy'
-description: Prevents automatic destruction by a `__del__()` method and requires explicit cleanup through named destructor methods.
-codeTitle: true
+title: '@explicit_destroy 装饰器'
+sidebar_label: '@explicit_destroy'
+sidebar_position: 8
+description: >
+  @explicit_destroy 装饰器参考。要求显式销毁结构体实例。
 ---
 
-The `@explicit_destroy` decorator disables automatic destruction via the
-`__del__()` method and requires explicit cleanup through named destructor
-methods. When applying this decorator, you must call a named destructor
-method to consume the value. If you don't, the compiler emits an error.
+{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
 
-Use explicit destruction when cleanup must be performed deliberately, may
-fail and require error handling, or your type offers multiple valid ways to end
-a value's lifetime (such as saving to file and closing the file descriptor, or
-quitting without saving).
+`@explicit_destroy` 装饰器要求结构体实例必须显式销毁。这用于需要精确控制资源释放时机的类型。
 
-## Implicit vs. explicit destruction
-
-Mojo supports two destruction models. Most types rely on compiler-managed
-lifetime analysis, while some types opt into explicit control for stronger
-cleanup guarantees.
-
-_Implicit destruction_ (the default): The compiler automatically calls
-`__del__()` when a value has no further uses. Cleanup is triggered by Mojo's
-lifetime analysis and requires no manual intervention. You may override
-`__del__()` in your type, but the compiler does not verify that cleanup is
-performed intentionally.
-
-_Explicit destruction_: You intentionally call named destructor methods
-(such as `cleanup()` or `save_and_close()`). The compiler disables automatic
-destruction and enforces explicit consumption. Failing to call a destructor
-before a value leaves scope results in a compile-time error.
-
-Most types use implicit destruction. Explicit destruction adds a layer of
-safety when cleanup may fail, requires error handling, or benefits from
-deliberate control over how a value's lifetime ends.
-
-## Basic usage
-
-To opt into explicit, compiler-enforced destruction, mark types with
-`@explicit_destroy` and provide named destructor methods that use the
-`deinit self` argument convention:
+## 语法
 
 ```mojo
 @explicit_destroy
-struct FileBuffer:
-    var path: String
-    var data: String
-
-    def __init__(out self, path: String):
-        self.path = path
-        self.data = ""
-
-    def write(mut self, content: String):
-        self.data += content
-
-    def save_and_close(deinit self) raises:
-        write_to_disk(self.path, self.data)
+struct TypeName:
+    ...
 ```
 
-Declaring `@explicit_destroy` requires you to add intentional calls to
-type-specific destructors before the end of scope:
+## 用法
 
 ```mojo
-def write_log(path: String, message: String) raises:
-    var buffer = FileBuffer(path)
-    buffer.write(message)
-    buffer^.save_and_close()  # Required before `buffer` leaves scope
+@explicit_destroy
+struct Resource:
+    var handle: Int
+
+    def __init__(out self, handle: Int):
+        self.handle = handle
+
+    def __del__(deinit self):
+        if self.handle != 0:
+            _release(self.handle)
 ```
 
-If you omit this call, the compiler emits an error.
-
-## Custom error messages
-
-To improve compiler diagnostics for explicit destruction, include a
-custom error message with the decorator:
+## 示例
 
 ```mojo
-@explicit_destroy("Must call save_and_close() or discard()")
-struct FileBuffer:
-    def save_and_close(deinit self) raises:
-        write_to_disk(self.path, self.data) # Store data
+@explicit_destroy
+struct FileHandle:
+    var fd: Int
 
-    def discard(deinit self):
-        pass  # Abandon without writing
+    def __init__(out self, path: String) raises:
+        self.fd = _open(path)
+
+    def __del__(deinit self):
+        if self.fd >= 0:
+            _close(self.fd)
+
+def main():
+    var file = FileHandle("data.txt")
+    # 使用文件...
+    __del__(file)  # 显式销毁
 ```
 
-## Related
+## 与自动销毁对比
 
-- [Death of a value](/docs/manual/lifecycle/death/) - Complete coverage of value
-  destruction and lifetime management
-- [`AnyType`](/docs/std/builtin/anytype/AnyType/) - Base trait for all types
-- [`ImplicitlyDestructible`](/docs/std/builtin/anytype/ImplicitlyDestructible/)
-  - Trait for automatically destructible types
+| 特性         | 自动销毁           | `@explicit_destroy` |
+|--------------|--------------------|--------------------|
+| 销毁时机     | 作用域结束         | 显式调用           |
+| 内存安全     | 自动保证           | 需要手动管理       |
+| 资源控制     | 编译器决定         | 程序员控制         |
+
+## 适用场景
+
+- 需要精确控制资源释放时机
+- 资源释放顺序重要
+- 与 C 库交互
+- 性能关键代码
+
+## 注意事项
+
+- 忘记显式销毁会导致资源泄漏
+- 必须定义 `__del__` 方法
+- 不适用于平凡类型

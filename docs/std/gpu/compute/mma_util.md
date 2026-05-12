@@ -1,26 +1,22 @@
 ---
 title: "mma_util"
 sidebar_label: "mma_util"
-description: "Matrix multiply accumulate (MMA) utilities for GPU tensor cores.  This module provides functions for loading matrix tiles from memory into registers and storing results back to memory when using tenso"
+description: "GPU 张量核心的矩阵乘累加 (MMA) 工具。此模块提供在使用张量核心进行矩阵乘法时，从内存加载矩阵分块到寄存器以及将结果存回内存的函数。"
 ---
 
 # mma_util
 
-Matrix multiply accumulate (MMA) utilities for GPU tensor cores.
+GPU 张量核心的矩阵乘累加 (MMA) 工具。
 
-This module provides functions for loading matrix tiles from memory into registers and storing
-results back to memory when using tensor cores for matrix multiplication. It supports both
-NVIDIA and AMD GPUs with functions specialized for different data types (FP32, FP16, BF16).
+此模块提供在使用张量核心进行矩阵乘法时，从内存加载矩阵分块到寄存器以及将结果存回内存的函数。它支持 NVIDIA 和 AMD GPU，并提供针对不同数据类型（FP32、FP16、BF16）的专用函数。
 
-The key functions are:
+关键函数包括：
 
-- load_matrix_a: Loads tiles from the first input matrix A
-- load_matrix_b: Loads tiles from the second input matrix B
-- store_matrix_d: Stores result tiles to the output matrix D
+- load_matrix_a：从第一个输入矩阵 A 加载分块
+- load_matrix_b：从第二个输入矩阵 B 加载分块
+- store_matrix_d：将结果分块存储到输出矩阵 D
 
-Each function handles the specific memory access patterns required by the tensor core
-instructions on each GPU architecture. The tile sizes and data layouts match the hardware
-requirements documented in:
+每个函数都处理每个 GPU 架构上张量核心指令所需的特定内存访问模式。分块大小和数据布局符合以下文档中的硬件要求：
 
 NVIDIA PTX: https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-fragment-mma-1688
 AMD Matrix Cores: https://gpuopen.com/learn/amd-lab-notes/amd-lab-notes-matrix-cores-readme/

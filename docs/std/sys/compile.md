@@ -1,12 +1,12 @@
 ---
 title: "compile"
 sidebar_label: "compile"
-description: "Implements functions that return compile-time information."
+description: "实现返回编译时信息的函数。"
 ---
 
 # compile
 
-Implements functions that return compile-time information.
+实现返回编译时信息的函数。
 
 ## 类型
 

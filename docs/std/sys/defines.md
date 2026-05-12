@@ -1,35 +1,34 @@
 ---
 title: "defines"
 sidebar_label: "defines"
-description: "Implements functions for retrieving compile-time defines.  You can use these functions to set parameter values or runtime constants based on name-value pairs defined on the command line. For example: "
+description: "实现检索编译时定义的函数。您可以使用这些函数根据命令行定义的名称-值对设置参数值或运行时常量。"
 ---
 
 # defines
 
-Implements functions for retrieving compile-time defines.
+实现检索编译时定义的函数。
 
-You can use these functions to set parameter values or runtime constants based on
-name-value pairs defined on the command line. For example:
+您可以使用这些函数根据命令行定义的名称-值对设置参数值或运行时常量。例如：
 
 ```mojo
   from std.sys import is_defined
 
   comptime float_type = DType.float32 if is_defined["FLOAT32"]() else DType.float64
 
-  # Use `float_type` as a constant.
+  # 使用 `float_type` 作为常量。
 ```
 
-And on the command line:
+在命令行中：
 
 ```
   mojo -D FLOAT32 main.mojo
 ```
 
-For more information, see the [Mojo build docs](https://www.mojolang.org/docs/cli/build.html#d-keyvalue).
-The `mojo run` command also supports the `-D` option.
+有关更多信息，请参阅 [Mojo 构建文档](https://www.mojocn.org/docs/cli/build.html#d-keyvalue)。
+`mojo run` 命令也支持 `-D` 选项。
 
 
-You can import these APIs from the `sys` package. For example:
+您可以从 `sys` 包导入这些 API。例如：
 
 ```mojo
 from std.sys import is_defined

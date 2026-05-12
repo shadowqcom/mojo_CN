@@ -1,11 +1,10 @@
 ---
-title: Mojo inline MLIR reference
-sidebar_label: Inline MLIR
+title: Mojo 内联 MLIR 参考
+sidebar_label: 内联 MLIR
 sidebar_position: 11
 description: >
-  Use Mojo's inline MLIR built-ins to call hardware intrinsics, atomic
-  operations, and GPU dialect operations that the language doesn't yet
-  expose natively.
+  使用 Mojo 的内联 MLIR 内置函数调用硬件内联函数、原子操作和
+  GPU 方言操作，这些操作语言本身尚未原生暴露。
 ---
 
 {/*  VERIFIED:
@@ -20,23 +19,13 @@ types register-passable, copyable, movable), ExprConversions.cpp
 __get_mvalue_as_litref)
  */}
 
-Mojo is built on [MLIR](https://mlir.llvm.org/) and exposes it directly to
-developers. When you need an operation that Mojo doesn't surface, such as
-hardware intrinsics, atomic memory orderings, or custom dialect operations,
-you can write the MLIR operation yourself instead of waiting for a language
-feature.
+Mojo 基于 [MLIR](https://mlir.llvm.org/) 构建并直接向开发者暴露它。当你需要 Mojo 尚未暴露的操作时，例如硬件内联函数、原子内存排序或自定义方言操作，你可以自己编写 MLIR 操作，而不必等待语言特性。
 
-MLIR (Multi-Level Intermediate Representation) is a compiler framework in
-the LLVM project. It models programs with custom, layered dialects that
-represent data flow, loops, and hardware-specific operations. These
-dialects are translated step by step into LLVM IR and then into machine
-code.
+MLIR（多级中间表示）是 LLVM 项目中的编译器框架。它使用自定义的、分层的方言对程序进行建模，表示数据流、循环和硬件特定操作。这些方言逐步转换为 LLVM IR，然后转换为机器代码。
 
 ## Hello MLIR
 
-This example shows a minimal Mojo-MLIR program at the level of a "Hello
-World" implementation. It creates two MLIR index constants, adds them, and
-converts the result back to Mojo's `Int`:
+这个例子展示了一个最小化的 Mojo-MLIR 程序，相当于"Hello World"级别的实现。它创建两个 MLIR 索引常量，将它们相加，然后将结果转换回 Mojo 的 `Int`：
 
 ```mojo
 def main():
@@ -46,233 +35,194 @@ def main():
     print(Int(mlir_value=c))  # 50
 ```
 
-These built-ins work together:
+这些内置函数协同工作：
 
-- `__mlir_type` sets the variable's MLIR type.
-- `__mlir_attr` provides a compile-time constant.
-- `__mlir_op` runs an MLIR operation.
+- `__mlir_type` 设置变量的 MLIR 类型。
+- `__mlir_attr` 提供编译时常量。
+- `__mlir_op` 执行 MLIR 操作。
 
-`Int(mlir_value=...)` converts the raw MLIR value back into
-Mojo.
+`Int(mlir_value=...)` 将原始 MLIR 值转换回 Mojo。
 
-You could write `42 + 8` in plain Mojo. Inline MLIR gives
-you direct access to operations that Mojo doesn't expose
-yet, such as NVVM barriers, AMD matrix multiplies, and
-target-specific address spaces.
+你可以用普通 Mojo 编写 `42 + 8`。内联 MLIR 让你直接访问 Mojo 尚未暴露的操作，例如 NVVM 屏障、AMD 矩阵乘法和特定目标的地址空间。
 
-## The four built-in identifiers
+## 四个内置标识符
 
 {/*  VERIFIED: SharedState.cpp addMagicMLIRDecl registrations  */}
 
-Mojo provides four built-in identifiers to reference MLIR
-from source code. Each corresponds to a common MLIR
-building block:
+Mojo 提供四个内置标识符从源代码引用 MLIR。每个对应一个常见的 MLIR 构建块：
 
 {/*  markdownlint-disable MD013  */}
 
-| Built-in            | Purpose                      | Produces                |
-|---------------------|------------------------------|-------------------------|
-| `__mlir_type`       | Reference an MLIR type       | A type                  |
-| `__mlir_attr`       | Reference an MLIR attribute  | Compile-time value      |
-| `__mlir_op`         | Invoke an MLIR operation     | Runtime value or `None` |
-| `__mlir_region`     | Define a single-block region | Statement (no value)    |
+| 内置函数          | 用途               | 产生                 |
+|-------------------|--------------------|-----------------------|
+| `__mlir_type`     | 引用 MLIR 类型     | 类型                  |
+| `__mlir_attr`     | 引用 MLIR 属性     | 编译时值              |
+| `__mlir_op`       | 调用 MLIR 操作     | 运行时值或 `None`     |
+| `__mlir_region`   | 定义单块区域       | 语句（无值）          |
 
 {/*  markdownlint-enable MD013  */}
 
-You don't need to be an expert in MLIR basics to work through this page,
-but it helps to recognize a few core ideas: dialects, operations,
-attributes, types, and regions. This content focuses on how Mojo maps to
-those concepts.
+你不需要成为 MLIR 基础知识的专家就可以学习本页内容，但了解几个核心概念会有帮助：方言、操作、属性、类型和区域。本内容侧重于 Mojo 如何映射到这些概念。
 
-Types and attributes support two forms: dot/backtick syntax
-for simple names and bracket syntax for parameterized
-construction.
+类型和属性支持两种形式：用于简单名称的点/反引号语法和用于参数化构造的括号语法。
 
 ## `__mlir_type`
 
-The `__mlir_type` built-in lets you define MLIR types directly
-in Mojo. You can use these types in variable declarations,
-parameter lists, and `comptime` aliases, just as you'd use
-built-in types like `Float64` or `UnsafePointer[Int]`.
+`__mlir_type` 内置函数让你直接在 Mojo 中定义 MLIR 类型。你可以在变量声明、参数列表和 `comptime` 别名中使用这些类型，就像使用 `Float64` 或 `UnsafePointer[Int]` 等内置类型一样。
 
 {/*  markdownlint-disable MD024  */}
-### Dot and backtick syntax
+### 点和反引号语法
 {/*  markdownlint-enable MD024  */}
 
-For simple type names that are valid identifiers, use dot syntax. Use
-backticks when the name includes special characters like `!`, `<`, or `>`:
+对于作为有效标识符的简单类型名称，使用点语法。当名称包含 `!`、`<` 或 `>` 等特殊字符时，使用反引号：
 
 ```mojo
-var x: __mlir_type.i1                  # 1-bit integer
-var y: __mlir_type.index               # Machine-width index
-var z: __mlir_type.f64                 # 64-bit float
-var a: __mlir_type.`!kgen.none`        # Dialect type with ! prefix
-var b: __mlir_type.`!kgen.scalar<f64>`  # Pop dialect scalar
+var x: __mlir_type.i1                  # 1 位整数
+var y: __mlir_type.index               # 机器宽度索引
+var z: __mlir_type.f64                 # 64 位浮点数
+var a: __mlir_type.`!kgen.none`        # 带 ! 前缀的方言类型
+var b: __mlir_type.`!kgen.scalar<f64>`  # pop 方言标量
 var c: __mlir_type.`!kgen.pointer<!kgen.pointer<f32>>`
-    # Nested pointer
+    # 嵌套指针
 ```
 
-MLIR uses short names for primitive types. Here's what you'll see
-most often:
+MLIR 对基本类型使用短名称。以下是你最常看到的：
 
-| MLIR name | Meaning                                     |
-|-----------|---------------------------------------------|
-| `i1`      | 1-bit integer (boolean)                     |
-| `i8`      | 8-bit signless integer                      |
-| `i32`     | 32-bit signless integer                     |
-| `i64`     | 64-bit signless integer                     |
-| `si32`    | 32-bit signed integer                       |
-| `si64`    | 64-bit signed integer                       |
-| `ui32`    | 32-bit unsigned integer                     |
-| `f16`     | 16-bit float (IEEE half)                    |
-| `bf16`    | 16-bit bfloat                               |
-| `f32`     | 32-bit float                                |
-| `f64`     | 64-bit float                                |
-| `index`   | Machine-width integer for sizes and offsets |
+| MLIR 名称 | 含义                                     |
+|-----------|------------------------------------------|
+| `i1`      | 1 位整数（布尔值）                        |
+| `i8`      | 8 位无符号整数                            |
+| `i32`     | 32 位无符号整数                           |
+| `i64`     | 64 位无符号整数                           |
+| `si32`    | 32 位有符号整数                           |
+| `si64`    | 64 位有符号整数                           |
+| `ui32`    | 32 位无符号整数                           |
+| `f16`     | 16 位浮点数（IEEE 半精度）                |
+| `bf16`    | 16 位 bfloat                             |
+| `f32`     | 32 位浮点数                               |
+| `f64`     | 64 位浮点数                               |
+| `index`   | 用于大小和偏移的机器宽度整数              |
 
-"Signless" means the type itself doesn't specify signed or unsigned.
-The operation using the value decides how to interpret it. The `s`
-and `u` prefixed variants (`si32`, `ui64`) carry signedness in the
-type. For a full list, see
-[MLIR's Builtin Types
-documentation](https://mlir.llvm.org/docs/Dialects/Builtin/#types).
+"无符号"意味着类型本身不指定有符号或无符号。使用该值的操作决定如何解释它。带 `s` 和 `u` 前缀的变体（`si32`、`ui64`）在类型中携带符号性。有关完整列表，请参阅 [MLIR 内置类型文档](https://mlir.llvm.org/docs/Dialects/Builtin/#types)。
 
-Dialect-defined MLIR types use the `!` prefix. For example:
+方言定义的 MLIR 类型使用 `!` 前缀。例如：
 
 ```text
 dialect types must include a `!` prefix. '__mlir_type.`kgen.dtype`' is
 invalid; use '__mlir_type.`!kgen.dtype`' instead
 ```
 
-Here's a runnable example that declares MLIR-typed variables,
-assigns values with `__mlir_attr`, and converts them back to
-Mojo for printing:
+这是一个可运行的示例，声明 MLIR 类型变量，用 `__mlir_attr` 赋值，并将它们转换回 Mojo 进行打印：
 
 ```mojo
 def mlir_types_in_action():
     var flag: __mlir_type.i1 = __mlir_attr.true
     var count: __mlir_type.index = __mlir_attr.`0 : index`
 
-    # Convert back to Mojo types to print
+    # 转换回 Mojo 类型以打印
     print(Bool(flag))              # True
     print(Int(mlir_value=count))   # 0
 ```
 
 {/*  markdownlint-disable MD024  */}
-### Bracket syntax
+### 括号语法
 {/*  markdownlint-enable MD024  */}
 
-Use bracket syntax when you need to build a type from values
-known at compile time. The compiler splices Mojo expressions
-into an MLIR type string.
+当你需要从编译时已知的值构建类型时，使用括号语法。编译器将 Mojo 表达式拼接成 MLIR 类型字符串。
 
-The following list builds a single MLIR type string. It
-alternates between backtick literals (copied as-is) and Mojo
-expressions (inserted as MLIR text):
+以下列表构建单个 MLIR 类型字符串。它在反引号字面量（原样复制）和 Mojo 表达式（作为 MLIR 文本插入）之间交替：
 
 ```mojo
-# From SIMD: build storage type from dtype and size parameters.
-# For SIMD[DType.float32, 4], produces: !kgen.simd<4, f32>
+# 从 SIMD：从 dtype 和 size 参数构建存储类型。
+# 对于 SIMD[DType.float32, 4]，产生：!kgen.simd<4, f32>
 comptime _mlir_type = __mlir_type[
     `!kgen.simd<`, Self.size._mlir_value, `, `,
     Self.dtype._mlir_value, `>`
 ]
 
-# From UnsafePointer: produces, for example, !kgen.pointer<MyStruct>
+# 从 UnsafePointer：产生，例如，!kgen.pointer<MyStruct>
 comptime _mlir_type = __mlir_type[`!kgen.pointer<`, Self.T, `>`]
 
-# From Optional: produces, for example, !kgen.variant<MyStruct, i1>
+# 从 Optional：产生，例如，!kgen.variant<MyStruct, i1>
 comptime _mlir_type = __mlir_type[
     `!kgen.variant<`, Self.T, `, i1>`
 ]
 
-# Nested substitution: produces complex<i32>
+# 嵌套替换：产生 complex<i32>
 var complexInt: __mlir_type[
     `complex<`, __mlir_type.i32, `>`
 ]
 ```
 
-Bracket lists only accept positional operands. Using keyword
-operands produces a compile-time error.
+括号列表只接受位置操作数。使用关键字操作数会产生编译时错误。
 
-### MLIR types in parameter lists
+### 参数列表中的 MLIR 类型
 
-You can use MLIR types as compile-time parameters for
-structs and functions. Dialect types like `!kgen.string`
-and `!kgen.dtype` appear here alongside builtin types.
+你可以将 MLIR 类型用作结构体和函数的编译时参数。方言类型如 `!kgen.string` 和 `!kgen.dtype` 与内置类型一起出现在这里。
 
 ```mojo
-# Parameter is a compile-time MLIR string (for example, "hello")
+# 参数是编译时 MLIR 字符串（例如，"hello"）
 struct StringLiteral[value: __mlir_type.`!kgen.string`]:
     ...
 
-# Parameter is a compile-time dtype (for example, f32 or si64)
+# 参数是编译时 dtype（例如，f32 或 si64）
 def example[dtype: __mlir_type.`!kgen.dtype`]():
-    # For dtype=f32, produces: !kgen.scalar<f32>
+    # 对于 dtype=f32，产生：!kgen.scalar<f32>
     var a: __mlir_type[`!kgen.scalar<`, dtype, `>`]
     ...
 ```
 
-### Properties of raw MLIR types
+### 原始 MLIR 类型的属性
 
-Raw MLIR types (not wrapped in a struct) are register-passable,
-trivially copyable, and trivially movable. They don't have
-methods or attributes and accessing `.field` on the type
-produces an error.
+原始 MLIR 类型（未包装在结构体中）是可寄存器传递的、平凡可复制的和平凡可移动的。它们没有方法或属性，在类型上访问 `.field` 会产生错误。
 
 ## `__mlir_attr`
 
-Use `__mlir_attr` to define MLIR attributes in Mojo. An MLIR
-attribute is a compile-time constant embedded in the IR.
+使用 `__mlir_attr` 在 Mojo 中定义 MLIR 属性。MLIR 属性是嵌入在 IR 中的编译时常量。
 
 {/*  markdownlint-disable MD024  */}
-### Dot and backtick syntax
+### 点和反引号语法
 {/*  markdownlint-enable MD024  */}
 
-Use dot syntax for simple attribute names. Use backticks when
-you need full MLIR literal syntax:
+对简单属性名称使用点语法。当你需要完整的 MLIR 字面量语法时，使用反引号：
 
 ```mojo
-# Boolean attributes
+# 布尔属性
 __mlir_attr.true
 __mlir_attr.false
 
-# Built-in type shorthands used in return positions
+# 用于返回位置的内置类型简写
 __mlir_attr.i1
 __mlir_attr.index
 __mlir_attr.f16
 __mlir_attr.f32
 __mlir_attr.si32
 
-# Typed constants (with backtick syntax)
+# 类型化常量（使用反引号语法）
 __mlir_attr.`0 : index`
 __mlir_attr.`42 : i17`
 __mlir_attr.`1 : si32`
 ```
 
-MLIR attribute constants use MLIR literal syntax, not Mojo's.
-Binary (`0b1010`), octal (`0o17`), and hex (`0xFF`) prefixes
-aren't supported. Use decimal values instead.
+MLIR 属性常量使用 MLIR 字面量语法，而不是 Mojo 的。不支持二进制（`0b1010`）、八进制（`0o17`）和十六进制（`0xFF`）前缀。请使用十进制值。
 
 ```mojo
-# Dialect-specific attributes
+# 方言特定属性
 __mlir_attr.`#kgen.dtype.constant<f32> : !kgen.dtype`
-    # DType constant for float32
+    # DType float32 常量
 __mlir_attr.`#index<cmp_predicate slt>`
-    # Signed less-than predicate
+    # 有符号小于谓词
 __mlir_attr.`#pop<atomic_ordering seq_cst>`
-    # Sequential consistency ordering
+    # 顺序一致性排序
 __mlir_attr.`#kgen.simd<"nan"> : !kgen.scalar<f32>`
-    # Float32 NaN constant
+    # Float32 NaN 常量
 ```
 
-Here's a runnable example that uses MLIR attributes as
-constants in a computation. This computes an approximate
-circle area using integer arithmetic:
+这是一个可运行的示例，使用 MLIR 属性作为计算中的常量。这使用整数算术计算近似圆面积：
 
 ```mojo
 def circle_area_approx(radius: Int) -> Int:
-    """Approximate area using integer math: pi ≈ 3."""
+    """使用整数数学近似面积：pi ≈ 3。"""
     var r = radius._mlir_value
     var r_squared = __mlir_op.`index.mul`(r, r)
     var pi: __mlir_type.index = __mlir_attr.`3 : index`
@@ -285,33 +235,29 @@ def main():
 ```
 
 {/*  markdownlint-disable MD024  */}
-### Bracket syntax
+### 括号语法
 {/*  markdownlint-enable MD024  */}
 
-Use bracket syntax when you need to build an attribute from
-compile-time values. This follows the same rules as
-`__mlir_type`.
+当你需要从编译时值构建属性时，使用括号语法。这遵循与 `__mlir_type` 相同的规则。
 
-The following list builds a single MLIR attribute string. It
-alternates between backtick literals (copied as-is) and Mojo
-expressions (inserted as MLIR text):
+以下列表构建单个 MLIR 属性字符串。它在反引号字面量（原样复制）和 Mojo 表达式（作为 MLIR 文本插入）之间交替：
 
 ```mojo
-# String concatenation at compile time.
-# For "Hello" + "World", produces:
+# 编译时字符串连接。
+# 对于 "Hello" + "World"，产生：
 #   #pop.string_concat<"Hello","World"> : !kgen.string
 __mlir_attr[
     `#pop.string_concat<`, self.value, `,`, rhs.value,
     `> : !kgen.string`,
 ]
 
-# Null pointer constant for a parameterized type.
-# For UnsafePointer[Int], produces:
+# 参数化类型的空指针常量。
+# 对于 UnsafePointer[Int]，产生：
 #   #interp.pointer<0> : !kgen.pointer<Int>
 __mlir_attr[`#interp.pointer<0> : `, Self._mlir_type]
 
-# Compile-time parameter expression.
-# For a=5, produces: #kgen.param.expr<max, 5, 42> : index
+# 编译时参数表达式。
+# 对于 a=5，产生：#kgen.param.expr<max, 5, 42> : index
 comptime new_lower = __mlir_attr[
     `#kgen.param.expr<max, `, a, `, `,
     Int(42)._mlir_value, `> : index`
@@ -320,79 +266,72 @@ comptime new_lower = __mlir_attr[
 
 ## `__mlir_op`
 
-Use `__mlir_op` to call MLIR operations directly from Mojo.
-This lets you use operations that Mojo doesn't expose yet,
-like hardware intrinsics and dialect-specific operations.
+使用 `__mlir_op` 直接从 Mojo 调用 MLIR 操作。这让你使用 Mojo 尚未暴露的操作，如硬件内联函数和方言特定操作。
 
-### Syntax
+### 语法
 
-Place compile-time parameters (attributes) in square brackets
-and runtime values (operands) in parentheses. Put the
-operation name in backticks:
+将编译时参数（属性）放在方括号中，运行时值（操作数）放在圆括号中。将操作名称放在反引号中：
 
 ```mojo
 __mlir_op.`dialect.operation`(operands)
 __mlir_op.`dialect.operation`[attributes](operands)
 ```
 
-### Operations with no attributes
+### 无属性的操作
 
-When an operation only needs operands (runtime values), call
-the operation directly:
+当操作只需要操作数（运行时值）时，直接调用操作：
 
 ```mojo
-# Boolean XOR
+# 布尔 XOR
 __mlir_op.`pop.xor`(self._mlir_value, rhs._mlir_value)
 
-# Index addition
+# 索引加法
 __mlir_op.`index.add`(self._mlir_value, rhs._mlir_value)
 
-# Trap (no operands, no result)
+# Trap（无操作数，无结果）
 __mlir_op.`llvm.intr.trap`()
 ```
 
-### Operations with attributes
+### 带属性的操作
 
-An operation may need to pass attributes, the key-value pairs
-in square brackets before the operands (that is, the runtime values):
+操作可能需要传递属性，即操作数（运行时值）之前的方括号中的键值对：
 
 ```mojo
-# Cast a pop scalar to a builtin i1
-#   (for example, !kgen.scalar<bool> → i1)
+# 将 pop 标量转换为内置 i1
+#   （例如，!kgen.scalar<bool> → i1）
 __mlir_op.`pop.cast_to_builtin`[
     _type=__mlir_type.i1
 ](mlir_value)
 
-# Signed less-than comparison on two index values. Returns i1.
+# 对两个索引值进行有符号小于比较。返回 i1。
 __mlir_op.`index.cmp`[
     pred=__mlir_attr.`#index<cmp_predicate slt>`
 ](self._mlir_value, rhs._mlir_value)
 
-# Load a value from a pointer with atomic ordering.
-# Returns a value of the pointer's element type.
+# 使用原子排序从指针加载值。
+# 返回指针元素类型的值。
 __mlir_op.`pop.load`[
     ordering=ordering.__mlir_attr(),
     _type=Self._mlir_type,
 ](ptr.address)
 ```
 
-Here's a runnable example that combines comparisons with
-`pop.select` to clamp a value into a range:
+这是一个可运行的示例，将比较与 `pop.select` 结合使用，将值限制在范围内：
 
 ```mojo
 def clamp(val: Int, low: Int, high: Int) -> Int:
-    """Clamp val to [low, high] using MLIR comparisons and select."""
+    """使用 MLIR 比较和选择将 val 限制在 [low, high] 范围内。"""
     var v = val._mlir_value
     var lo = low._mlir_value
     var hi = high._mlir_value
 
-    # If val < low, use low
+    # 如果 val < low，使用 low
     var too_low = __mlir_op.`index.cmp`[
         pred=__mlir_attr.`#index<cmp_predicate slt>`
     ](v, lo)
     var result = __mlir_op.`pop.select`(too_low, lo, v)
 
-    # If result > high, use high
+    # 如果 result > high，使用 high
     var too_high = __mlir_op.`index.cmp`[
         pred=__mlir_attr.`#index<cmp_predicate sgt>`
     ](result, hi)
@@ -406,37 +345,37 @@ def main():
     print(clamp(7, 0, 10))   # 7
 ```
 
-### Special attributes
+### 特殊属性
 
-Four attributes have special meaning to the compiler:
+四个属性对编译器有特殊含义：
 
 {/*  markdownlint-disable MD013  */}
 
-| Attribute     | Purpose                                                         |
-|---------------|-----------------------------------------------------------------|
-| `_type`       | Sets the result type when the compiler can't infer it           |
-| `_properties` | Passes MLIR operation properties as a `DictionaryAttr`          |
-| `_region`     | References a named `__mlir_region` as a region argument         |
-| `_type=None`  | Marks an operation that produces no result                      |
+| 属性         | 用途                                                         |
+|--------------|--------------------------------------------------------------|
+| `_type`      | 当编译器无法推断时设置结果类型                               |
+| `_properties`| 将 MLIR 操作属性作为 `DictionaryAttr` 传递                   |
+| `_region`    | 将命名 `__mlir_region` 作为区域参数引用                      |
+| `_type=None` | 标记不产生结果的操作                                         |
 
 {/*  markdownlint-enable MD013  */}
 
 ### `_type`
 
-Most operations require an explicit result type:
+大多数操作需要显式结果类型：
 
 ```mojo
-# Single result type
+# 单一结果类型
 var i1Cast = __mlir_op.`index.castu`[
     _type=__mlir_type.i1
 ](idxConstant)
 ```
 
-When an operation returns multiple values, assign them to a typed tuple:
+当操作返回多个值时，将它们赋值给类型化元组：
 
 ```mojo
-# Returns the current source location as (line, column, filename).
-# _properties passes inline depth to the code generator.
+# 返回当前源位置为 (line, column, filename)。
+# _properties 将内联深度传递给代码生成器。
 _ = __mlir_op.`kgen.source_loc`[
     _type = (
         __mlir_type.index,
@@ -446,30 +385,25 @@ _ = __mlir_op.`kgen.source_loc`[
 ]()
 ```
 
-Operations that produce no result take `_type=None`:
+不产生结果的操作使用 `_type=None`：
 
 ```mojo
-# Fence after mbarrier initialization. Guarantees the barrier
-# object is fully constructed before any thread uses it.
+# mbarrier 初始化后的屏障。保证屏障对象在任何线程使用之前完全构造。
 __mlir_op.`nvvm.fence.mbarrier.init`[_type=None]()
 ```
 
-If the compiler can't infer the result type and you don't
-provide `_type`, you'll receive an error:
-`unable to infer result type from MLIR operation 'name'`.
+如果编译器无法推断结果类型而你没有提供 `_type`，你会收到错误：
+`unable to infer result type from MLIR operation 'name'`。
 
 ### `_properties`
 
 {/*  VERIFIED: v24.3 changelog  */}
 
-Some MLIR operations store configuration in properties instead
-of attributes. Attributes are compile-time constants in Mojo.
-Properties store typed, mutable data on the operation. Pass
-them as a `DictionaryAttr`:
+某些 MLIR 操作将配置存储在属性而不是属性中。属性是 Mojo 中的编译时常量。属性在操作上存储类型化的可变数据。将它们作为 `DictionaryAttr` 传递：
 
 ```mojo
-# Returns current source location as (line, column, filename).
-# _properties passes inline depth to the code generator.
+# 返回当前源位置为 (line, column, filename)。
+# _properties 将内联深度传递给代码生成器。
 _ = __mlir_op.`kgen.source_loc`[
     _type = (
         __mlir_type.index,
@@ -480,13 +414,11 @@ _ = __mlir_op.`kgen.source_loc`[
 ]()
 ```
 
-Operations can mix attributes and properties in the same
-bracket list:
+操作可以在同一个括号列表中混合属性和属性：
 
 ```mojo
-# 64-bit integer addition with "no signed wrap" overflow checking.
-# nsw means undefined behavior on signed overflow, enabling
-# optimizations.
+# 64 位整数加法，带"无符号溢出"检查。
+# nsw 意味着有符号溢出时的未定义行为，启用优化。
 __mlir_op.`llvm.add`[
     _type=__mlir_type.i64,
     _properties=__mlir_attr.`{
@@ -495,11 +427,10 @@ __mlir_op.`llvm.add`[
 ](arg0, arg1)
 ```
 
-As an example, NVVM operations often use the `operandSegmentSizes` property
-to describe which optional operands are present:
+例如，NVVM 操作经常使用 `operandSegmentSizes` 属性来描述存在哪些可选操作数：
 
 ```mojo
-# Async bulk copy from global to shared cluster memory.
+# 从全局到共享集群内存的异步批量复制。
 # operandSegmentSizes: dst(1), src(1), size(1), mbar(1),
 #   cache_hint(0), predicate(1).
 __mlir_op.`nvvm.cp.async.bulk.shared.cluster.global`[
@@ -510,85 +441,65 @@ __mlir_op.`nvvm.cp.async.bulk.shared.cluster.global`[
 ](dst, src, size, mbar, predicate)
 ```
 
-In Mojo, you can only call registered MLIR operations. If you try to call
-one that isn't registered, the compiler will error with:
-`use of unregistered MLIR operation 'name'`.
+在 Mojo 中，你只能调用已注册的 MLIR 操作。如果你尝试调用未注册的操作，编译器会报错：
+`use of unregistered MLIR operation 'name'`。
 
 ## `__mlir_region`
 
 {/*  VERIFIED: ParserStmts.cpp parseMLIRRegionStmt,
      TokenKinds.def kw___mlir_region  */}
 
-Use `__mlir_region` to define a block of MLIR code for an
-operation to run. A region is a block of code that an MLIR
-operation runs, similar to a loop body or callback. Unlike a
-closure, it doesn't implicitly capture variables.
+使用 `__mlir_region` 为操作定义一个 MLIR 代码块。区域是 MLIR 操作运行的代码块，类似于循环体或回调。与闭包不同，它不会隐式捕获变量。
 
-Some MLIR operations take a region as input. You define the
-block with `__mlir_region` and pass it to the operation
-using the `_region` attribute.
+某些 MLIR 操作接受区域作为输入。你用 `__mlir_region` 定义代码块，并使用 `_region` 属性将其传递给操作。
 
-A region is written as a named block with arguments and an
-indented body:
+区域写为带有参数和缩进主体的命名块：
 
 ```mojo
 __mlir_region name(arg: type, ...):
     body
 ```
 
-### Basic usage
+### 基本用法
 
-Some MLIR operations accept a region argument — a block of code that
-the operation controls. You define the region with `__mlir_region` and
-connect it to the operation with the `_region` attribute.
+某些 MLIR 操作接受区域参数——操作控制的代码块。你用 `__mlir_region` 定义区域，并使用 `_region` 属性将其连接到操作。
 
-The following example uses `hlcf.loop`, an MLIR loop operation. It
-repeatedly runs the region body, passing the current iteration value
-as an argument. The region calls `hlcf.continue` with the next value:
+以下示例使用 `hlcf.loop`，一个 MLIR 循环操作。它重复运行区域主体，将当前迭代值作为参数传递。区域使用下一个值调用 `hlcf.continue`：
 
 ```mojo
 comptime one = __mlir_attr.`1 : index`
 
 def structured_for_loop() -> __mlir_type.index:
-    # Define the loop body as a region. The operation passes
-    # the current iteration value as `i`.
+    # 将循环体定义为区域。操作传递
+    # 当前迭代值作为 `i`。
     __mlir_region loop_body(i: __mlir_type.index):
-        # Yield the next iteration value: i + 1
+        # 产生下一个迭代值：i + 1
         __mlir_op.`hlcf.continue`(
             __mlir_op.`index.add`(i, one)
         )
 
-    # Start at 0, run loop_body repeatedly,
-    # return the final value.
+    # 从 0 开始，重复运行 loop_body，
+    # 返回最终值。
     return __mlir_op.`hlcf.loop`[
         _type=__mlir_type.index,
         _region=__mlir_attr.`"loop_body"`,
     ](__mlir_attr.`0 : index`)
 ```
 
-The region arguments (`i` in this example) come from the
-operation that uses the region. Here, `hlcf.loop` passes the
-current loop value as `i`. The `_region` attribute takes the
-region name as a string.
+区域参数（本例中的 `i`）来自使用区域的操作。这里，`hlcf.loop` 将当前循环值作为 `i` 传递。`_region` 属性将区域名称作为字符串。
 
-This loop runs indefinitely. The `hlcf` dialect's conditional
-exit (`hlcf.break`) requires nested regions that can't be
-expressed with `__mlir_region`. In practice, it's simpler to
-use Mojo's `for` and `while` loops for control flow.
+此循环无限运行。`hlcf` 方言的条件退出（`hlcf.break`）需要无法用 `__mlir_region` 表达的嵌套区域。在实践中，使用 Mojo 的 `for` 和 `while` 循环进行控制流更简单。
 
-The following example uses a Mojo `while` loop for control
-flow and MLIR operations for the computation inside. The
-loop condition uses an MLIR comparison, and the body uses
-MLIR arithmetic to update the accumulator and counter:
+以下示例使用 Mojo `while` 循环进行控制流，内部使用 MLIR 操作进行计算。循环条件使用 MLIR 比较，主体使用 MLIR 算术更新累加器和计数器：
 
 ```mojo
 def sum_to(end: Int) -> Int:
-    """Mojo while loop with MLIR arithmetic and comparison."""
+    """带 MLIR 算术和比较的 Mojo while 循环。"""
     var acc: __mlir_type.index = __mlir_attr.`0 : index`
     var i: __mlir_type.index = __mlir_attr.`0 : index`
     var one: __mlir_type.index = __mlir_attr.`1 : index`
 
-    # end._mlir_value unwraps Mojo Int to raw __mlir_type.index
+    # end._mlir_value 将 Mojo Int 解包为原始 __mlir_type.index
     while Bool(__mlir_op.`index.cmp`[
         pred=__mlir_attr.`#index<cmp_predicate slt>`
     ](i, end._mlir_value)):
@@ -604,147 +515,128 @@ def main():
     print(sum_to(5))   # 10
 ```
 
-### Multiple regions in one scope
+### 同一作用域中的多个区域
 
-A function can define multiple regions, each with its own
-name. This example defines a region and passes it to
-`co.suspend`, an MLIR coroutine operation that suspends
-execution and later resumes by running the provided region:
+函数可以定义多个区域，每个都有自己的名称。这个例子定义一个区域并将其传递给 `co.suspend`，一个 MLIR 协程操作，暂停执行并稍后通过运行提供的区域恢复：
 
 ```mojo
 @always_inline
 def _suspend_async[
     body: def(AnyCoroutine) capturing -> None
 ]():
-    # Runs when the coroutine resumes.
-    # The operation passes the coroutine handle as `hdl`.
+    # 协程恢复时运行。
+    # 操作将协程句柄作为 `hdl` 传递。
     __mlir_region await_body(
         hdl: __mlir_type.`!co.routine`
     ):
         body(hdl)
-        # Signal that the await body is done
+        # 表示 await 体完成
         __mlir_op.`co.suspend.end`()
 
-    # Suspend the current coroutine, registering await_body
-    # as the code to run when it resumes.
+    # 暂停当前协程，注册 await_body
+    # 作为恢复时运行的代码。
     __mlir_op.`co.suspend`[_region="await_body".value]()
 ```
 
-Operations that accept multiple regions reference them by
-name. Each `__mlir_region` defines a single block.
+接受多个区域的操作按名称引用它们。每个 `__mlir_region` 定义单个块。
 
-### Region arguments
+### 区域参数
 
-Region arguments look like function arguments, but they don't
-support Mojo argument conventions like `borrowed`, `owned`,
-`ref`, `out`, or `mut`. The operation provides the argument
-values directly as raw MLIR values:
+区域参数看起来像函数参数，但不支持 Mojo 参数约定，如 `borrowed`、`owned`、`ref`、`out` 或 `mut`。操作直接作为原始 MLIR 值提供参数值：
 
 ```mojo
-# Region arguments receive raw MLIR values from the enclosing
-# operation. No Mojo argument conventions apply.
+# 区域参数从封闭操作接收原始 MLIR 值。
+# 不应用 Mojo 参数约定。
 __mlir_region my_region(
-    x: __mlir_type.index,              # Raw index from the operation
-    y: __mlir_type.`!kgen.scalar<f32>`, # Raw f32 scalar
+    x: __mlir_type.index,              # 来自操作的原始索引
+    y: __mlir_type.`!kgen.scalar<f32>`, # 原始 f32 标量
 ):
-    # x and y are raw MLIR values, not Mojo types.
-    # Wrap them (for example, Int(mlir_value=x)) to use
-    # Mojo operations on them.
+    # x 和 y 是原始 MLIR 值，不是 Mojo 类型。
+    # 包装它们（例如，Int(mlir_value=x)）以使用
+    # Mojo 操作。
     ...
 ```
 
-## Common dialects
+## 常见方言
 
-These dialect prefixes appear frequently in the stdlib and
-kernel code:
+这些方言前缀在标准库和内核代码中经常出现：
 
 {/*  markdownlint-disable MD013  */}
 
-| Prefix    | Covers                                                    |
-|-----------|-----------------------------------------------------------|
-| `pop.*`   | Mojo portable ops: arithmetic, casts, SIMD, pointers      |
-| `index.*` | Index-typed arithmetic and comparisons                    |
-| `kgen.*`  | Codegen primitives: structs, variants, parameters         |
-| `lit.*`   | Language-level ops: ownership, references, closures       |
-| `llvm.*`  | LLVM dialect: traps, inline assembly, pointer ops         |
-| `nvvm.*`  | NVIDIA GPU intrinsics: barriers, async copies, tensor ops |
-| `co.*`    | Coroutine ops: suspend, resume, destroy, await            |
+| 前缀      | 涵盖                                                    |
+|-----------|---------------------------------------------------------|
+| `pop.*`   | Mojo 可移植操作：算术、转换、SIMD、指针                 |
+| `index.*` | 索引类型算术和比较                                      |
+| `kgen.*`  | 代码生成原语：结构体、变体、参数                        |
+| `lit.*`   | 语言级操作：所有权、引用、闭包                          |
+| `llvm.*`  | LLVM 方言：trap、内联汇编、指针操作                     |
+| `nvvm.*`  | NVIDIA GPU 内联函数：屏障、异步复制、张量操作           |
+| `co.*`    | 协程操作：暂停、恢复、销毁、等待                        |
 
 {/*  markdownlint-enable MD013  */}
 
-The `pop`, `kgen`, `co` and `lit` dialects are internal implementation
-details of the compiler and may change without notice.
+`pop`、`kgen`、`co` 和 `lit` 方言是编译器的内部实现细节，可能会随时更改。
 
-Built-in dialects, like `index`, are also available.
+内置方言，如 `index`，也可用。
 
-## Stdlib patterns
+## 标准库模式
 
-The standard library uses inline MLIR in consistent patterns
-that show up across the codebase. These patterns will help
-you understand how to use the built-ins in your own code.
-They serve as a reference for common use cases.
+标准库以一致的模式使用内联 MLIR，这些模式在整个代码库中出现。这些模式将帮助你了解如何在自己的代码中使用内置函数。它们作为常见用例的参考。
 
-### Wrapper structs
+### 包装结构体
 
 {/*  VERIFIED: builtin/bool.mojo, builtin/int.mojo,
      builtin/simd.mojo  */}
 
-The most common pattern: a Mojo struct wraps a raw MLIR type in
-a field called `_mlir_value`. The struct provides a Mojo-friendly
-interface; the field holds the actual MLIR representation.
+最常见的模式：Mojo 结构体将原始 MLIR 类型包装在名为 `_mlir_value` 的字段中。结构体提供 Mojo 友好的接口；字段保存实际的 MLIR 表示。
 
-`Bool` wraps a single bit:
+`Bool` 包装单个位：
 
 ```mojo
-# Bool wraps a single MLIR bit. The struct provides Mojo-level
-# operators; the i1 field holds the actual hardware value.
+# Bool 包装单个 MLIR 位。结构体提供 Mojo 级
+# 运算符；i1 字段保存实际的硬件值。
 struct Bool:
-    var _mlir_value: __mlir_type.i1  # 1-bit integer: true or false
+    var _mlir_value: __mlir_type.i1  # 1 位整数：true 或 false
 
     def __init__(out self, value: __mlir_type.i1):
-        self._mlir_value = value     # Store the raw bit directly
+        self._mlir_value = value     # 直接存储原始位
 ```
 
-`Int` wraps the machine-width index type:
+`Int` 包装机器宽度索引类型：
 
 ```mojo
-# Int wraps the machine-width index type. Two constructors:
-# default (zero) and from a raw MLIR value.
+# Int 包装机器宽度索引类型。两个构造函数：
+# 默认（零）和从原始 MLIR 值。
 struct Int:
-    var _mlir_value: __mlir_type.index  # Machine-width signed integer
+    var _mlir_value: __mlir_type.index  # 机器宽度有符号整数
 
     def __init__(out self):
-        self._mlir_value = __mlir_attr.`0 : index`  # Default to zero
+        self._mlir_value = __mlir_attr.`0 : index`  # 默认为零
 
     def __init__(out self, *, mlir_value: __mlir_type.index):
-        self._mlir_value = mlir_value  # Wrap an existing MLIR value
+        self._mlir_value = mlir_value  # 包装现有 MLIR 值
 ```
 
-When the storage type depends on struct parameters, define it
-as a `comptime` alias. For example, `SIMD` builds its type
-from `dtype` and `size`:
+当存储类型依赖于结构体参数时，将其定义为 `comptime` 别名。例如，`SIMD` 从 `dtype` 和 `size` 构建其类型：
 
 ```mojo
-# SIMD builds its storage type at compile time from its parameters.
-# For SIMD[DType.float32, 4], _mlir_type produces: !kgen.simd<4, f32>
+# SIMD 在编译时从其参数构建存储类型。
+# 对于 SIMD[DType.float32, 4]，_mlir_type 产生：!kgen.simd<4, f32>
 struct SIMD[dtype: DType, size: Int]:
     comptime _mlir_type = __mlir_type[
         `!kgen.simd<`, Self.size._mlir_value, `, `,
         Self.dtype._mlir_value, `>`
     ]
-    var _mlir_value: Self._mlir_type  # Parameterized SIMD vector
+    var _mlir_value: Self._mlir_type  # 参数化 SIMD 向量
 ```
 
-This pattern appears in `SIMD`, `UnsafePointer`, `Tuple`,
-`Variant`, and `Optional`'s internal storage.
+这种模式出现在 `SIMD`、`UnsafePointer`、`Tuple`、`Variant` 和 `Optional` 的内部存储中。
 
-Here's a complete, runnable wrapper struct. `Counter` wraps
-an MLIR index, exposes `increment` and `value` methods, and
-converts back to Mojo for printing:
+这是一个完整的可运行包装结构体。`Counter` 包装 MLIR 索引，暴露 `increment` 和 `value` 方法，并转换回 Mojo 进行打印：
 
 ```mojo
 struct Counter:
-    """A simple counter backed by a raw MLIR index."""
+    """由原始 MLIR 索引支持的简单计数器。"""
     var _mlir_value: __mlir_type.index
 
     def __init__(out self):
@@ -767,32 +659,29 @@ def main():
     print(c.value())  # 3
 ```
 
-### Operations as methods
+### 作为方法的操作
 
-Once a struct wraps an MLIR type, its methods delegate to MLIR
-operations. The `_mlir_value` field goes in, the result comes back,
-and the struct re-wraps it:
+一旦结构体包装了 MLIR 类型，其方法就委托给 MLIR 操作。`_mlir_value` 字段输入，结果返回，结构体重新包装它：
 
 ```mojo
-# From Bool: operators delegate to pop operations on the raw i1.
-# XOR with true flips the bit: ~False → True, ~True → False
+# 从 Bool：运算符委托给原始 i1 上的 pop 操作。
+# 与 true 异或翻转位：~False → True，~True → False
 def __invert__(self) -> Bool:
     return __mlir_op.`pop.xor`(
         self._mlir_value, __mlir_attr.true
     )
 
-# Bitwise AND on the two underlying i1 values
+# 对两个底层 i1 值进行按位与
 def __and__(self, rhs: Bool) -> Bool:
     return __mlir_op.`pop.and`(
         self._mlir_value, rhs._mlir_value
     )
 ```
 
-For `Int`, the `index` dialect operations produce raw index values.
-`Int(mlir_value=...)` wraps them back:
+对于 `Int`，`index` 方言操作产生原始索引值。`Int(mlir_value=...)` 将它们包装回来：
 
 ```mojo
-# From Int: add two raw index values, wrap the result back into Int
+# 从 Int：添加两个原始索引值，将结果包装回 Int
 def __add__(self, rhs: Int) -> Int:
     return Int(
         mlir_value=__mlir_op.`index.add`(
@@ -800,20 +689,18 @@ def __add__(self, rhs: Int) -> Int:
         )
     )
 
-# Signed less-than comparison, returns i1 (auto-wraps to Bool)
+# 有符号小于比较，返回 i1（自动包装为 Bool）
 def __lt__(self, rhs: Int) -> Bool:
     return __mlir_op.`index.cmp`[
         pred=__mlir_attr.`#index<cmp_predicate slt>`
     ](self._mlir_value, rhs._mlir_value)
 ```
 
-Here's the `Counter` struct from the previous example extended
-with an `__add__` operator, showing how the pattern applies to
-custom types:
+这是前面例子中的 `Counter` 结构体扩展了 `__add__` 运算符，展示了该模式如何应用于自定义类型：
 
 ```mojo
 struct Counter:
-    """A counter with addition, backed by a raw MLIR index."""
+    """带加法的计数器，由原始 MLIR 索引支持。"""
     var _mlir_value: __mlir_type.index
 
     def __init__(out self):

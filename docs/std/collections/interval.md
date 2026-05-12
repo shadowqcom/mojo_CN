@@ -1,23 +1,18 @@
 ---
 title: "interval"
 sidebar_label: "interval"
-description: "A self-balancing interval tree is a specialized binary search tree designed to efficiently store and query intervals.  It maintains intervals sorted by their low endpoints and augments each node with "
+description: "自平衡区间树是一种专门设计的二叉搜索树，用于高效存储和查询区间。它维护按低端点排序的区间，并用 `max_high` 属性增强每个节点。"
 ---
 
 # interval
 
-A self-balancing interval tree is a specialized binary search tree designed to
-efficiently store and query intervals.
+自平衡区间树是一种专门设计的二叉搜索树，用于高效存储和查询区间。
 
-It maintains intervals sorted by their low endpoints and augments each node with a
-`max_high` attribute, representing the maximum high endpoint in its subtree. This
-`max_high` value enables efficient overlap searching by pruning the search space.
-Self-balancing mechanisms, such as Red-Black or AVL trees, ensure logarithmic time
-complexity for operations.
+它维护按低端点排序的区间，并用 `max_high` 属性增强每个节点，表示其子树中的最大高端点。此 `max_high` 值通过修剪搜索空间实现高效的重叠搜索。自平衡机制（如红黑树或 AVL 树）确保操作的对数时间复杂度。
 
-Key Features:
-  - Stores intervals (low, high).
-  - Nodes ordered by `low` endpoints.
+关键特性：
+  - 存储区间（低，高）。
+  - 节点按 `low` 端点排序。
   - `max_high` attribute at each node for efficient overlap search.
   - Self-balancing (e.g., using Red-Black tree logic) for O(log n) operations.
 

@@ -1,23 +1,16 @@
 ---
 title: "collections"
 sidebar_label: "collections"
-description: "Core data structures: List, Dict, Set, Optional, plus specialized collections.  The `collections` package provides fundamental data structures for organizing and managing data in Mojo programs. It inc"
+description: "核心数据结构：List、Dict、Set、Optional 以及专用集合。`collections` 包提供了用于在 Mojo 程序中组织和管理数据的基本数据结构。"
 ---
 
 # collections
 
-Core data structures: List, Dict, Set, Optional, plus specialized collections.
+核心数据结构：List、Dict、Set、Optional 以及专用集合。
 
-The `collections` package provides fundamental data structures for organizing
-and managing data in Mojo programs. It includes general-purpose collections
-like dynamic arrays, hash maps, and sets, along with specialized structures for
-specific use cases. These types form the foundation for most data manipulation
-in Mojo and integrate seamlessly with the language's iteration and memory
-management systems.
+`collections` 包提供了用于在 Mojo 程序中组织和管理数据的基本数据结构。它包括通用集合，如动态数组、哈希映射和集合，以及用于特定用例的专用结构。这些类型构成了 Mojo 中大多数数据操作的基础，并与语言的迭代和内存管理系统无缝集成。
 
-Use this package for general data storage and manipulation, implementing
-algorithms, building custom data structures, or any task requiring collection
-types beyond basic primitives.
+此包适用于通用数据存储和操作、实现算法、构建自定义数据结构或任何需要超出基本原语的集合类型的任务。
 
 ## 模块
 

@@ -1,52 +1,29 @@
 ---
-title: Mojo structs
+title: Mojo 结构体
 sidebar_position: 1
-description: Introduction to Mojo structures (structs).
+description: 介绍 Mojo 结构体。
 ---
 
-A struct is Mojo's primary way to define your own type. When you want to model
-both data and behavior—whether that's a small value type, a numeric
-abstraction, or the foundation of a larger system—you'll use a struct.
+结构体是 Mojo 定义自定义类型的主要方式。当你需要同时建模数据和行为时——无论是小型值类型、数值抽象还是大型系统的基础——你都会使用结构体。
 
-At a high level, a Mojo struct lets you bundle data together with the
-operations that act on that data. This makes structs a natural way to represent
-concepts in your program, rather than passing loosely related values through
-functions.
+从高层次来看，Mojo 结构体允许你将数据与操作该数据的方法捆绑在一起。这使得结构体成为表示程序中概念的自然方式，而不是通过函数传递松散相关的值。
 
-Each Mojo `struct` is a data structure that lets you encapsulate _fields_ and
-_methods_ to store and operate on data. Structs can define the following
-members:
+每个 Mojo `struct` 都是一个数据结构，允许你封装 _字段_ 和 _方法_ 来存储和操作数据。结构体可以定义以下成员：
 
-- **Fields** are variables that store data relevant to the struct.
-- **Methods** are functions defined in a struct that normally act upon the field
-  data.
-- **Static methods** are functions provided by the type to perform behaviors,
-  provide constants, or create specialized instances.
-- **Dunder methods** are named for their _d_ouble _under_-scored form, with
-  `__` on both sides. Also called "special methods", [they help define
-  behaviors](/docs/manual/structs/#special-methods) such as initialization
-  and allow structs to conform to [traits](/docs/manual/traits/).
-- **`comptime` members** enable compile-time references that can be used for
-  optimization.
+- **字段** 是存储与结构体相关数据的变量。
+- **方法** 是在结构体中定义的函数，通常对字段数据执行操作。
+- **静态方法** 是类型提供的函数，用于执行行为、提供常量或创建专用实例。
+- **双下划线方法**（dunder methods）因其 _d_ouble _under_-scored 形式而命名，两边都有 `__`。也称为"特殊方法"，它们有助于定义 [行为](/docs/manual/structs/#special-methods)，如初始化，并使结构体能够符合 [trait](/docs/manual/traits/)。
 
-For example, if you're building a graphics program, you can use a struct to
-define an `Image` that has fields to store information about each image (such
-as its component pixels) and methods that perform actions on it (such as
-rotating the image).
+例如，如果你正在构建图形程序，可以使用结构体来定义具有存储每个图像信息（如其组成像素）的 `Image` 字段和对其执行操作（如旋转图像）的 `Image` 方法。
 
-Mojo's struct format is designed to provide a static, memory-safe data
-structure that's both powerful and performant. Unlike dynamic objects
-(such as Python classes) that can be modified freely at runtime,
-structs are defined at compile time, which allows Mojo to generate
-highly optimized code.
+Mojo 的结构体格式旨在提供静态、内存安全的数据结构，既强大又高性能。与可以在运行时自由修改的动态对象（如 Python 类）不同，结构体是在编译时定义的，这使得 Mojo 能够生成高度优化的代码。
 
-All struct fields must be declared using `var` and include a type
-annotation. This requirement is part of Mojo's compile-time guarantees,
-helping ensure both performance and memory safety.
+所有结构体字段必须使用 `var` 声明并包含类型注释。这一要求是 Mojo 编译时保证的一部分，有助于确保性能和内存安全。
 
-## Struct definition
+## 结构体定义
 
-You can define a simple struct called `MyPair` with two fields like this:
+你可以使用以下方式定义一个名为 `MyPair` 的简单结构体，它有两个字段：
 
 ```mojo
 struct MyPair:
@@ -54,8 +31,7 @@ struct MyPair:
     var second: Int
 ```
 
-However, you can't instantiate this struct because it has no constructor
-method. So here it is with a constructor to initialize the two fields:
+然而，由于它没有构造函数方法，你无法实例化此结构体。因此，这里有一个带有构造函数来初始化两个字段的版本：
 
 ```mojo
 struct MyPair:
@@ -67,23 +43,11 @@ struct MyPair:
         self.second = second
 ```
 
-Notice that the first argument in the `__init__()` method is `out self`.
-You'll have a `self` argument as the first argument on all struct methods.
-It references the current struct instance (it allows code in the method to
-refer to "itself"). _When you call the constructor, you never pass a value
-for `self`—Mojo passes it in automatically._
+请注意，`__init__()` 方法中的第一个参数是 `out self`。你将在所有结构体方法的第一个参数中都有一个 `self` 参数。它引用当前的结构体实例（它允许方法中的代码引用"自身"）。_当你调用构造函数时，你永远不会为 `self` 传递值——Mojo 会自动传递它。_
 
-The `out` portion of `out self` is an [argument
-convention](/docs/manual/values/ownership#argument-conventions) that declares
-`self` as a mutable reference that starts out as uninitialized and must be
-initialized before the function returns.
+`out self` 中的 `out` 部分 [是参数约定](/docs/manual/values/ownership#argument-conventions)，它声明 `self` 为可变引用，在函数返回前必须初始化。
 
-Many types use a field-wise constructor like the one shown for `MyPair` above:
-it takes an argument for each field, and initializes the fields directly from
-the arguments. To save typing, Mojo provides a
-[`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) decorator, which
-generates a field-wise constructor for the struct. So you can rewrite the
-`MyPair` example above like this:
+许多类型使用字段级构造函数，如上面 `MyPair` 所示：它为每个字段接受一个参数，并直接从参数初始化字段。为了节省打字时间，Mojo 提供了 [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 装饰器，它为结构体生成字段级构造函数。因此，你可以像这样重写上面的 `MyPair` 示例：
 
 ```mojo
 @fieldwise_init
@@ -92,24 +56,19 @@ struct MyPair:
     var second: Int
 ```
 
-The `__init__()` method is one of many [special methods](#special-methods)
-(also known as "dunder methods" because they have *d*ouble *under*scores) with
-pre-determined names.
+`__init__()` 方法是许多 [特殊方法](#special-methods)（也称为"双下划线方法"，因为它们有 *d*ouble *under*scores）之一，具有预定义的名称。
 
 :::note
 
-You can't assign values when you declare fields. You must initialize
-all of the struct's fields in the constructor. (If you try to leave a field
-uninitialized, the code won't compile.)
+你无法在声明字段时赋值。你必须在构造函数中初始化结构体的所有字段。（如果你尝试让一个字段未初始化，代码将无法编译。）
 
 :::
 
-## Constructing a struct type
+## 构造结构体类型
 
-Once you have a constructor, with `__init__` or using `@fieldwise_init`,
-you can create an instance of `MyPair` and set the fields:
+一旦你有了构造函数，使用 `__init__` 或使用 `@fieldwise_init`，就可以创建 `MyPair` 的实例并设置字段：
 
-```mojo title="Construct an instance"
+```mojo title="构造实例"
 var mine = MyPair(2, 4)
 print(mine.first)
 ```
@@ -118,180 +77,150 @@ print(mine.first)
 2
 ```
 
-:::note[Initializer lists]
-Mojo initializer lists let you construct instances without spelling
-out the full type name and parameters. If the full type can be inferred
-from context, pass the constructor arguments directly between braces,
-with or without keywords. For example `{0.5, fish="salmon"}` calls
-`__init__(0.5, fish="salmon")` on the appropriate struct type. This
-is equivalent to `MyStruct(0.5, fish="salmon")` if the type is inferred
-to be `MyStruct`.
+:::note[初始化列表]
+Mojo 初始化列表允许你在不拼写完整类型名称和参数的情况下构造实例。如果可以从上下文推断出完整类型，直接在花括号之间传递构造函数参数，有或没有关键字。例如，`{0.5, fish="salmon"}` 在适当的结构体类型上调用 `__init__(0.5, fish="salmon")`。如果类型被推断为 `MyStruct`，这等同于 `MyStruct(0.5, fish="salmon")`。
 :::
 
-## Mutating a struct
+## 修改结构体
 
-By default, a struct's methods receive an immutable `self`,
-so they can't modify the struct's fields. For example:
+默认情况下，结构体的方法接收不可变的 `self`，因此它们无法修改结构体的字段。例如：
 
 ```mojo
 struct MyStruct:
     var value: Int
 
     def increment(self):
-        self.value += 1 # ERROR: expression must be mutable in assignment
+        self.value += 1 # 错误：赋值中表达式必须是可变的
 
     # ...
 ```
 
-To allow a method to mutate the instance, declare its receiver as `mut self`.
-This makes `self` mutable inside the method and allows changes to its fields
-that persist after the method returns:
+要允许方法修改实例，将其接收器声明为 `mut self`。这使得 `self` 在方法内部可变，并允许对其字段进行持久性更改：
 
 ```mojo
 struct MyStruct:
     var value: Int
 
     def increment(mut self):
-        self.value += 1 # Works: Mutable `self` allows assignment
+        self.value += 1 # 可以工作：可变的 `self` 允许赋值
 
     #...
 ```
 
 :::info
-Read more about mutable arguments and the `mut` keyword:
-[Mutable arguments (`mut`)](/docs/manual/values/ownership/#mutable-arguments-mut)
+了解更多关于可变参数和 `mut` 关键字的信息：
+[可变参数 (`mut`)](/docs/manual/values/ownership/#mutable-arguments-mut)
 :::
 
-## Making a struct Copyable
-Mojo structs are not copyable or movable by default.
+## 使结构体可复制
+Mojo 结构体默认不可复制或可移动。
 
-For example, the following code produces errors:
+例如，以下代码会产生错误：
 
 ```mojo
 var a = MyPair(1, 2)
 
-# Implicit copy
-var b = a  # value of type 'MyPair' cannot be implicitly copied,
-           # it does not conform to 'ImplicitlyCopyable'
+# 隐式复制
+var b = a  # 值的类型 'MyPair' 无法隐式复制，
+           # 它不符合 'ImplicitlyCopyable'
 
-# Explicit copy
-var c = a.copy()  # value of type 'MyPair' cannot be implicitly copied,
-        # it does not conform to 'ImplicitlyCopyable'
-# Move
-var d = a^  # value of type 'MyPair' cannot be copied or moved; consider
-            # conforming it to 'Copyable', which also adds 'Movable'
-            # conformance.
+# 显式复制
+var c = a.copy()  # 值的类型 'MyPair' 无法隐式复制，
+        # 它不符合 'ImplicitlyCopyable'
+# 移动
+var d = a^  # 值的类型 'MyPair' 无法复制或移动；考虑让它符合 'Copyable'，
+            # 这也会添加 'Movable' 符合性。
 ```
 
-In most cases, you can make a struct copyable (and movable) just by adding the
-`Copyable` [trait](/docs/manual/traits/).
+在大多数情况下，只需添加 `Copyable` [trait](/docs/manual/traits/) 就可以使结构体可复制（和可移动）。
 
-### Movability
+### 可移动性
 
-To make a struct move-only, add the `Movable` trait:
+要使结构体仅可移动，添加 `Movable` trait：
 
   ```mojo
   struct MyPair(Movable):
   ...
   ```
 
-Mojo will generate a move constructor for you. You rarely need to
-write your own custom move constructor. For more information,
-see the section on
-[move constructors](/docs/manual/lifecycle/life/#move-constructor).
+Mojo 将为你生成移动构造函数。你很少需要编写自己的自定义移动构造函数。有关更多信息，请参阅关于
+[移动构造函数](/docs/manual/lifecycle/life/#move-constructor)的部分。
 
-### Copyability
+### 可复制性
 
-To make a struct copyable, add the `Copyable` trait:
+要使结构体可复制，添加 `Copyable` trait：
 
   ```mojo
   struct MyPair(Copyable):
     ...
   ```
 
-In most cases, that's all you need to do. Mojo will generate a copy constructor
-(`__init__(out self, *, copy: Self)` method) for you. You don't need to write
-your own unless you need custom logic in the copy constructor; for example, if
-your struct dynamically allocates memory. For more information, see the section
-on [copy constructors](/docs/manual/lifecycle/life/#copy-constructor).
+在大多数情况下，这就是你需要做的全部。Mojo 将为你生成复制构造函数
+（`__init__(out self, *, copy: Self)` 方法）。除非你需要在复制构造函数中有自定义逻辑，否则你不需要编写自己的，例如，如果结构体动态分配内存。有关更多信息，请参阅关于
+[复制构造函数](/docs/manual/lifecycle/life/#copy-constructor)的部分。
 
-The `Copyable` trait provides two ways to copy a value: the `copy()`
-instance method and the copy initializer.
-In addition, `Copyable` automatically adds movability, so you won't
-need to add both `Copyable` _and_ `Movable` to your declarations.
+`Copyable` trait 提供了两种复制值的方法：`copy()` 实例方法和复制初始化器。
+此外，`Copyable` 自动添加可移动性，因此你不需要在声明中同时添加 `Copyable` _和_ `Movable`。
 
-### Implicit copyability
+### 隐式可复制性
 
-To make a struct implicitly copyable, add the `ImplicitlyCopyable` trait:
+要使结构体隐式可复制，添加 `ImplicitlyCopyable` trait：
 
 ```mojo
 struct MyPair(ImplicitlyCopyable):
     ...
 ```
 
-`ImplicitlyCopyable` automatically implies `Copyable` and `Movable`, so all
-the notes related to copyability apply here. A type should only be implicitly
-copyable if copying the type is inexpensive and has no side effects. Unnecessary
-copies can be a big drain on memory and performance, so use this trait with
-caution.
+`ImplicitlyCopyable` 自动暗示 `Copyable` 和 `Movable`，因此所有与可复制性相关的说明都适用于此。只有当复制类型既便宜又没有副作用时，类型才应该是隐式可复制的。不必要的复制可能是内存和性能的巨大消耗，因此要谨慎使用此 trait。
 
-## Fields
+## 字段
 
-Fields store a struct's data. When you declare a field, it becomes part of the
-struct's memory layout. Because the compiler knows every field's type at
-compile time, it can:
+字段存储结构体的数据。当你声明字段时，它成为结构体内存布局的一部分。因为编译器在编译时知道每个字段的类型，它可以：
 
-- Calculate the struct's exact memory footprint
-- Ensure all fields are initialized before use
-- Generate fast, direct access to field data
-- Prevent changes to the struct's layout at runtime
+- 计算结构体的精确内存占用
+- 确保在使用前初始化所有字段
+- 生成对字段数据的快速、直接访问
+- 防止在运行时更改结构体的布局
 
-Fields share the lifetime of their struct instance. They are created when the
-struct is created and destroyed when the struct is destroyed. This model avoids
-dangling references and partially constructed objects.
+字段共享其结构体实例的生命周期。它们在结构体创建时创建，在结构体销毁时销毁。此模型避免了悬空引用和部分构造的对象。
 
-Outside of your struct implementation, you access fields with dot notation
-(`my_struct.field_name`). Within the struct, your methods access fields using
-`self` (`self.field_name`). Mojo knows each field's location at compile time,
-making field access direct and efficient.
+在你的结构体实现之外，你使用点表示法（`my_struct.field_name`）访问字段。在结构体内部，你的方法使用 `self`（`self.field_name`）访问字段。Mojo 在编译时知道每个字段的位置，使字段访问直接且高效。
 
-### Field requirements
+### 字段要求
 
-**You must** declare field members with `var` in structs:
+**你必须** 在结构体中使用 `var` 声明字段成员：
 
 ```mojo
 struct MyStruct:
-    value: Int # Error. Missing `var` keyword
-    var count: Int # Yes
+    value: Int # 错误。缺少 `var` 关键字
+    var count: Int # 可以
 ```
 
-Unlike local variables in functions, this requirement lets Mojo reason about a
-struct's layout and guarantees that its memory is safe and predictable.
+与函数中的局部变量不同，此要求让 Mojo 能够推断结构体的布局，并保证其内存的安全性和可预测性。
 
-**You must** use unique symbols for fields, methods, or `comptime` members.
-These all exist in the same namespace:
+**你必须** 为字段、方法或 `comptime` 成员使用唯一的符号。它们都存在于同一命名空间：
 
 ```mojo
 struct MyStruct:
     var count: Int
-    var count: String # Error. Invalid redeclaration of `count`
+    var count: String # 错误。无效的 `count` 重新声明
 ```
 
-**You can** re-use a struct member's name for an argument or method variable.
+**你可以** 重新使用结构体成员的名称作为参数或方法变量。
 
 ```mojo
 struct MyStruct:
     var foo: Int
 
-    def use_argument(self, foo: Int):  # Argument shadows field
-        print(foo)  # Prints argument value
+    def use_argument(self, foo: Int):  # 参数遮蔽了字段
+        print(foo)  # 打印参数值
 
     def use_local(self, value: Int):
-        var foo = value  # Local variable shadows field
-        print(foo, self.foo)  # Prints local, then field
+        var foo = value  # 局部变量遮蔽了字段
+        print(foo, self.foo)  # 打印局部变量，然后是字段
 ```
 
-**You must** mark `self` as mutable if updating a field value.
+**你必须** 如果更新字段值，将 `self` 标记为可变。
 
 ```mojo
 struct MyStruct:
@@ -301,41 +230,33 @@ struct MyStruct:
         self.foo = new_value
 ```
 
-**You must** initialize fields within constructors, and not
-at the point of declaration.
+**你必须** 在构造函数中初始化字段，而不是在声明点。
 
 ```mojo
 struct MyStruct:
-    var foo: Int = 10 # Error: Unknown tokens
-    comptime bar = 10 # Yes
+    var foo: Int = 10 # 错误：未知标记
+    comptime bar = 10 # 可以
 ```
 
-[`comptime` members](/docs/manual/parameters/#comptime-members)
-are compile-time constants (not fields) and don't occupy instance
-storage, so they can be initialized at the point of declaration.
+[`comptime` 成员](/docs/manual/parameters/#comptime-members)
+是编译时常量（不是字段），不占用实例存储，因此它们可以在声明点初始化。
 
-### Field conventions
+### 字段约定
 
-Like other Mojo elements, fields normally adhere to
-[certain conventions](https://github.com/modular/modular/blob/main/mojo/stdlib/docs/style-guide.md#code-conventions):
+与其他 Mojo 元素一样，字段通常遵循
+[某些约定](https://github.com/modular/modular/blob/main/mojo/stdlib/docs/style-guide.md#code-conventions)：
 
-You should use conventional naming for field members:
+你应该为字段成员使用约定命名：
 
-- Prefer lowercase snake_case for field names (for example, `user_count`,
-  `max_capacity`).
-- Use descriptive names that indicate purpose, and not their type (for example,
-  `error_msg` not `msg_string`).
-- For members meant for internal use or to maintain invariants, add an
-  underscore prefix (for example, `_private_field`).
-- For boolean fields, use `is_` or `has_` prefixes (for example, `is_valid`,
-  `has_data`).
-- Avoid single-letter names except for common mathematical conventions (such as
-  `x`, `y`, `z` for coordinates).
+- 字段名称首选小写 snake_case（例如，`user_count`、`max_capacity`）。
+- 使用描述性名称来指示目的，而不是它们的类型（例如，`error_msg` 而不是 `msg_string`）。
+- 对于旨在内部使用或保持不变量的成员，添加下划线前缀（例如，`_private_field`）。
+- 对于布尔字段，使用 `is_` 或 `has_` 前缀（例如，`is_valid`、`has_data`）。
+- 避免单字母名称，除非有常见的数学约定（如坐标的 `x`、`y`、`z`）。
 
-## Methods
+## 方法
 
-In addition to special methods like `__init__()`, you can add any other method
-you want to your struct. For example:
+除了 `__init__()` 等特殊方法外，你还可以向结构体添加任何你想要的其他方法。例如：
 
 ```mojo
 @fieldwise_init
@@ -356,32 +277,21 @@ print(mine.get_sum())
 14
 ```
 
-Notice that `get_sum()` also uses the `self` argument, because this is
-the only way you can access the struct's fields in a method. The name `self` is
-just a convention, and you can use any name you want to refer to the struct
-instance that is always passed as the first argument.
+请注意，`get_sum()` 也使用 `self` 参数，因为这是你在方法中访问结构体字段的唯一方式。名称 `self` 只是一个约定，你可以使用任何你想要的名称来引用始终作为第一个参数传递的结构体实例。
 
-Methods that take the implicit `self` argument are called _instance methods_
-because they act on an instance of the struct.
+使用隐式 `self` 参数的方法称为 _实例方法_，因为它们对结构体的实例起作用。
 
 :::note
 
-The `self` argument in a struct method is the only argument in a `def`
-function that does not require a type. You can include the type if you
-want, but you can elide it because Mojo already knows its type
-(`MyPair` in this case).
+结构体方法中的 `self` 参数是 `def` 函数中唯一不需要类型的参数。如果你愿意，可以包含类型，但你可以省略它，因为 Mojo 已经知道它的类型（在这种情况下是 `MyPair`）。
 
 :::
 
-### Static methods
+### 静态方法
 
-A struct can have _static methods_. A static method can be called without
-creating an instance of the struct. Unlike instance methods, a static method
-doesn't receive the implicit `self` argument, so it can't access any fields on
-the struct.
+结构体可以拥有 _静态方法_。静态方法可以在不创建结构体实例的情况下调用。与实例方法不同，静态方法不接收隐式 `self` 参数，因此它无法访问结构体上的任何字段。
 
-To declare a static method, use the `@staticmethod` decorator and don't include
-a `self` argument:
+要声明静态方法，使用 `@staticmethod` 装饰器，并且不要包含 `self` 参数：
 
 ```mojo
 struct Logger:
@@ -394,9 +304,7 @@ struct Logger:
         print("Info: ", message)
 ```
 
-You can invoke a static method by calling it on the type (in this case,
-`Logger`). You can also call it on an instance of the type. Both forms are
-shown below:
+你可以通过在类型上调用它来调用静态方法（在这种情况下是 `Logger`）。你也可以在类型的实例上调用它。以下显示了两种形式：
 
 ```mojo
 Logger.log_info("Static method called.")
@@ -409,94 +317,47 @@ Info:  Static method called.
 Info:  Static method called from instance.
 ```
 
-## Structs compared to classes
+## 结构体与类的比较
 
-If you're familiar with other object-oriented languages, then structs might
-sound a lot like classes, and there are some similarities, but also some
-important differences. Eventually, Mojo will also support classes to match the
-behavior of Python classes.
+如果你熟悉其他面向对象语言，那么结构体听起来可能很像类，它们有一些相似之处，但也存在一些重要区别。最终，Mojo 也将支持类以匹配 Python 类的行为。
 
-So, let's compare Mojo structs to Python classes. They both support methods,
-fields, operator overloading, decorators for metaprogramming, and more, but
-their key differences are as follows:
+因此，让我们将 Mojo 结构体与 Python 类进行比较。它们都支持方法、字段、运算符重载、用于元编程的装饰器等，但它们的主要区别如下：
 
-- Python classes are dynamic: they allow for dynamic dispatch, monkey-patching
-  (or "swizzling"), and dynamically binding instance fields at runtime.
+- Python 类是动态的：它们允许动态调度、猴子补丁（或"swizzling"），并在运行时动态绑定实例字段。
 
-- Mojo structs are static: they are bound at compile-time (you cannot add
-  methods at runtime). Structs allow you to trade flexibility for performance
-  while being safe and easy to use.
+- Mojo 结构体是静态的：它们在编译时绑定（你无法在运行时添加方法）。结构体允许你在安全易用的同时，通过灵活性换取性能。
 
-- Mojo structs do not support inheritance ("sub-classing"), but a struct can
-  implement [traits](/docs/manual/traits/).
+- Mojo 结构体不支持继承（"子类化"），但结构体可以实现 [trait](/docs/manual/traits/)。
 
-- Python classes support class attributes—values that are shared by all
-  instances of the class, equivalent to class variables or static data members
-  in other languages.
+- Python 类支持类属性——由类的所有实例共享的值，相当于其他语言中的类变量或静态数据成员。
 
-- Mojo structs don't support static data members.
+- Mojo 结构体不支持静态数据成员。
 
-Syntactically, the biggest difference compared to a Python class is that all
-fields in a struct must be explicitly declared with `var`.
+从语法上讲，与 Python 类相比，最大的区别是结构体中的所有字段都必须使用 `var` 显式声明。
 
-In Mojo, the structure and contents of a struct are set at compile time and
-can't be changed while the program is running. Unlike in Python, where you can
-add, remove, or change attributes of an object on the fly, Mojo doesn't allow
-that for structs.
+在 Mojo 中，结构体的结构和内容在编译时设置，程序运行时无法更改。与 Python 不同，你可以在对象上即时添加、删除或更改属性，Mojo 不允许对结构体这样做。
 
-However, the static nature of structs helps Mojo run your code faster. The
-program knows exactly where to find the struct's information and how to use it
-without any extra steps or delays at runtime.
+然而，结构体的静态性质有助于 Mojo 更快地运行你的代码。程序确切地知道在哪里可以找到结构体的信息以及如何使用它，而无需在运行时进行任何额外步骤或延迟。
 
-Mojo's structs also work really well with features you might already know from
-Python, like operator overloading (which lets you change how math symbols like
-`+` and `-` work with your own data, using [special
-methods](#special-methods)).
+Mojo 的结构体也与你可能从 Python 中已经知道的功能配合得很好，如运算符重载（它允许你使用 [特殊方法](#special-methods) 更改数学符号如 `+` 和 `-` 如何与你自己的数据一起工作）。
 
-As mentioned above, all Mojo's standard types
-(`Int`, `String`, etc.) are made using structs, rather than being hardwired
-into the language itself. This gives you more flexibility and control when
-writing your code, and it means you can define your own types with all the same
-capabilities (there's no special treatment for the standard library types).
+如上所述，Mojo 的所有标准类型（`Int`、`String` 等）都是使用结构体创建的，而不是硬编码到语言本身。这给了你在编写代码时更多的灵活性和控制力，这意味着你可以使用所有相同的功能定义自己的类型（标准库类型没有特殊处理）。
 
-## Special methods
+## 特殊方法
 
-Special methods (or "dunder methods") such as `__init__()` are pre-determined
-method names that you can define in a struct to perform a special task.
+特殊方法（或"双下划线方法"）如 `__init__()` 是你可以定义在结构体中以执行特殊任务的预定义方法名称。
 
-Although it's possible to call special methods with their method names, the
-point is that you never should, because Mojo automatically invokes them in
-circumstances where they're needed (which is why they're also called "magic
-methods"). For example, Mojo calls the `__init__()` method when you create
-an instance of the struct; and when Mojo destroys the instance, it calls the
-`__del__()` method (if it exists).
+虽然可以使用方法名称调用特殊方法，但关键是你永远不应该这样做，因为 Mojo 在需要时自动调用它们（这就是它们也被称为"魔法方法"的原因）。例如，当你创建结构体实例时，Mojo 调用 `__init__()` 方法；当 Mojo 销毁实例时，它调用 `__del__()` 方法（如果存在）。
 
-Even operator behaviors that appear built-in (`+`, `<`, `==`, `|`, and so on)
-are implemented as special methods that Mojo implicitly calls upon to perform
-operations or comparisons on the type that the operator is applied to.
+即使是看起来内置的操作符行为（`+`、`<`、`==`、`|` 等）也是作为特殊方法实现的，Mojo 在应用于操作符的类型上隐式调用它们来执行操作或比较。
 
-Mojo supports a long list of special methods; far too many to discuss here, but
-they generally match all of [Python's special
-methods](https://docs.python.org/3/reference/datamodel#special-method-names)
-and they usually accomplish one of two types of tasks:
+Mojo 支持大量特殊方法；这里讨论的太多了，但它们通常匹配所有 [Python 的特殊方法](https://docs.python.org/3/reference/datamodel#special-method-names)，并且它们通常执行两种类型的任务之一：
 
-- Operator overloading: A lot of special methods are designed to overload
-  operators such as `<` (less-than), `+` (add), and `|` (or) so they work
-  appropriately with each type. For more information, see
-  [Implement operators for custom types](/docs/manual/operators/#implement-operators-for-custom-types).
+- 运算符重载：许多特殊方法旨在重载运算符，如 `<`（小于）、`+`（加）和 `|`（或），以便它们与每种类型适当地工作。有关更多信息，请参阅
+[为自定义类型实现运算符](/docs/manual/operators/#implement-operators-for-custom-types)。
 
-- Lifecycle event handling: These special methods deal with the lifecycle and
-  value ownership of an instance. For example, `__init__()` and `__del__()`
-  demarcate the beginning and end of an instance lifetime, and other special
-  methods define the behavior for other lifecycle events such as how to copy or
-  move a value.
+- 生命周期事件处理：这些特殊方法处理实例的生命周期和值的所有权。例如，`__init__()` 和 `__del__()` 标记实例生命周期的开始和结束，其他特殊方法定义其他生命周期事件的行为，如如何复制或移动值。
 
-You can learn all about the lifecycle special methods in the [Value
-lifecycle](/docs/manual/lifecycle/) section. However, most structs are simple
-aggregations of other types, so unless your type requires custom behaviors when
-an instance is created, copied, moved, or destroyed, you can synthesize the
-essential lifecycle methods you need (and save yourself some time) using the
-`@fieldwise_init` decorator (described in
-[Struct definition](#struct-definition)), and the `Copyable` and `Movable`
-traits (described in
-[Making a struct copyable](#making-a-struct-copyable-and-movable)).
+你可以在 [值生命周期](/docs/manual/lifecycle/) 部分了解所有关于生命周期特殊方法的信息。然而，大多数结构体只是其他类型的简单聚合，因此除非你的类型在创建、复制、移动或销毁实例时需要自定义行为，否则你可以使用 `@fieldwise_init` 装饰器（在
+[结构体定义](#struct-definition)中描述）和 `Copyable`、`Movable` traits（在
+[使结构体可复制](#making-a-struct-copyable-and-movable)中描述）合成所需的基本生命周期方法（并节省一些时间）。

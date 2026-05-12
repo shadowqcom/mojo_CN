@@ -1,23 +1,21 @@
 ---
 title: "simd"
 sidebar_label: "simd"
-description: "Implements SIMD primitives and abstractions.  Provides high-performance SIMD primitives and abstractions for vectorized computation in Mojo. It enables efficient data-parallel operations by leveraging"
+description: "实现 SIMD 原语和抽象。为 Mojo 中的向量化计算提供高性能 SIMD 原语和抽象。它通过利用硬件向量处理单元实现高效的数据并行操作。"
 ---
 
 # simd
 
-Implements SIMD primitives and abstractions.
+实现 SIMD 原语和抽象。
 
-Provides high-performance SIMD primitives and abstractions for
-vectorized computation in Mojo. It enables efficient data-parallel operations
-by leveraging hardware vector processing units across different architectures.
+为 Mojo 中的向量化计算提供高性能 SIMD 原语和抽象。它通过利用不同架构上的硬件向量处理单元实现高效的数据并行操作。
 
-Key Features:
-1. Architecture-agnostic SIMD abstractions with automatic hardware detection
-2. Optimized vector operations for common numerical computations
-3. Explicit control over vectorization strategies and memory layouts
-4. Zero-cost abstractions that compile to efficient machine code
-5. Support for different vector widths and element types
+关键特性：
+1. 架构无关的 SIMD 抽象，具有自动硬件检测
+2. 针对常见数值计算的优化向量操作
+3. 对向量化策略和内存布局的显式控制
+4. 编译为高效机器代码的零成本抽象
+5. 支持不同的向量宽度和元素类型
 
 Primary Components:
 - Vector types: Strongly-typed vector containers with element-wise operations

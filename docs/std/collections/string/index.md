@@ -1,32 +1,28 @@
 ---
 title: "collections/string"
 sidebar_label: "collections/string"
-description: "Provides comprehensive Unicode string functionality.  Core features:  - Unicode support with UTF-8 encoding - Efficient string slicing and views - String formatting and interpolation - Memory-safe str"
+description: "提供全面的 Unicode 字符串功能。核心特性：- UTF-8 编码的 Unicode 支持 - 高效的字符串切片和视图 - 字符串格式化和插值 - 内存安全的字符串操作。"
 ---
 
 # collections/string
 
-Provides comprehensive Unicode string functionality.
+提供全面的 Unicode 字符串功能。
 
-Core features:
+核心特性：
 
-- Unicode support with UTF-8 encoding
-- Efficient string slicing and views
-- String formatting and interpolation
-- Memory-safe string operations
-- Unicode case conversion
-- Unicode property lookups and validation
+- UTF-8 编码的 Unicode 支持
+- 高效的字符串切片和视图
+- 字符串格式化和插值
+- 内存安全的字符串操作
+- Unicode 大小写转换
+- Unicode 属性查找和验证
 
-Key components:
+关键组件：
 
 - [`String`](/docs/std/collections/string/string/String/):
-  Mutable and owning string
+  可变且拥有的字符串
 
-  - Uses a smart three-mode allocation strategy: static memory
-  references for string literals, small string optimization (SSO) for strings
-  ≤23 bytes (stored directly within the `String` object with zero allocation
-  cost), and reference-counted heap allocation for larger strings. This design
-  makes the vast majority of real-world strings extremely fast.
+  - 使用智能三模式分配策略：字符串字面量的静态内存引用，≤23 字节字符串的小字符串优化（SSO）（直接存储在 `String` 对象内，零分配成本），以及较大字符串的引用计数堆分配。此设计使绝大多数实际字符串极其快速。
 
   - Owns its data and manages memory automatically when heap-allocated.
 

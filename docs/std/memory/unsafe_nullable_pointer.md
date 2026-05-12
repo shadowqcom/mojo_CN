@@ -1,13 +1,12 @@
 ---
 title: "unsafe_nullable_pointer"
 sidebar_label: "unsafe_nullable_pointer"
-description: "A temporary `UnsafeNullablePointer` type used to help transition users of `UnsafePointer` to `Optional[UnsafePointer]` for explicit nullability."
+description: "一个临时的 `UnsafeNullablePointer` 类型，用于帮助 `UnsafePointer` 用户过渡到 `Optional[UnsafePointer]` 以实现显式可空性。"
 ---
 
 # unsafe_nullable_pointer
 
-A temporary `UnsafeNullablePointer` type used to help transition users of
-`UnsafePointer` to `Optional[UnsafePointer]` for explicit nullability.
+一个临时的 `UnsafeNullablePointer` 类型，用于帮助 `UnsafePointer` 用户过渡到 `Optional[UnsafePointer]` 以实现显式可空性。
 
 ## 类型
 

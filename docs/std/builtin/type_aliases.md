@@ -1,14 +1,14 @@
 ---
 title: "type_aliases"
 sidebar_label: "type_aliases"
-description: "Defines some type aliases.  These are Mojo built-ins, so you don't need to import them."
+description: "定义一些类型别名。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # type_aliases
 
-Defines some type aliases.
+定义一些类型别名。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

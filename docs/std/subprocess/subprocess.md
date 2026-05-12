@@ -1,16 +1,15 @@
 ---
 title: "subprocess"
+slug: subprocess
 sidebar_label: "subprocess"
-description: "Provides utilities for executing shell commands and capturing output.  This module offers functions for running shell commands in subprocesses and retrieving their output, similar to Python's `subproc"
+description: "提供执行 shell 命令和捕获输出的工具。此模块提供在子进程中运行 shell 命令并检索其输出的函数，类似于 Python 的 `subprocess` 模块。"
 ---
 
 # subprocess
 
-Provides utilities for executing shell commands and capturing output.
+提供执行 shell 命令和捕获输出的工具。
 
-This module offers functions for running shell commands in subprocesses and
-retrieving their output, similar to Python's `subprocess` module. It handles
-process creation, output capture, and resource cleanup automatically.
+此模块提供在子进程中运行 shell 命令并检索其输出的函数，类似于 Python 的 `subprocess` 模块。它自动处理进程创建、输出捕获和资源清理。
 
 ## 类型
 

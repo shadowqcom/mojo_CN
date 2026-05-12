@@ -1,14 +1,15 @@
 ---
 title: "time"
+slug: time
 sidebar_label: "time"
-description: "Implements basic utils for working with time.  You can import these APIs from the `time` package. For example:  ```mojo from std.time import perf_counter_ns ```"
+description: "实现时间处理的基本工具。您可以从 `time` 包导入这些 API。例如：```mojo from std.time import perf_counter_ns ```"
 ---
 
 # time
 
-Implements basic utils for working with time.
+实现时间处理的基本工具。
 
-You can import these APIs from the `time` package. For example:
+您可以从 `time` 包导入这些 API。例如：
 
 ```mojo
 from std.time import perf_counter_ns

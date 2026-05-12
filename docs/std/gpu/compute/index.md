@@ -1,38 +1,37 @@
 ---
 title: "gpu/compute"
 sidebar_label: "gpu/compute"
-description: "GPU compute operations package - MMA and tensor core operations.  This package provides GPU tensor core and matrix multiplication operations:  - **mma**: Unified warp matrix-multiply-accumulate (WMMA)"
+description: "GPU 计算操作包 - MMA 和张量核心操作。此包提供 GPU 张量核心和矩阵乘法操作：- **mma**：统一的 warp 矩阵乘累加 (WMMA) 操作"
 ---
 
 # gpu/compute
 
-GPU compute operations package - MMA and tensor core operations.
+GPU 计算操作包 - MMA 和张量核心操作。
 
-This package provides GPU tensor core and matrix multiplication operations:
+此包提供 GPU 张量核心和矩阵乘法操作：
 
-- **mma**: Unified warp matrix-multiply-accumulate (WMMA) operations
-- **mma_util**: Utility functions for loading/storing MMA operands
-- **mma_operand_descriptor**: Operand descriptor types for MMA
-- **tensor_ops**: Tensor core-based reductions and operations
-- **arch/**: Architecture-specific MMA implementations (internal)
-  - `mma_nvidia`: NVIDIA tensor cores (SM70-SM90)
-  - `mma_nvidia_sm100`: NVIDIA Blackwell (SM100)
-  - `mma_amd`: AMD Matrix Cores (CDNA2/3/4)
-  - `mma_amd_rdna`: AMD WMMA (RDNA3/4)
-  - `tcgen05`: 5th generation tensor core operations (Blackwell)
+- **mma**：统一的 warp 矩阵乘累加 (WMMA) 操作
+- **mma_util**：用于加载/存储 MMA 操作数的工具函数
+- **mma_operand_descriptor**：MMA 的操作数描述符类型
+- **tensor_ops**：基于张量核心的归约和操作
+- **arch/**：架构特定的 MMA 实现（内部）
+  - `mma_nvidia`：NVIDIA 张量核心 (SM70-SM90)
+  - `mma_nvidia_sm100`：NVIDIA Blackwell (SM100)
+  - `mma_amd`：AMD 矩阵核心 (CDNA2/3/4)
+  - `mma_amd_rdna`：AMD WMMA (RDNA3/4)
+  - `tcgen05`：第五代张量核心操作 (Blackwell)
 
-## Usage
+## 用法
 
-Import compute operations directly:
+直接导入计算操作：
 
 ```mojo
 from std.gpu.compute import mma
 
-# Usage: var result = mma.mma(a, b, c)
+# 用法：var result = mma.mma(a, b, c)
 ```
 
-Architecture-specific implementations in `arch/` are internal and should not
-be imported directly by user code.
+`arch/` 中的架构特定实现是内部的，不应由用户代码直接导入。
 
 ## 模块
 

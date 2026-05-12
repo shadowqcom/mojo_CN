@@ -1,14 +1,14 @@
 ---
 title: "list"
 sidebar_label: "list"
-description: "Defines the List type.  These APIs are imported automatically, just like builtins."
+description: "定义 List 类型。这些 API 会自动导入，就像内置类型一样。"
 ---
 
 # list
 
-Defines the List type.
+定义 List 类型。
 
-These APIs are imported automatically, just like builtins.
+这些 API 会自动导入，就像内置类型一样。
 
 ## 类型
 

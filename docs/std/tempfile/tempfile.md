@@ -1,23 +1,20 @@
 ---
 title: "tempfile"
+slug: tempfile
 sidebar_label: "tempfile"
-description: "Temporary file and directory creation.  This module provides a safe API for creating temporary files and directories. It includes helpers for creating temporary directories (`mkdtemp`), temporary file"
+description: "临时文件和目录创建。此模块提供创建临时文件和目录的安全 API。包括创建临时目录 (`mkdtemp`)、临时文件 (`NamedTemporaryFile`) 等辅助函数。"
 ---
 
 # tempfile
 
-Temporary file and directory creation.
+临时文件和目录创建。
 
-This module provides a safe API for creating temporary files and directories.
-It includes helpers for creating temporary directories (`mkdtemp`),
-temporary files (`NamedTemporaryFile`), querying the default temporary
-directory (`gettempdir`), and a context manager for managing the lifetime of
-temporary directories (`TemporaryDirectory`).
+此模块提供创建临时文件和目录的安全 API。它包括创建临时目录 (`mkdtemp`)、临时文件 (`NamedTemporaryFile`)、查询默认临时目录 (`gettempdir`) 以及管理临时目录生命周期的上下文管理器 (`TemporaryDirectory`) 的辅助函数。
 
-To use these features, import the desired functions or classes from this module.
+要使用这些功能，请从此模块导入所需的函数或类。
 
 ```mojo
-# Import from the tempfile module
+# 从 tempfile 模块导入
 from std.tempfile import gettempdir
 ```
 

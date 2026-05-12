@@ -1,22 +1,19 @@
 ---
 title: "anytype"
 sidebar_label: "anytype"
-description: "Defines the core traits for object lifetime management in Mojo.  This module provides the foundational traits that define how objects are created, managed and destroyed in Mojo:  - `AnyType`: The most"
+description: "定义 Mojo 中对象生命周期管理的核心 trait。此模块提供了定义对象如何在 Mojo 中创建、管理和销毁的基础 trait。"
 ---
 
 # anytype
 
-Defines the core traits for object lifetime management in Mojo.
+定义 Mojo 中对象生命周期管理的核心 trait。
 
-This module provides the foundational traits that define how objects are created,
-managed and destroyed in Mojo:
+此模块提供了定义对象如何在 Mojo 中创建、管理和销毁的基础 trait：
 
-- `AnyType`: The most basic trait that all types extend by default.
-   Types with this trait have no destructor and no lifetime management.
+- `AnyType`：所有类型默认扩展的最基本 trait。
+   具有此 trait 的类型没有析构函数，也没有生命周期管理。
 
-- `ImplicitlyDestructible`: The base trait for types that require lifetime
-   management through destructors. Any type that needs cleanup when it goes out
-   of scope should implement this trait.
+- `ImplicitlyDestructible`：需要通过析构函数进行生命周期管理的类型的基础 trait。任何需要在超出作用域时进行清理的类型都应该实现此 trait。
 
 These traits are built into Mojo and do not need to be imported.
 

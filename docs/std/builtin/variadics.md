@@ -1,14 +1,14 @@
 ---
 title: "variadics"
 sidebar_label: "variadics"
-description: "Implements the VariadicList, ParameterList and VariadicPack types.  These are Mojo built-ins, so you don't need to import them."
+description: "实现 VariadicList、ParameterList 和 VariadicPack 类型。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # variadics
 
-Implements the VariadicList, ParameterList and VariadicPack types.
+实现 VariadicList、ParameterList 和 VariadicPack 类型。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

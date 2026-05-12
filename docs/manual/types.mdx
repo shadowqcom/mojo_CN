@@ -1,149 +1,108 @@
 ---
-title: Types
+title: 类型
 sidebar_position: 1
-description: Standard Mojo data types.
+description: 标准 Mojo 数据类型。
 ---
 
-All values in Mojo have an associated data type. Most of the types are
-*nominal* types, defined by a [`struct`](/docs/manual/structs/). These types are
-nominal (or "named") because type equality is determined by the type's *name*,
-not its *structure*.
+Mojo 中的所有值都有关联的数据类型。大多数类型是*名义类型*，由 [`struct`](/docs/manual/structs/) 定义。这些类型是名义的（或"命名"）类型，因为类型相等性由类型的*名称*决定，而不是由其*结构*决定。
 
-There are some types that aren't defined as structs:
+有一些类型不是作为结构定义的：
 
-- Functions are typed based on their signatures.
-- `NoneType` is a type with one instance, the `None` object, which is used to
-  signal "no value."
+- 函数根据其签名进行类型化。
+- `NoneType` 是一种类型，只有一个实例，即 `None` 对象，用于表示"无值"。
 
-Mojo comes with a standard library that provides a number of useful types and
-utility functions. These standard types aren't privileged. Each of the standard
-library types is defined just like user-defined types—even basic types like
-[`Int`](/docs/std/builtin/int/Int/) and
-[`String`](/docs/std/collections/string/string/String/). But these standard
-library types are the building blocks you'll use for most Mojo programs.
+Mojo 附带一个标准库，提供许多有用的类型和实用函数。这些标准类型不是特权类型。每个标准库类型都像用户定义类型一样定义——即使是像 [`Int`](/docs/std/builtin/int/Int/) 和 [`String`](/docs/std/collections/string/string/String/) 这样的基本类型。但这些标准库类型是你将用于大多数 Mojo 程序的构建块。
 
-The most common types are *built-in types*, which are always available and
-don't need to be imported. These include types for numeric values, strings,
-boolean values, and others.
+最常见的类型是*内置类型*，它们始终可用，无需导入。这包括数值、字符串、布尔值等的类型。
 
-The standard library also includes many more types that you can import as
-needed, including collection types, utilities for interacting with the
-filesystem and getting system information, and so on.
+标准库还包括许多其他类型，你可以按需导入，包括集合类型、与文件系统交互和获取系统信息的工具等。
 
-## Numeric types
+## 数值类型
 
-Mojo provides built-in numeric types that represent signed integers, unsigned
-integers, and floating-point values. These types support multiple precisions and
-are used to model both low-level data and high-level numeric computation.
+Mojo 提供内置数值类型，表示有符号整数、无符号整数和浮点值。这些类型支持多种精度，用于对低级数据和高级数值计算进行建模。
 
-The following sections introduce integer and floating-point types in Mojo.
+以下章节介绍 Mojo 中的整数和浮点类型。
 
 :::note
-All numeric types support the usual numeric and bitwise operators. The
-[`math`](/docs/std/math/) module provides additional math functions.
+所有数值类型都支持常规数值和按位运算符。[`math`](/docs/std/math/) 模块提供了额外的数学函数。
 :::
 
-### Integers and unsigned integers
+### 整数和无符号整数
 
-Mojo supports both signed (`Int`) and unsigned (`UInt`) integer types. These
-include both fixed-size and general types:
+Mojo 支持有符号 (`Int`) 和无符号 (`UInt`) 整数类型。这些类型包括固定大小和通用类型：
 
-- If you need a fixed-size integer, Mojo provides explicit-width integer types
-  such as `Int8`, `Int16`, `UInt32`, and `UInt64`. These fixed-precision integer
-  types are aliases to the [`SIMD`](/docs/std/builtin/simd/SIMD/) type.
+- 如果你需要固定大小的整数，Mojo 提供显式宽度整数类型，如 `Int8`、`Int16`、`UInt32` 和 `UInt64`。这些固定精度整数类型是 [`SIMD`](/docs/std/builtin/simd/SIMD/) 类型的别名。
 
-- Use the general `Int` or `UInt` types when you don't require a specific bit
-  width.
+- 当你不需要特定位宽时，使用通用 `Int` 或 `UInt` 类型。
 
-`Int` represents a signed integer that uses the system's native word size,
-typically 64 bits on 64-bit CPUs and 32 bits on 32-bit CPUs. Similarly, `UInt`
-represents an unsigned integer that uses the system's default word size.
+`Int` 表示使用系统原生字大小的有符号整数，通常在 64 位 CPU 上为 64 位，在 32 位 CPU 上为 32 位。同样，`UInt` 表示使用系统默认字大小的无符号整数。
 
-You may wonder when to use `Int` and when to use the other integer
-types. In general, `Int` is a good safe default when you need an integer type
-and you don't require a specific bit width. Using `Int` as the default integer
-type for APIs makes APIs more consistent and predictable.
+你可能想知道何时使用 `Int`，何时使用其他整数类型。通常，`Int` 是一个很好的安全默认值，当你需要整数类型且不需要特定位宽时。使用 `Int` 作为 API 的默认整数类型会使 API 更一致和可预测。
 
-#### Signed versus unsigned
+#### 有符号与无符号
 
-Signed and unsigned integers with the same bit width can represent the same
-number of distinct values, but over different ranges. For example:
+具有相同位宽的有符号和无符号整数可以表示相同数量的不同值，但在不同范围内。例如：
 
-- `Int8` represents 256 values ranging from `-128` to `127`
-- `UInt8` represents 256 values ranging from `0` to `255`
+- `Int8` 表示从 `-128` 到 `127` 的 256 个值
+- `UInt8` 表示从 `0` 到 `255` 的 256 个值
 
-#### Overflow behavior
+#### 溢出行为
 
-Signed and unsigned integers differ in how they handle overflow.
+有符号和无符号整数在处理溢出的方式上有所不同。
 
-- When a signed integer overflows, the value wraps around into the negative
-  range using two's complement arithmetic. For example, adding `1` to
-  `var si: Int8 = 127` results in `-128`.
-- When an unsigned integer overflows, the value wraps around to the beginning of
-  its range. For example, adding `1` to `var ui: UInt8 = 255` results in `0`.
+- 当有符号整数溢出时，值使用二进制补码算术环绕到负范围。例如，向 `var si: Int8 = 127` 添加 `1` 结果为 `-128`。
+- 当无符号整数溢出时，值环绕到其范围的开始。例如，向 `var ui: UInt8 = 255` 添加 `1` 结果为 `0`。
 
-You may prefer unsigned integers when negative values are not required, when
-you are not designing a public API, or when you want to maximize the usable
-positive range.
+当不需要负值、你正在设计公共 API、或者你想最大化可用正范围时，你可能更喜欢无符号整数。
 
-#### Mojo-supported fixed-width integer types
+#### Mojo 支持的固定宽度整数类型
 
 <figure id="table-1">
-<figcaption><b>Table 1.</b> Mojo signed integer types</figcaption>
+<figcaption><b>表 1.</b> Mojo 有符号整数类型</figcaption>
 
-| Type name | Description            |
+| 类型名称 | 描述            |
 |-----------|------------------------|
-| `Int8`    | 8-bit signed integer   |
-| `Int16`   | 16-bit signed integer  |
-| `Int32`   | 32-bit signed integer  |
-| `Int64`   | 64-bit signed integer  |
-| `Int128`  | 128-bit signed integer |
-| `Int256`  | 256-bit signed integer |
+| `Int8`    | 8 位有符号整数   |
+| `Int16`   | 16 位有符号整数  |
+| `Int32`   | 32 位有符号整数  |
+| `Int64`   | 64 位有符号整数  |
+| `Int128`  | 128 位有符号整数 |
+| `Int256`  | 256 位有符号整数 |
 
 </figure>
 
 <figure id="table-2">
-<figcaption><b>Table 2.</b> Mojo unsigned integer types</figcaption>
+<figcaption><b>表 2.</b> Mojo 无符号整数类型</figcaption>
 
-| Type name | Description              |
+| 类型名称 | 描述              |
 |-----------|--------------------------|
-| `UInt8`   | 8-bit unsigned integer   |
-| `UInt16`  | 16-bit unsigned integer  |
-| `UInt32`  | 32-bit unsigned integer  |
-| `UInt64`  | 64-bit unsigned integer  |
-| `UInt128` | 128-bit unsigned integer |
-| `UInt256` | 256-bit unsigned integer |
+| `UInt8`   | 8 位无符号整数   |
+| `UInt16`  | 16 位无符号整数  |
+| `UInt32`  | 32 位无符号整数  |
+| `UInt64`  | 64 位无符号整数  |
+| `UInt128` | 128 位无符号整数 |
+| `UInt256` | 256 位无符号整数 |
 
 </figure>
 
-### Floating-point numbers
+### 浮点数
 
-Mojo provides several floating-point types for representing real numbers at
-different precisions. Since floating-point values use a fixed number of bits,
-some numbers can't be represented exactly.
+Mojo 提供几种浮点类型，用于以不同精度表示实数。由于浮点值使用固定数量的位，有些数字无法精确表示。
 
-The floating-point types `Float64`, `Float32`, and `Float16` follow the
-IEEE 754-2008 standard for representing floating-point values. Each type
-includes a sign bit, a set of bits representing an exponent, and a set of bits
-representing the mantissa (also called fraction or significand).
-Table 3 shows how these types are represented in memory.
+浮点类型 `Float64`、`Float32` 和 `Float16` 遵循 IEEE 754-2008 标准来表示浮点值。每种类型都包括一个符号位、一组表示指数的位，以及一组表示尾数（也称为分数或有效数字）的位。表 3 显示了这些类型如何在内存中表示。
 
 <figure id="table-3">
-<figcaption><b>Table 3.</b> Details of floating-point types</figcaption>
+<figcaption><b>表 3.</b> 浮点类型详细信息</figcaption>
 
-| Type name | Sign  | Exponent | Mantissa |
+| 类型名称 | 符号  | 指数 | 尾数 |
 |-----------|-------|----------|----------|
-| `Float64` | 1 bit | 11 bits  | 52 bits  |
-| `Float32` | 1 bit | 8 bits   | 23 bits  |
-| `Float16` | 1 bit | 5 bits   | 10 bits  |
+| `Float64` | 1 位 | 11 位  | 52 位  |
+| `Float32` | 1 位 | 8 位   | 23 位  |
+| `Float16` | 1 位 | 5 位   | 10 位  |
 
 </figure>
 
-Exponent values of all zeros or all ones represent special cases. These
-patterns allow floating-point numbers to encode positive and negative
-infinity, signed zeros, and not-a-number (NaN). These values are available
-as static constants provided by
-[`FloatLiteral`](/docs/std/builtin/float_literal/FloatLiteral/):
+所有零或全一的指数值表示特殊情况。这些模式允许浮点数编码正负无穷大、有符号零和非数字 (NaN)。这些值作为 [`FloatLiteral`](/docs/std/builtin/float_literal/FloatLiteral/) 提供的静态常量可用：
 
 ```mojo
 from std.math import copysign
@@ -165,26 +124,17 @@ print(negzero == 0.0)              # `True`
 print(copysign(1.0, negzero) < 0)  # `True`
 ```
 
-For more details on how floating-point numbers are represented, see
-[IEEE 754](https://en.wikipedia.org/wiki/IEEE_754).
+有关浮点数表示的更多详细信息，请参阅 [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754)。
 
-#### Floating-point approximations and comparisons
+#### 浮点近似和比较
 
-Because floating-point values are approximate, they often cannot represent the
-exact mathematical value they are intended to model.
+由于浮点值是近似的，它们通常无法表示它们旨在建模的确切数学值。
 
-- **Rounding errors.** Rounding may produce unexpected results. For example,
-  `1/3` cannot be represented exactly in floating-point formats. As more
-  floating-point operations are performed, rounding errors may accumulate.
+- **舍入误差。** 舍入可能会产生意外结果。例如，`1/3` 无法在浮点格式中精确表示。随着更多浮点运算的执行，舍入误差可能会累积。
 
-- **Space between consecutive numbers.** The distance between consecutive
-  representable values varies across the range of a floating-point type. Near
-  zero, values are densely packed. For large positive or negative numbers, the
-  spacing can exceed 1, making it impossible to represent some consecutive
-  integers.
+- **连续数字之间的间隔。** 可表示值之间的距离在浮点类型的范围内变化。接近零时，值密集打包。对于大的正数或负数，间距可能超过 1，使得无法表示某些连续整数。
 
-Because values are approximate, it is rarely useful to compare floating-point
-numbers using the equality operator (`==`). For example:
+由于值是近似的，使用相等运算符 (`==`) 比较浮点数很少有用。例如：
 
 ```mojo
 var big_num = 1.0e16
@@ -196,127 +146,86 @@ print(big_num == bigger_num)
 True
 ```
 
-Comparison operators (such as `<` and `>=`) work as expected with floating-point
-values. To test whether two values are equal within a tolerance,
-use the [`math.isclose()`](/docs/std/math/math/isclose/) function to
-compare whether two floating-point numbers are equal within a
-specified tolerance.
+比较运算符（如 `<` 和 `>=`）与浮点值一起按预期工作。要测试两个值是否在容差范围内相等，请使用 [`math.isclose()`](/docs/std/math/math/isclose/) 函数来比较两个浮点数是否在指定容差范围内相等。
 
-#### Mojo-supported floating-point types
+#### Mojo 支持的浮点类型
 
-In the following table, the **eXmX** format (for example, `Float8_e5m2` and
-`Float8_e4m3fn`) refers to the number of bits allocated to a floating-point
-number's exponent and mantissa.
+在以下表中，**eXmX** 格式（例如 `Float8_e5m2` 和 `Float8_e4m3fn`）指的是分配给浮点数的指数和尾数的位数。
 
-All IEEE 754 floating-point formats use an implied leading 1. That means
-`Float32` is e8m23 but effectively e8m24, `Float16` is e5m10 but effectively
-e5m11, `BFloat16` is e8m7 but effectively e8m8, and `Float8_e4m3fn` is e4m3 but
-effectively e4m4.
+所有 IEEE 754 浮点格式都使用隐式的前导 1。这意味着 `Float32` 是 e8m23 但实际上是 e8m24，`Float16` 是 e5m10 但实际上是 e5m11，`BFloat16` 是 e8m7 但实际上是 e8m8，而 `Float8_e4m3fn` 是 e4m3 但实际上是 e4m4。
 
-In addition to eXmX:
+除了 eXmX 之外：
 
-- **fn** signifies finite numbers only. The numbers are valid floating-point
-  values that are not infinite. NaN is supported.
-- **uz** means unsigned zero. Only +0 is supported, not -0.
+- **fn** 表示仅限有限数。这些数字是有效的浮点值，不是无限的。支持 NaN。
+- **uz** 表示无符号零。仅支持 +0，不支持 -0。
 
-Although Mojo supports all these types, these types are not supported
-on all hardware.
+虽然 Mojo 支持所有这些类型，但并非所有硬件都支持这些类型。
 
 :::note
-The *B* in `BFloat16` stands for Brain, from the Google Brain artificial
-intelligence research group. Google developed it specifically for their
-Tensor Processing Units (TPUs) to accelerate machine learning workloads.
-Therefore the B is a project identifier and not a technical format indicator.
+`BFloat16` 中的 *B* 代表 Brain，来自 Google Brain 人工智能研究小组。Google 开发它是专门用于他们的张量处理单元 (TPU) 以加速机器学习工作负载的。因此 B 是项目标识符，而不是技术格式指示符。
 :::
 
 <figure id="table-4">
-<figcaption><b>Table 4.</b> Mojo floating-point types</figcaption>
+<figcaption><b>表 4.</b> Mojo 浮点类型</figcaption>
 
-| Type name         | Description                                                                                                            | CPU/GPU Support |
+| 类型名称         | 描述                                                                                                            | CPU/GPU 支持 |
 |-------------------|------------------------------------------------------------------------------------------------------------------------|-----------------|
-| `Float16`         | 16-bit floating-point<br />(IEEE 754-2008 binary16)                                                                    | CPU and GPU     |
-| `Float32`         | 32-bit floating-point<br />(IEEE 754-2008 binary32)                                                                    | CPU and GPU     |
-| `Float64`         | 64-bit floating-point<br />(IEEE 754-2008 binary64)                                                                    | CPU and GPU     |
-| `BFloat16`        | 16-bit floating-point<br />(16-bit version of IEEE 754 binary32)                                                       | CPU and GPU     |
-| `Float4_e2m1fn`   | 4-bit floating-point<br />(e2m1 format from Open Compute MX specification — finite values and NaN only, no infinities) | GPU             |
-| `Float8_e5m2`     | 8-bit floating-point<br />(OFP8 e5m2 format)                                                                           | GPU             |
-| `Float8_e5m2fnuz` | 8-bit floating-point<br />(AMD-only e5m2fnuz format — finite values and NaN only, no infinities)                       | GPU             |
-| `Float8_e4m3fn`   | 8-bit floating-point<br />(OFP8 e4m3fn format — finite values and NaN only, no infinities)                             | GPU             |
-| `Float8_e4m3fnuz` | 8-bit floating-point<br />(AMD-only e4m3fnuz format — finite values and NaN only, no infinities)                       | GPU             |
+| `Float16`         | 16 位浮点<br />(IEEE 754-2008 binary16)                                                                    | CPU 和 GPU     |
+| `Float32`         | 32 位浮点<br />(IEEE 754-2008 binary32)                                                                    | CPU 和 GPU     |
+| `Float64`         | 64 位浮点<br />(IEEE 754-2008 binary64)                                                                    | CPU 和 GPU     |
+| `BFloat16`        | 16 位浮点<br />(IEEE 754 binary32 的 16 位版本)                                                       | CPU 和 GPU     |
+| `Float4_e2m1fn`   | 4 位浮点<br />(来自 Open Compute MX 规范的 e2m1 格式 — 有限值和 NaN，无无穷大) | GPU             |
+| `Float8_e5m2`     | 8 位浮点<br />(OFP8 e5m2 格式)                                                                           | GPU             |
+| `Float8_e5m2fnuz` | 8 位浮点<br />(仅 AMD 的 e5m2fnuz 格式 — 有限值和 NaN，无无穷大)                       | GPU             |
+| `Float8_e4m3fn`   | 8 位浮点<br />(OFP8 e4m3fn 格式 — 有限值和 NaN，无无穷大)                             | GPU             |
+| `Float8_e4m3fnuz` | 8 位浮点<br />(仅 AMD 的 e4m3fnuz 格式 — 有限值和 NaN，无无穷大)                       | GPU             |
 
 </figure>
 
 :::note
-GPU-only floating-point types are supported on specific accelerator hardware and
-may not be available on all GPUs.
+GPU 独占浮点类型在特定的加速硬件上支持，并且可能并非在所有 GPU 上都可用。
 :::
 
-#### AI-optimized floating-point formats
+#### AI 优化的浮点格式
 
-Several floating-point types are specifically designed for AI and machine
-learning workloads, trading precision for memory efficiency and computational
-throughput.
+几种浮点类型专门为 AI 和机器学习工作负载设计，以精度换取内存效率和计算吞吐量。
 
-**BFloat16 (Brain Floating Point)** uses the same 8 exponent bits as
-`Float32`, preserving its dynamic range, but uses 7 explicit bits (8 effective
-bits) for the mantissa compared to Float32's 23 bits.
-This makes it ideal for neural network training where gradient magnitudes
-vary widely but high precision is less critical.
+**BFloat16 (Brain 浮点)** 使用与 `Float32` 相同的 8 个指数位，保持其动态范围，但与 Float32 的 23 位相比，尾数使用 7 个显式位（8 个有效位）。这使其非常适合梯度幅度变化很大但高精度不太重要的神经网络训练。
 
-**8-bit formats** (`Float8_e5m2`, `Float8_e4m3fn`, and their `fnuz`
-variants) are ultra-compact formats for AI accelerators where memory
-bandwidth is the primary bottleneck.
-The naming indicates bit allocation: `e5m2` means 5 exponent bits and
-2 mantissa bits.
-The `fnuz` suffix additionally denotes unsigned zero (no -0), used
-in AMD hardware.
+**8 位格式** (`Float8_e5m2`、`Float8_e4m3fn` 及其 `fnuz` 变体) 是 AI 加速器的超紧凑格式，其中内存带宽是主要瓶颈。命名指示位分配：`e5m2` 表示 5 个指数位和 2 个尾数位。`fnuz` 后缀还表示无符号零（无 -0），用于 AMD 硬件。
 
-**4-bit format** (`Float4_e2m1fn`) offers extreme compression with only 2
-exponent bits and 1 mantissa bit, used in specialized inference scenarios
-where accuracy can be traded for maximum throughput.
+**4 位格式** (`Float4_e2m1fn`) 仅提供 2 个指数位和 1 个尾数位的极端压缩，用于精度可以换取最大吞吐量的专用推理场景。
 
-### Numeric literals
+## 数值字面量
 
-In addition to these numeric types, the standard libraries provides integer and
-floating-point literal types,
-[`IntLiteral`](/docs/std/builtin/int_literal/IntLiteral/) and
-[`FloatLiteral`](/docs/std/builtin/float_literal/FloatLiteral/).
+除了这些数值类型，标准库还提供整数和浮点字面量类型，[`IntLiteral`](/docs/std/builtin/int_literal/IntLiteral/) 和 [`FloatLiteral`](/docs/std/builtin/float_literal/FloatLiteral/)。
 
-These literal types are used at compile time to represent literal numbers that
-appear in the code. In general, you should never instantiate these types
-yourself.
+这些字面量类型在编译时用于表示代码中出现的字面量数字。通常，你绝不应该自己实例化这些类型。
 
-Table 5 summarizes the literal formats you can use to represent numbers.
+表 5 概述了你可以用来表示数字的字面量格式。
 
 <figure>
-<figcaption><b>Table 5.</b> Numeric literal formats</figcaption>
+<figcaption><b>表 5.</b> 数值字面量格式</figcaption>
 
-| Format                 | Examples        | Notes                                                                                            |
+| 格式                 | 示例        | 注释                                                                                            |
 |------------------------|-----------------|--------------------------------------------------------------------------------------------------|
-| Integer literal        | `1760`          | Integer literal, in decimal format.                                                              |
-| Hexadecimal literal    | `0xaa`, `0xFF`  | Integer literal, in hexadecimal format.<br />Hex digits are case-insensitive.                    |
-| Octal literal          | `0o77`          | Integer literal, in octal format.                                                                |
-| Binary literal         | `0b0111`        | Integer literal, in binary format.                                                               |
-| Floating-point literal | `3.14`, `1.2e9` | Floating-point literal.<br />Must include the decimal point to be interpreted as floating-point. |
+| 整数字面量        | `1760`          | 整数字面量，十进制格式。                                                              |
+| 十六进制字面量    | `0xaa`, `0xFF`  | 整数字面量，十六进制格式。<br />十六进制数字不区分大小写。                    |
+| 八进制字面量          | `0o77`          | 整数字面量，八进制格式。                                                                |
+| 二进制字面量         | `0b0111`        | 整数字面量，二进制格式。                                                               |
+| 浮点字面量 | `3.14`, `1.2e9` | 浮点字面量。<br />必须包含小数点才能解释为浮点数。 |
 
 </figure>
 
-At compile time, the literal types are arbitrary-precision (also called
-infinite-precision) values, so the compiler can perform compile-time
-calculations without overflow or rounding errors.
+在编译时，字面量类型是任意精度（也称为无限精度）值，因此编译器可以执行编译时计算而不会溢出或舍入错误。
 
-At runtime the values are converted to finite-precision types—`Int` for
-integer values, and `Float64` for floating-point values. (This process of
-converting a value that can only exist at compile time into a runtime value is
-called *materialization*.)
+在运行时，值转换为有限精度类型——整数值为 `Int`，浮点值为 `Float64`。（这种将仅在编译时存在的值转换为运行时值的过程称为*实例化*。）
 
-The following code sample shows the difference between an arbitrary-precision
-calculation and the same calculation done using `Float64` values at runtime,
-which suffers from rounding errors.
+以下代码示例显示了任意精度计算与使用 `Float64` 值在运行时执行相同计算的差异，后者会受到舍入错误的影响。
 
 ```mojo
 var arbitrary_precision = 3.0 * (4.0 / 3.0 - 1.0)
-# use a variable to force the following calculation to occur at runtime
+# 使用变量强制以下计算在运行时发生
 var three = 3.0
 var finite_precision = three * (4.0 / three - 1.0)
 print(arbitrary_precision, finite_precision)
@@ -326,29 +235,20 @@ print(arbitrary_precision, finite_precision)
 1.0 0.99999999999999978
 ```
 
-### `SIMD` and `DType`
+### `SIMD` 和 `DType`
 
-To support high-performance numeric processing, Mojo uses the
-[`SIMD`](/docs/std/builtin/simd/SIMD/) type as the basis for its numeric
-types. SIMD (single instruction, multiple data) is a processor technology that
-allows you to perform an operation on an entire set of operands at once. Mojo's
-`SIMD` type abstracts SIMD operations. A `SIMD` value represents a SIMD
-*vector*—that is, a fixed-size array of values that can fit into a processor's
-register. SIMD vectors are defined by two
-[*parameters*](/docs/manual/parameters/):
+为了支持高性能数值处理，Mojo 使用 [`SIMD`](/docs/std/builtin/simd/SIMD/) 类型作为其数值类型的基础。SIMD（单指令，多数据）是一种处理器技术，允许你一次对一组操作数执行操作。Mojo 的 `SIMD` 类型抽象了 SIMD 运算。`SIMD` 值表示 SIMD *向量*——即可以放入处理器寄存器的固定大小值数组。SIMD 向量由两个 [*参数*](/docs/manual/parameters/) 定义：
 
-- A `DType` value, defining the data type in the vector (for example,
-  32-bit floating-point numbers).
-- The number of elements in the vector, which must be a power of two.
+- 一个 `DType` 值，定义向量中的数据类型（例如，32 位浮点数）。
+- 向量中的元素数量，必须是 2 的幂。
 
-For example, you can define a vector of four `Float32` values like this:
+例如，你可以这样定义四个 `Float32` 值的向量：
 
 ```mojo
 var vec = SIMD[DType.float32, 4](3.0, 2.0, 2.0, 1.0)
 ```
 
-Math operations on SIMD values are
-applied *elementwise*, on each individual element in the vector. For example:
+SIMD 值上的数学运算在向量中的每个单个元素上*逐元素*应用。例如：
 
 ```mojo
 var vec1 = SIMD[DType.int8, 4](2, 3, 5, 7)
@@ -361,14 +261,9 @@ print(product)
 [2, 6, 15, 28]
 ```
 
-### Scalar values
+### 标量值
 
-The `SIMD` module defines several
-[`comptime` values](/docs/manual/metaprogramming/comptime-evaluation/#comptime-values)
-that function as *type aliases*—shorthand names for different types of `SIMD`
-vectors. In particular, the `Scalar` type is just a `SIMD` vector with a single
-element. The numeric types listed in [Table 1](#table-1), like `Int8` and
-`Float32` are actually type aliases for different types of scalar values:
+`SIMD` 模块定义了几个 [`comptime` 值](/docs/manual/metaprogramming/comptime-evaluation/#comptime-values)，它们充当*类型别名*——不同类型 `SIMD` 向量的简写名称。特别是，`Scalar` 类型只是一个具有单个元素的 `SIMD` 向量。[表 1](#table-1) 中列出的数值类型，如 `Int8` 和 `Float32` 实际上是不同类型标量值的类型别名：
 
 ```mojo
 comptime Scalar = SIMD[size=1]
@@ -376,27 +271,17 @@ comptime Int8 = Scalar[DType.int8]
 comptime Float32 = Scalar[DType.float32]
 ```
 
-This may seem a little confusing at first, but it means that whether you're
-working with a single `Float32` value or a vector of float32 values,
-the math operations go through exactly the same code path.
+起初这可能看起来有点令人困惑，但这意味着无论你是在处理单个 `Float32` 值还是浮点值向量，数学运算都经过完全相同的代码路径。
 
-#### The `DType` type
+#### `DType` 类型
 
-The `DType` struct describes the different data types that a `SIMD` vector can
-hold, and defines a number of utility functions for operating on those data
-types. The `DType` struct defines a set of
-[`comptime` members](/docs/manual/parameters/#comptime-members) that act as
-identifiers for the different data types, like `DType.int8` and `DType.float32`.
-You use these `comptime` members when declaring a `SIMD` vector:
+`DType` 结构描述了 `SIMD` 向量可以持有的不同数据类型，并定义了许多用于对这些数据类型进行操作的实用函数。`DType` 结构定义了一组 [`comptime` 成员](/docs/manual/parameters/#comptime-members)，它们作为不同数据类型的标识符，如 `DType.int8` 和 `DType.float32`。在声明 `SIMD` 向量时使用这些 `comptime` 成员：
 
 ```mojo
 var v: SIMD[DType.float64, 16]
 ```
 
-Note that `DType.float64` isn't a *type*, it's a value that describes a data
-type. You can't create a variable with the type `DType.float64`. You can create
-a variable with the type `SIMD[DType.float64, 1]` (or `Float64`, which is the
-same thing).
+请注意，`DType.float64` 不是*类型*，它是一个描述数据类型的值。你不能创建类型为 `DType.float64` 的变量。你可以创建类型为 `SIMD[DType.float64, 1]`（或 `Float64`，这是相同的）的变量。
 
 ```mojo
 from std.utils.numerics import max_finite, min_finite
@@ -417,26 +302,20 @@ Min/max finite values for float32
 -3.4028234663852886e+38 3.4028234663852886e+38
 ```
 
-There are several other data types in the standard library that also use
-the `DType` abstraction.
+标准库中还有其他几种数据类型也使用 `DType` 抽象。
 
-### Numeric type conversion
+### 数值类型转换
 
-[Constructors and implicit conversion](/docs/manual/lifecycle/life/#constructors-and-implicit-conversion)
-documents the circumstances in which Mojo automatically converts a value from
-one type to another. Importantly, numeric [operators](/docs/manual/operators/)
-**don't** automatically narrow or widen operands to a common type.
+[构造函数和隐式转换](/docs/manual/lifecycle/life/#constructors-and-implicit-conversion) 记录了 Mojo 自动将值从一个类型转换为另一个类型的情形。重要的是，数值 [运算符](/docs/manual/operators/) **不会**自动将操作数收窄或扩展为通用类型。
 
-You can explicitly convert a `SIMD` value to a different `SIMD` type either
-by invoking its [`cast()`](/docs/std/builtin/simd/SIMD/#cast) method or by
-passing it as an argument to the constructor of the target type. For example:
+你可以通过调用其 [`cast()`](/docs/std/builtin/simd/SIMD/#cast) 方法或将值作为参数传递给目标类型的构造函数，将 `SIMD` 值显式转换为不同的 `SIMD` 类型。例如：
 
 ```mojo
 simd1 = SIMD[DType.float32, 4](2.2, 3.3, 4.4, 5.5)
 simd2 = SIMD[DType.int16, 4](-1, 2, -3, 4)
-simd3 = simd1 * simd2.cast[DType.float32]()  # Convert with cast() method
+simd3 = simd1 * simd2.cast[DType.float32]()  # 使用 cast() 方法转换
 print("simd3:", simd3)
-simd4 = simd2 + SIMD[DType.int16, 4](simd1)  # Convert with SIMD constructor
+simd4 = simd2 + SIMD[DType.int16, 4](simd1)  # 使用 SIMD 构造函数转换
 print("simd4:", simd4)
 ```
 
@@ -445,13 +324,12 @@ simd3: [-2.2, 6.6, -13.200001, 22.0]
 simd4: [1, 5, 1, 9]
 ```
 
-You can convert a `Scalar` value by passing it as an argument to the constructor
-of the target type. For example:
+你可以通过将值作为参数传递给目标类型的构造函数来转换 `Scalar` 值。例如：
 
 ```mojo
 var my_int: Int16 = 12                 # SIMD[DType.int16, 1]
 var my_float: Float32 = 0.75           # SIMD[DType.float32, 1]
-result = Float32(my_int) * my_float    # Result is SIMD[DType.float32, 1]
+result = Float32(my_int) * my_float    # 结果是 SIMD[DType.float32, 1]
 print("Result:", result)
 ```
 
@@ -459,25 +337,15 @@ print("Result:", result)
 Result: 9.0
 ```
 
-You can convert a scalar value of any numeric type to `Int` by passing the value
-to the [`Int()`](/docs/std/builtin/int/Int/#__init__) constructor method.
-Additionally, you can pass an instance of any struct that implements the
-[`Intable`](/docs/std/builtin/int/Intable/) trait or
-[`IntableRaising`](/docs/std/builtin/int/IntableRaising/) trait to the `Int()`
-constructor to convert that instance to an `Int`.
+你可以通过将值传递给 [`Int()`](/docs/std/builtin/int/Int/#__init__) 构造函数方法，将任何数值类型的标量值转换为 `Int`。此外，你可以将实现 [`Intable`](/docs/std/builtin/int/Intable/) trait 或 [`IntableRaising`](/docs/std/builtin/int/IntableRaising/) trait 的任何结构的实例传递给 `Int()` 构造函数，将该实例转换为 `Int`。
 
-You can convert an `Int` or `IntLiteral` value to the `UInt` type by passing the
-value to the [`UInt()`](/docs/std/builtin/simd/#uint) constructor.
-You can't convert other numeric types to `UInt` directly, though you can first
-convert them to `Int` and then to `UInt`.
+你可以通过将值传递给 [`UInt()`](/docs/std/builtin/simd/#uint) 构造函数，将 `Int` 或 `IntLiteral` 值转换为 `UInt` 类型。不过，你不能直接将其他数值类型转换为 `UInt`，但你可以先将它们转换为 `Int`，然后再转换为 `UInt`。
 
-## Strings
+## 字符串
 
-Strings are Mojo's primary text type. They store UTF-8 encoded text and
-provide a safe, ergonomic interface for string manipulation.
+字符串是 Mojo 的主要文本类型。它们存储 UTF-8 编码的文本，并为字符串操作提供安全、方便的接口。
 
-Mojo's `String` type is a mutable string. `String` supports a variety
-of operators and common methods:
+Mojo 的 `String` 类型是可变字符串。`String` 支持各种运算符和常用方法：
 
 ```mojo
 var s: String = "Testing"
@@ -485,53 +353,41 @@ s += " Mojo strings"
 print(s) # Testing Mojo strings
 ```
 
-### Construction
+### 构造
 
-Many standard library types conform to the
-[`Writable`](/docs/std/format/Writable/) trait, which indicates
-that a value can be converted into a `String` using the `String(...)`
-constructor.
+许多标准库类型符合 [`Writable`](/docs/std/format/Writable/) trait，这表示值可以使用 `String(...)` 构造函数转换为 `String`。
 
-The built-in [`print()`](/docs/std/io/io/print/) function accepts values
-that conform to the `Writable` trait.
+内置的 [`print()`](/docs/std/io/io/print/) 函数接受符合 `Writable` trait 的值。
 
-Use `String(value)` to explicitly convert a value to a `String`:
+使用 `String(value)` 显式将值转换为 `String`：
 
 ```mojo
 var s = "Items in list: " + String(5)
 print(s) # Items in list: 5
 ```
 
-Or, use the string constructor with variadic `Writable` types,
-so you don't have to call `String()` on each value:
+或者，使用带可变 `Writable` 类型的字符串构造函数，这样你就不必对每个值调用 `String()`：
 
 ```mojo
 var s = String("Items in list: ", 5)
 print(s) # Items in list: 5
 ```
 
-### Emoji and grapheme clusters
+### 表情符号和图符簇
 
-Mojo source files are UTF-8, letting you write emoji and other non-ASCII
-characters directly inside string literals.
+Mojo 源文件是 UTF-8，允许你直接在字符串字面量中编写表情符号和其他非 ASCII 字符。
 
 ```mojo
 var wave = "👋"
 ```
 
-The standard library counts emoji three different ways, and the answers
-usually disagree:
+标准库以三种不同方式计算表情符号，答案通常不一致：
 
-- `byte_length()` returns the number of UTF-8 bytes.
-- `count_codepoints()` counts the Unicode code points.
-- `count_graphemes()` returns the number of user-perceived characters
-  (grapheme clusters), following
-  [UAX #29](https://www.unicode.org/reports/tr29/).
+- `byte_length()` 返回 UTF-8 字节的数量。
+- `count_codepoints()` 计算Unicode 码点。
+- `count_graphemes()` 返回用户感知的字符（图符簇）数量，遵循 [UAX #29](https://www.unicode.org/reports/tr29/)。
 
-The grapheme count is what matches what a human would tell you if you
-asked them to "count characters." A family emoji, a flag, and a waving
-hand with a skin tone are each one grapheme, even though each is built
-from several joined code points:
+图符计数是与你要求某人"计数字符"时他们会告诉你的相符的。家庭表情符号、旗帜和带肤色挥手的手各是一个图符，即使每个都是由几个连接的码点组成的：
 
 ```mojo
 def show(label: StaticString, s: StringSlice):
@@ -549,7 +405,7 @@ def main():
     show("namaste   ", "नमस्ते")
 ```
 
-Output:
+输出：
 
 ```text
 family     bytes=25  codepoints=7  graphemes=1
@@ -558,125 +414,95 @@ wave       bytes=8   codepoints=2  graphemes=1
 namaste    bytes=18  codepoints=6  graphemes=3
 ```
 
-If you'd rather not embed non-ASCII bytes in your source, for example, in
-ASCII-only codebases, you can spell the code point with a hex escape or
-`chr()`:
+如果你不想在源代码中嵌入非 ASCII 字节，例如在仅限 ASCII 的代码库中，你可以使用十六进制转义或 `chr()` 来拼写码点：
 
 ```mojo
-var wave = "\U0001F44B"   # 8-digit hex escape
-var wave2 = chr(0x1F44B)  # chr() function
+var wave = "\U0001F44B"   # 8 位十六进制转义
+var wave2 = chr(0x1F44B)  # chr() 函数
 
-var copy   = "\u00A9"   # 4-digit hex escape, ©
-var euro   = "\u20AC"   # 4-digit hex escape, €
+var copy   = "\u00A9"   # 4 位十六进制转义，©
+var euro   = "\u20AC"   # 4 位十六进制转义，€
 ```
 
-Mojo's 4-digit `\uHHHH` escape spells code points up to U+FFFF. The
-8-digit `\U` form extends to U+10FFFF, Unicode's upper limit, covering
-emoji like 👋 (U+1F44B) and other characters above the Basic Multilingual
-Plane. The `chr()` function works for the full range too.
+Mojo 的 4 位 `\uHHHH` 转义拼写最多到 U+FFFF 的码点。8 位 `\U` 形式扩展到 U+10FFFF（Unicode 的上限），覆盖像 👋 (U+1F44B) 等表情符号和其他基本多语言平面以上的字符。`chr()` 函数也适用于完整范围。
 
-Both forms reject surrogate code points (U+D800 to U+DFFF). Surrogates
-are reserved for UTF-16 encoding and aren't valid on their own. To
-escape a character above U+FFFF, write its full code point with `\U`.
-Don't use a UTF-16 surrogate pair.
+这两种形式都拒绝代理码点（U+D800 到 U+DFFF）。代理是为 UTF-16 编码保留的，它们本身不是有效的。要转义 U+FFFF 以上的字符，请使用 `\U` 写入其完整码点。不要使用 UTF-16 代理对。
 
-### String formatting
+### 字符串格式化
 
-The `format()` method inserts values into a string using manual or
-automatic positional indexing. Replacement fields use braces:
+`format()` 方法使用手动或自动位置索引将值插入字符串。替换字段使用大括号：
 
 ```mojo
 print("{0} {1} {0}".format("Mojo", 1.125))  # Mojo 1.125 Mojo
 print("{} {}".format(True, "hello world"))  # True hello world
 ```
 
-Mojo's `TString` (template string) replaces the functionality of
-the `format()` method with direct expressions and better
-performance characteristics.
+Mojo 的 `TString`（模板字符串）用直接表达式和更好的性能特性替换了 `format()` 方法的功能。
 
-`TString`s work like `format()`, but they insert
-[`Writable`](/docs/std/format/Writable/) representations of expressions
-into replacement fields. This provides safe and flexible string
-processing:
+`TString` 的工作方式与 `format()` 相同，但它们将表达式的 [`Writable`](/docs/std/format/Writable/) 表示插入替换字段。这提供了安全灵活的字符串处理：
 
 ```mojo
 var count = 3
 var items = "apples"
-var template = t"Give me {count} {items}." # Template string
-print(template) # Output: Give me 3 apples.
+var template = t"Give me {count} {items}." # 模板字符串
+print(template) # 输出：Give me 3 apples.
 ```
 
-`TString` values are lazy. They don't allocate until you explicitly
-construct a `String`:
+`TString` 值是惰性的。它们不会分配内存，直到你显式构造一个 `String`：
 
 ```mojo
 var x = 41
-print(t"The answer is {x + 1}")  # The answer is 42 (no allocation)
+print(t"The answer is {x + 1}")  # The answer is 42 (无分配)
 
 var name = "Nate"
-var template = t"Hello, {name}!" # template creation
+var template = t"Hello, {name}!" # 模板创建
 
-print(template)          # Hello, Nate! (no allocation)
-var s = String(template) # explicitly construct a string
+print(template)          # Hello, Nate! (无分配)
+var s = String(template) # 显式构造字符串
 ```
 
-`TString`s can add arbitrary expressions within the replacement fields:
+`TString` 可以在替换字段中添加任意表达式：
 
 ```mojo
 var list = [1, 2, 3]
 print(t"{list[0] + list[1]}") # 3
 ```
 
-### Raw strings
+### 原始字符串
 
-In Mojo, **raw strings** are string literals prefixed with `r`.
-If you ran the following command it would print on one line, not
-two, because raw strings prevent backslash escape sequences from
-being interpreted:
+在 Mojo 中，**原始字符串**是带有 `r` 前缀的字符串字面量。如果你运行以下命令，它将在一行上打印，而不是两行，因为原始字符串阻止反斜杠转义序列被解释：
 
 ```mojo
-print(r"Hello\nWorld")  # Hello\nWorld, with the backslash and n
+print(r"Hello\nWorld")  # Hello\nWorld，带有反斜杠和 n
 ```
 
-Raw strings help with regular expressions, code generation,
-serialization code, and other applications where you want to use
-escape sequences as literal entries in your string. Unlike
-normal strings, escapes aren't processed.
+原始字符串有助于正则表达式、代码生成、序列化代码和其他应用程序，你希望在这些应用程序中将转义序列作为字符串中的字面条目使用。与普通字符串不同，转义序列不会被处理。
 
-Rawness applies to all forms of strings: single line, multi-line,
-docstrings, and `TString`s. Raw `TString`s support interpolation
-but won't expand escape sequences:
+原始性适用于所有形式的字符串：单行、多行、文档字符串和 `TString`。原始 `TString` 支持插值但不会展开转义序列：
 
 ```mojo
 var name = "Nate"
-print(rt"Hello,\t{name}.")  # Hello,\tNate., with the backslash and t
+print(rt"Hello,\t{name}.")  # Hello,\tNate.,带有反斜杠和 t
 ```
 
-Raw strings *still* need a way to terminate, so if you have to use
-`"` within your content, use an alternate form of quote, such as
-single quote (`'`) or triple quotes, (`"""`, `'''`) to enclose
-it:
+原始字符串*仍然*需要一种终止方式，因此如果你必须在内容中使用 `"`，请使用另一种引号形式，如单引号 (`'`) 或三引号 (`"""`、`'''`) 来包围它：
 
 ```mojo
 r'She said, "Hello, World!"'
 ```
 
-### String literals
+### 字符串字面量
 
-As with numeric types, the standard library includes a string literal type used
-to represent literal strings in the program source. String literals are
-enclosed in either single or double quotes.
+与数值类型一样，标准库包括一个字符串字面量类型，用于表示程序源中的字面量字符串。字符串字面量包含在单引号或双引号中。
 
-Adjacent literals are concatenated together, so you can define a long string
-using a series of literals broken up over several lines:
+相邻的字面量被连接在一起，因此你可以使用一系列跨多行拆分的字面量来定义长字符串：
 
 ```mojo
 comptime s = "A very long string which is "
         "broken into two literals for legibility."
 ```
 
-To define a multi-line string, enclose the literal in three single or double
-quotes:
+要定义多行字符串，请用三个单引号或双引号包围字面量：
 
 ```mojo
 comptime s = """
@@ -685,10 +511,9 @@ enter long blocks of text, including
 newlines."""
 ```
 
-Note that the triple double quote form is also used for API documentation
-strings.
+请注意，三双引号形式也用于 API 文档字符串。
 
-A `StringLiteral` will materialize to a `String` when used at run-time:
+`StringLiteral` 在运行时使用时会实例化为 `String`：
 
 ```mojo
 comptime param = "foo"        # type = StringLiteral
@@ -696,10 +521,9 @@ var runtime_value = "bar"  # type = String
 var runtime_value2 = param # type = String
 ```
 
-## Booleans
+## 布尔值
 
-Mojo's `Bool` type represents a boolean value. It can take one of two values,
-`True` or `False`. You can negate a boolean value using the `not` operator.
+Mojo 的 `Bool` 类型表示布尔值。它可以取两个值之一，`True` 或 `False`。你可以使用 `not` 运算符对布尔值进行求反。
 
 ```mojo
 var conditionA = False
@@ -712,27 +536,21 @@ print(conditionA, conditionB)
 False True
 ```
 
-Many types have a boolean representation. Any type that implements the
-[`Boolable`](/docs/std/builtin/bool/Boolable/) trait has a boolean
-representation. As a general principle, collections evaluate as True if they
-contain any elements, False if they are empty; strings evaluate as True if they
-have a non-zero length.
+许多类型都有布尔表示形式。任何实现 [`Boolable`](/docs/std/builtin/bool/Boolable/) trait 的类型都有布尔表示形式。作为一般原则，如果集合包含任何元素则为 True，如果为空则为 False；字符串如果具有非零长度则为 True。
 
-## Tuples
+## 元组
 
-Mojo's `Tuple` type represents an immutable tuple consisting of zero or more
-values, separated by commas. Tuples can consist of multiple types and you can
-index into tuples in multiple ways.
+Mojo 的 `Tuple` 类型表示由零个或多个值组成的不可变元组，用逗号分隔。元组可以由多种类型组成，你可以以多种方式索引元组。
 
 ```mojo
-# Tuples are immutable and can hold multiple types
+# 元组是不可变的，可以包含多种类型
 example_tuple = Tuple[Int, String](1, "Example")
 
-# Assign multiple variables at once
+# 一次分配多个变量
 x, y = example_tuple
 print(x, y)
 
-# Get individual values with an index
+# 使用索引获取单个值
 s = example_tuple[1]
 print(s)
 ```
@@ -742,7 +560,7 @@ print(s)
 Example
 ```
 
-You can also create a tuple without explicit typing.
+你也可以不使用显式类型创建元组。
 
 ```mojo
 example_tuple = (1, "Example")
@@ -754,64 +572,43 @@ print(s)
 Example
 ```
 
-## Collection types
+## 集合类型
 
-The Mojo standard library also includes a set of basic collection types that
-can be used to build more complex data structures:
+Mojo 标准库还包括一组基本集合类型，可用于构建更复杂的数据结构：
 
-- [`List`](/docs/std/collections/list/List/), a dynamically-sized array of
-  items.
-- [`Dict`](/docs/std/collections/dict/Dict/), an associative array of
-  key-value pairs.
-- [`Set`](/docs/std/collections/set/Set/), an unordered collection of unique
-  items.
+- [`List`](/docs/std/collections/list/List/)，元素的动态大小数组。
+- [`Dict`](/docs/std/collections/dict/Dict/)，键值对关联数组。
+- [`Set`](/docs/std/collections/set/Set/)，唯一项目的无序集合。
 - [`Optional`](/docs/std/collections/optional/Optional/)
-  represents a value that may or may not be present.
+  表示可能存在也可能不存在的值。
 
-The collection types are *generic types*: while a given collection can only
-hold a specific type of value (such as `Int` or `Float64`), you specify the
-type at compile time using a [parameter](/docs/manual/parameters/). For
-example, you can create a `List` of `Int` values like this:
+集合类型是*泛型类型*：虽然给定集合只能包含特定类型的值（如 `Int` 或 `Float64`），但你使用[参数](/docs/manual/parameters/)在编译时指定类型。例如，你可以这样创建 `Int` 值的 `List`：
 
 ```mojo
 var l: List[Int] = [1, 2, 3, 4]
-# l.append(3.14) # error: FloatLiteral cannot be converted to Int
+# l.append(3.14) # 错误：FloatLiteral 无法转换为 Int
 ```
 
-You don't always need to specify the type explicitly. If Mojo can *infer* the
-type, you can omit it. For example, when you construct a list from a set of
-integer literals, Mojo creates a `List[Int]`.
+你并不总是需要显式指定类型。如果 Mojo 可以*推断*类型，你可以省略它。例如，当你从一组整数字面量构造列表时，Mojo 创建一个 `List[Int]`。
 
 ```mojo
-# Inferred type == List[Int]
+# 推断的类型 == List[Int]
 var l1 = [1, 2, 3, 4]
 ```
 
-Where you need a more flexible collection, the
-[`Variant`](/docs/std/utils/variant/Variant/) type can hold different types
-of values. For example, a `Variant[Int32, Float64]` can hold either an `Int32`
-*or* a `Float64` value at any given time. (Using `Variant` is not covered in
-this section, see the [API docs](/docs/std/utils/variant/Variant/) for more
-information.)
+当你需要更灵活的集合时，[`Variant`](/docs/std/utils/variant/Variant/) 类型可以持有不同类型的值。例如，`Variant[Int32, Float64]` 可以在任何给定时间持有 `Int32` *或* `Float64` 值。（本节不涉及使用 `Variant`，请参阅 [API 文档](/docs/std/utils/variant/Variant/) 获取更多信息。）
 
-The following sections give brief introduction to the main collection types.
+以下章节简要介绍了主要集合类型。
 
 ### List
 
-[`List`](/docs/std/collections/list/List/) is a dynamically-sized array of
-elements. List elements need to conform to the
-[`Copyable`](/docs/std/builtin/value/Copyable/) trait. Most of the common
-standard library primitives, like `Int`, `String`, and `SIMD` conform to this
-trait. You can create a `List` by passing the element type as a parameter, like
-this:
+[`List`](/docs/std/collections/list/List/) 是元素的动态大小数组。列表元素需要符合 [`Copyable`](/docs/std/builtin/value/Copyable/) trait。大多数常见标准库原语，如 `Int`、`String` 和 `SIMD` 都符合此 trait。你可以通过将元素类型作为参数传递来创建 `List`，如下所示：
 
 ```mojo
 var l = List[String]()
 ```
 
-The `List` type supports a subset of the Python `list` API, including the
-ability to append to the list, pop items out of the list, and access list items
-using subscript notation.
+`List` 类型支持 Python `list` API 的子集，包括追加到列表、从列表中弹出项目和使用下标表示法访问列表项的功能。
 
 ```mojo
 var list = [2, 3, 5]
@@ -827,43 +624,37 @@ Popping last item from list:  11
 2, 3, 5, 7,
 ```
 
-Note that the previous code sample leaves out the type parameter when creating
-the list. Because the list is being created with a set of `Int` values, Mojo can
-*infer* the type from the arguments.
+请注意，前面的代码示例在创建列表时省略了类型参数。由于列表是用一组 `Int` 值创建的，Mojo 可以从参数*推断*类型。
 
-- Mojo supports list, set, and dictionary literals for collection
-  initialization:
+- Mojo 支持列表、集合和字典字面量用于集合初始化：
 
   ```mojo
-  # List literal, element type infers to Int.
+  # 列表字面量，元素类型推断为 Int。
   var nums = [2, 3, 5]
   ```
 
-  You can also use an explicit type if you want a specific element type:
+  如果想要特定元素类型，也可以使用显式类型：
 
   ```mojo
   var list : List[UInt8] = [2, 3, 5]
   ```
 
-  You can also use list "comprehensions" for compact conditional initialization:
+  你还可以使用列表"推导式"进行紧凑的条件初始化：
 
   ```mojo
   var list2 = [x*Int(y) for x in nums for y in list if x != 3]
   ```
 
-- You can't `print()` a list, or convert it directly into a string.
+- 你不能 `print()` 列表，也不能直接将其转换为字符串。
 
   ```mojo
-  # Does not work
+  # 不工作
   print(list)
   ```
 
-  As shown above, you can print the individual elements in a list as long as
-  they're a [`Writable`](/docs/std/format/Writable/) type.
+  如上所示，只要元素是 [`Writable`](/docs/std/format/Writable/) 类型，你就可以打印列表中的各个元素。
 
-- Iterating a `List` returns an immutable
-  [reference](/docs/manual/values/lifetimes/#working-with-references) to each
-  item:
+- 迭代 `List` 会返回每个项目的不可变[引用](/docs/manual/values/lifetimes/#working-with-references)：
 
 ```mojo
 var list = [2, 3, 4]
@@ -875,14 +666,13 @@ for item in list:
 2, 3, 4,
 ```
 
-If you would like to mutate the elements of the list, capture the reference to
-the element with `ref` instead of making a copy:
+如果你想修改列表的元素，请使用 `ref` 捕获对元素的引用而不是创建副本：
 
 ```mojo
 var list = [2, 3, 4]
-for ref item in list:     # Capture a ref to the list element
+for ref item in list:     # 捕获列表元素的引用
       print(item, end=", ")
-      item = 0  # Mutates the element inside the list
+      item = 0  # 修改列表内的元素
 print("\nAfter loop:", list[0], list[1], list[2])
 ```
 
@@ -891,39 +681,31 @@ print("\nAfter loop:", list[0], list[1], list[2])
 After loop: 0 0 0
 ```
 
-You can see that the original loop entries were modified.
+你可以看到原始循环条目已被修改。
 
 ### Dict
 
-The [`Dict`](/docs/std/collections/dict/Dict/) type is an associative array
-that holds key-value pairs. You can create a `Dict` by specifying the key type
-and value type as parameters and using dictionary literals:
+[`Dict`](/docs/std/collections/dict/Dict/) 类型是保存键值对的关联数组。你可以通过指定键类型和值类型作为参数并使用字典字面量来创建 `Dict`：
 
 ```mojo
-# Empty dictionary
+# 空字典
 var empty_dict: Dict[String, Float64] = {}
 
-# Dictionary with initial key-value pairs
+# 带有初始键值对的字典
 var values: Dict[String, Float64] = {"pi": 3.14159, "e": 2.71828}
 ```
 
-You can also use the constructor syntax:
+你也可以使用构造函数语法：
 
 ```mojo
 var values = Dict[String, Float64]()
 ```
 
-The dictionary's key type must conform to the
-[`KeyElement`](/docs/std/collections/dict/#keyelement) trait, and value elements
-must conform to the [`Copyable`](/docs/std/builtin/value/Copyable/) trait.
+字典的键类型必须符合 [`KeyElement`](/docs/std/collections/dict/#keyelement) trait，值元素必须符合 [`Copyable`](/docs/std/builtin/value/Copyable/) trait。
 
-You can insert and remove key-value pairs, update the value assigned to a key,
-and iterate through keys, values, or items in the dictionary.
+你可以插入和删除键值对，更新分配给键的值，并遍历字典中的键、值或项目。
 
-The `Dict` iterators all yield
-[references](/docs/manual/values/lifetimes/#working-with-references), which are
-copied into the declared name by default, but you can use the `ref` marker to
-avoid the copy:
+`Dict` 迭代器都返回[引用](/docs/manual/values/lifetimes/#working-with-references)，默认情况下它们被复制到声明的名称中，但你可以使用 `ref` 标记来避免复制：
 
 ```mojo
 var d: Dict[String, Float64] = {
@@ -941,20 +723,13 @@ elasticity 1.3
 electricity 9.6999999999999993
 ```
 
-This is an unmeasurable micro-optimization in this case, but is useful when
-working with types that aren't `Copyable`.
+在这种情况下，这是一个无法测量的微优化，但在处理不是 `Copyable` 的类型时很有用。
 
 ### Set
 
-The [`Set`](/docs/std/collections/set/Set/) type represents a set of unique
-values. You can add and remove elements from the set, test whether a value
-exists in the set, and perform set algebra operations, like unions and
-intersections between two sets.
+[`Set`](/docs/std/collections/set/Set/) 类型表示唯一值集合。你可以向集合添加和删除元素，测试值是否存在于集合中，并执行集合代数运算，如两个集合之间的并集和交集。
 
-Sets are generic and the element type must conform to the
-[`KeyElement`](/docs/std/collections/dict/#keyelement) trait. Like lists and
-dictionaries, sets support standard literal syntax, as well as generator
-comprehensions:
+集合是泛型的，元素类型必须符合 [`KeyElement`](/docs/std/collections/dict/#keyelement) trait。与列表和字典一样，集合支持标准字面量语法以及生成器推导式：
 
 ```mojo
 i_like = {"sushi", "ice cream", "tacos", "pho"}
@@ -974,25 +749,18 @@ We both like:
 
 ### Optional
 
-An [`Optional`](/docs/std/collections/optional/Optional/) represents a
-value that may or may not be present. Like the other collection types, it is
-generic, and can hold any type that conforms to the
-[`Copyable`](/docs/std/builtin/value/Copyable/) trait.
+[`Optional`](/docs/std/collections/optional/Optional/) 表示可能存在也可能不存在的值。与其他集合类型一样，它是泛型的，可以持有任何符合 [`Copyable`](/docs/std/builtin/value/Copyable/) trait 的类型。
 
 ```mojo
-# Two ways to initialize an Optional with a value
+# 两种用值初始化 Optional 的方法
 var opt1 = Optional(5)
 var opt2: Optional[Int] = 5
-# Two ways to initialize an Optional with no value
+# 两种用无值初始化 Optional 的方法
 var opt3 = Optional[Int]()
 var opt4: Optional[Int] = None
 ```
 
-An `Optional` evaluates as `True` when it holds a value, `False` otherwise. If
-the `Optional` holds a value, you can retrieve a reference to the value using
-the `value()` method. But calling `value()` on an `Optional` with no value
-results in undefined behavior, so you should always guard a call to `value()`
-inside a conditional that checks whether a value exists.
+当 `Optional` 持有值时，它计算为 `True`，否则为 `False`。如果 `Optional` 持有值，你可以使用 `value()` 方法检索对值的引用。但在没有值的 `Optional` 上调用 `value()` 会导致未定义行为，因此你应该始终在检查是否存在值的条件中保护对 `value()` 的调用。
 
 ```mojo
 var opt: Optional[String] = "Testing"
@@ -1005,8 +773,7 @@ if opt:
 Testing
 ```
 
-Alternately, you can use the `or_else()` method, which returns the stored
-value if there is one, or a user-specified default value otherwise:
+或者，你可以使用 `or_else()` 方法，该方法在有存储值时返回存储的值，否则返回用户指定的默认值：
 
 ```mojo
 var custom_greeting: Optional[String] = None

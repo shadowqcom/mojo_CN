@@ -1,17 +1,14 @@
 ---
 title: "hasher"
 sidebar_label: "hasher"
-description: "Defines the Hasher trait and default hasher implementations.  This module provides the `Hasher` trait for implementing hash algorithms and default hasher instances for common use cases. The `default_h"
+description: "定义 Hasher trait 和默认哈希器实现。此模块提供用于实现哈希算法的 `Hasher` trait 和常见用例的默认哈希器实例。"
 ---
 
 # hasher
 
-Defines the Hasher trait and default hasher implementations.
+定义 Hasher trait 和默认哈希器实现。
 
-This module provides the `Hasher` trait for implementing hash algorithms and
-default hasher instances for common use cases. The `default_hasher` uses AHash
-for runtime hashing, while `default_comp_time_hasher` uses FNV-1a for
-compile-time hashing.
+此模块提供用于实现哈希算法的 `Hasher` trait 和常见用例的默认哈希器实例。`default_hasher` 使用 AHash 进行运行时哈希，而 `default_comp_time_hasher` 使用 FNV-1a 进行编译时哈希。
 
 ## Traits
 

@@ -1,15 +1,14 @@
 ---
 title: "globals"
 sidebar_label: "globals"
-description: "Utilities for working with global constants.  This module provides helper functions for efficiently creating references to compile-time constants without materializing entire data structures in memory"
+description: "用于处理全局常量的工具。此模块提供了帮助函数，用于高效创建对编译时常量的引用，而无需在内存中实例化整个数据结构。"
 ---
 
 # globals
 
-Utilities for working with global constants.
+用于处理全局常量的工具。
 
-This module provides helper functions for efficiently creating references to
-compile-time constants without materializing entire data structures in memory.
+此模块提供了帮助函数，用于高效创建对编译时常量的引用，而无需在内存中实例化整个数据结构。
 
 ## 函数
 

@@ -1,133 +1,70 @@
 ---
-title: '@compiler.register'
-description: Registers a custom operation for use with the MAX Graph API.
-codeTitle: true
+title: '@compiler_register 装饰器'
+sidebar_label: '@compiler_register'
+sidebar_position: 4
+description: >
+  @compiler_register 装饰器参考。指定参数的寄存器分配。
 ---
 
-The `@compiler.register` decorator registers a custom operation for MAX graphs.
-For more information, see the
-[MAX documentation about custom ops](https://docs.modular.com/max/develop/custom-ops/).
+{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
 
-To define a custom operation:
+`@compiler_register` 装饰器指定函数参数应该分配到特定的 CPU 寄存器。这允许对性能关键代码进行底层优化。
 
-- Import the `compiler` package.
-
-- Create a struct that implements the `execute()` and (optional) `shape()`
-  static methods.
-
-- Register it using the `@compiler.register` decorator.
-
-The following snippet shows the outline of a custom operation:
+## 语法
 
 ```mojo
-@compiler.register("add_vectors_custom")
-struct AddVectorsCustom:
-
-    @staticmethod
-    def execute[...](...):
-        pass
-
-    @staticmethod
-    def shape(...) -> IndexList:
-        pass
+@compiler_register("register_name")
 ```
 
-The `@compiler.register` decorator takes a single argument, the name of the
-custom operation, as a string. This name is used to load the custom op into your
-graph.
-
-Output from the `execute()` method is usually returned using one or more
-destination-passing style (DPS) output tensors. Destination-passing style (DPS)
-means that the calling function passes in pre-allocated storage space for the
-output value(s). This allows for more efficient memory management. For example,
-the graph compiler can optimize memory use by allocating output tensors on the
-stack, instead of requiring custom ops to allocate heap storage for return
-values.
-
-Destination passing style requires the graph compiler to determine the
-dimensions of the output tensor(s) before executing the operation. It uses the
-operation's `shape()` function to determine the dimensions if they can't be
-determined statically.
-
-The following sections describe the `execute()` and `shape()` functions.
-
-## `execute()` function
-
-The `execute()` function performs the actual work of the custom op. It takes the
-following parameter:
-
-- `target` (`StaticString`): Indicates the device the operation is running on:
-  currently takes the values `"cpu"` or `"gpu"`.
-
-Graph output and input tensors are passed to the `execute()` function as
-instances of
-[`OutputTensor`](https://docs.modular.com/max/api/kernels/extensibility/tensor/managed_tensor_slice/#outputtensor)
-and
-[`InputTensor`](https://docs.modular.com/max/api/kernels/extensibility/tensor/managed_tensor_slice/#inputtensor),
-respectively. These are both type aliases for specific configurations of
-[`ManagedTensorSlice`](https://docs.modular.com/max/api/kernels/extensibility/tensor/managed_tensor_slice/ManagedTensorSlice),
-so they both have the same API.
-
-In addition to input and output tensors, the function can take the following
-arguments:
-
-- Any arguments of type [`Scalar`](/docs/manual/types/#scalar-values).
-
-- A single argument of type `DeviceContextPtr`. This opaque pointer is
-  currently required for GPU support.
+## 用法
 
 ```mojo
-import compiler
-from std.utils.index import IndexList
-from max.tensor import OutputTensor, InputTensor, foreach, ManagedTensorSlice
-from std.runtime.asyncrt import DeviceContextPtr
-
-@compiler.register("add_vectors_custom")
-struct AddVectorsCustom:
-    @staticmethod
-    def execute[
-        # "gpu" or "cpu"
-        target: StaticString,
-    ](
-        # the first argument is the output
-        out: OutputTensor,
-        # starting here is the list of inputs
-        x: InputTensor[dtype = out.dtype, rank = out.rank],
-        y: InputTensor[dtype = out.dtype, rank = out.rank],
-        # the context is needed for some GPU calls
-        ctx: DeviceContextPtr,
-    ):
-
-        @parameter
-        @always_inline
-        def func[width: Int](idx: IndexList[x.rank]) -> SIMD[x.dtype, width]:
-            return x.load[width](idx) + y.load[width](idx)
-
-        foreach[func, target=target](out, ctx)
+def fast_add(
+    @compiler_register("rax") a: Int,
+    @compiler_register("rbx") b: Int
+) -> Int:
+    return a + b
 ```
 
-## `shape()` function
+## 常见寄存器
 
-The `shape()` function returns the dimensions of the output tensor(s).
+### x86-64 架构
 
-The `shape()` function is required only if the graph compiler can't statically
-determine the shape of the output tensor(s), and you don't manually annotate the
-output shapes when building a graph.
+| 寄存器 | 用途               |
+|--------|--------------------|
+| rax    | 累加器、返回值     |
+| rbx    | 基址寄存器         |
+| rcx    | 计数器             |
+| rdx    | 数据寄存器         |
+| rsi    | 源索引             |
+| rdi    | 目标索引           |
+| r8-r15 | 通用寄存器         |
 
-The function takes the same arguments as the `execute()` function, minus the
-output tensors and `DeviceContextPtr`. It must return an
-[`IndexList`](/docs/std/utils/index_/IndexList/) specifying the dimensions of
-the output tensor.
+### 浮点寄存器
 
-For example, if the operation takes two input tensors, and the shape of the
-output tensor matches the first input tensor, you could use the following
-`shape()` function:
+| 寄存器   | 用途           |
+|----------|----------------|
+| xmm0-xmm15 | SSE/AVX 寄存器 |
+
+## 示例
 
 ```mojo
-    @staticmethod
-    def shape(
-        in1: InputTensor,
-        in2: InputTensor,
-    ) -> IndexList[in1.rank]:
-        return in1.spec.shape
+@always_inline
+def compute(
+    @compiler_register("xmm0") a: Float64,
+    @compiler_register("xmm1") b: Float64
+) -> Float64:
+    return a * b + a / b
 ```
+
+## 适用场景
+
+- 系统编程和底层优化
+- 与汇编代码交互
+- 性能关键的热点代码
+
+## 注意事项
+
+- 寄存器分配取决于目标架构
+- 不正确的寄存器分配可能导致编译错误
+- 通常让编译器自动分配寄存器更好

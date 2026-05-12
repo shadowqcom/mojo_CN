@@ -1,15 +1,15 @@
 ---
 title: "os"
+slug: os
 sidebar_label: "os"
-description: "Provides functions to access operating-system dependent functionality, including file system operations.  You can import a method from the `os` package. For example:  ```mojo from std.os import listdi"
+description: "提供访问操作系统依赖功能的函数，包括文件系统操作。您可以从 `os` 包导入方法。例如：```mojo from std.os import listdir ```"
 ---
 
 # os
 
-Provides functions to access operating-system dependent functionality, including
-file system operations.
+提供访问操作系统依赖功能的函数，包括文件系统操作。
 
-You can import a method from the `os` package. For example:
+您可以从 `os` 包导入方法。例如：
 
 ```mojo
 from std.os import listdir

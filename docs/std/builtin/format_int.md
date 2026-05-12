@@ -1,14 +1,14 @@
 ---
 title: "format_int"
 sidebar_label: "format_int"
-description: "Provides the `hex` and `bin` functions.  These are Mojo built-ins, so you don't need to import them."
+description: "提供 `hex` 和 `bin` 函数。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # format_int
 
-Provides the `hex` and `bin` functions.
+提供 `hex` 和 `bin` 函数。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

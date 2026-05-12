@@ -1,21 +1,16 @@
 ---
 title: "sys"
 sidebar_label: "sys"
-description: "System runtime: I/O, hardware info, intrinsics, compile-time utils.  The `sys` package provides low-level access to system functionality and runtime information. It includes tools for interacting with"
+description: "系统运行时：I/O、硬件信息、内部函数、编译时工具。`sys` 包提供对系统功能和运行时信息的低级访问。"
 ---
 
 # sys
 
-System runtime: I/O, hardware info, intrinsics, compile-time utils.
+系统运行时：I/O、硬件信息、内部函数、编译时工具。
 
-The `sys` package provides low-level access to system functionality and runtime
-information. It includes tools for interacting with the operating system,
-querying hardware capabilities, and accessing compiler intrinsics. This package
-bridges Mojo code and the underlying system environment.
+`sys` 包提供对系统功能和运行时信息的低级访问。它包括与操作系统交互、查询硬件能力和访问编译器内部函数的工具。此包连接 Mojo 代码和底层系统环境。
 
-Use this package for system-level programming, hardware-specific optimizations,
-or when you need direct access to platform capabilities and compiler features.
-For foreign function interface (FFI) functionality, use the `ffi` module.
+使用此包进行系统级编程、硬件特定优化，或当您需要直接访问平台功能和编译器特性时。对于外部函数接口 (FFI) 功能，使用 `ffi` 模块。
 
 ## 模块
 

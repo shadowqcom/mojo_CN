@@ -1,14 +1,14 @@
 ---
 title: "process"
 sidebar_label: "process"
-description: "Implements os methods for dealing with processes.  Example:  ```mojo from std.os import Process from std.collections import List _ = Process.run(\"echo\", [\"== TEST_ECHO\"]) ```"
+description: "实现处理进程的 os 方法。示例：```mojo from std.os import Process from std.collections import List _ = Process.run(\"echo\", [\"== TEST_ECHO\"]) ```"
 ---
 
 # process
 
-Implements os methods for dealing with processes.
+实现处理进程的 os 方法。
 
-Example:
+示例：
 
 ```mojo
 from std.os import Process

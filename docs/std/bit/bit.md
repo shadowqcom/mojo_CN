@@ -1,14 +1,15 @@
 ---
 title: "bit"
+slug: bit
 sidebar_label: "bit"
-description: "Provides functions for bit manipulation.  You can import these APIs from the `bit` package. For example:  ```mojo from std.bit import count_leading_zeros ```"
+description: "提供位操作函数。您可以从 `bit` 包导入这些 API。例如：```mojo from std.bit import count_leading_zeros ```"
 ---
 
 # bit
 
-Provides functions for bit manipulation.
+提供位操作函数。
 
-You can import these APIs from the `bit` package. For example:
+您可以从 `bit` 包导入这些 API。例如：
 
 ```mojo
 from std.bit import count_leading_zeros

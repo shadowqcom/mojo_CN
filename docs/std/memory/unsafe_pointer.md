@@ -1,19 +1,14 @@
 ---
 title: "unsafe_pointer"
 sidebar_label: "unsafe_pointer"
-description: "Implements unsafe pointer types for manual memory management.  This module provides `UnsafePointer` and related type aliases for direct memory manipulation with explicit control over mutability, origi"
+description: "实现用于手动内存管理的不安全指针类型。此模块提供 `UnsafePointer` 和相关类型别名，用于直接内存操作，具有对可变性、来源和地址空间的显式控制。"
 ---
 
 # unsafe_pointer
 
-Implements unsafe pointer types for manual memory management.
+实现用于手动内存管理的不安全指针类型。
 
-This module provides `UnsafePointer` and related type aliases for direct memory
-manipulation with explicit control over mutability, origins, and address spaces.
-It includes the `alloc()` function for heap allocation and comprehensive methods
-for loading, storing, and managing pointer lifetimes. These types enable
-low-level memory operations, interfacing with C code, and building custom data
-structures.
+此模块提供 `UnsafePointer` 和相关类型别名，用于直接内存操作，具有对可变性、来源和地址空间的显式控制。它包括用于堆分配的 `alloc()` 函数以及加载、存储和管理指针生命周期的综合方法。这些类型支持低级内存操作、与 C 代码交互以及构建自定义数据结构。
 
 ## 类型
 

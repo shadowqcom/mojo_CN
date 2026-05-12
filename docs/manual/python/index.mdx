@@ -1,56 +1,41 @@
 ---
-title: Python interoperability
-sidebar_label: Introduction
+title: Python 互操作性
+sidebar_label: 简介
 sidebar_position: 1
-description: Using Python and Mojo together.
+description: 在 Python 和 Mojo 之间协同使用。
 show_languages: true
 ---
 
-Not only does Mojo use a Pythonic syntax, our plan is to provide full
-compatibility with the Python ecosystem. There are two types of compatibility
-(or interoperability) that we support:
+Mojo 不仅使用了 Python 风格的语法，我们的计划是提供与 Python 生态系统的完全兼容。我们支持两种类型的兼容性（或互操作性）：
 
-- [Calling Python from Mojo](/docs/manual/python/python-from-mojo/):
+- [从 Mojo 调用 Python](/docs/manual/python/python-from-mojo/)：
 
-  You can import existing Python modules and use them in a Mojo program. This
-  is 100% compatible because we use the CPython runtime without modification
-  for full compatibility with existing Python libraries. You can construct
-  Python objects and call Python functions directly from Mojo, using the
-  CPython interpreter as a dynamic library (shown as `libpython.dylib` in
-  figure 1).
+  你可以导入现有的 Python 模块并在 Mojo 程序中使用它们。这是 100% 兼容的，因为我们使用未经修改的 CPython 运行时，以完全兼容现有的 Python 库。你可以直接从 Mojo 构建 Python 对象并调用 Python 函数，使用 CPython 解释器作为动态库（在图 1 中显示为 `libpython.dylib`）。
 
-- [Calling Mojo from Python](/docs/manual/python/mojo-from-python/):
+- [从 Python 调用 Mojo](/docs/manual/python/mojo-from-python/)：
 
-  You can extend your Python code with high-performance Mojo code (or
-  incrementally migrate Python code to Mojo). Because Mojo is a compiled
-  language, we can't directly "evaluate" Mojo code from Python. Instead, you
-  must declare which Mojo functions and types are available to be called from
-  Python (declare the "bindings"), and then you can import them in your Python
-  code (shown as `mojo_module` in figure 1) just like any other module—there's
-  no extra compilation step.
+  你可以用高性能的 Mojo 代码扩展你的 Python 代码（或逐步将 Python 代码迁移到 Mojo）。由于 Mojo 是编译型语言，我们不能直接从 Python "求值" Mojo 代码。相反，你必须声明哪些 Mojo 函数和类型可以从 Python 调用（声明"绑定"），然后你就可以在 Python 代码中导入它们（在图 1 中显示为 `mojo_module`），就像任何其他模块一样——不需要额外的编译步骤。
 
 <figure style={{maxWidth: '550px'}}>
   <img src={require('../images/python/python-interop.png').default}
        className="light" alt="" />
   <img src={require('../images/python/python-interop-dark.png').default}
        className="dark" alt="" />
-  <figcaption><b>Figure 1.</b> A simplified look at how a Mojo program calls
-  into Python and a Python program calls into a Mojo module.</figcaption>
+  <figcaption><b>图 1.</b> Mojo 程序调用 Python 以及 Python 程序调用 Mojo 模块的简化示意图</figcaption>
 </figure>
 
-By embracing both directions of language interop, you can choose
-how to use Mojo with Python in a way that works best for your use case.
+通过拥抱双向的语言互操作，你可以选择最适合你用例的 Mojo 与 Python 协作方式。
 
-**To learn more about bridging Python ↔ Mojo, continue reading**:
+**要了解更多关于 Python ↔ Mojo 桥接的内容，请继续阅读**：
 
 import ListingCard from '@site/src/components/Listing/ListingCard';
 import ListingCards from '@site/src/components/Listing/ListingCards';
 
 <ListingCards>
-  <ListingCard title="Calling Python from Mojo"
+  <ListingCard title="从 Mojo 调用 Python"
     url="/docs/manual/python/python-from-mojo"
-    description="How to import Python modules and use them in Mojo code" />
-  <ListingCard title="Calling Mojo from Python"
+    description="如何在 Mojo 代码中导入 Python 模块并使用它们" />
+  <ListingCard title="从 Python 调用 Mojo"
     url="/docs/manual/python/mojo-from-python"
-    description="How to import Mojo modules and use them in Python code" />
+    description="如何在 Python 代码中导入 Mojo 模块并使用它们" />
 </ListingCards>

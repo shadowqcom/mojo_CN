@@ -1,14 +1,14 @@
 ---
 title: "reversed"
 sidebar_label: "reversed"
-description: "Provides the `reversed` function for reverse iteration over collections.  These are Mojo built-ins, so you don't need to import them."
+description: "提供用于反向迭代集合的 `reversed` 函数。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # reversed
 
-Provides the `reversed` function for reverse iteration over collections.
+提供用于反向迭代集合的 `reversed` 函数。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## Traits
 

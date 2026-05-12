@@ -1,9 +1,9 @@
 ---
 title: "traits"
 sidebar_label: "traits"
-description: "Compile-time meta functions for checking trait conformance across variadic type lists."
+description: "用于检查可变参数类型列表间 trait 一致性的编译时元函数。"
 ---
 
 # traits
 
-Compile-time meta functions for checking trait conformance across variadic type lists.
+用于检查可变参数类型列表间 trait 一致性的编译时元函数。

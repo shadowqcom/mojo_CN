@@ -1,12 +1,12 @@
 ---
 title: "gpu/host"
 sidebar_label: "gpu/host"
-description: "Implements the gpu host package."
+description: "实现 gpu host 包。"
 ---
 
 # gpu/host
 
-Implements the gpu host package.
+实现 gpu host 包。
 
 ## 模块
 

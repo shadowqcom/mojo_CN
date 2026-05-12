@@ -1,21 +1,16 @@
 ---
 title: "atomic"
 sidebar_label: "atomic"
-description: "Atomic operations and memory orderings.  The `atomic` package provides the `Atomic` type for performing atomic read-modify-write operations on scalar values, along with the `Ordering` type for specify"
+description: "原子操作和内存排序。`atomic` 包提供了 `Atomic` 类型用于对标量值执行原子读-修改-写操作，以及 `Ordering` 类型用于指定这些操作的内存排序。"
 ---
 
 # atomic
 
-Atomic operations and memory orderings.
+原子操作和内存排序。
 
-The `atomic` package provides the `Atomic` type for performing atomic
-read-modify-write operations on scalar values, along with the `Ordering`
-type for specifying the memory ordering of those operations. It also
-exposes the `fence` function to create standalone memory barriers.
+`atomic` 包提供了 `Atomic` 类型用于对标量值执行原子读-修改-写操作，以及 `Ordering` 类型用于指定这些操作的内存排序。它还公开了 `fence` 函数用于创建独立的内存屏障。
 
-Use this package when implementing lock-free data structures, reference
-counting, or any other synchronization primitive that requires fine-grained
-control over memory ordering between threads.
+在实现无锁数据结构、引用计数或任何其他需要精细控制线程间内存排序的同步原语时，请使用此包。
 
 ## 模块
 

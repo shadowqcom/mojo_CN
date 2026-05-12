@@ -1,25 +1,24 @@
 ---
 title: "gpu/sync"
 sidebar_label: "gpu/sync"
-description: "GPU synchronization primitives package.  This package provides GPU synchronization operations including:  - **barrier**: Block-level synchronization barriers - **syncwarp**: Warp-level synchronization"
+description: "GPU 同步原语包。此包提供 GPU 同步操作，包括：- **barrier**：块级同步屏障- **syncwarp**：Warp 级同步- **mbarrier**：内存屏障操作（到达/等待）"
 ---
 
 # gpu/sync
 
-GPU synchronization primitives package.
+GPU 同步原语包。
 
-This package provides GPU synchronization operations including:
+此包提供 GPU 同步操作，包括：
 
-- **barrier**: Block-level synchronization barriers
-- **syncwarp**: Warp-level synchronization
-- **mbarrier**: Memory barrier operations (arrive/wait)
-- **named_barrier**: Named barriers for flexible synchronization
-- **schedule_barrier**: AMD instruction scheduling barriers
-- **Semaphore**: Device-wide semaphore implementation
-- **cp_async_bulk**: Bulk async copy synchronization
+- **barrier**：块级同步屏障
+- **syncwarp**：Warp 级同步
+- **mbarrier**：内存屏障操作（到达/等待）
+- **named_barrier**：用于灵活同步的命名屏障
+- **schedule_barrier**：AMD 指令调度屏障
+- **Semaphore**：设备级信号量实现
+- **cp_async_bulk**：批量异步复制同步
 
-These primitives enable coordination of execution and memory operations
-across threads, warps, and blocks in GPU kernels.
+这些原语支持 GPU 内核中跨线程、warp 和块的执行和内存操作协调。
 
 ## 模块
 

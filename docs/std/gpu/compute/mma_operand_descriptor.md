@@ -1,12 +1,12 @@
 ---
 title: "mma_operand_descriptor"
 sidebar_label: "mma_operand_descriptor"
-description: "Implements traits for abstracting MMA operand descriptors in GPU matrix operations."
+description: "实现用于抽象 GPU 矩阵操作中 MMA 操作数描述符的 trait。"
 ---
 
 # mma_operand_descriptor
 
-Implements traits for abstracting MMA operand descriptors in GPU matrix operations.
+实现用于抽象 GPU 矩阵操作中 MMA 操作数描述符的 trait。
 
 ## Traits
 

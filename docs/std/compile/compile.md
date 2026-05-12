@@ -1,34 +1,31 @@
 ---
 title: "compile"
+slug: compile
 sidebar_label: "compile"
-description: "Provides utilities for compiling and inspecting Mojo code.  This module contains functionality for compiling Mojo functions and examining their assembly, LLVM IR, or object code output. It is particul"
+description: "提供编译和检查 Mojo 代码的工具。此模块包含编译 Mojo 函数并检查其汇编、LLVM IR 或目标代码输出的功能。"
 ---
 
 # compile
 
-Provides utilities for compiling and inspecting Mojo code.
+提供编译和检查 Mojo 代码的工具。
 
-This module contains functionality for compiling Mojo functions and examining
-their assembly, LLVM IR, or object code output. It is particularly useful for
-kernel engineers who want to inspect the low-level implementation details of
-specific functions without dealing with entire files or manual invocation of
-compilation tools.
+此模块包含编译 Mojo 函数并检查其汇编、LLVM IR 或目标代码输出的功能。对于想要检查特定函数的底层实现细节而无需处理整个文件或手动调用编译工具的内核工程师特别有用。
 
-Key features:
-- Compile individual functions to assembly, LLVM IR, or object code
-- Get linkage names and module information
-- Inspect number of captures and other function metadata
-- Write compilation output to files
-- Control compilation options and targets
+主要功能：
+- 将单个函数编译为汇编、LLVM IR 或目标代码
+- 获取链接名称和模块信息
+- 检查捕获数量和其他函数元数据
+- 将编译输出写入文件
+- 控制编译选项和目标
 
-Example:
+示例：
 ```mojo
 from std.compile import compile_info
 
 def my_func(x: Int) -> Int:
     return x
 
-# Get assembly for the function
+# 获取函数的汇编代码
 info = compile_info[my_func]()
 print(info)
 ```

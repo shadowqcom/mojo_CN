@@ -1,16 +1,14 @@
 ---
 title: "alloc"
 sidebar_label: "alloc"
-description: "Implements layout-aware memory allocation and deallocation.  This module provides `alloc` and `free` functions that pair with a `Layout` descriptor to express the size and alignment of an allocation a"
+description: "实现布局感知的内存分配和释放。此模块提供 `alloc` 和 `free` 函数，与 `Layout` 描述符配对使用，以表达分配的大小和对齐方式。"
 ---
 
 # alloc
 
-Implements layout-aware memory allocation and deallocation.
+实现布局感知的内存分配和释放。
 
-This module provides `alloc` and `free` functions that pair with a `Layout`
-descriptor to express the size and alignment of an allocation at the call site,
-making ownership and layout information explicit and co-located.
+此模块提供 `alloc` 和 `free` 函数，与 `Layout` 描述符配对使用，以在调用点表达分配的大小和对齐方式，使所有权和布局信息明确且集中。
 
 ## 类型
 

@@ -1,117 +1,79 @@
 ---
-title: "Mojo tips for Python devs"
-sidebar_label: "Tips for Python devs"
-description: "Explore ways Mojo differs from Python as you prepare to migrate"
+title: "Python 开发者的 Mojo 技巧"
+sidebar_label: "面向 Python 开发者的技巧"
+description: "在准备迁移时，探索 Mojo 与 Python 的差异"
 ---
 
-Mojo is designed with Python programmers in mind, but it isn't "just Python,
-only faster." Mojo introduces a type system, ownership-aware semantics,
-and low-level control that, as a Python developer, you may not have had
-to reason about to make your code work.
+Mojo 是为 Python 程序员设计的，但它不仅仅是"更快的 Python"。Mojo 引入了类型系统、所有权语义和底层控制，这些可能是 Python 开发者不需要考虑就能让代码正常工作的东西。
 
-This guide offers a practical resource for Python developers.
-It shows how familiar Python patterns translate into Mojo, where your
-instincts still apply and where Mojo asks you to build a new mental
-model.
+本指南为 Python 开发者提供实用的资源。
+它展示了熟悉的 Python 模式如何转化为 Mojo，你的直觉在哪些地方仍然适用，以及在哪些地方 Mojo 要求你建立新的思维模型。
 
-This isn't a tutorial. It's a core set of language migration tips and
-patterns to support you as you migrate to Mojo.
+这不是一个教程。它是一套核心的语言迁移技巧和模式，帮助你在迁移到 Mojo 时获得支持。
 
-## Mojo's core model for Python developers
+## Mojo 的核心模型：面向 Python 开发者
 
-Mojo looks like Python but its execution model is closer to Rust,
-Swift, C++, and other systems languages. Key differences
-from Python include:
+Mojo 看起来像 Python，但它的执行模型更接近 Rust、Swift、C++ 等系统语言。与 Python 的关键差异包括：
 
-- **Mojo is statically typed.** In Python, types are optional hints that
-  the interpreter _mostly_ ignores at runtime. In Mojo, types are
-  first-class. The compiler uses them to generate fast, specialized
-  machine code.
-- **Mojo compiles to machine code.** Python runs through an interpreter
-  that translates your code at runtime, adding overhead to every
-  operation. Mojo compiles directly to native machine code. This gives
-  you fast and predictable performance, with no interpreter overhead.
-- **Mojo prefers _value semantics_ and explicit mutability.** In Python,
-  most objects are mutable references, so assigning a list doesn't copy
-  it. In Mojo, assigning or passing a value typically creates an
-  independent copy. Changes to one value don't affect others unless you
-  make sharing explicit. This keeps data flow clear and enables safe
-  parallelism.
-- **Mojo supports modern ownership, but it doesn't trap you in
-  "safe-only" abstractions.** With ownership, the compiler tracks which
-  variables and fields control a value's lifetime. That lets Mojo manage
-  memory effectively, without a garbage collector or reference counting.
-  When you need low-level control, such as interfacing with C-language
-  libraries, you can manage memory explicitly using `UnsafePointer`.
-- **Mojo brings together ideas from Rust, C++, and Python.** It combines
-  Python's readability with a performance model inspired by systems
-  languages like Rust and C++.
+- **Mojo 是静态类型**。在 Python 中，类型是可选的提示，解释器在运行时主要会忽略它们。在 Mojo 中，类型是第一等公民。编译器使用它们来生成快速、优化的机器代码。
+- **Mojo 编译为机器代码**。Python 通过解释器运行，在运行时翻译你的代码，为每个操作添加开销。Mojo 直接编译为原生机器代码。这让你获得快速且可预测的性能，没有解释器的开销。
+- **Mojo 更偏好值语义和显式可变性**。在 Python 中，大多数对象是可变引用，所以分配列表不会复制它。在 Mojo 中，分配或传递值通常会创建一个独立的副本。对一个值的更改不会影响其他值，除非你显式地建立共享。这保持了数据流的清晰，并实现了安全的并行化。
+- **Mojo 支持现代所有权，但不会将你困在"仅安全"的抽象中**。通过所有权，编译器跟踪哪些变量和控制字段控制值的生命周期。这让 Mojo 能够有效地管理内存，而不需要垃圾回收器或引用计数。当你需要底层控制时，例如与 C 语言库交互，你可以使用 `UnsafePointer` 显式管理内存。
+- **Mojo 结合了 Rust、C++ 和 Python 的思想**。它结合了 Python 的可读性，以及受 Rust 和 C++ 等系统语言启发的性能模型。
 
-Understanding these differences is essential for writing correct, fast
-Mojo.
+理解这些差异对于编写正确、快速的 Mojo 至关重要。
 
-## Moving from Python to Mojo
+## 从 Python 迁移到 Mojo
 
-This section introduces a curated set of migration topics that
-explore common Mojo patterns.
+本节介绍一组精心策划的迁移主题，探索常见的 Mojo 模式。
 
-### Value semantics
+### 值语义
 
-In Mojo, when you assign a value to a new variable, it's given a
-unique owned value, not a second reference pointing to the same data.
-This can catch new adopters off guard.
+在 Mojo 中，当你将一个值赋给新变量时，它获得一个唯一的拥有值，而不是指向相同数据的第二个引用。这可能会让新的采用者感到惊讶。
 
-In Python, both `a` and `b` refer to the same list:
+在 Python 中，`a` 和 `b` 都指向同一个列表：
 
 ```python
 a = [1, 2, 3]
 b = a
 b.append(4)
 print(a)  # [1, 2, 3, 4]
-# a changed because b and a both point to the same list
+# a 被修改，因为 b 和 a 都指向同一个列表
 ```
 
-In Mojo, assignment gives you a copy. If you're not working with
-trivial types (like `Int` or `Bool`) or types with built-in copy
-semantics (like `String`), you may need to use an explicit
-copy call. You can also use and create types that are implicitly
-copyable.
+在 Mojo 中，赋值会给你一个副本。如果你不处理基本类型（如 `Int` 或 `Bool`）或具有内置复制语义的类型（如 `String`），你可能需要使用显式的复制调用。你也可以使用和创建隐式可复制的类型。
 
 ```mojo
 var a = "hello"  # hello
-var b = a        # hello, implicit copy
+var b = a        # hello，隐式复制
 b = b + " world" # hello world
 print(a)         # hello
 print(b)         # hello world
 
 var c: List[Int] = [1, 2, 3]
-var d = c.copy() # d is an independent copy
+var d = c.copy() # d 是一个独立的副本
 d.append(4)      # [1, 2, 3, 4]
-print(c)         # [1, 2, 3]  c is unchanged
+print(c)         # [1, 2, 3]  c 未改变
 ```
 
-Mojo uses `var` to declare variables. A `var` binding owns its value.
-Using `var` consistently makes your code easier to read. It's clear when
-you introduce a new binding and when you reassign an existing one.
+Mojo 使用 `var` 声明变量。`var` 绑定拥有它的值。一致地使用 `var` 使你的代码更容易阅读。当你引入新的绑定和重新分配现有的绑定时，情况就很清楚了。
 
-To use Python-like reference behavior, declare `b` with `ref`
-instead of `var`:
+要使用类似 Python 的引用行为，使用 `ref` 而不是 `var` 来声明 `b`：
 
 ```mojo
 var a: List[Int] = [1, 2, 3]
-ref b = a # b is a reference to the same value
-b.append(4) # The list updates. a still owns the list.
+ref b = a # b 是指向相同值的引用
+b.append(4) # 列表更新。a 仍然拥有列表。
 print(a) # [1, 2, 3, 4]
 ```
 
-### Mutability
+### 可变性
 
-In both Python and Mojo, almost everything you create can be changed
-after the fact. In Mojo, there are some special rules.
+在 Python 和 Mojo 中，你创建的几乎所有东西都可以在事后更改。在 Mojo 中，有一些特殊的规则。
 
-**Python**:
+**Python**：
 
-Nearly everything is mutable.
+几乎所有东西都是可变的。
 
 ```python
 a = 10       # 10
@@ -120,68 +82,51 @@ b = b + 10   # 20
 print(a, b)  # 10 20
 ```
 
-**Mojo**:
+**Mojo**：
 
-All variables are mutable by default. Function arguments aren't
-mutable by default.
+所有变量默认都是可变的。函数参数默认不是可变的。
 
 ```mojo
 var x = 10 # 10
-x = 20     # 20, with a warning that x's previous assignment
-            # to 10 was never used
+x = 20     # 20，并有一个警告，说明 x 之前对 10 的赋值从未使用
 
 def foo(value: Int):
-    value += 1 # Error, expression must be mutable
+    value += 1 # 错误，表达式必须是可变的
 
 var y = 20
 foo(y)
 ```
 
-Default immutability in the function gives the compiler more room to
-optimize. Using the `mut` keyword in the argument declaration makes
-it mutable.
+函数中的默认不可变性给了编译器更多的优化空间。在参数声明中使用 `mut` 关键字使其可变。
 
 ```mojo
 def foo(mut value: Int):
-    value += 1 # This works
+    value += 1 # 这样可行
 ```
 
-Explicit mutability makes code easier to reason about because mutability is
-visible. You can look at a function signature and immediately see which
-values can change and which can't.
+显式可变性使代码更容易推理，因为可变性是可见的。你可以查看函数签名，立即看到哪些值可以改变，哪些不能。
 
-## Numbers
+## 数字
 
-Python gives you `int` and `float` with arbitrary precision. Mojo takes a
-different approach: it uses explicit, fixed-width numeric types so the
-compiler can optimize aggressively and scale across parallel execution.
+Python 提供具有任意精度的 `int` 和 `float`。Mojo 采用了不同的方法：它使用显式的固定宽度数字类型，以便编译器可以积极优化并扩展并行执行。
 
-Mojo provides concrete numeric types like `Int8`, `Int16`, `Int32`,
-`Int64`, `Float16`, `Float32`, and `Float64`. Fixed width isn't a
-limitation in Mojo, it's a feature that lets the compiler pack numbers
-with known sizes into memory.
+Mojo 提供具体的数字类型，如 `Int8`、`Int16`、`Int32`、`Int64`、`Float16`、`Float32` 和 `Float64`。固定宽度在 Mojo 中不是限制，而是一个特性，让编译器可以将已知大小的数字打包到内存中。
 
-### SIMD types
+### SIMD 类型
 
-In many languages, SIMD shows up later as a specialized tool for advanced
-users. In Mojo, SIMD is part of the core compute model. Mojo implements its
-primitive numeric types as SIMD values under the hood.
+在许多语言中，SIMD 作为高级用户的专用工具出现。在 Mojo 中，SIMD 是核心计算模型的一部分。Mojo 在底层将基本数字类型实现为 SIMD 值。
 
-That lets the compiler operate on multiple values with a single hardware
-instruction. When you choose the right numeric type, you give the
-compiler more room to generate faster code.
+这让编译器可以用一条硬件指令操作多个值。当你选择正确的数字类型时，你给了编译器更多的空间来生成更快的代码。
 
-### Int types
+### Int 类型
 
-**Python**:
+**Python**：
 
-Python's `int` uses arbitrary precision. It can hold integers as large as
-memory allows.
+Python 的 `int` 使用任意精度。它可以容纳内存允许的尽可能大的整数。
 
-**Mojo's `Int` type**:
+**Mojo 的 `Int` 类型**：
 
-The general `Int` type maps to your machine's native word size. This is
-typically 64 bits on a 64-bit system. You can always check:
+通用 `Int` 类型映射到你机器的原生字长。这通常在 64 位系统上是 64 位。你总是可以检查：
 
 ```mojo
 from std.sys import size_of
@@ -189,115 +134,102 @@ from std.sys import size_of
 def main():
     var a: Int = 5
     var bytes = size_of[Int]()
-    print(bytes)  # 8 on a 64-bit system
+    print(bytes)  # 在 64 位系统上为 8
 ```
 
-### Floating point types
+### 浮点类型
 
-**Python**:
+**Python**：
 
-In Python, `float` is always 64-bit.
+在 Python 中，`float` 总是 64 位。
 
-**Mojo**:
+**Mojo**：
 
-Mojo floating point types _aren't_ arbitrary precision.
-Mojo doesn't provide a default floating point type, the way it does
-with integers. That means there's no built-in `Float` type.
+Mojo 浮点类型**不是**任意精度。
+Mojo 不提供默认的浮点类型，就像它对整数那样。这意味着没有内置的 `Float` 类型。
 
-When you're just starting with Mojo, stick to `Float32` or `Float64`
-floating point.
+当你刚开始使用 Mojo 时，坚持使用 `Float32` 或 `Float64` 浮点。
 
-### Division and types
+### 除法和类型
 
-Mojo division behaves differently than in Python.
-In Python, dividing two integers always produces a float:
+Mojo 的除法行为与 Python 中的不同。
+在 Python 中，两个整数相除总是产生一个浮点数：
 
 ```python
 a = 7
 b = 2
 
-print(7 / 2)   # 3.5 — always float
+print(7 / 2)   # 3.5 — 总是浮点数
 ```
 
-In Mojo, if you want integer division to return a floating-point result,
-you must use explicit casting:
+在 Mojo 中，如果你希望整数除法返回浮点结果，你必须使用显式转换：
 
 ```mojo
 var a: Int = 7
 var b: Int = 2
 
-print(Float64(a) / Float64(b))     # 3.5 — explicit float division
+print(Float64(a) / Float64(b))     # 3.5 — 显式浮点除法
 ```
 
-### Mojo division operators
+### Mojo 除法运算符
 
-In Mojo, `/` returns a value that always matches the type of the
-operands. A floating point number divided by a floating point number
-returns a floating point number, and an integer divided by an integer
-returns an integer:
+在 Mojo 中，`/` 返回的值始终与操作数的类型匹配。一个浮点数除以一个浮点数返回一个浮点数，一个整数除以一个整数返回一个整数：
 
 ```mojo
 var a: Int = 7
 var b: Int = 2
 
-print(a / b)   # 3, result type matches operand type
+print(a / b)   # 3，结果类型与操作数类型匹配
 ```
 
-Python programmers may be a bit surprised that / isn't "true division."
-It returns a truncated result, but the result is biased towards zero:
+Python 程序员可能会对 `/` 不是"真除法"感到有点惊讶。它返回一个截断的结果，但结果偏向于零：
 
 ```mojo
 var c = -7
 var d = 2
-print(c / d)  # -3, not -4, truncates towards zero
+print(c / d)  # -3，不是 -4，向零截断
 ```
 
-`//` performs floored division, in the direction of negative
-infinity:
+`//` 执行向下取整除法，朝向负无穷的方向：
 
 ```mojo
-print(c // d) # -4, not -3, truncates towards negative infinity
+print(c // d) # -4，不是 -3，向负无穷截断
 ```
 
-Like `/`, the type returned by `//` is preserved from the operands:
+与 `/` 类似，`//` 返回的类型保留自操作数：
 
 ```mojo
 var e: Float64 = 7.0
 var f: Float64 = 2.0
-print(e // f) # 3.0, floors toward negative infinity
+print(e // f) # 3.0，向下取整到负无穷
 print(e / f)  # 3.5
 
 var g: Float64 = -7.0
-print(g // f) # -4.0, floors toward negative infinity
+print(g // f) # -4.0，向下取整到负无穷
 print(g / f)  # -3.5
 ```
 
-## Data structures: lists
+## 数据结构：列表
 
-**Python**:
+**Python**：
 
-In Python, lists are dynamic. They can hold mixed types and grow freely.
+在 Python 中，列表是动态的。它们可以容纳混合类型并自由增长。
 
 ```python
 nums = ["one", 2.0, 3]
 nums.append(4) # ['one', 2.0, 3, 4]
 ```
 
-**Mojo**:
+**Mojo**：
 
-A typed list holds only one element type. In this example, that type is Int.
-This allows the list implementation to pack data efficiently, using less space
-and improving performance. Mojo uses packed data rather than indirect
-references:
+类型化列表只容纳一种元素类型。在这个例子中，该类型是 Int。这允许列表实现高效地打包数据，使用更少的空间并提高性能。Mojo 使用打包数据而不是间接引用：
 
 ```mojo
 var nums: List[Int] = [1, 2, 3]
 nums.append(4) # [1, 2, 3, 4]
 ```
 
-To store different kinds of values, define the element type as a `Variant`
-that enumerates permitted types. Variant lets a single element type represent
-multiple concrete value types:
+要存储不同类型的值，将元素类型定义为枚举允许类型的 `Variant`。Variant 让单个元素类型代表多个具体值类型：
 
 ```mojo
 from std.utils import Variant
@@ -311,67 +243,59 @@ mixed_list.append(MixedType("hello"))
 mixed_list.append(MixedType(True))
 
 for item in mixed_list:
-    print(item) # Output lines: 42, 3.14, hello, and True
+    print(item) # 输出行：42、3.14、hello 和 True
 ```
 
-`Variant` tells the Mojo compiler which types are used, so it can allocate and
-manage memory correctly.
+`Variant` 告诉 Mojo 编译器使用了哪些类型，以便它可以正确地分配和管理内存。
 
-## Data structures: dictionaries
+## 数据结构：字典
 
-Python dicts are dynamic. Keys and values can be anything. Mojo uses
-efficient dictionary implementations (Swiss tables) for fast data storage and
-retrieval. Typed dictionaries support efficient packing and data access.
+Python 字典是动态的。键和值可以是任何东西。Mojo 使用高效的字典实现（Swiss tables）进行快速的数据存储和检索。类型化字典支持高效的打包和数据访问。
 
-**Python**:
+**Python**：
 
 ```python
 counts = {"a": 1, "b": "two"}
 counts["c"] = 3.0 # {'a': 1, 'b': 'two', 'c': 3.0}
 ```
 
-**Mojo**:
+**Mojo**：
 
-A typed declaration like `Dict[String, Int]` tells the compiler exactly
-what element types to expect for keys and values. This enables tighter,
-faster code. As with other Mojo collections, you can use `Variant` to
-broaden the range of permitted element types:
+像 `Dict[String, Int]` 这样的类型化声明告诉编译器期望键和值的元素类型是什么。这实现了更紧凑、更快的代码。与其他 Mojo 集合一样，你可以使用 `Variant` 来扩大允许的元素类型范围：
 
 ```mojo
 var counts: Dict[String, Int] = {"a": 1, "b": 2}
 counts["c"] = 3 # {a: 1, b: 2, c: 3}
 ```
 
-## Comprehensions
+## 推导式
 
-Python's comprehensions have direct Mojo analogs. The syntax is
-essentially identical.
+Python 的推导式有直接的 Mojo 对应物。语法基本上是相同的。
 
-**Mojo**:
+**Mojo**：
 
 ```mojo
 var list_squares = [x * x for x in [0, 1, 2, 3, 4] if x % 2 == 0]
-# [0, 4, 16], list
+# [0, 4, 16]，列表
 
 var positive_numbers = [x for x in range(-3, 3) if x > 0]
-# [1, 2], list
+# [1, 2]，列表
 
 var dict_squares = {x: x * x for x in range(3)}
-#  {0: 0, 1: 1, 2: 4}, dict
+#  {0: 0, 1: 1, 2: 4}，字典
 
 var upper_case = {k: v.upper() for k, v in [(1, "one"), (2, "two")]}
-# {1: ONE, 2: TWO}, dict
+# {1: ONE, 2: TWO}，字典
 
 var number_set = {x for x in range(5)}
-# {0, 1, 2, 3, 4}, set
+# {0, 1, 2, 3, 4}，集合
 ```
 
-## Iteration
+## 迭代
 
-In terms of syntax, Mojo's `for` and `while` loops align with
-Python. Use `break` and `continue` for control flow.
+在语法方面，Mojo 的 `for` 和 `while` 循环与 Python 对齐。使用 `break` 和 `continue` 进行控制流。
 
-**Mojo using a typed for-loop**:
+**使用类型化 for 循环的 Mojo**：
 
 ```mojo
 var nums = [0, 1, 2, 3, 4]
@@ -384,7 +308,7 @@ for x in nums:
 print(squares2) # [0, 4, 16]
 ```
 
-**Mojo using a while loop**:
+**使用 while 循环的 Mojo**：
 
 ```mojo
 var squares3: List[Int] = []
@@ -397,33 +321,31 @@ while idx < 3:
 print(squares3)  # [0, 1, 4]
 ```
 
-## Function definitions
+## 函数定义
 
-In Python, you can write a function without specifying the types of its
-arguments or return value. In Mojo, you must declare types explicitly.
+在 Python 中，你可以在不指定参数或返回值类型的情况下编写函数。在 Mojo 中，你必须显式声明类型。
 
-**Python**:
+**Python**：
 
 ```python
 def add(a, b):
     return a + b
 ```
 
-**Mojo**:
+**Mojo**：
 
 ```mojo
 def add(a: Int, b: Int) -> Int:
     return a + b
 ```
 
-The optional `->` syntax declares the return type.
+可选的 `->` 语法声明返回类型。
 
-## Error handling
+## 错误处理
 
-Error handling in Mojo looks very similar to Python. You raise and catch
-exceptions.
+Mojo 中的错误处理看起来非常类似于 Python。你抛出和捕获异常。
 
-**Python**:
+**Python**：
 
 ```python
 try:
@@ -432,10 +354,9 @@ except ValueError as e:
     print(e)  # bad input
 ```
 
-The `raises` keyword in function and method declarations indicates that
-a function may generate or propagate errors.
+函数和方法声明中的 `raises` 关键字表示函数可能会生成或传播错误。
 
-**Mojo**:
+**Mojo**：
 
 ```mojo
 try:
@@ -444,16 +365,14 @@ except e:
     print(e)  # bad input
 ```
 
-You can specify error types by adding a type name after the `raises`
-keyword. This lets you catch the error and use the type instance
-directly in your `except` clause:
+你可以通过在 `raises` 关键字后添加类型名称来指定错误类型。这让你可以捕获错误并直接在你的 `except` 子句中使用类型实例：
 
 ```mojo
 @fieldwise_init
 struct MyCustomError(Writable):
     var message: String
 
-def test_typed_error() raises MyCustomError: # Typed error
+def test_typed_error() raises MyCustomError: # 类型化错误
     raise MyCustomError("custom error occurred")
 
 try:
@@ -462,38 +381,31 @@ except e:
     print(e.message) # custom error occurred
 ```
 
-Functions that don't handle the errors they raise automatically
-delegate error handling to their caller. You must declare these
-functions with the `raises` keyword:
+不处理它们抛出的错误函数会自动将错误处理委托给它们的调用者。你必须使用 `raises` 关键字声明这些函数：
 
 ```mojo
 def another_raising_function() raises:
-    raise Error("Message")     # Error raised here
+    raise Error("Message")     # 在这里抛出错误
 
 def raising_function() raises:
-    another_raising_function() # Error continues to pass
+    another_raising_function() # 错误继续传递
 
 def handles_errors():
     try:
-        raising_function()     # Error handled in this non-raising function
+        raising_function()     # 在这个非抛出函数中处理错误
     except e:
-        # handle error here
+        # 在这里处理错误
 ```
 
-Note that in Mojo, each `try/except` statement can handle a single error type.
+请注意，在 Mojo 中，每个 `try/except` 语句只能处理一个错误类型。
 
-## Types: classes vs structs
+## 类型：类与结构体
 
-Python classes are flexible and dynamic. You can add attributes at
-runtime, mix types, and override behavior freely. Mojo uses `struct`, a
-statically typed alternative that the compiler can optimize
-aggressively.
+Python 类是灵活和动态的。你可以在运行时添加属性、混合类型并自由覆盖行为。Mojo 使用 `struct`，这是一个编译器可以积极优化的静态类型替代方案。
 
-Mojo structs are stack-allocated. The value lives in a fast, fixed-size
-region of memory rather than on the heap, where a garbage collector
-must track and clean it up.
+Mojo 结构体是栈分配的。值驻留在快速、固定大小的内存区域中，而不是在堆上，堆上需要垃圾回收器跟踪和清理。
 
-**Python**:
+**Python**：
 
 ```python
 class Point:
@@ -502,12 +414,9 @@ class Point:
         self.y = y
 ```
 
-**Mojo**:
+**Mojo**：
 
-Mojo initializers require `out self`. The `out` keyword indicates
-that the method returns a value through an argument. In initializers,
-that argument is `self`, and the instance's fields are guaranteed
-to be fully initialized:
+Mojo 初始化器需要 `out self`。`out` 关键字表示该方法通过参数返回一个值。在初始化器中，该参数是 `self`，并且实例的字段保证完全初始化：
 
 ```mojo
 struct Point:
@@ -525,32 +434,29 @@ def main():
     print(point.x, point.y) # 5, 3
 ```
 
-Structs deliver performance and predictability.
+结构体提供性能和可预测性。
 
-## Types: variable static typing
+## 类型：变量静态类型
 
-**Python**:
+**Python**：
 
-In Python, you may assign different types to the same variable.
+在 Python 中，你可以为同一个变量分配不同类型。
 
 ```python
 a = "x" # String
-a = 10  # Not an error
+a = 10  # 不是错误
 ```
 
-**Mojo**:
+**Mojo**：
 
-In Mojo, once a name is bound in a scope, its type is fixed and
-can't be rebound to a different type:
+在 Mojo 中，一旦一个名称在作用域中绑定，它的类型就是固定的，不能重新绑定到不同类型：
 
 ```mojo
 var a = 1    # Int
-a = "string" # Error: can't implicitly convert String to Int
+a = "string" # 错误：不能隐式地将 String 转换为 Int
 ```
 
-When you use `Variant`, you can switch between the types it enumerates.
-The variable itself remains statically typed as a `Variant`, even though
-the concrete value it holds may change:
+当你使用 `Variant` 时，你可以在它枚举的类型之间切换。变量本身仍然作为 `Variant` 静态类型，即使它持有的具体值可能会改变：
 
 ```mojo
 from std.utils import Variant
@@ -558,111 +464,79 @@ from std.testing import *
 
 comptime StringOrInt = Variant[String, Int]
 
-var a: StringOrInt = 1 # Initial value, 1
+var a: StringOrInt = 1 # 初始值，1
 assert_true(a.unsafe_get[Int]() == 1)
 
-a = "string" # Not an error, "string"
+a = "string" # 不是错误，"string"
 assert_true(a.unsafe_get[String]() == "string")
 ```
 
-## Types and polymorphism: duck typing vs. traits
+## 类型和多态：鸭子类型与特性
 
-In Python, duck typing means you don't declare what interface an object
-must have. If it has the method you call, it works at runtime. This is
-flexible, but it gives you no safety net.
+在 Python 中，鸭子类型意味着你不需要声明对象必须具有什么接口。如果它有你调用的方法，它就可以在运行时工作。这是灵活的，但没有任何安全网。
 
-Mojo uses traits to solve the same problem explicitly. A trait defines
-the methods a type must implement or provides a default implementation.
-The compiler verifies that any type used in that role actually provides
-those methods, so mistakes surface before your code runs.
+Mojo 使用特性来显式地解决相同的问题。特性定义了一个类型必须实现的方法，或提供了默认实现。编译器验证在该角色中使用的任何类型实际上提供了这些方法，所以错误会在代码运行之前出现。
 
-**Python duck typing**:
+**Python 鸭子类型**：
 
 ```python
 def sketch(shape):
-    shape.draw()  # Works if shape has draw(), fails at runtime if not
+    shape.draw()  # 如果 shape 有 draw() 则工作，如果没有则在运行时失败
 ```
 
-**Mojo traits**:
+**Mojo 特性**：
 
 ```mojo
 trait Drawable:
     def draw(self):
-        ... # required method
+        ... # 必需的方法
 
 def sketch[T: Drawable](shape: T):
-    shape.draw()  # Compiler guarantees shape has `draw()`
+    shape.draw()  # 编译器保证 shape 有 `draw()`
 ```
 
-## Memory management
+## 内存管理
 
-In Python, memory access is indirect, which adds overhead. Mojo uses
-direct memory access, speeding up execution.
+在 Python 中，内存访问是间接的，这增加了开销。Mojo 使用直接内存访问，加速执行。
 
-Python manages memory automatically using reference counting and a
-garbage collector. Reference counting deallocates objects when their
-count reaches zero. The garbage collector runs in the background to
-clean up objects that are no longer reachable. This removes the need
-to manage memory manually, but it also means you have no control over
-when collection happens.
+Python 使用引用计数和垃圾回收器自动管理内存。引用计数在对象的计数达到零时释放对象。垃圾回收器在后台运行以清理不再可访问的对象。这消除了手动管理内存的需要，但也意味着你无法控制收集何时发生。
 
-Mojo uses ownership semantics with ASAP ("as soon as possible")
-destruction. The compiler knows exactly when a value is used for the
-last time and its lifetime ends. Memory is freed at that point, without
-waiting for a garbage collector to run.
+Mojo 使用具有 ASAP（"尽可能快"）销毁的所有权语义。编译器确切知道值最后一次使用的时间和它的生命周期结束。内存在那个点被释放，而不需要等待垃圾回收器运行。
 
-If you need manual memory control, Mojo offers a suite of pointer and
-allocation options. You get convenience by default, and precise
-`alloc()` and `free()` control when you reach for it.
+如果你需要手动内存控制，Mojo 提供了一套指针和分配选项。你默认获得便利，并且当你需要时可以获得精确的 `alloc()` 和 `free()` 控制。
 
-## Python instincts that may surprise you in Mojo
+## 在 Mojo 中可能会让你惊讶的 Python 直觉
 
-**"I don't need types."**:
+**"我不需要类型"**：
 
-In Python, that's often fine. In Mojo, types are how the compiler
-generates fast, optimized code. Untyped code works in dynamic languages
-like Python, but it can leave performance, correctness, readability, and
-maintainability on the table.
+在 Python 中，这通常没问题。在 Mojo 中，类型是编译器生成快速、优化代码的方式。未类型的代码在 Python 等动态语言中可以工作，但它可能会牺牲性能、正确性、可读性和可维护性。
 
-**"Everything is mutable."**:
+**"一切都是可变的"**：
 
-In Mojo, variables are mutable by default, but function and method
-arguments may not be.
+在 Mojo 中，变量默认是可变的，但函数和方法参数可能不是。
 
-**"I can mix types in a list."**:
+**"我可以在列表中混合类型"**：
 
-Mojo collections use static types and benefit from the performance that
-brings.
+Mojo 集合使用静态类型，并从由此带来的性能中受益。
 
-**"Threads are how I parallelize."**:
+**"线程是我并行化的方式"**：
 
-Python threads are limited by the GIL. Mojo supports parallelism at
-multiple levels, from data-parallel SIMD operations to multi-threaded
-GPU execution. This isn't limited to threads. Mojo enables low-level
-SIMD parallelism and higher-level parallelism across GPUs.
+Python 线程受 GIL 限制。Mojo 支持多层次的并行化，从数据并行 SIMD 操作到多线程 GPU 执行。这不仅仅是线程。Mojo 启用低级别的 SIMD 并行化和跨 GPU 的高级并行化。
 
-**"Classes are the natural way to structure things."**:
+**"类是构建事物的自然方式"**：
 
-Mojo's `struct` value type and its traits offer a better fit for
-performance-sensitive code.
+Mojo 的 `struct` 值类型及其特性为性能敏感的代码提供了更好的适配。
 
-## Use Mojo with AI coding assistants
+## 将 Mojo 与 AI 编码助手一起使用
 
-If you're using an AI coding assistant to help translate Python code
-to Mojo, install Mojo agent skills. The `mojo-python-interop` skill
-handles the patterns that trip models up like `PythonObject` wrapping,
-`import` conventions, and type conversions between the two languages.
+如果你正在使用 AI 编码助手帮助将 Python 代码转换为 Mojo，请安装 Mojo 代理技能。`mojo-python-interop` 技能处理会让模型感到困惑的模式，如 `PythonObject` 包装、`import` 约定以及两种语言之间的类型转换。
 
 ```bash
 npx skills add modular/skills
 ```
 
-This installs all four [Mojo agent skills](/docs/tools/skills),
-including `mojo-syntax` for general language accuracy.
+这将安装所有四个 [Mojo 代理技能](/docs/tools/skills)，包括用于一般语言准确性的 `mojo-syntax`。
 
-## The Mojo mindset
+## Mojo 心态
 
-Mojo gives you Pythonic ergonomics with systems-level control. That
-control comes when you embrace types, ownership, and value semantics.
-You don't have to use all of it at once, but it's there for when you
-need it.
+Mojo 为你提供了 Python 风格的易用性，同时具有系统级控制。这种控制来自于你拥抱类型、所有权和值语义。你不必一次性使用所有这些，但当你需要时它们就在那里。

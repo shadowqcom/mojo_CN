@@ -1,14 +1,14 @@
 ---
 title: "stack_allocation"
 sidebar_label: "stack_allocation"
-description: "Defines the `stack_allocation` function for stack-based memory allocation.  You can import these APIs from the `memory` package. For example:  ```mojo from std.memory import stack_allocation ```"
+description: "定义用于基于栈的内存分配的 `stack_allocation` 函数。您可以从 `memory` 包导入这些 API。例如：```mojo from std.memory import stack_allocation ```"
 ---
 
 # stack_allocation
 
-Defines the `stack_allocation` function for stack-based memory allocation.
+定义用于基于栈的内存分配的 `stack_allocation` 函数。
 
-You can import these APIs from the `memory` package. For example:
+您可以从 `memory` 包导入这些 API。例如：
 
 ```mojo
 from std.memory import stack_allocation

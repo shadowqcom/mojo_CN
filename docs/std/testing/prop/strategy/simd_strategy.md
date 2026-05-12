@@ -1,12 +1,12 @@
 ---
 title: "simd_strategy"
 sidebar_label: "simd_strategy"
-description: "Implements the SIMD strategy for generating random `SIMD` values in property tests."
+description: "实现用于在属性测试中生成随机 SIMD 值的 SIMD 策略。"
 ---
 
 # simd_strategy
 
-Implements the SIMD strategy for generating random `SIMD` values in property tests.
+实现用于在属性测试中生成随机 SIMD 值的 SIMD 策略。
 
 ## 类型
 

@@ -1,20 +1,18 @@
 ---
 title: "pwd"
+slug: pwd
 sidebar_label: "pwd"
-description: "Provides access to the user password database on Unix-like systems.  This module retrieves user account information from the system password database, similar to Python's `pwd` module. It provides fun"
+description: "提供对类 Unix 系统上用户密码数据库的访问。此模块从系统密码数据库检索用户账户信息，类似于 Python 的 `pwd` 模块。"
 ---
 
 # pwd
 
-Provides access to the user password database on Unix-like systems.
+提供对类 Unix 系统上用户密码数据库的访问。
 
-This module retrieves user account information from the system password database,
-similar to Python's `pwd` module. It provides functions to look up user entries by
-user ID or username, returning structured account information including home
-directory, shell, and user/group IDs.
+此模块从系统密码数据库检索用户账户信息，类似于 Python 的 `pwd` 模块。它提供按用户 ID 或用户名查找用户条目的函数，返回包括主目录、shell 和用户/组 ID 的结构化账户信息。
 
-Constraints:
-    Available on Linux and macOS only.
+限制：
+    仅在 Linux 和 macOS 上可用。
 
 ## 类型
 

@@ -1,24 +1,16 @@
 ---
 title: "os"
 sidebar_label: "os"
-description: "OS interface layer: environment, filesystem, process control.  The `os` package provides platform-independent access to operating system functionality including filesystem operations, environment vari"
+description: "操作系统接口层：环境、文件系统、进程控制。`os` 包提供独立于平台的操作系统功能访问，包括文件系统操作、环境变量和进程控制。"
 ---
 
 # os
 
-OS interface layer: environment, filesystem, process control.
+操作系统接口层：环境、文件系统、进程控制。
 
-The `os` package provides platform-independent access to operating system
-functionality including filesystem operations, environment variables, and
-process control. It offers portable interfaces to OS-dependent features,
-abstracting platform differences while exposing system-level capabilities. This
-package serves as the foundation for system programming in Mojo.
+`os` 包提供独立于平台的操作系统功能访问，包括文件系统操作、环境变量和进程控制。它提供操作系统相关功能的可移植接口，抽象平台差异同时暴露系统级功能。此包是 Mojo 系统编程的基础。
 
-Use this package for system-level operations, filesystem management,
-environment configuration, or platform abstraction. For file I/O operations,
-use the built-in `open()` function. For path manipulation, see the `os.path`
-package for path functions or the `pathlib` package for the object-oriented
-`Path` type.
+使用此包进行系统级操作、文件系统管理、环境配置或平台抽象。对于文件 I/O 操作，使用内置的 `open()` 函数。对于路径操作，请参阅 `os.path` 包获取路径函数，或 `pathlib` 包获取面向对象的 `Path` 类型。
 
 ## 模块
 

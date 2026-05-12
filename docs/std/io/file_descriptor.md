@@ -1,16 +1,16 @@
 ---
 title: "file_descriptor"
 sidebar_label: "file_descriptor"
-description: "Higher level abstraction for file stream.  These are Mojo built-ins, so you don't need to import them.  For example, here's how to print to a file  ```mojo var f = open(\"my_file.txt\", \"w\") var ..."
+description: "文件流的更高级抽象。这些是 Mojo 内置功能，无需导入。例如，打印到文件的方法：```mojo var f = open(\"my_file.txt\", \"w\") var ..."
 ---
 
 # file_descriptor
 
-Higher level abstraction for file stream.
+文件流的更高级抽象。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置功能，无需导入。
 
-For example, here's how to print to a file
+例如，打印到文件的方法：
 
 ```mojo
 var f = open("my_file.txt", "w")

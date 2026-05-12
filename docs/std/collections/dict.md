@@ -1,22 +1,18 @@
 ---
 title: "dict"
 sidebar_label: "dict"
-description: "Defines `Dict`, a collection that stores key-value pairs.  Dict provides an efficient, O(1) amortized average-time complexity for insert, lookup, and removal of dictionary elements. It uses a Swiss Ta"
+description: "定义 `Dict`，一个存储键值对的集合。Dict 为字典元素的插入、查找和删除提供了高效的 O(1) 平均时间复杂度。它使用瑞士表实现和 SIMD 组探测进行快速查找。"
 ---
 
 # dict
 
-Defines `Dict`, a collection that stores key-value pairs.
+定义 `Dict`，一个存储键值对的集合。
 
-Dict provides an efficient, O(1) amortized
-average-time complexity for insert, lookup, and removal of dictionary elements.
-It uses a Swiss Table implementation with SIMD group probing for fast lookups:
+Dict 为字典元素的插入、查找和删除提供了高效的 O(1) 平均时间复杂度。它使用瑞士表实现和 SIMD 组探测进行快速查找：
 
-- Performance and size are heavily optimized for small dictionaries, but can
-  scale to large dictionaries.
+- 性能和大小针对小型字典进行了高度优化，但也可以扩展到大型字典。
 
-- Insertion order is implicitly preserved. Iteration over keys, values, and
-  items have a deterministic order based on insertion.
+- 插入顺序被隐式保留。对键、值和项的迭代具有基于插入的确定性顺序。
 
 - For more information on the Mojo `Dict` type, see the
   [Mojo `Dict` manual](/docs/manual/types/#dict). To learn more about using

@@ -1,14 +1,14 @@
 ---
 title: "coroutine"
 sidebar_label: "coroutine"
-description: "Implements classes and methods for coroutines.  These are Mojo built-ins, so you don't need to import them."
+description: "实现协程的类和方法。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # coroutine
 
-Implements classes and methods for coroutines.
+实现协程的类和方法。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

@@ -1,25 +1,22 @@
 ---
 title: "reflection"
 sidebar_label: "reflection"
-description: "Compile-time reflection utilities for introspecting Mojo types and functions.  This module provides compile-time reflection capabilities including:  - Unified type and struct reflection via `reflect[T"
+description: "编译时反射工具，用于内省 Mojo 类型和函数。此模块提供编译时反射功能，包括：- 通过 `reflect[T]` 实现统一的类型和结构体反射"
 ---
 
 # reflection
 
-Compile-time reflection utilities for introspecting Mojo types and functions.
+编译时反射工具，用于内省 Mojo 类型和函数。
 
-This module provides compile-time reflection capabilities including:
+此模块提供编译时反射功能，包括：
 
-- Unified type and struct reflection via `reflect[T]`, a `comptime` alias
-  for the `Reflected[T]` handle type. Use `reflect[T].name()`,
-  `reflect[T].base_name()`, `reflect[T].field_count()`, etc.
-- Function name and linkage introspection (`get_function_name`, `get_linkage_name`).
-- Source location introspection (`source_location`, `call_location`).
+- 通过 `reflect[T]` 实现统一的类型和结构体反射，这是 `Reflected[T]` 句柄类型的 `comptime` 别名。使用 `reflect[T].name()`、`reflect[T].base_name()`、`reflect[T].field_count()` 等。
+- 函数名称和链接名内省（`get_function_name`、`get_linkage_name`）。
+- 源代码位置内省（`source_location`、`call_location`）。
 
-`reflect` is auto-imported via the prelude. The other names listed above
-must be imported explicitly from `std.reflection`.
+`reflect` 通过 prelude 自动导入。上面列出的其他名称必须从 `std.reflection` 显式导入。
 
-Example:
+示例：
 ```mojo
 struct Point:
     var x: Int
@@ -31,7 +28,7 @@ def print_fields[T: AnyType]():
         print(names[i])
 
 def main():
-    print_fields[Point]()  # Prints: x, y
+    print_fields[Point]()  # 打印：x, y
 ```
 
 ## 模块

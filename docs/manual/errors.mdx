@@ -1,66 +1,43 @@
 ---
-title: Errors, error handling, and context managers
-sidebar_label: Errors and context managers
+title: 错误、错误处理和上下文管理器
+sidebar_label: 错误和上下文管理器
 ---
 
-Mojo represents errors as values—specifically, as alternate return values from
-functions. Unlike stack-unwinding exceptions in languages like C++ or Java, Mojo
-errors don't require expensive call stack unwinding, so their runtime overhead
-is as low as returning and checking an extra `Bool`. This design also enables
-error handling in contexts where traditional exceptions aren't available, like
-GPU kernels.
+Mojo 将错误表示为值——具体来说，是函数的替代返回值。与 C++ 或 Java 等语言中的栈展开异常不同，Mojo 错误不需要昂贵的调用栈展开，因此其运行时开销与返回和检查一个额外的 `Bool` 一样低。这种设计还使得在传统异常不可用的上下文（如 GPU 内核）中能够进行错误处理。
 
-This page covers:
+本页面涵盖以下内容：
 
-- [**Raise an error**](#raise-an-error) — Use the built-in `Error` type to
-  raise errors with string messages.
-- [**Handle an error**](#handle-an-error) — Use `try`/`except`/`else`/`finally`
-  to detect and recover from errors.
-- [**Typed errors**](#typed-errors) — Define custom error types as structs for
-  structured error data and compile-time type checking.
-- [**Representing multiple error conditions**](#representing-multiple-error-conditions)
-  — Use enumerated error types or the `Variant` type for pattern matching.
-- [**The `Never` type**](#the-never-type) — Mark functions that always raise
-  or never raise.
-- [**Parametric raises**](#parametric-raises) — Write generic functions that
-  propagate error types from their arguments.
-- [**Typed and `Error` interaction**](#typed-errors-and-error-interaction) —
-  Work with code that uses both error styles.
-- [**Stack traces**](#enable-stack-trace-generation-for-errors) — Enable stack
-  trace collection for debugging.
-- [**Context managers**](#use-a-context-manager) — Manage resources safely
-  with the `with` statement.
+- [**引发错误**](#raise-an-error) — 使用内置的 `Error` 类型来引发带有字符串消息的错误。
+- [**处理错误**](#handle-an-error) — 使用 `try`/`except`/`else`/`finally` 来检测和恢复错误。
+- [**类型化错误**](#typed-errors) — 将自定义错误类型定义为结构体，用于结构化错误数据和编译时类型检查。
+- [**表示多种错误条件**](#representing-multiple-error-conditions) — 使用枚举错误类型或 `Variant` 类型进行模式匹配。
+- [**`Never` 类型**](#the-never-type) — 标记总是引发或从不引发错误。
+- [**参数化引发**](#parametric-raises) — 编写将错误类型从参数传播到调用者的泛型函数。
+- [**类型化错误和 `Error` 交互**](#typed-errors-and-error-interaction) — 处理同时使用两种错误风格的代码。
+- [**堆栈跟踪**](#enable-stack-trace-generation-for-errors) — 启用堆栈跟踪收集以进行调试。
+- [**上下文管理器**](#use-a-context-manager) — 使用 `with` 语句安全地管理资源。
 
-An error interrupts the normal execution flow of your program. If you provide an
-error handler (using [`try`/`except`](#handle-an-error)) in the current
-function, execution resumes with that handler. If the error isn't handled in the
-current function, it propagates to the calling function, and so on. If an error
-isn't caught by any handler, your program terminates with a non-zero exit code
-and prints the error message:
+错误会中断程序的正常执行流程。如果您在当前函数中提供了错误处理器（使用 [`try`/`except`](#handle-an-error)），执行将恢复到该处理器。如果错误未在当前函数中处理，它会传播到调用函数，依此类推。如果错误未被任何处理器捕获，您的程序将以非零退出代码终止并打印错误消息：
 
 ```output
 Unhandled exception caught during execution: record not found
 ```
 
-## Raise an error
+## 引发错误
 
-The built-in [`Error`](/docs/std/builtin/error/Error/) type is the default error
-type for most Mojo code. It carries a text message describing what went wrong,
-and it's the right choice for application-level error handling—simple,
-well-supported, and sufficient for the majority of use cases.
+内置的 [`Error`](/docs/std/builtin/error/Error/) 类型是大多数 Mojo 代码的默认错误类型。它携带一个描述发生了什么问题的文本消息，是应用级错误处理的正确选择——简单、广泛支持，并且足以满足大多数用例。
 
-You can raise an `Error` with the constructor or a string literal shorthand:
+您可以使用构造函数或字符串字面量简写来引发 `Error`：
 
 ```mojo
-# These are equivalent
+# 这些是等价的
 raise Error("file not found")
 raise "file not found"
 ```
 
-The string literal form is a convenience—the compiler automatically wraps it in
-an `Error`.
+字符串字面量形式是一种便利——编译器会自动将其包装在 `Error` 中。
 
-By declaring `raises`, you tell Mojo that a function may raise an error:
+通过声明 `raises`，您告诉 Mojo 一个函数可能会引发错误：
 
 ```mojo
 def read_file_fn(path: String) raises -> String:
@@ -71,57 +48,40 @@ def read_file_fn(path: String) raises -> String:
 
 :::tip
 
-If you need structured error data—like separate fields for an error code and
-description—or allocation-free errors for GPU kernels, see
-[Typed errors](#typed-errors) later on this page. For most application code,
-`Error` with a descriptive string message is all you need.
+如果您需要结构化错误数据——如错误代码和描述的独立字段——或者需要 GPU 内核的零分配错误，请参阅本页面后面的 [类型化错误](#typed-errors)。对于大多数应用代码，带有描述性字符串消息的 `Error` 就足够了。
 
 :::
 
-## Handle an error
+## 处理错误
 
-Mojo uses `try`/`except` to detect and handle errors. The full syntax is:
+Mojo 使用 `try`/`except` 来检测和处理错误。完整语法如下：
 
 ```mojo
 try:
-    # Code that might raise an error
+    # 可能引发错误的代码
 except e:
-    # Runs if an error occurs
+    # 如果发生错误则运行
 else:
-    # Runs if no error occurs
+    # 如果没有错误则运行
 finally:
-    # Always runs, regardless of outcome
+    # 无论结果如何都运行
 ```
 
-You must include one or both of `except` and `finally`. The `else` clause is
-optional.
+您必须包含 `except` 和 `finally` 中的一个或两个。`else` 子句是可选的。
 
-### How each clause works
+### 每个子句的工作原理
 
-- `try` — Contains code that might raise an error. If no error occurs, the
-  entire block executes. If an error occurs, execution stops at the `raise`
-  point and continues with the `except` clause (if present) or the `finally`
-  clause.
+- `try` — 包含可能引发错误的代码。如果没有错误发生，整个代码块执行。如果发生错误，执行在 `raise` 点停止，然后继续执行 `except` 子句（如果存在）或 `finally` 子句。
 
-- `except` — Runs only when an error occurs in the `try` block. If you
-  provide a variable name (`except e:`), the error is bound to that variable.
-  A `try` block can have only one `except` clause.
+- `except` — 仅在 `try` 代码块中发生错误时运行。如果您提供了一个变量名（`except e:`），错误将绑定到该变量。`try` 代码块只能有一个 `except` 子句。
 
-- `else` — Runs only when no error occurs in the `try` block. The `else`
-  clause is *skipped* if the `try` clause exits via `continue`, `break`, or
-  `return`.
+- `else` — 仅在 `try` 代码块中没有发生错误时运行。如果 `try` 子句通过 `continue`、`break` 或 `return` 退出，`else` 子句将被*跳过*。
 
-- `finally` — Runs after the `try` and any `except` or `else` clause,
-  regardless of outcome. It executes even if another clause exits via
-  `continue`, `break`, `return`, or by raising a new error. Use `finally` to
-  release resources (such as file handles) that must be cleaned up regardless
-  of whether an error occurred.
+- `finally` — 在 `try` 和任何 `except` 或 `else` 子句之后运行，无论结果如何。即使另一个子句通过 `continue`、`break`、`return` 退出或引发新错误，它也会执行。使用 `finally` 来释放必须在无论是否发生错误的情况下清理的资源（如文件句柄）。
 
-### Example
+### 示例
 
-The following example demonstrates all four clauses. The `process_record()`
-function raises `Error` for different conditions, and the caller loops over
-a list of IDs to exercise each clause:
+以下示例演示了所有四个子句。`process_record()` 函数针对不同条件引发 `Error`，调用者遍历 ID 列表以测试每个子句：
 
 ```mojo title="handle_error.mojo"
 def process_record(id: Int) raises -> String:
@@ -175,47 +135,34 @@ finally => done with id: -3
 re-raised error: invalid record ID: must be non-negative
 ```
 
-Notice:
+注意：
 
-- When `id` is 5: `process_record()` succeeds, so `else` runs, then `finally`.
-- When `id` is 0: `continue` exits the `try` block, skipping both `except`
-  and `else`. Only `finally` runs.
-- When `id` is 1001: `process_record()` raises an error. The `except` clause
-  handles it and execution continues with the next iteration.
-- When `id` is -3: `process_record()` raises an "invalid" error. The `except`
-  clause re-raises it with `raise e^`, which transfers ownership of the error
-  to the outer `try`/`except`. The `finally` clause still runs before the error
-  propagates. Because the re-raise exits the loop, `id` 42 is never processed.
+- 当 `id` 为 5 时：`process_record()` 成功，所以 `else` 运行，然后 `finally`。
+- 当 `id` 为 0 时：`continue` 退出 `try` 代码块，跳过 `except` 和 `else`。只有 `finally` 运行。
+- 当 `id` 为 1001 时：`process_record()` 引发错误。`except` 子句处理它，执行继续进行下一次迭代。
+- 当 `id` 为 -3 时：`process_record()` 引发"无效"错误。`except` 子句使用 `raise e^` 重新引发它，将错误的所有权转移到外部的 `try`/`except`。`finally` 子句在错误传播之前仍然运行。由于重新引发退出了循环，`id` 42 永远不会被处理。
 
-### Re-raise an error
+### 重新引发错误
 
-To re-raise a caught error, use `raise` with the
-[transfer sigil](/docs/manual/values/ownership/#transfer-arguments-var-and-)
-(`^`) to transfer ownership of the error value:
+要重新引发已捕获的错误，请使用带有 [转移符号](/docs/manual/values/ownership/#transfer-arguments-var-and/)（`^`）的 `raise` 来转移错误值的所有权：
 
 ```mojo
 try:
     result = process_record(-1)
 except e:
     print("Logging error:", e)
-    raise e^  # re-raise with ownership transfer
+    raise e^  # 带所有权转移重新引发
 ```
 
-You can also raise a different error from within an `except` clause.
+您还可以从 `except` 子句中引发不同的错误。
 
-## Typed errors
+## 类型化错误
 
-For code that needs more than a string message—like standard library APIs,
-GPU abstractions, or situations where callers need structured error data—Mojo
-lets you define custom error types as [structs](/docs/manual/structs/).
+对于需要比字符串消息更多的代码——如标准库 API、GPU 抽象或调用者需要结构化错误数据的情况——Mojo 允许您将自定义错误类型定义为 [结构体](/docs/manual/structs/)。
 
-### Define a custom error type
+### 定义自定义错误类型
 
-In Mojo, any struct can serve as an error type—no special base class or trait
-is required. However, implementing the
-[`Writable`](/docs/std/format/Writable/) trait is recommended so the error
-produces a readable message when printed or when the program terminates with an
-unhandled error:
+在 Mojo 中，任何结构体都可以作为错误类型——不需要特殊的基类或 trait。但是，建议实现 [`Writable`](/docs/std/format/Writable/) trait，以便在打印错误或程序因未处理的错误而终止时，错误会生成可读的消息：
 
 ```mojo
 @fieldwise_init
@@ -227,23 +174,17 @@ struct ValidationError(Copyable, Writable):
         writer.write("ValidationError(", self.field, "): ", self.reason)
 ```
 
-The [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) decorator
-generates an `__init__()` method with an argument for each field, so you
-can construct errors like `ValidationError("username", "too short")` or with
-keyword arguments like `ValidationError(field="username", reason="too short")`.
+[`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 装饰器为每个字段生成一个参数的 `__init__()` 方法，因此您可以像 `ValidationError("username", "too short")` 或使用关键字参数如 `ValidationError(field="username", reason="too short")` 这样构造错误。
 
 :::note
 
-Typed errors work on GPUs and embedded targets as long as you avoid
-heap-allocated types like `String`. For more on GPU programming, see
-[GPU fundamentals](/docs/manual/gpu/fundamentals/).
+只要避免使用像 `String` 这样的堆分配类型，类型化错误就可以在 GPU 和嵌入式目标上工作。有关更多关于 GPU 编程的信息，请参阅 [GPU 基础](/docs/manual/gpu/fundamentals/)。
 
 :::
 
-### Raise a typed error
+### 引发类型化错误
 
-To declare that a function can raise a typed error, add `raises YourErrorType`
-to its signature:
+要声明一个函数可以引发类型化错误，请在其签名中添加 `raises YourErrorType`：
 
 ```mojo
 def validate_username(username: String) raises ValidationError -> String:
@@ -256,21 +197,16 @@ def validate_username(username: String) raises ValidationError -> String:
     return username
 ```
 
-Mojo functions are non-raising by default. Including `raises` (with or
-without a type) makes it a raising function. Each function can declare
-at most one error type. The compiler enforces this—if any `raise`
-statement in the function body doesn't match the declared type, the
-program won't compile.
+Mojo 函数默认是非引发函数。包含 `raises`（无论是否有类型）都会使其成为引发函数。每个函数最多可以声明一种错误类型。编译器强制执行此规则——如果函数体中的任何 `raise` 语句不匹配声明的类型，程序将无法编译。
 
-If a non-raising function calls a raising function, it must handle the error
-locally:
+如果非引发函数调用了引发函数，它必须在本地处理错误：
 
 ```mojo
-# This doesn't compile — validate_username() can raise
+# 这不会编译 — validate_username() 可以引发
 def process_name(name: String):
     print(validate_username(name))
 
-# This compiles — the error is handled
+# 这会编译 — 错误已处理
 def process_name_safe(name: String):
     try:
         print(validate_username(name))
@@ -278,60 +214,54 @@ def process_name_safe(name: String):
         print("Invalid:", e)
 ```
 
-### Catch a typed error
+### 捕获类型化错误
 
-Use `try`/`except` to catch a typed error. The compiler automatically infers the
-error type from the function being called, so `except e:` gives you a fully
-typed error value—no casting required:
+使用 `try`/`except` 来捕获类型化错误。编译器会自动从被调用的函数推断错误类型，因此 `except e:` 给您一个完全类型化的错误值——无需转换：
 
 ```mojo
 try:
     var name = validate_username("")
 except e:
-    # e is a ValidationError — access fields directly
+    # e 是一个 ValidationError — 直接访问字段
     print("Error in field '" + e.field + "': " + e.reason)
 ```
 
-Which produces this output:
+这会产生以下输出：
 
 ```output
 Error in field 'username': cannot be empty
 ```
 
-A `try` block can include only one `except` clause. Mojo doesn't support
-`except ErrorType as e:` syntax—the type is always inferred from the
-function being called.
+`try` 代码块只能包含一个 `except` 子句。Mojo 不支持 `except ErrorType as e:` 语法——类型总是从被调用的函数推断。
 
-If you need to handle calls that raise different error types, use separate
-`try` blocks:
+如果您需要处理引发不同错误类型的调用，请使用单独的 `try` 代码块：
 
 ```mojo
-# Each try block handles one error type
+# 每个 try 代码块处理一种错误类型
 try:
     var name = validate_username(input)
 except e:
-    # e is a ValidationError — access fields directly
+    # e 是一个 ValidationError — 直接访问字段
     print("Validation failed:", e.field, e.reason)
 
 try:
     var file = open_file(path)
 except e:
-    # e is a FileError — match on variant
+    # e 是一个 FileError — 在变体上匹配
     if e == FileError.not_found:
         print("Missing:", path)
 ```
 
 :::note
 
-If your error type implements the [`Writable`](/docs/std/format/Writable/)
-trait, you can also pass `e` directly to `print()`:
+如果您的错误类型实现了 [`Writable`](/docs/std/format/Writable/) trait，您也可以直接将 `e` 传递给 `print()`：
 
 ```mojo
 except e:
-    print(e)  # calls ValidationError.write_to()
+    print(e)  # 调用 ValidationError.write_to()
 ```
 
-Which produces this output:
+这会产生以下输出：
 
 ```output
 ValidationError(username): cannot be empty
@@ -339,33 +269,23 @@ ValidationError(username): cannot be empty
 
 :::
 
-## Representing multiple error conditions
+## 表示多种错误条件
 
-Each function can declare only one error type in its `raises` clause. When
-a function can fail in multiple distinct ways, you need to represent those
-conditions within a single type. Mojo offers two approaches:
+每个函数在其 `raises` 子句中只能声明一种错误类型。当函数可以以多种不同方式失败时，您需要在一个类型中表示这些条件。Mojo 提供了两种方法：
 
-- **Enumerated error types** — A single struct with `comptime` variant aliases.
-  Simpler and more efficient when you only need to distinguish between
-  conditions.
-- **The `Variant` type** — The standard library
-  [`Variant`](/docs/std/utils/variant/Variant/) type with separate structs per
-  condition. More flexible when each condition needs to carry different data.
+- **枚举错误类型** — 使用 `comptime` 变体别名的单个结构体。当您只需要区分条件时，这更简单、更高效。
+- **`Variant` 类型** — 带有每种条件单独结构体的标准库 [`Variant`](/docs/std/utils/variant/Variant/) 类型。当每种条件需要携带不同数据时，这更灵活。
 
-### Enumerated error types
+### 枚举错误类型
 
-A single struct can represent all error conditions using an integer `_variant`
-field and
-[`comptime` values](/docs/manual/metaprogramming/comptime-evaluation/#comptime-values)
-as named constants. The `write_to` method generates human-readable strings from
-the variant code:
+单个结构体可以使用整数 `_variant` 字段和 [`comptime` 值](/docs/manual/metaprogramming/comptime-evaluation/#comptime-values)作为命名常量来表示所有错误条件。`write_to` 方法从变体代码生成人类可读的字符串：
 
 ```mojo
 @fieldwise_init
 struct FileError(Equatable, ImplicitlyCopyable, Writable):
     var _variant: Int
 
-    # Compile-time constant variants
+    # 编译时常量变体
     comptime not_found = FileError(_variant=1)
     comptime permission_denied = FileError(_variant=2)
     comptime already_exists = FileError(_variant=3)
@@ -383,9 +303,7 @@ struct FileError(Equatable, ImplicitlyCopyable, Writable):
         writer.write("FileError.", self.variant_name())
 ```
 
-Because `FileError` has a single `Int` field and conforms to
-[`Equatable`](/docs/std/builtin/comparable/Equatable/), the compiler
-auto-synthesizes `__eq__()`, so you can compare variants directly:
+由于 `FileError` 有一个 `Int` 字段并符合 [`Equatable`](/docs/std/builtin/comparable/Equatable/)，编译器会自动合成 `__eq__()`，因此您可以直接比较变体：
 
 ```mojo
 def open_file(path: String) raises FileError -> String:
@@ -396,7 +314,7 @@ def open_file(path: String) raises FileError -> String:
     return "Contents of " + path
 ```
 
-You can then match on specific variants in the handler:
+然后您可以在处理器中匹配特定的变体：
 
 ```mojo
 try:
@@ -408,18 +326,15 @@ except e:
         print("Permission denied:", e)
 ```
 
-Which produces this output:
+这会产生以下输出：
 
 ```output
 Permission denied: FileError.permission_denied
 ```
 
-### The `Variant` type
+### `Variant` 类型
 
-When each error condition needs to carry different data, you can use the
-standard library [`Variant`](/docs/std/utils/variant/Variant/) type instead of
-an integer-based enumeration. Define a separate struct for each condition, then
-combine them into a single error type with a `comptime` alias:
+当每个错误条件需要携带不同数据时，您可以使用标准库 [`Variant`](/docs/std/utils/variant/Variant/) 类型而不是基于整数的枚举。为每种条件定义一个单独的结构体，然后使用 `comptime` 别名将它们组合成一个错误类型：
 
 ```mojo title="variant_errors.mojo"
 from std.utils import Variant
@@ -451,7 +366,7 @@ struct PermissionError(Copyable, Writable):
 comptime FileError = Variant[NotFoundError, PermissionError]
 ```
 
-Construct a `Variant` by wrapping the inner error in the `Variant` type:
+通过将内部错误包装在 `Variant` 类型中来构造 `Variant`：
 
 ```mojo
 def open_file(path: String) raises FileError -> String:
@@ -462,8 +377,7 @@ def open_file(path: String) raises FileError -> String:
     return "Contents of " + path
 ```
 
-In the handler, use `.isa[T]()` to test which condition occurred and `e[T]` to
-access the inner error with its full type:
+在处理器中，使用 `.isa[T]()` 测试发生了哪种条件，使用 `e[T]` 访问具有完整类型的内部错误：
 
 ```mojo
 try:
@@ -479,48 +393,37 @@ except e:
 Access denied: permission denied on /secret (requires admin)
 ```
 
-Use the `Variant` approach when each condition carries different fields (like
-`path` vs `path` + `required_role` above). Use the
-[enumerated error type](#enumerated-error-types) pattern when you only need to
-distinguish between conditions without carrying different data per condition.
+当每个条件携带不同的字段时（如上面的 `path` 与 `path` + `required_role`），使用 `Variant` 方法。当您只需要区分条件而不需要为每种条件携带不同数据时，使用 [枚举错误类型](#enumerated-error-types) 模式。
 
-## The `Never` type
+## `Never` 类型
 
-`Never` is a type with no constructors—it can't be instantiated. This makes
-it useful in error-handling signatures to express two opposite guarantees:
+`Never` 是一个没有构造函数的类型——它无法实例化。这使得它在错误处理签名中用于表达两个相反的保证很有用：
 
-- `raises YourErrorType -> Never` — The function *always* raises and never
-  returns a value. This is useful for functions like `panic()` that
-  unconditionally signal an error.
-- `raises Never -> ReturnType` — The function *never* raises and always returns
-  a value. This is equivalent to omitting `raises` entirely.
+- `raises YourErrorType -> Never` — 函数*总是*引发，从不返回值。这对于像 `panic()` 这样的函数很有用，它们无条件地发出错误信号。
+- `raises Never -> ReturnType` — 函数*从不*引发，总是返回值。这相当于完全省略 `raises`。
 
-### Functions that always raise
+### 总是引发错误的函数
 
-A function with `-> Never` as its return type must never terminate with a
-`return` statement—it must raise on every code path (or loop infinitely).
-Because `Never` can substitute for any type, the compiler allows using such a
-function in place of a return value:
+返回类型为 `-> Never` 的函数必须永远不会以 `return` 语句终止——它必须在每个代码路径上引发（或无限循环）。由于 `Never` 可以替代任何类型，编译器允许用这样的函数代替返回值：
 
 ```mojo
-# Always raises, never returns
+# 总是引发，从不返回
 def panic(msg: String) raises -> Never:
     raise Error(msg)
 
 def get_value_or_panic(maybe: Optional[Int]) raises -> Int:
     if maybe:
         return maybe.value()
-    # Never substitutes for Int in this branch
+    # Never 在此分支中替代 Int
     panic("value is missing")
 ```
 
-### Functions that never raise
+### 从不引发错误的函数
 
-A function with `raises Never` guarantees at compile time that it never raises.
-This is equivalent to writing a plain non-raising function:
+具有 `raises Never` 的函数在编译时保证从不引发。这相当于编写一个普通的非引发函数：
 
 ```mojo
-# These two signatures are equivalent:
+# 这两个签名是等价的：
 def safe_add(a: Int, b: Int) raises Never -> Int:
     return a + b
 
@@ -528,16 +431,11 @@ def safe_add(a: Int, b: Int) -> Int:
     return a + b
 ```
 
-This equivalency is especially useful in combination with
-[parametric raises](#parametric-raises), where the compiler infers
-`raises Never` when a function argument doesn't raise.
+这种等价性在与 [参数化引发](#parametric-raises) 结合使用时特别有用，当函数参数不引发时，编译器会推断 `raises Never`。
 
-## Parametric raises
+## 参数化引发
 
-You can write
-[generic functions](/docs/manual/parameters/#parameters-and-generics) that
-propagate the error type from a function argument to the caller. This uses a
-compile-time parameter for the error type:
+您可以编写 [泛型函数](/docs/manual/parameters/#parameters-and-generics) 将错误类型从函数参数传播到调用者。这使用错误类型的编译时参数：
 
 ```mojo
 def run_action[
@@ -546,12 +444,9 @@ def run_action[
     return action()
 ```
 
-The function type uses `thin` because `action` is a noncapturing function
-value.
+函数类型使用 `thin`，因为 `action` 是一个非捕获函数值。
 
-The `ErrorType` parameter is inferred from the function you pass in. If the
-function raises `NetworkError`, then `run_action` raises `NetworkError`. If the
-function raises `ParseError`, then `run_action` raises `ParseError`:
+`ErrorType` 参数从您传入的函数推断。如果函数引发 `NetworkError`，则 `run_action` 引发 `NetworkError`。如果函数引发 `ParseError`，则 `run_action` 引发 `ParseError`：
 
 ```mojo
 def fetch_data() raises NetworkError -> Int:
@@ -562,22 +457,20 @@ def parse_config() raises ParseError -> Int:
 
 # ...
 
-# ErrorType inferred as NetworkError
+# ErrorType 推断为 NetworkError
 try:
     _ = run_action(fetch_data)
 except e:
     print("Network failure:", e)
 
-# ErrorType inferred as ParseError
+# ErrorType 推断为 ParseError
 try:
     _ = run_action(parse_config)
 except e:
     print("Parse failure:", e)
 ```
 
-If the function argument doesn't raise at all, the compiler infers `Never` as
-the error type. This means `run_action` itself becomes non-raising, and no `try`
-block is needed:
+如果函数参数根本不引发，编译器会推断 `Never` 为错误类型。这意味着 `run_action` 本身成为非引发函数，不需要 `try` 代码块：
 
 ```mojo
 def get_value() -> Int:
@@ -585,27 +478,24 @@ def get_value() -> Int:
 
 # ...
 
-# ErrorType inferred as Never — no try block needed
+# ErrorType 推断为 Never — 不需要 try 代码块
 var result = run_action(get_value)
 print("Got value:", result)
 ```
 
-Which produces this output:
+这会产生以下输出：
 
 ```output
 Got value: 99
 ```
 
-## Typed errors and `Error` interaction
+## 类型化错误和 `Error` 交互
 
-Most codebases contain a mix of functions that raise, don't raise, or
-raise typed errors. This section covers how the styles interact and how
-to work with them effectively.
+大多数代码库包含混合了引发、不引发或引发类型化错误的函数。本节介绍这些风格如何交互以及如何有效地使用它们。
 
-### Wrap `Error` at API boundaries
+### 在 API 边界包装 `Error`
 
-When calling raising functions or other `Error`-raising code from a function
-that uses typed errors, catch the `Error` and convert it:
+当从使用类型化错误的函数调用引发函数或其他 `Error` 引发代码时，捕获 `Error` 并转换它：
 
 ```mojo
 def validate_with_error(value: Int) raises -> Int:
@@ -620,27 +510,24 @@ def wrapped_validate(value: Int) raises ValidationError -> Int:
         raise ValidationError(field="value", reason=String(e))
 ```
 
-### Avoid bare `raises` with typed errors
+### 避免与类型化错误一起使用裸 `raises`
 
-Using bare `raises` (without a type) on an function that calls typed-error
-functions causes *type erasure*—the compiler forgets the specific error type,
-even though the runtime preserves the error's identity:
+在调用类型化错误函数的函数上使用裸 `raises`（不带类型）会导致*类型擦除*——编译器忘记特定的错误类型，即使运行时保留错误的身份：
 
 ```mojo
-# Anti-pattern: bare raises erases type info at compile time
+# 反模式：裸 raises 在编译时擦除类型信息
 def validate_bare_raises(value: Int) raises -> Int:
     return validate_typed(value)
 ```
 
-The caller of `validate_bare_raises()` receives an `Error`, not a
-`ValidationError`:
+`validate_bare_raises()` 的调用者接收到 `Error`，而不是 `ValidationError`：
 
 ```mojo
 try:
     _ = validate_bare_raises(-5)
 except e:
-    # e is typed as Error — no field access available
-    # e.field would not compile here
+    # e 被类型化为 Error — 没有字段访问可用
+    # e.field 在这里不会编译
     print(e)
 ```
 
@@ -648,21 +535,16 @@ except e:
 ValidationError(value): cannot be negative
 ```
 
-The error message still shows `ValidationError` because the runtime preserves
-the original error's [`Writable`](/docs/std/format/Writable/) output. But the
-compiler sees only `Error`, so you lose access to structured fields. Always use
-`raises YourErrorType` to maintain type safety.
+错误消息仍然显示 `ValidationError`，因为运行时保留原始错误的 [`Writable`](/docs/std/format/Writable/) 输出。但编译器只看到 `Error`，因此您失去了对结构化字段的访问。始终使用 `raises YourErrorType` 以维护类型安全。
 
-Note that type erasure only affects *uncaught* errors that propagate through a
-bare `raises` function. If you catch the typed error locally, you still get full
-field access:
+请注意，类型擦除只影响通过裸 `raises` 函数传播的*未捕获*错误。如果您在本地捕获类型化错误，您仍然可以获得完整的字段访问：
 
 ```mojo
 def error_caller():
     try:
         _ = validate_typed(-5)
     except e:
-        # e is a ValidationError — field access works
+        # e 是一个 ValidationError — 字段访问有效
         print("Field:", e.field, "Reason:", e.reason)
 ```
 
@@ -670,10 +552,9 @@ def error_caller():
 Field: value Reason: cannot be negative
 ```
 
-### Don't mix error types in a single `try` block
+### 不要在单个 `try` 代码块中混合错误类型
 
-You can't call functions that raise different error types in the same `try`
-block. The compiler rejects the mismatch:
+您不能在同一个 `try` 代码块中调用引发不同错误类型的函数。编译器会拒绝这种不匹配：
 
 ```mojo
 def error_func() raises -> Int:
@@ -682,70 +563,52 @@ def error_func() raises -> Int:
 def typed_func() raises ValidationError -> Int:
     raise ValidationError(field="x", reason="invalid")
 
-# This doesn't compile
+# 这不会编译
 def mixed() raises ValidationError:
     try:
-        _ = error_func()   # raises Error
-        _ = typed_func()    # raises ValidationError
+        _ = error_func()   # 引发 Error
+        _ = typed_func()    # 引发 ValidationError
     except e:
         print(e)
 ```
 
-The compiler reports:
+编译器报告：
 
 ```output
 error: cannot call function that may raise 'Error' in a context that
 supports an error type of 'ValidationError'
 ```
 
-To call both functions, use separate `try` blocks or wrap the `Error`-raising
-function as shown in
-[Wrap `Error` at API boundaries](#wrap-error-at-api-boundaries).
+要调用这两个函数，请使用单独的 `try` 代码块或按照 [在 API 边界包装 `Error`](#wrap-error-at-api-boundaries) 中所示包装 `Error` 引发函数。
 
-### Recommendations for mixed codebases
+### 混合代码库的建议
 
-When working with both `Error` and typed errors:
+当同时使用 `Error` 和类型化错误时：
 
-- **Use `raises YourErrorType`** — Always specify the error type in function
-  signatures. Bare `raises` discards type information.
-- **Use separate `try` blocks** — When calling functions with different error
-  types, use nested or sequential `try` blocks to handle each type
-  independently.
+- **使用 `raises YourErrorType`** — 始终在函数签名中指定错误类型。裸 `raises` 会丢弃类型信息。
+- **使用单独的 `try` 代码块** — 当调用具有不同错误类型的函数时，使用嵌套或顺序的 `try` 代码块来独立处理每种类型。
 
 :::note
 
-For a complete working example of these interaction patterns, see
-[`error_interaction.mojo`](https://github.com/modular/modular/blob/main/mojo/docs/code/manual/errors/error_interaction.mojo).
+有关这些交互模式的完整工作示例，请参阅 [`error_interaction.mojo`](https://github.com/modular/modular/blob/main/mojo/docs/code/manual/errors/error_interaction.mojo)。
 
 :::
 
-## Enable stack trace generation for errors
+## 为错误启用堆栈跟踪生成
 
-Because Mojo represents errors as alternate return values rather than
-stack-unwinding exceptions, stack trace collection isn't automatic. Collecting
-a stack trace requires heap allocation and adds runtime overhead, so it's
-disabled by default to keep error handling lightweight.
+由于 Mojo 将错误表示为替代返回值而不是栈展开异常，堆栈跟踪收集不是自动的。收集堆栈跟踪需要堆分配并增加运行时开销，因此默认情况下禁用它以保持错误处理轻量级。
 
 :::important
 
-Stack traces are a feature of the built-in `Error` type only. Typed errors
-currently don't capture stack traces because the trace is collected inside
-`Error.__init__()`, and custom error structs have no equivalent hook. The
-examples in this section all use `Error` intentionally.
+堆栈跟踪是内置 `Error` 类型的功能。类型化错误目前不捕获堆栈跟踪，因为跟踪是在 `Error.__init__()` 内部收集的，而自定义错误结构体没有等效的钩子。本节中的所有示例都故意使用 `Error`。
 
 :::
 
-Mojo generates a stack trace when your program hits a segmentation fault.
-However, by default Mojo *doesn't* generate a stack trace when your program
-raises an error—this avoids the additional runtime overhead. To enable stack
-traces for raised errors, set the `MODULAR_DEBUG` environment variable to
-`stack-trace-on-error`, as shown in the examples below.
+当您的程序遇到段错误时，Mojo 会生成堆栈跟踪。但是，默认情况下，当您的程序引发错误时，Mojo *不会*生成堆栈跟踪——这避免了额外的运行时开销。要为引发的错误启用堆栈跟踪，请将 `MODULAR_DEBUG` 环境变量设置为 `stack-trace-on-error`，如下面的示例所示。
 
-Keep in mind that when you compile your program with
-[`mojo build`](/docs/cli/build/), the compiler optimizes and strips symbols by
-default, so often your stack trace won't be very useful.
+请记住，当使用 [`mojo build`](/docs/cli/build/) 编译程序时，编译器默认会优化并剥离符号，因此您的堆栈跟踪通常不会很有用。
 
-Consider this program:
+考虑这个程序：
 
 ```mojo title="stacktrace_error.mojo"
 def func2() raises -> None:
@@ -760,8 +623,7 @@ def main() raises:
     func1()
 ```
 
-If you compile the program with default settings and run it with the
-environment variable set, you'll see a stack trace without symbols:
+如果您使用默认设置编译程序并设置环境变量运行它，您将看到一个没有符号的堆栈跟踪：
 
 ```sh
 mojo build stacktrace_error.mojo
@@ -779,8 +641,7 @@ MODULAR_DEBUG=stack-trace-on-error ./stacktrace_error
 Unhandled exception caught during execution: Intentional error
 ```
 
-To generate a more useful stack trace, compile the program with
-`--debug-level full` (or `-g`) to include debug symbols:
+要生成更有用的堆栈跟踪，请使用 `--debug-level full`（或 `-g`）编译程序以包含调试符号：
 
 ```sh
 mojo build --debug-level full stacktrace_error.mojo
@@ -803,25 +664,17 @@ MODULAR_DEBUG=stack-trace-on-error ./stacktrace_error
 Unhandled exception caught during execution: Intentional error
 ```
 
-With debug symbols, the trace shows the function call chain and source
-locations: `main()` → `func1()` → `func2()` → `Error.__init__()`.
+有了调试符号，跟踪显示了函数调用链和源位置：`main()` → `func1()` → `func2()` → `Error.__init__()`。
 
 :::note
 
-Running your program directly with [`mojo run`](/docs/cli/run/) or
-`mojo` doesn't include debug symbols in the stack trace, even with
-`--debug-level full`. Use `mojo build` with `-g` and run the compiled binary
-for symbolicated stack traces.
+直接使用 [`mojo run`](/docs/cli/run/) 或 `mojo` 运行程序不会在堆栈跟踪中包含调试符号，即使使用 `--debug-level full`。请使用带有 `-g` 的 `mojo build` 并运行编译后的二进制文件以获取符号化的堆栈跟踪。
 
 :::
 
-### Capture a stack trace programmatically
+### 程序化捕获堆栈跟踪
 
-You can bind the `Error` instance to a variable in the `except` clause and
-call its
-[`get_stack_trace()`](/docs/std/builtin/error/Error/#get_stack_trace) method
-to get the stack trace as an `Optional[String]`. The method returns `None` if
-stack trace collection was disabled or unavailable:
+您可以将 `Error` 实例绑定到 `except` 子句中的变量，并调用其 [`get_stack_trace()`](/docs/std/builtin/error/Error/#get_stack_trace) 方法以 `Optional[String]` 形式获取堆栈跟踪。如果禁用或不可用堆栈跟踪收集，该方法返回 `None`：
 
 ```mojo title="stacktrace_error_capture.mojo"
 def func2() raises -> None:
@@ -845,7 +698,7 @@ def main() raises:
             print("No stack trace available")
 ```
 
-When you compile with debug symbols and run with stack trace generation enabled:
+当您使用调试符号编译并启用堆栈跟踪生成运行时：
 
 ```sh
 mojo build --debug-level full stacktrace_error_capture.mojo
@@ -868,7 +721,7 @@ Intentional error
 #7 0x... main .../builtin/_startup.mojo:103:4
 ```
 
-Without enabling stack trace generation, the output is:
+如果不启用堆栈跟踪生成，输出为：
 
 ```output
 Intentional error
@@ -876,77 +729,52 @@ Intentional error
 No stack trace available
 ```
 
-## Use a context manager
+## 使用上下文管理器
 
-A *context manager* is an object that manages resources such as files, network
-connections, and database connections. It provides a way to allocate resources
-and release them automatically when they are no longer needed, ensuring proper
-cleanup and preventing resource leaks even when errors occur.
+*上下文管理器* 是一个管理资源（如文件、网络连接和数据库连接）的对象。它提供了一种分配资源并在不再需要时自动释放它们的方法，确保正确清理并在发生错误时防止资源泄漏。
 
 :::note
 
-Context managers work with both typed errors and the built-in `Error` type. The
-`with` statement handles either error style transparently.
+上下文管理器既适用于类型化错误也适用于内置 `Error` 类型。`with` 语句透明地处理这两种错误风格。
 
 :::
 
-As an example, consider reading data from a file. A naive approach might look
-like this:
+作为示例，考虑从文件读取数据。一种朴素的方法可能看起来像这样：
 
 ```mojo
-# Obtain a file handle to read from storage
+# 获取文件句柄以从存储读取
 f = open(input_file, "r")
 content = f.read()
-# Process the content as needed
-# Close the file handle
+# 按需处理内容
+# 关闭文件句柄
 f.close()
 ```
 
-Calling [`close()`](/docs/std/io/file/FileHandle/#close) releases the
-memory and other operating system resources associated with the opened file. If
-your program were to open many files without closing them, you could exhaust the
-resources available to your program and cause errors. The problem is even worse
-if you were writing to a file instead of reading from it, because the operating
-system might buffer the output in memory until the file is closed. If your
-program were to crash instead of exiting normally, that buffered data could be
-lost instead of being written to storage.
+调用 [`close()`](/docs/std/io/file/FileHandle/#close) 会释放与打开的文件关联的内存和其他操作系统资源。如果您的程序打开许多文件而不关闭它们，可能会耗尽程序可用的资源并导致错误。如果您是写入文件而不是从文件读取，问题会更严重，因为操作系统可能会将输出缓冲到内存中，直到文件关闭。如果您的程序崩溃而不是正常退出，该缓冲数据可能会丢失而不是写入存储。
 
-The example above includes the call to `close()`, but it ignores the
-possibility that [`read()`](/docs/std/io/file/FileHandle/#read) could
-raise an error, which would prevent the `close()` from executing.
-To handle this scenario, you could rewrite the code to use `try` like this:
+上面的示例包含了对 `close()` 的调用，但它忽略了 [`read()`](/docs/std/io/file/FileHandle/#read) 可能引发错误的可能性，这将阻止 `close()` 执行。要处理这种情况，您可以重写代码以使用 `try`，如下所示：
 
 ```mojo
-# Obtain a file handle to read from storage
+# 获取文件句柄以从存储读取
 f = open(input_file, "r")
 
 try:
     content = f.read()
-    # Process the content as needed
+    # 按需处理内容
 finally:
-    # Ensure that the file handle is closed even if read() raises an error
+    # 确保即使 read() 引发错误，文件句柄也会关闭
     f.close()
 ```
 
-However, the [`FileHandle`](/docs/std/io/file/FileHandle/) struct
-returned by [`open()`](/docs/std/io/file/open/) is a context manager.
-When used with Mojo's `with` statement, a context manager ensures that the
-resources it manages are properly released at the end of the block, even if an
-error occurs. In the case of a `FileHandle`, that means the call to `close()`
-takes place automatically. So you could rewrite the example above to take
-advantage of the context manager (and omit the explicit call to `close()`)
-like this:
+然而，[`open()`](/docs/std/io/file/open/) 返回的 [`FileHandle`](/docs/std/io/file/FileHandle/) 结构体是一个上下文管理器。当与 Mojo 的 `with` 语句一起使用时，上下文管理器确保它管理的资源在代码块结束时正确释放，即使发生错误。对于 `FileHandle`，这意味着 `close()` 调用自动发生。因此，您可以重写上面的示例以利用上下文管理器（并省略对 `close()` 的显式调用），如下所示：
 
 ```mojo
 with open(input_file, "r") as f:
     content = f.read()
-    # Process the content as needed
+    # 按需处理内容
 ```
 
-The `with` statement also allows you to use multiple context managers within the
-same code block. As an example, the following code opens one text file, reads
-its entire content, converts it to upper case, and then writes the result to a
-different file:
+`with` 语句还允许您在同一个代码块中使用多个上下文管理器。作为示例，以下代码打开一个文本文件，读取其全部内容，将其转换为大写，然后将结果写入不同的文件：
 
 ```mojo
 with open(input_file, "r") as f_in, open(output_file, "w") as f_out:
@@ -955,49 +783,21 @@ with open(input_file, "r") as f_in, open(output_file, "w") as f_out:
     f_out.write(output_text)
 ```
 
-`FileHandle` is perhaps the most commonly used context manager. Other examples
-of context managers in the Mojo standard library are
-[`NamedTemporaryFile`](/docs/std/tempfile/tempfile/NamedTemporaryFile/),
-[`TemporaryDirectory`](/docs/std/tempfile/tempfile/TemporaryDirectory/),
-[`BlockingScopedLock`](/docs/std/utils/lock/BlockingScopedLock/), and
-[`assert_raises`](/docs/std/testing/testing/assert_raises/). You can also
-create your own custom context managers, as described in [Write a custom context
-manager](#write-a-custom-context-manager) below.
+`FileHandle` 可能是最常用的上下文管理器。Mojo 标准库中上下文管理器的其他示例是 [`NamedTemporaryFile`](/docs/std/tempfile/tempfile/NamedTemporaryFile/)、[`TemporaryDirectory`](/docs/std/tempfile/tempfile/TemporaryDirectory/)、[`BlockingScopedLock`](/docs/std/utils/lock/BlockingScopedLock/) 和 [`assert_raises`](/docs/std/testing/testing/assert_raises/)。您还可以创建自己的自定义上下文管理器，如本节后面的 [编写自定义上下文管理器](#write-a-custom-context-manager) 中所述。
 
-## Write a custom context manager
+## 编写自定义上下文管理器
 
-Writing a custom context manager is a matter of defining a
-[struct](/docs/manual/structs/) that implements two special *dunder* methods
-("double underscore" methods): `__enter__()` and `__exit__()`:
+编写自定义上下文管理器就是定义一个实现两个特殊 *dunder* 方法（"双下划线"方法）：`__enter__()` 和 `__exit__()` 的 [结构体](/docs/manual/structs/)：
 
-- `__enter__()` is called by the `with` statement to enter the runtime context.
-  The `__enter__()` method should initialize any state necessary for the context
-  and return the context manager.
+- `__enter__()` 由 `with` 语句调用以进入运行时上下文。`__enter__()` 方法应该初始化上下文所需的任何状态并返回上下文管理器。
 
-- `__exit__()` is called when the `with` code block completes execution, even if
-  the `with` code block terminates with a call to `continue`, `break`, or
-  `return`. The `__exit__()` method should release any resources associated with
-  the context. After the `__exit__()` method returns, the context manager is
-  destroyed.
+- `__exit__()` 在 `with` 代码块完成执行时调用，即使 `with` 代码块通过 `continue`、`break` 或 `return` 终止。`__exit__()` 方法应该释放与上下文关联的任何资源。在 `__exit__()` 方法返回后，上下文管理器被销毁。
 
-  If the `with` code block raises an error, then the `__exit__()` method runs
-  before any error processing occurs (that is, before it is caught by a
-  `try`/`except` structure or your program terminates). If you'd like to define
-  conditional processing for error conditions in a `with` code block, you can
-  implement an overloaded version of `__exit__()` that takes an error
-  argument. For more information, see
-  [Define a conditional `__exit__()` method](#define-a-conditional-__exit__-method)
-  and
-  [Handle typed errors in `__exit__()`](#handle-typed-errors-in-__exit__)
-  below.
+  如果 `with` 代码块引发错误，则 `__exit__()` 方法在任何错误处理发生之前运行（即，在被 `try`/`except` 结构捕获或程序终止之前）。如果您想在 `with` 代码块中为错误条件定义条件处理，可以实现一个重载版本的 `__exit__()`，它接受一个错误参数。有关更多信息，请参阅下面的 [定义条件 `__exit__()` 方法](#define-a-conditional-__exit__-method) 和 [在 `__exit__()` 中处理类型化错误](#handle-typed-errors-in-__exit__)。
 
-  For context managers that don't need to release resources or perform other
-  actions on termination, you are not required to implement an `__exit__()`
-  method. In that case the context manager is destroyed automatically after the
-  `with` code block completes execution.
+  对于不需要在终止时释放资源或执行其他操作的上下文管理器，不需要实现 `__exit__()` 方法。在这种情况下，上下文管理器在 `with` 代码块完成执行后自动销毁。
 
-Here is an example of implementing a `Timer` context manager, which prints the
-amount of time spent executing the `with` code block:
+下面是实现 `Timer` 上下文管理器的示例，它打印执行 `with` 代码块所花费的时间：
 
 ```mojo title="context_mgr.mojo"
 import std.sys
@@ -1031,7 +831,7 @@ def main() raises:
         print("Ending execution")
 ```
 
-Running this example produces output like this:
+运行此示例会产生如下输出：
 
 ```sh
 mojo context_mgr.mojo
@@ -1053,27 +853,21 @@ Elapsed time: 1002.0 milliseconds
 Unhandled exception caught during execution: simulated error
 ```
 
-### Define a conditional `__exit__()` method
+### 定义条件 `__exit__()` 方法
 
-When creating a context manager, you can implement the `__exit__(self)` form of
-the `__exit__()` method to handle completion of the `with` statement under all
-circumstances including errors. However, you have the option of additionally
-implementing an overloaded version that is invoked instead when an `Error`
-occurs in the `with` code block:
+创建上下文管理器时，可以实现 `__exit__(self)` 形式的 `__exit__()` 方法来处理 `with` 语句在任何情况下（包括错误）的完成。但是，您可以选择额外实现一个重载版本，当 `with` 代码块中发生 `Error` 时调用：
 
 ```mojo
 def __exit__(self, error: Error) raises -> Bool
 ```
 
-Given the `Error` that occurred as an argument, the method can do any of the
-following:
+给定作为参数发生的 `Error`，该方法可以执行以下任何操作：
 
-- Return `True` to suppress the error.
-- Return `False` to re-raise the error.
-- Raise a new error.
+- 返回 `True` 以抑制错误。
+- 返回 `False` 以重新引发错误。
+- 引发新错误。
 
-The following is an example of a context manager that suppresses only a certain
-error condition and propagates all others:
+以下是一个上下文管理器的示例，它只抑制特定的错误条件并传播所有其他错误：
 
 ```mojo title="conditional_context_mgr.mojo"
 import std.time
@@ -1132,7 +926,7 @@ def main() raises:
             print("Ending execution")
 ```
 
-Running this example produces this output:
+运行此示例会产生此输出：
 
 ```output
 
@@ -1159,28 +953,21 @@ Elapsed time: 106.0 milliseconds
 Unhandled exception caught during execution: really bad
 ```
 
-### Handle typed errors in `__exit__()`
+### 在 `__exit__()` 中处理类型化错误
 
-The `__exit__(self, error: Error)` overload handles only `Error` values.
-To handle typed errors, implement a generic `__exit__()` method with a
-compile-time error type parameter:
+`__exit__(self, error: Error)` 重载只处理 `Error` 值。要处理类型化错误，请实现一个带有编译时错误类型参数的通用 `__exit__()` 方法：
 
 ```mojo
 def __exit__[ErrType: AnyType](self, err: ErrType) -> Bool
 ```
 
-This method receives the typed error directly, preserving its full type
-information. You can use
-[reflection](/docs/manual/metaprogramming/reflection/) to inspect the error
-type at compile time. For example, you can:
+此方法直接接收类型化错误，保留其完整的类型信息。您可以使用 [反射](/docs/manual/metaprogramming/reflection/) 在编译时检查错误类型。例如，您可以：
 
-- `reflect[ErrType].name()` — Get the error type's name as a string.
-- `comptime if conforms_to(ErrType, Writable)` — Check if the error
-  implements `Writable`.
-- `trait_downcast[Writable](err)` — Access the error through its `Writable`
-  interface.
+- `reflect[ErrType].name()` — 获取错误类型的名称作为字符串。
+- `comptime if conforms_to(ErrType, Writable)` — 检查错误是否实现了 `Writable`。
+- `trait_downcast[Writable](err)` — 通过其 `Writable` 接口访问错误。
 
-The following `ResourceGuard` example demonstrates this pattern:
+以下 `ResourceGuard` 示例演示了此模式：
 
 ```mojo
 from std.reflection import *
@@ -1219,18 +1006,16 @@ struct ResourceGuard(ImplicitlyCopyable):
         return self.suppress_errors
 ```
 
-When no error occurs, `__exit__(self)` runs as usual. When a typed error occurs,
-`__exit__[ErrType]()` runs instead, giving you access to the error type and
-its data:
+当没有错误发生时，`__exit__(self)` 按照正常方式运行。当发生类型化错误时，`__exit__[ErrType]()` 运行，让您访问错误类型及其数据：
 
 ```mojo
-# No error — calls __exit__(self)
+# 没有错误 — 调用 __exit__(self)
 with ResourceGuard("database"):
     print("Working...")
 
-# Typed error, suppressed — __exit__[ErrType] returns True
+# 类型化错误，已抑制 — __exit__[ErrType] 返回 True
 with ResourceGuard("cache", suppress_errors=True):
-    use_connection()  # raises ConnectionError
+    use_connection()  # 引发 ConnectionError
 print("Continued after suppressed error")
 ```
 
@@ -1248,7 +1033,6 @@ Continued after suppressed error
 
 :::note
 
-For a complete working example including error suppression and propagation, see
-[`resource_guard.mojo`](https://github.com/modular/modular/blob/main/mojo/docs/code/manual/errors/resource_guard.mojo).
+有关包括错误抑制和传播的完整工作示例，请参阅 [`resource_guard.mojo`](https://github.com/modular/modular/blob/main/mojo/docs/code/manual/errors/resource_guard.mojo)。
 
 :::

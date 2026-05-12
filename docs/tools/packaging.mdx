@@ -1,84 +1,66 @@
 ---
-title: Packaging
-description: How to package your Mojo project for distribution
+title: 打包
+description: 如何打包你的 Mojo 项目以进行分发
 ---
 
-This page explains how to turn your Mojo project into a distributable conda
-package using rattler-build.
+本页介绍如何使用 rattler-build 将你的 Mojo 项目转换为可分发的 conda 包。
 
-You can distribute your conda package on any conda-compatible package index,
-such as [prefix.dev](https://prefix.dev), [anaconda.org](https://anaconda.org),
-or an S3 bucket. For the most visibility, we recommend sharing your package in
-the [modular-community channel](https://prefix.dev/channels/modular-community)
-on prefix.dev, as described below.
+你可以在任何兼容 conda 的包索引上分发你的 conda 包，例如 [prefix.dev](https://prefix.dev)、[anaconda.org](https://anaconda.org) 或 S3 存储桶。为了获得最大的可见性，我们建议在 prefix.dev 上的 [modular-community 频道](https://prefix.dev/channels/modular-community)分享你的包，如下所述。
 
-## How it works
+## 工作原理
 
-*rattler-build* is a tool that turns your source code into a conda package.
-You give it a *recipe*—a YAML file named `recipe.yaml`—and it does the
-rest: fetches your source, compiles it in an isolated environment, runs your
-tests, and writes out a `.conda` file ready to upload to a package index.
+*rattler-build* 是一个将你的源代码转换为 conda 包的工具。你给它一个*配方（recipe）*——一个名为 `recipe.yaml` 的 YAML 文件——它会完成其余工作：获取你的源代码，在隔离环境中编译它，运行你的测试，并写出准备好上传到包索引的 `.conda` 文件。
 
-The recipe is a declarative description of your package that specifies:
+配方是你的包的声明式描述，指定了：
 
-- The source code location (a git commit or tarball URL)
-- The build process (a `mojo package` command)
-- Package dependencies
-- Test commands to verify the build
+- 源代码位置（git 提交或 tarball URL）
+- 构建过程（一个 `mojo package` 命令）
+- 包依赖项
+- 用于验证构建的测试命令
 
-The complete packaging process is:
+完整的打包过程是：
 
-1. Create a `recipe.yaml` that specifies your package details.
-2. Run `rattler-build` to create a `.conda` package.
-3. Share the package in a public package index.
+1. 创建一个 `recipe.yaml` 来指定你的包详情。
+2. 运行 `rattler-build` 来创建 `.conda` 包。
+3. 在公共包索引中分享该包。
 
 :::note
 
-If you want to distribute your package in the modular-community channel, you
-only need to merge your `recipe.yaml` file into the [modular-community
-repository](https://github.com/modular/modular-community) (the repo handles
-steps 2 and 3).
+如果你想在 modular-community 频道中分发你的包，你只需要将 `recipe.yaml` 文件合并到 [modular-community 仓库](https://github.com/modular/modular-community)中（该仓库处理步骤 2 和 3）。
 
 :::
 
-Then you and other users can install your package with `pixi` or other conda
-package managers by adding the appropriate conda channel to your project
-manifest file (`pixi.toml`).
+然后你和其他用户可以通过将适当的 conda 频道添加到项目清单文件（`pixi.toml`）来使用 `pixi` 或其他 conda 包管理器安装你的包。
 
-## Install rattler-build
+## 安装 rattler-build
 
-We recommend using [Pixi](https://pixi.sh/latest/) to install `rattler-build`:
+我们推荐使用 [Pixi](https://pixi.sh/latest/) 来安装 `rattler-build`：
 
-1. If you don't have it, install `pixi` with this command:
+1. 如果你还没有安装 `pixi`，使用以下命令安装：
 
     ```bash
     curl -fsSL https://pixi.sh/install.sh | sh
     ```
 
-    Then restart your terminal for the changes to take effect.
+    然后重启终端以使更改生效。
 
-2. Now install `rattler-build` globally:
+2. 现在全局安装 `rattler-build`：
 
     ```bash
     pixi global install rattler-build
     ```
 
-3. Verify the installation:
+3. 验证安装：
 
     ```bash
     rattler-build --version
     ```
 
-## Write your recipe file
+## 编写配方文件
 
-The recipe is the heart of the packaging process and is defined in a YAML file
-named `recipe.yaml`.
+配方是打包过程的核心，定义在一个名为 `recipe.yaml` 的 YAML 文件中。
 
-By convention, store your recipe in your project root at
-`conda.recipe/recipe.yaml`. `rattler-build` looks there by default, and it's
-the location expected by the GitHub Action
-([rattler-build-action](https://github.com/prefix-dev/rattler-build-action)).
-For example:
+按照惯例，将你的配方存储在项目根目录的 `conda.recipe/recipe.yaml` 中。`rattler-build` 默认在该位置查找，这也是 GitHub Action（[rattler-build-action](https://github.com/prefix-dev/rattler-build-action)）期望的位置。例如：
 
 ```output
 my-mojo-lib/
@@ -93,13 +75,11 @@ my-mojo-lib/
 └── README.md
 ```
 
-### The minimal recipe file
+### 最小配方文件
 
-This section covers the most important recipe fields for Mojo packages.
-For details about all available recipe fields, see the [rattler-build recipe
-reference](https://rattler-build.prefix.dev/latest/reference/recipe_file/).
+本节介绍 Mojo 包最重要的配方字段。有关所有可用配方字段的详情，请参见 [rattler-build 配方参考](https://rattler-build.prefix.dev/latest/reference/recipe_file/)。
 
-You can copy this template to begin building your `recipe.yaml` file:
+你可以复制此模板来开始构建你的 `recipe.yaml` 文件：
 
 ```yaml title="recipe.yaml"
 context:
@@ -147,54 +127,33 @@ extra:
     - yourname
 ```
 
-### Recipe tips
+### 配方技巧
 
-Here are a few things that are particularly important for Mojo packages.
+以下是对 Mojo 包特别重要的几点。
 
-#### Use a full commit SHA as the source revision
+#### 使用完整的提交 SHA 作为源版本
 
-The `source.rev` field should be a full 40-character git commit SHA rather than
-a branch name or tag. This makes the build reproducible—anyone who builds from
-the same recipe gets the exact same source code.
+`source.rev` 字段应该是完整的 40 字符 git 提交 SHA，而不是分支名或标签。这使得构建可重现——任何从相同配方构建的人都能获得完全相同的源代码。
 
-#### Set the build number
+#### 设置构建号
 
-Start `build.number` at `0`. If you need to rebuild the same version of your
-library (such as to pick up a new Mojo compiler release), increment
-`build.number` rather than changing the version. Reset it to `0` when you bump
-the version.
+将 `build.number` 从 `0` 开始。如果你需要重新构建同一版本的库（例如为了适配新的 Mojo 编译器版本），请递增 `build.number` 而不是更改版本。当你更新版本时，将其重置为 `0`。
 
-#### Specify the install location
+#### 指定安装位置
 
-In the above recipe, look at the `mojo package` command in the `build.script`
-section. It's important that this command outputs the `.mojopkg` file into
-`$PREFIX/lib/mojo/`, because this path is what makes the package
-auto-discoverable by the Mojo compiler.
+在上面的配方中，查看 `build.script` 部分中的 `mojo package` 命令。此命令将 `.mojopkg` 文件输出到 `$PREFIX/lib/mojo/` 非常重要，因为此路径使得包可被 Mojo 编译器自动发现。
 
-When `rattler-build` runs your build script, it sets a `$PREFIX` environment
-variable pointing to the root of an isolated installation directory. Any files
-your script places under `$PREFIX` become part of the conda package—a file
-written to `$PREFIX/lib/mojo/foo.mojopkg` during the build is extracted into
-your actual environment when you run `pixi add foo`. Think of `$PREFIX` as a
-stand-in for wherever your environment lives on your machine.
+当 `rattler-build` 运行你的构建脚本时，它会设置一个 `$PREFIX` 环境变量，指向隔离安装目录的根目录。你的脚本放置在 `$PREFIX` 下的任何文件都会成为 conda 包的一部分——构建期间写入 `$PREFIX/lib/mojo/foo.mojopkg` 的文件在你运行 `pixi add foo` 时会被解压到你的实际环境中。可以将 `$PREFIX` 视为你环境中文件在你机器上所在位置的占位符。
 
-#### Pin the Mojo compiler version
+#### 固定 Mojo 编译器版本
 
-Mojo packages compile against a specific compiler version and might not be
-compatible with other versions. The required `mojo-compiler` version must be
-specified in the `requirements.build` section of your recipe, which must conform
-to the
-[conda package match syntax](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications).
+Mojo 包针对特定的编译器版本编译，可能与其他版本不兼容。必需的 `mojo-compiler` 版本必须在配方的 `requirements.build` 部分指定，并且必须符合 [conda 包匹配语法](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/pkg-specs.html#package-match-specifications)。
 
-The `pin_compatible('mojo-compiler')` function
-in `requirements.run` generates a version constraint based on whichever version
-is resolved at build time, preventing your package from silently running
-against an incompatible runtime.
+`requirements.run` 中的 `pin_compatible('mojo-compiler')` 函数根据构建时解析的版本生成版本约束，防止你的包在不兼容的运行时上静默运行。
 
-## Build the package
+## 构建包
 
-With your recipe file in hand, you can build the package using `rattler-build`
-from your project root:
+有了配方文件，你可以从项目根目录使用 `rattler-build` 构建包：
 
 ```bash
 rattler-build build \
@@ -204,23 +163,21 @@ rattler-build build \
   -c https://repo.prefix.dev/modular-community
 ```
 
-The `-c` flags specify which conda channels to search for dependencies (in
-priority order). You need:
+`-c` 标志指定搜索依赖项的 conda 频道（按优先级顺序）。你需要：
 
-- `conda-forge` for general tooling
-- `https://conda.modular.com/max` for `mojo-compiler` and `max`
-- `https://repo.prefix.dev/modular-community` if you depend on other
-  community Mojo packages
+- `conda-forge` 用于通用工具
+- `https://conda.modular.com/max` 用于 `mojo-compiler` 和 `max`
+- `https://repo.prefix.dev/modular-community` 如果你依赖其他社区 Mojo 包
 
-When you run `rattler-build build`, it:
+当你运行 `rattler-build build` 时，它会：
 
-1. Creates an isolated build environment
-2. Fetches your source code
-3. Runs your build script to compile the `.mojopkg` file
-4. Bundles the result into a `.conda` archive
-5. Runs your test commands to verify the package works
+1. 创建隔离的构建环境
+2. 获取你的源代码
+3. 运行你的构建脚本以编译 `.mojopkg` 文件
+4. 将结果打包成 `.conda` 归档文件
+5. 运行你的测试命令以验证包是否正常工作
 
-The output file appears in an `output/` directory, for example:
+输出文件出现在 `output/` 目录中，例如：
 
 ```text
 output/
@@ -228,43 +185,29 @@ output/
     └── my-mojo-lib-0.3.0-h1a2b3c4_0.conda
 ```
 
-The hash in the filename (`h1a2b3c4`) is derived from the build configuration
-and is managed automatically by rattler-build.
+文件名中的哈希值（`h1a2b3c4`）是从构建配置派生的，由 rattler-build 自动管理。
 
-## Debug a failed build
+## 调试失败的构建
 
-If the build fails, open a debug shell to investigate interactively:
+如果构建失败，打开调试 shell 进行交互式调查：
 
 ```bash
 rattler-build debug shell
 ```
 
-This gives you a shell with all environment variables set (`$PREFIX`,
-`$SRC_DIR`, etc.) and the build environment activated, so you can run your
-build commands to find the problem.
+这会为你提供一个设置了所有环境变量（`$PREFIX`、`$SRC_DIR` 等）且构建环境已激活的 shell，你可以运行构建命令来查找问题。
 
-For more details, see the [rattler-build debugging
-guide](https://rattler-build.prefix.dev/latest/debugging_builds/).
+更多详情请参见 [rattler-build 调试指南](https://rattler-build.prefix.dev/latest/debugging_builds/)。
 
-## Publish to a package index
+## 发布到包索引
 
-Once you have a built `.conda` file, you can upload it to any compatible host,
-such as [prefix.dev](https://prefix.dev), [anaconda.org](https://anaconda.org),
-or an AWS S3 bucket. For the most visibility, add your package to the
-[modular-community channel](https://prefix.dev/channels/modular-community)
-(hosted on prefix.dev), as described below.
+一旦你有了构建好的 `.conda` 文件，你可以将其上传到任何兼容的主机，例如 [prefix.dev](https://prefix.dev)、[anaconda.org](https://anaconda.org) 或 AWS S3 存储桶。为了获得最大的可见性，请将你的包添加到 [modular-community 频道](https://prefix.dev/channels/modular-community)（托管在 prefix.dev 上），如下所述。
 
-### Publish to the modular-community channel
+### 发布到 modular-community 频道
 
-To publish your package on the [modular-community
-channel](https://prefix.dev/channels/modular-community), open a pull
-request to the [modular-community GitHub
-repo](https://github.com/modular/modular-community) to add your package's
-`recipe.yaml` file. The repo automatically builds and hosts all the packages
-based on the recipes in the repo.
+要在 [modular-community 频道](https://prefix.dev/channels/modular-community)上发布你的包，请向 [modular-community GitHub 仓库](https://github.com/modular/modular-community)提交拉取请求以添加你的包的 `recipe.yaml` 文件。该仓库会根据仓库中的配方自动构建和托管所有包。
 
-Your `recipe.yaml` is the same file described above. Just add it to a new
-directory that matches your package name:
+你的 `recipe.yaml` 与上面描述的文件相同。只需将其添加到与你的包名匹配的新目录中：
 
 ```text
 modular-community/
@@ -273,9 +216,7 @@ modular-community/
         └── recipe.yaml
 ```
 
-Once published to the channel, you can install your package with `pixi` by
-adding the `https://repo.prefix.dev/modular-community` channel to your
-project manifest:
+一旦发布到频道，你可以通过将 `https://repo.prefix.dev/modular-community` 频道添加到项目清单来使用 `pixi` 安装你的包：
 
 ```toml title="pixi.toml"
 [workspace]
@@ -288,29 +229,24 @@ channels = [
 
 :::note
 
-If your package includes Python or any language other than Mojo, you must enable
-[CodeQL scanning](https://docs.github.com/en/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning)
-on your source repository and add the badge to your README.
+如果你的包包含 Python 或 Mojo 以外的任何语言，你必须在源代码仓库上启用 [CodeQL 扫描](https://docs.github.com/en/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning)，并将徽章添加到你的 README。
 
 :::
 
-For more details, see the
-[modular-community README](https://github.com/modular/modular-community?tab=readme-ov-file#modular-community-channel).
+更多详情请参见 [modular-community README](https://github.com/modular/modular-community?tab=readme-ov-file#modular-community-channel)。
 
-### Update your package
+### 更新你的包
 
-When you release a new version of your library:
+当你发布库的新版本时：
 
-1. Update `context.version` in your recipe.
-2. Update `source.rev` to the new commit SHA (or update the tarball URL and
-   SHA256).
-3. Reset `build.number` to `0`.
-4. Open a new PR to modular-community (if you've already published it there).
+1. 更新配方中的 `context.version`。
+2. 将 `source.rev` 更新为新的提交 SHA（或更新 tarball URL 和 SHA256）。
+3. 将 `build.number` 重置为 `0`。
+4. 向 modular-community 提交新的 PR（如果你已经在那里发布过）。
 
-If you're republishing the same version (for example, to support a new Mojo
-compiler release), increment `build.number` instead of changing the version.
+如果你要重新发布同一版本（例如为了支持新的 Mojo 编译器版本），请递增 `build.number` 而不是更改版本。
 
-## Useful links
+## 有用链接
 
-- [modular-community repository](https://github.com/modular/modular-community)
-- [rattler-build recipe reference](https://rattler-build.prefix.dev/latest/reference/recipe_file/)
+- [modular-community 仓库](https://github.com/modular/modular-community)
+- [rattler-build 配方参考](https://rattler-build.prefix.dev/latest/reference/recipe_file/)

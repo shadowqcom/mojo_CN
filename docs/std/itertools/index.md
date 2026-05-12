@@ -1,28 +1,22 @@
 ---
 title: "itertools"
 sidebar_label: "itertools"
-description: "Iterator tools for lazy sequence generation and transformation.  The `itertools` package provides utilities for creating and composing iterators for efficient lazy evaluation. It offers building block"
+description: "迭代器工具，用于惰性序列生成和转换。`itertools` 包提供用于创建和组合迭代器的工具，实现高效的惰性求值。"
 ---
 
 # itertools
 
-Iterator tools for lazy sequence generation and transformation.
+迭代器工具，用于惰性序列生成和转换。
 
-The `itertools` package provides utilities for creating and composing iterators
-for efficient lazy evaluation. It offers building blocks for:
+`itertools` 包提供用于创建和组合迭代器的工具，实现高效的惰性求值。它提供了以下构建块：
 
-- Generating infinite sequences (`count`, `cycle`, `repeat`)
-- Computing Cartesian products (`product`)
-- Filtering elements conditionally (`take_while`, `drop_while`)
+- 生成无限序列（`count`、`cycle`、`repeat`）
+- 计算笛卡尔积（`product`）
+- 条件过滤元素（`take_while`、`drop_while`）
 
-These tools enable functional programming patterns and memory-efficient iteration
-over large or infinite sequences without materializing entire collections in
-memory.
+这些工具支持函数式编程模式，可以在不将整个集合加载到内存的情况下，对大型或无限序列进行内存高效的迭代。
 
-Use this package for generating sequences without explicit loops, creating
-combinations of elements from multiple collections, or implementing functional
-iteration patterns. These tools are particularly useful for nested loops,
-grid-based computations, or any scenario requiring efficient lazy evaluation.
+使用此包可以在不使用显式循环的情况下生成序列、创建多个集合的元素组合，或实现函数式迭代模式。这些工具对于嵌套循环、基于网格的计算或任何需要高效惰性求值的场景特别有用。
 
 ## 模块
 

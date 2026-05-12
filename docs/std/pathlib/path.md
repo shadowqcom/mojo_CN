@@ -1,21 +1,18 @@
 ---
 title: "path"
 sidebar_label: "path"
-description: "Path manipulation module.  This module defines a platform-independent API for working with filesystem paths. `Path`, its core type, represents a filesystem path. It exposes operations such as path com"
+description: "路径操作模块。此模块定义了一个独立于平台的 API 用于处理文件系统路径。`Path` 是其核心类型，表示文件系统路径。"
 ---
 
 # path
 
-Path manipulation module.
+路径操作模块。
 
-This module defines a platform-independent API for working with filesystem
-paths. `Path`, its core type, represents a filesystem path. It exposes
-operations such as path composition, existence checks, file I/O, and
-access to file attributes.
+此模块定义了一个独立于平台的 API 用于处理文件系统路径。`Path` 是其核心类型，表示文件系统路径。它公开了路径组合、存在性检查、文件 I/O 和访问文件属性等操作。
 
-To use these features import the `Path` type from this module.
+要使用这些功能，请从此模块导入 `Path` 类型。
 
-Example:
+示例：
 
 ```mojo
 from std.pathlib import Path

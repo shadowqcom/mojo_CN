@@ -1,12 +1,12 @@
 ---
 title: "breakpoint"
 sidebar_label: "breakpoint"
-description: "This module includes the builtin breakpoint function."
+description: "此模块包含内置的断点函数。"
 ---
 
 # breakpoint
 
-This module includes the builtin breakpoint function.
+此模块包含内置的断点函数。
 
 ## 函数
 

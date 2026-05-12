@@ -1,14 +1,15 @@
 ---
 title: "memory"
+slug: memory
 sidebar_label: "memory"
-description: "Defines functions for memory manipulations.  You can import these APIs from the `memory` package. For example:  ```mojo from std.memory import memcmp ```"
+description: "定义内存操作函数。您可以从 `memory` 包导入这些 API。例如：```mojo from std.memory import memcmp ```"
 ---
 
 # memory
 
-Defines functions for memory manipulations.
+定义内存操作函数。
 
-You can import these APIs from the `memory` package. For example:
+您可以从 `memory` 包导入这些 API。例如：
 
 ```mojo
 from std.memory import memcmp

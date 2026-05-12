@@ -1,12 +1,12 @@
 ---
 title: "testing/prop"
 sidebar_label: "testing/prop"
-description: "A property testing package."
+description: "一个属性测试包。"
 ---
 
 # testing/prop
 
-A property testing package.
+一个属性测试包。
 
 ## 模块
 

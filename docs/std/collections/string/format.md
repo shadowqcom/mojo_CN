@@ -1,22 +1,16 @@
 ---
 title: "format"
 sidebar_label: "format"
-description: "String formatting utilities for Mojo.  This module provides string formatting functionality similar to Python's `str.format()` method. The `format()` method (available on the [`String`](/docs/std/coll"
+description: "Mojo 的字符串格式化工具。此模块提供类似于 Python `str.format()` 方法的字符串格式化功能。"
 ---
 
 # format
 
-String formatting utilities for Mojo.
+Mojo 的字符串格式化工具。
 
-This module provides string formatting functionality similar to Python's
-`str.format()` method. The `format()` method (available on the
-[`String`](/docs/std/collections/string/string/String/#format) and
-[`StringSlice`](/docs/std/collections/string/string_slice/StringSlice/#format)
-types) takes the current string as a template (or "format string"), which can
-contain literal text and/or replacement fields delimited by curly braces (`{}`).
-The replacement fields are replaced with the values of the arguments.
+此模块提供类似于 Python `str.format()` 方法的字符串格式化功能。`format()` 方法（在 [`String`](/docs/std/collections/string/string/String/#format) 和 [`StringSlice`](/docs/std/collections/string/string_slice/StringSlice/#format) 类型上可用）将当前字符串作为模板（或"格式字符串"），其中可以包含由花括号（`{}`）分隔的文本和/或替换字段。替换字段将被参数的值替换。
 
-Replacement fields can mapped to the arguments in one of two ways:
+替换字段可以通过以下两种方式之一映射到参数：
 
 - Automatic indexing by argument position:
 

@@ -1,24 +1,76 @@
 ---
-title: '@no_inline'
-description: Prevents a function from being inlined.
-codeTitle: true
+title: '@no_inline 装饰器'
+sidebar_label: '@no_inline'
+sidebar_position: 12
+description: >
+  @no_inline 装饰器参考。禁止函数内联。
 ---
 
-You can add the `@no_inline` decorator on any function to prevent it from being
-inlined by the compiler.
+{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+
+`@no_inline` 装饰器禁止函数内联。编译器会生成真正的函数调用，而不是将函数体插入到调用位置。
+
+## 语法
 
 ```mojo
 @no_inline
-def my_large_function():
+def function_name(...):
     ...
 ```
 
-Inlining is an optimization that reduces function call overhead for small,
-frequently-called functions. Functions can be explicitly marked for inlining
-using
-[`@always_inline`](/docs/reference/decorators/always-inline/), or may be inlined
-automatically by the compiler.
+## 用法
 
-Too many inlined functions can slow compilation and substantially increase the
-binary size of the compiled program. In particular, large or complex functions
-may not benefit as much from inlining.
+```mojo
+@no_inline
+def complex_operation(x: Int) -> Int:
+    # 复杂的实现...
+    return result
+```
+
+## 适用场景
+
+### 减少代码膨胀
+
+```mojo
+@no_inline
+def large_function():
+    # 大量代码
+    pass
+```
+
+### 调试
+
+```mojo
+@no_inline
+def debug_helper():
+    # 在调试器中更容易设置断点
+    pass
+```
+
+### 热点代码分离
+
+```mojo
+@no_inline
+def cold_path():
+    # 很少执行的代码
+    pass
+
+@always_inline
+def hot_path():
+    # 频繁执行的代码
+    pass
+```
+
+## 与 `@always_inline` 对比
+
+| 装饰器         | 行为               |
+|----------------|--------------------|
+| `@always_inline` | 强制内联         |
+| `@no_inline`     | 禁止内联         |
+| 无装饰器         | 编译器决定       |
+
+## 注意事项
+
+- 可能增加函数调用开销
+- 可能减少代码膨胀
+- 适用于调试和性能分析

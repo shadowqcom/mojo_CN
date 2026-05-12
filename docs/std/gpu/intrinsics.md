@@ -1,24 +1,21 @@
 ---
 title: "intrinsics"
 sidebar_label: "intrinsics"
-description: "Provides low-level GPU intrinsic operations and memory access primitives.  Implements hardware-specific intrinsics that map directly to GPU assembly instructions, focusing on NVIDIA GPU architectures."
+description: "提供底层 GPU 内部操作和内存访问原语。实现直接映射到 GPU 汇编指令的硬件特定内部函数，主要针对 NVIDIA GPU 架构。"
 ---
 
 # intrinsics
 
-Provides low-level GPU intrinsic operations and memory access primitives.
+提供底层 GPU 内部操作和内存访问原语。
 
-Implements hardware-specific intrinsics that map directly to GPU assembly
-instructions, focusing on NVIDIA GPU architectures. Includes:
+实现直接映射到 GPU 汇编指令的硬件特定内部函数，主要针对 NVIDIA GPU 架构。包括：
 
-- Global memory load/store operations with cache control
-- Warp-level primitives and synchronization
-- Memory fence and barrier operations
-- Atomic operations and memory ordering primitives
+- 具有缓存控制的全局内存加载/存储操作
+- Warp 级原语和同步
+- 内存屏障和屏障操作
+- 原子操作和内存排序原语
 
-These low-level primitives should be used carefully as they correspond
-directly to hardware instructions and require understanding of the
-underlying GPU architecture.
+这些底层原语应谨慎使用，因为它们直接对应硬件指令，需要理解底层 GPU 架构。
 
 ## 类型
 

@@ -1,22 +1,16 @@
 ---
 title: "pathlib"
 sidebar_label: "pathlib"
-description: "Filesystem path manipulation and navigation.  The `pathlib` package provides object-oriented filesystem path handling with platform-independent path operations. It offers the `Path` type for represent"
+description: "文件系统路径操作和导航。`pathlib` 包提供面向对象的文件系统路径处理，具有独立于平台的路径操作。"
 ---
 
 # pathlib
 
-Filesystem path manipulation and navigation.
+文件系统路径操作和导航。
 
-The `pathlib` package provides object-oriented filesystem path handling with
-platform-independent path operations. It offers the `Path` type for
-representing and manipulating filesystem paths, along with utilities for path
-joining, expansion, and directory operations. This package makes working with
-file paths safer and more intuitive than manual string manipulation.
+`pathlib` 包提供面向对象的文件系统路径处理，具有独立于平台的路径操作。它提供 `Path` 类型用于表示和操作文件系统路径，以及用于路径连接、展开和目录操作的工具。此包使处理文件路径比手动字符串操作更安全、更直观。
 
-Use this package for any filesystem path operations including constructing
-paths, navigating directories, checking file existence, or performing
-path-related queries in a platform-independent way.
+使用此包进行任何文件系统路径操作，包括构建路径、导航目录、检查文件存在性，或以独立于平台的方式执行路径相关查询。
 
 ## 模块
 

@@ -1,13 +1,12 @@
 ---
 title: "os/path"
 sidebar_label: "os/path"
-description: "Provides a set of operating-system independent functions for manipulating file system paths."
+description: "提供一组独立于操作系统的函数用于操作文件系统路径。"
 ---
 
 # os/path
 
-Provides a set of operating-system independent functions for manipulating
-file system paths.
+提供一组独立于操作系统的函数用于操作文件系统路径。
 
 ## 模块
 

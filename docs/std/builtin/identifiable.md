@@ -1,17 +1,14 @@
 ---
 title: "identifiable"
 sidebar_label: "identifiable"
-description: "Defines the Identifiable trait for identity-based comparisons.  This module provides the `Identifiable` trait, which enables types to support identity comparison using the `is` and `is not` operators."
+description: "定义用于基于身份比较的 Identifiable trait。此模块提供了 `Identifiable` trait，使类型能够使用 `is` 和 `is not` 运算符支持身份比较。"
 ---
 
 # identifiable
 
-Defines the Identifiable trait for identity-based comparisons.
+定义用于基于身份比较的 Identifiable trait。
 
-This module provides the `Identifiable` trait, which enables types to support
-identity comparison using the `is` and `is not` operators. Identity comparison
-checks if two values refer to the same object, distinct from equality
-comparison which checks if two values have the same content.
+此模块提供了 `Identifiable` trait，使类型能够使用 `is` 和 `is not` 运算符支持身份比较。身份比较检查两个值是否引用同一个对象，这与检查两个值是否具有相同内容的相等比较不同。
 
 ## Traits
 

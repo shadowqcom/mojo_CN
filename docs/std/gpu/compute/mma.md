@@ -1,13 +1,12 @@
 ---
 title: "mma"
 sidebar_label: "mma"
-description: "This module includes utilities for working with the warp-matrix-matrix-multiplication (wmma) instructions."
+description: "此模块包含用于处理 warp 矩阵乘法 (wmma) 指令的工具。"
 ---
 
 # mma
 
-This module includes utilities for working with the
-warp-matrix-matrix-multiplication (wmma) instructions.
+此模块包含用于处理 warp 矩阵乘法 (wmma) 指令的工具。
 
 ## 类型
 

@@ -1,12 +1,12 @@
 ---
 title: "tracing"
 sidebar_label: "tracing"
-description: "Provides tracing utilities."
+description: "提供追踪工具。"
 ---
 
 # tracing
 
-Provides tracing utilities.
+提供追踪工具。
 
 ## 类型
 

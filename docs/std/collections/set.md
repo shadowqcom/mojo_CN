@@ -1,12 +1,12 @@
 ---
 title: "set"
 sidebar_label: "set"
-description: "Implements the  Set datatype."
+description: "实现 Set 数据类型。"
 ---
 
 # set
 
-Implements the  Set datatype.
+实现 Set 数据类型。
 
 ## 类型
 

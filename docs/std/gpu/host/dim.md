@@ -1,12 +1,12 @@
 ---
 title: "dim"
 sidebar_label: "dim"
-description: "This module implements the dim type."
+description: "此模块实现 dim 类型。"
 ---
 
 # dim
 
-This module implements the dim type.
+此模块实现 dim 类型。
 
 ## 类型
 

@@ -1,20 +1,16 @@
 ---
 title: "inline_array"
 sidebar_label: "inline_array"
-description: "Provides a fixed-size array implementation with compile-time size checking.  The `InlineArray` type represents a fixed-size sequence of homogeneous elements where the size is determined at compile tim"
+description: "提供具有编译时大小检查的固定大小数组实现。`InlineArray` 类型表示固定大小的同构元素序列，其中大小在编译时确定。"
 ---
 
 # inline_array
 
-Provides a fixed-size array implementation with compile-time size checking.
+提供具有编译时大小检查的固定大小数组实现。
 
-The `InlineArray` type represents a fixed-size sequence of homogeneous elements
-where the size is determined at compile time. It provides efficient memory
-layout and bounds checking while maintaining type safety.  The `InlineArray`
-type is part of the `prelude` module and therefore does not need to be imported
-in order to use it.
+`InlineArray` 类型表示固定大小的同构元素序列，其中大小在编译时确定。它提供高效的内存布局和边界检查，同时保持类型安全。`InlineArray` 类型是 `prelude` 模块的一部分，因此不需要导入即可使用。
 
-Examples:
+示例：
 
 ```mojo
 # Create an array of 3 integers

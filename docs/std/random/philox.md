@@ -1,33 +1,30 @@
 ---
 title: "philox"
 sidebar_label: "philox"
-description: "Random number generation using the Philox algorithm.  This module implements a high-performance random number generator using the Philox algorithm, which is designed for parallel computing and works e"
+description: "使用 Philox 算法的随机数生成。此模块使用 Philox 算法实现高性能随机数生成器，专为并行计算设计，在 CPU 和 GPU 上都能高效工作。"
 ---
 
 # philox
 
-Random number generation using the Philox algorithm.
+使用 Philox 算法的随机数生成。
 
-This module implements a high-performance random number generator using the Philox algorithm,
-which is designed for parallel computing and works efficiently on both CPU and GPU. The Philox
-algorithm is a counter-based random number generator that provides high-quality random numbers
-with excellent statistical properties.
+此模块使用 Philox 算法实现高性能随机数生成器，专为并行计算设计，在 CPU 和 GPU 上都能高效工作。Philox 算法是一种基于计数器的随机数生成器，提供具有优异统计特性的高质量随机数。
 
-The main class is Random which generates both uniform random numbers and raw 32-bit integers.
-It supports:
-- Seeding for reproducible sequences
-- Multiple independent subsequences
-- Configurable number of rounds for quality vs performance tradeoff
-- Vectorized operations for efficiency
-- Cross-platform support (CPU and GPU)
+主要类是 Random，它生成均匀随机数和原始 32 位整数。
+它支持：
+- 用于可重现序列的种子
+- 多个独立子序列
+- 可配置的轮数以权衡质量和性能
+- 向量化操作以提高效率
+- 跨平台支持（CPU 和 GPU）
 
-Example:
+示例：
 
 ```mojo
 from std.random.philox import Random
     rng = Random(seed=42)
-    uniform_values = rng.step_uniform()  # Returns 4 random floats in [0,1)
-    raw_values = rng.step()  # Returns 4 raw 32-bit integers
+    uniform_values = rng.step_uniform()  # 返回 4 个 [0,1) 范围内的随机浮点数
+    raw_values = rng.step()  # 返回 4 个原始 32 位整数
 ```
 
 ## 类型

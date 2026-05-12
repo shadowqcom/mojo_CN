@@ -4,39 +4,38 @@ sidebar_position: 6
 
 # mojo format
 
-Formats Mojo source files.
+格式化 Mojo 源文件。
 
-## Synopsis
+## 用法概要
 
 ```
 mojo format [options] <sources...>
 ```
 
-## Description
+## 描述
 
-Formats the given set of Mojo sources using a Mojo-specific lint tool.
+使用 Mojo 专用的 lint 工具格式化给定的 Mojo 源文件集。
 
-## Options
+## 选项
 
-### Format options
+### 格式选项
 
 #### `--line-length <INTEGER>`, `-l <INTEGER>`
 
-Sets the max character line length. Default is 80.
+设置最大字符行长度。默认值为 80。
 
-### Diagnostic options
+### 诊断选项
 
 #### `--quiet`, `-q`
 
-Disables non-error messages.
+禁用非错误消息。
 
-### Common options
+### 通用选项
 
 #### `--help`, `-h`
 
-Displays help information.
+显示帮助信息。
 
 #### `--help-hidden`
 
-Displays help for hidden options.
-
+显示隐藏选项的帮助信息。

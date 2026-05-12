@@ -1,68 +1,41 @@
 ---
-title: GPU debugging
+title: GPU 调试
 sidebar_position: 3
-description: Debugging Mojo programs on GPU.
+description: 在 GPU 上调试 Mojo 程序。
 ---
 
-You can debug Mojo code running on GPUs using
-[CUDA-GDB](https://docs.nvidia.com/cuda/cuda-gdb/index.html#). You can either
-debug using the `cuda-gdb` command-line interface, or through VS Code, using the
-Mojo and NVIDIA extensions.
+你可以使用 [CUDA-GDB](https://docs.nvidia.com/cuda/cuda-gdb/index.html#) 调试在 GPU 上运行的 Mojo 代码。你可以使用 `cuda-gdb` 命令行界面进行调试，也可以通过 VS Code 使用 Mojo 和 NVIDIA 扩展进行调试。
 
-:::note[Limitations]
+:::note[限制]
 
-Currently there are a couple of notable limitations to debugging Mojo code on
-GPU:
+目前 GPU 上调试 Mojo 代码有几个显著限制：
 
-- GPU debugging is supported only on NVIDIA GPUs.
-- You cannot debug Mojo code running inside a MAX
-  [custom operation](/max/develop/custom-ops/). (You can only debug Mojo GPU
-  code launched from a Mojo program when using the
-  [gpu.host](/docs/std/gpu/host/) API).
+- GPU 调试仅支持 NVIDIA GPU。
+- 你无法调试在 MAX [自定义操作](/max/develop/custom-ops/)内运行的 Mojo 代码。（你只能在使用 [gpu.host](/docs/std/gpu/host/) API 从 Mojo 程序启动时调试 Mojo GPU 代码）。
 
 :::
 
-## GPU debugging setup
+## GPU 调试设置
 
-To debug Mojo code on GPU, first make sure you have a [compatible
-GPU](/docs/requirements#gpu-compatibility).
+要在 GPU 上调试 Mojo 代码，首先确保你有一个[兼容的 GPU](/docs/requirements#gpu-compatibility)。
 
-If you're using VS Code, you can run it on the same system where your GPU code
-is running (the "target system"), or on a separate system using remote
-debugging.
+如果你使用 VS Code，你可以在运行 GPU 代码的同一系统（"目标系统"）上运行它，也可以在单独的系统上使用远程调试。
 
-To debug on GPU, you need to choose to debug with CUDA-GDB when you start a
-debugging session. Note that CUDA-GDB has very limited debugging capabilities
-for Mojo code running on the CPU.
+要在 GPU 上调试，你需要在启动调试会话时选择使用 CUDA-GDB 进行调试。注意 CUDA-GDB 对在 CPU 上运行的 Mojo 代码的调试能力非常有限。
 
-To set up for GPU debugging:
+要设置 GPU 调试：
 
-1. Install the [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)
-   12.4 or later on the target system. Make sure that the `cuda-gdb`
-   binary is in your `$PATH` environment variable. For example, if you have CUDA
-   Toolkit 12.8 installed, add `/usr/local/cuda12.8/bin` to your `$PATH`.
+1. 在目标系统上安装 [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) 12.4 或更高版本。确保 `cuda-gdb` 二进制文件在你的 `$PATH` 环境变量中。例如，如果你安装了 CUDA Toolkit 12.8，请将 `/usr/local/cuda12.8/bin` 添加到你的 `$PATH`。
 
-2. If using VS Code, install
-   [Nsight Visual Studio Code Edition](https://marketplace.visualstudio.com/items?itemName=nvidia.nsight-vscode-edition)
-   and the
-   [Mojo extension](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)
-   from the Visual Studio Marketplace.
+2. 如果使用 VS Code，请从 Visual Studio Marketplace 安装 [Nsight Visual Studio Code Edition](https://marketplace.visualstudio.com/items?itemName=nvidia.nsight-vscode-edition) 和 [Mojo 扩展](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)。
 
-### Using the classic debugger backend
+### 使用经典调试器后端
 
-CUDA-GDB includes two debugger backends, called the "classic debugger" and the
-"universal debugger." By default, Mojo uses the CUDA-GDB universal debugger.
-However, some systems require the classic debugger, instead. If you find that
-the debugger is losing its connection with the process being debugged, you may
-need to use the classic debugger. To use the classic debugger backend:
+CUDA-GDB 包含两种调试器后端，分别称为"经典调试器"和"通用调试器"。默认情况下，Mojo 使用 CUDA-GDB 通用调试器。但是，某些系统需要使用经典调试器。如果你发现调试器与被调试进程的连接丢失，你可能需要使用经典调试器。要使用经典调试器后端：
 
-- On the target system, set the environment variable
-  `CUDBG_USE_LEGACY_DEBUGGER` to `1` in your shell configuration file (for
-  example, `.bashrc`, `.zshrc` or `config.fish`). Source the file or start a
-  new shell.
+- 在目标系统上，在你的 shell 配置文件（例如 `.bashrc`、`.zshrc` 或 `config.fish`）中将环境变量 `CUDBG_USE_LEGACY_DEBUGGER` 设置为 `1`。重新加载配置文件或启动新的 shell。
 
-- When creating a launch configuration for GPU debugging, add the following
-  settings to the `launch.json` configuration:
+- 在创建 GPU 调试的启动配置时，将以下设置添加到 `launch.json` 配置中：
 
   ```json
   "legacyDebugger": true,
@@ -71,26 +44,21 @@ need to use the classic debugger. To use the classic debugger backend:
   ],
   ```
 
-## Start GPU debugging from the command line
+## 从命令行启动 GPU 调试
 
-To start a GPU debugging session in VS Code from the command line, run the
-following command on the target system:
+要在 VS Code 中从命令行启动 GPU 调试会话，在目标系统上运行以下命令：
 
 ```bash
 mojo debug --cuda-gdb --break-on-launch --vscode myproject.mojo
 ```
 
-To use the CUDA-GDB command line debugger, omit the `--vscode` argument.
+要使用 CUDA-GDB 命令行调试器，省略 `--vscode` 参数。
 
-The `--break-on-launch` flag is optional but very useful: it stops execution as
-soon as the GPU kernel launches, allowing you to set breakpoints inside the GPU
-code.
+`--break-on-launch` 标志是可选的但非常有用：它在 GPU 内核启动后立即停止执行，允许你在 GPU 代码中设置断点。
 
-## Start GPU debugging from VS Code
+## 从 VS Code 启动 GPU 调试
 
-The easiest way to start GPU debugging from VS Code is to add a
-[Launch configuration](#launch-configurations). For example, the following
-launch configuration starts debugging the current Mojo file using CUDA-GDB.
+从 VS Code 启动 GPU 调试最简单的方式是添加一个[启动配置](#launch-configurations)。例如，以下启动配置使用 CUDA-GDB 开始调试当前 Mojo 文件。
 
 ```json
   {
@@ -110,65 +78,43 @@ launch configuration starts debugging the current Mojo file using CUDA-GDB.
   },
 ```
 
-The last two settings, `legacyDebugger` and `initCommands` should only be
-included if required on your system to maintain a stable connection to the
-process being debugged, as described in
-[Using the classic debugger backend](#using-the-classic-debugger-backend).
+最后两个设置 `legacyDebugger` 和 `initCommands` 仅在你的系统上需要维护与被调试进程的稳定连接时才应包含，如[使用经典调试器后端](#using-the-classic-debugger-backend)中所述。
 
-## Issuing CUDA-GDB commands
+## 发出 CUDA-GDB 命令
 
-Some features of the debugger are only available via CUDA-GDB commands, so it's
-worth familiarizing yourself with CUDA-GDB even if you're using VS Code as a
-frontend.
+调试器的某些功能只能通过 CUDA-GDB 命令使用，因此即使你使用 VS Code 作为前端，也值得熟悉 CUDA-GDB。
 
-If you're running in VS Code, you can enter CUDA-GDB commands in the debug
-console by prefixing them with a single backtick (`). Note that the console may
-automatically add a second backtick at the end of your command, which prevents
-it from being recognized as a CUDA-GDB command. Be sure to remove the second
-backtick before submitting the command.
+如果你在 VS Code 中运行，可以在调试控制台中通过在 CUDA-GDB 命令前加单个反引号（`）来输入。注意控制台可能会自动在你的命令末尾添加第二个反引号，这会阻止它被识别为 CUDA-GDB 命令。请确保在提交命令前删除第二个反引号。
 
-The examples in the following section are raw CUDA-GDB commands, without the
-backtick.
+以下章节中的示例是原始 CUDA-GDB 命令，不带反引号。
 
-A good starting point for learning about CUDA-GDB is the
-[CUDA-GDB User Manual](https://docs.nvidia.com/cuda/cuda-gdb/index.html#)
+学习 CUDA-GDB 的一个好起点是 [CUDA-GDB 用户手册](https://docs.nvidia.com/cuda/cuda-gdb/index.html#)
 
-## Tips and tricks
+## 技巧和窍门
 
-The following sections provide tips for some common tasks in GPU debugging.
+以下章节提供了 GPU 调试中一些常见任务的技巧。
 
-### Setting breakpoints in GPU code
+### 在 GPU 代码中设置断点
 
-There are a few quirks to setting breakpoints in GPU code. If you set a
-breakpoint in GPU code before the GPU kernel launches, the breakpoint will show
-up in a different function (a CPU function).
+在 GPU 代码中设置断点有一些特殊之处。如果你在 GPU 内核启动之前在 GPU 代码中设置断点，断点会显示在不同的函数中（一个 CPU 函数）。
 
-When the debugger pauses at this first breakpoint, click **Continue** to resume
-execution, and the debugger should stop at the correct location in the GPU code.
-When paused at the first breakpoint, you can add more breakpoints in the GPU
-code, however, the breakpoints won't show up in the left gutter until the GPU
-kernel launches.
+当调试器在这个第一个断点处暂停时，点击**继续**恢复执行，调试器应该在 GPU 代码中的正确位置停止。在第一个断点处暂停时，你可以在 GPU 代码中添加更多断点，但是这些断点在 GPU 内核启动之前不会显示在左侧边栏中。
 
-Symbol breakpoints aren't supported when debugging with CUDA-GDB.
+使用 CUDA-GDB 调试时不支持符号断点。
 
-On the CUDA-GDB command line, you can set a breakpoint using the `break`
-command (which can be abbreviated to `b`):
+在 CUDA-GDB 命令行上，你可以使用 `break` 命令（可缩写为 `b`）设置断点：
 
 <code><strong>break</strong>
 <var>filename.mojo</var>:<var>line_number</var></code><br/>
 <code><strong>b</strong> <var>filename.mojo</var>:<var>line_number</var></code>
 
-### Stepping not supported on GPU
+### GPU 上不支持单步执行
 
-The step commands—**Step Over**, **Step Into**, and **Step Out** do not work
-reliably on GPU. Instead we recommend adding breakpoints and using **Continue**
-to move between breakpoints.
+单步命令——**单步跳过**、**单步进入**和**单步跳出**——在 GPU 上不能可靠工作。相反，我们建议添加断点并使用**继续**在断点之间移动。
 
-### Changing kernel focus
+### 更改内核焦点
 
-You can use CUDA-GDB commands to change the current _kernel focus_: that is,
-the block and thread index that you're currently inspecting. Use the `cuda`
-to inspect the current focus or change focus:
+你可以使用 CUDA-GDB 命令更改当前的*内核焦点*：即你当前正在检查的块和线程索引。使用 `cuda` 命令检查当前焦点或更改焦点：
 
 ```plaintext
 cuda block thread
@@ -177,13 +123,11 @@ cuda block 0,0,0 thread 1,0,0
 [Switching focus to CUDA kernel 0, grid 1, block (0,0,0), thread (1,0,0), device 0, sm 0, warp 0, lane 1]
 ```
 
-For more information, see
-[Kernel focus](https://docs.nvidia.com/cuda/cuda-gdb/index.html#kernel-focus) in
-the CUDA-GDB documentation.
+更多信息请参见 CUDA-GDB 文档中的[内核焦点](https://docs.nvidia.com/cuda/cuda-gdb/index.html#kernel-focus)。
 
-### Inspecting registers
+### 检查寄存器
 
-Inspect the values of registers using the `info registers` command.
+使用 `info registers` 命令检查寄存器的值。
 
 ```plaintext
 `info registers $R0 $R1
@@ -192,6 +136,4 @@ R0             0xebfffda8          -335544920
 R1             0xfffda8            16776616
 ```
 
-For more information, see
-[Registers](https://docs.nvidia.com/cuda/cuda-gdb/index.html#registers) in
-the CUDA-GDB documentation.
+更多信息请参见 CUDA-GDB 文档中的[寄存器](https://docs.nvidia.com/cuda/cuda-gdb/index.html#registers)。

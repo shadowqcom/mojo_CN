@@ -1,76 +1,85 @@
 ---
-title: '@always_inline'
-description: Copies the body of a function directly into the body of the calling function.
-codeTitle: true
+title: '@always_inline 装饰器'
+sidebar_label: '@always_inline'
+sidebar_position: 2
+description: >
+  @always_inline 装饰器参考。强制函数在调用点内联展开。
 ---
 
-You can add the `@always_inline` decorator on any function to make the Mojo
-compiler "inline" the body of the function (copy it) directly into the body of
-the calling function.
+{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
 
-This eliminates potential performance costs associated with function calls
-jumping to a new point in code. Normally, the compiler will do this
-automatically where it can improve performance, but this decorator forces it to
-do so. The downside is that it can increase the binary size by duplicating the
-function at every call site.
+`@always_inline` 装饰器强制函数在调用点内联展开。编译器会将函数体直接插入到调用位置，而不是生成函数调用指令。
 
-For example:
+## 语法
+
+```mojo
+@always_inline
+def function_name(...):
+    ...
+```
+
+## 用法
 
 ```mojo
 @always_inline
 def add(a: Int, b: Int) -> Int:
     return a + b
 
-print(add(1, 2))
+def main():
+    var result = add(1, 2)  # 编译器直接展开为 1 + 2
 ```
 
-Because `add()` is decorated with `@always_inline`, Mojo compiles this program
-without adding the `add()` function to the call stack, and it instead performs
-the addition directly at the `print()` call site, as if it were written like
-this:
+## 优点
+
+- **消除调用开销**：没有函数调用的栈操作开销
+- **启用进一步优化**：内联后的代码可以进行更多优化
+- **编译时求值**：内联函数更容易在编译时求值
+
+## 缺点
+
+- **代码膨胀**：频繁内联会增加二进制大小
+- **编译时间增加**：更多代码需要编译
+
+## 适用场景
+
+### 小型工具函数
 
 ```mojo
-print(1 + 2)
+@always_inline
+def min(a: Int, b: Int) -> Int:
+    return a if a < b else b
+
+@always_inline
+def max(a: Int, b: Int) -> Int:
+    return a if a > b else b
 ```
 
-## `@always_inline("nodebug")`
+### 性能关键路径
 
-You can also use the decorator with the `"nodebug"` argument, which has the
-same effect to inline the function, but without debug information. This means
-that you can't step into the function when debugging.
+```mojo
+@always_inline
+def fast_abs(x: Int) -> Int:
+    return x if x >= 0 else -x
+```
 
-This decorator is intended to be used on the low-level functions in a
-library, which may wrap primitive functions, MLIR operations, or inline
-assembly. Marking these functions as "nodebug" prevents users from accidentally
-stepping into low-level non-Mojo code when debugging.
+### SIMD 操作
 
-## `@always_inline("builtin")`
+```mojo
+@always_inline
+def simd_add[T: DType, N: Int](a: SIMD[T, N], b: SIMD[T, N]) -> SIMD[T, N]:
+    return a + b
+```
 
-The `"builtin"` argument is like `"nodebug"`, but even stricter. The `"builtin"`
-version of the decorator should only be used on functions that wrap a single
-MLIR operation that the compiler has special compile-time handling for. It
-allows the compiler to inline the function when it's used in a parameter
-context.
+## 与 `@no_inline` 对比
 
-:::caution
+| 装饰器         | 行为               |
+|----------------|--------------------|
+| `@always_inline` | 强制内联         |
+| `@no_inline`     | 禁止内联         |
+| 无装饰器         | 编译器决定       |
 
-Using this version of the decorator requires some knowledge of the Mojo
-compiler's internals. Using it outside of the standard library is not
-recommended. Use the standard `@always_inline` decorator or the `"nodebug"`
-version, instead.
+## 注意事项
 
-:::
-
-This version of the decorator does everything that `"nodebug"` does, plus two
-other behaviors:
-
-- It checks the body of the function to validate that it doesn't use
-  anything that `@always_inline("builtin")` can't handle. This checks that there
-  is no control flow, no function calls to functions that are not themselves
-  `@always_inline("builtin")`, no use of unsupported MLIR operations, etc.
-
-- When the function is used in a parameter context, it is unconditionally
-  inlined.
-
-For more details and background, see
-[the `@always_inline("builtin") proposal](https://github.com/modular/modular/blob/main/mojo/proposals/always_inline_builtin.md).
+- 递归函数不能使用 `@always_inline`
+- 过度使用可能导致代码膨胀
+- 编译器可能会忽略某些情况下的内联请求

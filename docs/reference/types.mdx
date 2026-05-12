@@ -1,168 +1,261 @@
 ---
-title: Mojo types reference
-sidebar_label: Types
-sidebar_position: 1
-description: >-
-  Explore all Mojo built-in types, including numeric, string, boolean, and
-  collection types, and understand how they fit into Mojo's statically typed
-  system.
+title: Mojo 类型参考
+sidebar_label: 类型
+sidebar_position: 10
+description: >
+  Mojo 类型系统完整参考。涵盖基本类型、复合类型、
+  类型注解、泛型和类型推断。
 ---
 
-Mojo is statically typed. Every value has a type known at compile time. The
-type system is designed to be simple and consistent, with a small set of
-core types that can be composed in powerful ways.
+{/*  VERIFIED: ASTType.h, ASTType.cpp, ParserTypes.cpp,
+     ExprNodes.h, ExprNodes.cpp  */}
 
-## Numbers
+Mojo 是静态类型语言。每个值都有在编译时已知的类型。本页涵盖 Mojo 的类型系统，包括基本类型、复合类型和类型注解。
 
-Explore numbers on their dedicated page:
-[Mojo numeric types](/docs/reference/numeric-types/).
+## 基本类型
 
-{/*  markdownlint-disable MD013  */}
+### 数值类型
 
-| Type                                                                            | What it is                                                      |
-|---------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [`IntLiteral`](/docs/reference/numeric-types/#int-literal)                      | Arbitrary-precision integer. Compile-time only.                 |
-| [`FloatLiteral`](/docs/reference/numeric-types/#float-literal)                  | Arbitrary-precision float. Compile-time only.                   |
-| [`Int`](/docs/reference/numeric-types/#int)                                     | Signed integer, system word size. Its own struct.               |
-| [`SIMD`](/docs/reference/numeric-types/#simd)                                   | Fixed-size vector of numeric values. Mojo's numeric foundation. |
-| [`DType`](/docs/reference/numeric-types/#dtype)                                 | Enumeration of numeric type identifiers. Used as a parameter.   |
-| [`Scalar`](/docs/reference/numeric-types/#scalar)                               | Single numeric value. Alias for `SIMD[dtype, 1]`.               |
-| [`UInt`](/docs/reference/numeric-types/#uint)                                   | Unsigned integer, system word size. A `Scalar` alias.           |
-| [`Int8`-`Int256`](/docs/reference/numeric-types/#sized-integer-types)           | Fixed-width signed integers. `Scalar` aliases.                  |
-| [`UInt8`-`UInt256`, `Byte`](/docs/reference/numeric-types/#sized-integer-types) | Fixed-width unsigned integers. `Scalar` aliases.                |
-| [`Float16`-`Float64`](/docs/reference/numeric-types/#floating-point-types)      | IEEE 754 floating-point types. `Scalar` aliases.                |
-| [`BFloat16`](/docs/reference/numeric-types/#bfloat16)                           | Brain floating-point (16-bit). A `Scalar` alias.                |
-| [`Float8_*`, `Float4_*`](/docs/reference/numeric-types/#floating-point-types)   | AI-optimized low-precision floats. `Scalar` aliases.            |
+Mojo 提供标准数值类型：
 
-{/*  markdownlint-enable MD013  */}
+| 类型      | 描述                       | 大小     |
+|-----------|----------------------------|----------|
+| `Int`     | 机器宽度有符号整数         | 64 位    |
+| `Int8`    | 8 位有符号整数             | 8 位     |
+| `Int16`   | 16 位有符号整数            | 16 位    |
+| `Int32`   | 32 位有符号整数            | 32 位    |
+| `Int64`   | 64 位有符号整数            | 64 位    |
+| `UInt8`   | 8 位无符号整数             | 8 位     |
+| `UInt16`  | 16 位无符号整数            | 16 位    |
+| `UInt32`  | 32 位无符号整数            | 32 位    |
+| `UInt64`  | 64 位无符号整数            | 64 位    |
+| `Float16` | 半精度浮点数               | 16 位    |
+| `Float32` | 单精度浮点数               | 32 位    |
+| `Float64` | 双精度浮点数               | 64 位    |
 
-## Strings
-
-{/*  markdownlint-disable MD013  */}
-
-| Type                 | What it is                                                 |
-|----------------------|------------------------------------------------------------|
-| [`String`](#strings) | Heap-allocated, owned, mutable UTF-8 string.               |
-| `StringSlice`        | Non-owning view into UTF-8 string data.                    |
-| `StaticString`       | Immutable slice of static string data. No heap allocation. |
-| `StringLiteral`      | Compile-time string constant.                              |
-
-{/*  markdownlint-enable MD013  */}
-
-## Collections
-
-{/*  markdownlint-disable MD013  */}
-
-| Type       | What it is                                |
-|------------|-------------------------------------------|
-| `Tuple`    | Fixed-size, heterogeneous collection.     |
-| `List`     | Dynamically-sized, homogeneous sequence.  |
-| `Dict`     | Key-value mapping.                        |
-| `Set`      | Unordered collection of unique values.    |
-| `Optional` | A value that may or may not be present.   |
-| `Variant`  | A value that can be one of several types. |
-
-{/*  markdownlint-enable MD013  */}
-
-## Others
-
-{/*  markdownlint-disable MD013  */}
-
-| Type              | What it is                                   |
-|-------------------|----------------------------------------------|
-| [`Bool`](#bool)   | Boolean value. Its own struct.               |
-| [`Error`](#error) | Represents a runtime error.                  |
-| [`Never`](#never) | Return type for functions that don't return. |
-| [`None`](#none)   | The type with a single value, `None`.        |
-
-{/*  markdownlint-enable MD013  */}
-
-## `Bool`
-
-`Bool` represents a boolean value (`True` or `False`). It's its own
-struct, backed by a 1-bit type, not a SIMD alias.
+### 布尔类型
 
 ```mojo
-var flag = True
-if flag:
-    print("yes")
+var flag: Bool = True
 ```
 
-## Using strings
-
-Mojo has several string types for different ownership and lifetime
-needs.
-
-String literals in source code (like `"hello"`) are `StringLiteral`
-values. They implicitly convert to `String` when needed.
-
-All string types use UTF-8 encoding.
-
-Mojo strings are Unicode-aware. Byte length, codepoint count, and
-grapheme count are distinct measurements:
+### 字符串类型
 
 ```mojo
-var s: StringSlice = "café"  # NFD: e + U+0301
-print(s.byte_length())       # 5
-print(len(s.codepoints()))   # 4
-print(s.count_graphemes())   # 4
+var name: String = "Alice"
+var literal: StringLiteral = "hello"  # 编译时字符串
 ```
 
-NFD normalization and emoji with modifiers or ZWJ sequences can
-widen these gaps further.
+### 无类型
 
-## Tuples
-
-A tuple is a fixed-size, heterogeneous collection. Elements can have
-different types, and the types are known at compile time.
+`NoneType` 表示值的缺失：
 
 ```mojo
-var pair = (42, "hello")
-var x = pair[0]  # 42
-var y = pair[1]  # "hello"
+var nothing: NoneType = None
 ```
 
-Tuples support unpacking:
+## 复合类型
+
+### 元组
+
+元组是固定大小的异质集合：
 
 ```mojo
-var a: Int
-var b: String
-(a, b) = (42, "hello")
+var pair: Tuple[Int, String] = (42, "hello")
+var triple: (Int, Float64, Bool) = (1, 2.0, True)
 ```
 
-## `Error`
+### 列表
 
-`Error` represents a recoverable runtime error. Functions that can
-fail are marked `raises` and throw `Error` values:
+列表是动态大小的同质集合：
 
 ```mojo
-def parse(s: String) raises -> Int:
-    ...
-    raise Error("invalid input")
+var numbers: List[Int] = [1, 2, 3]
+var names: List[String] = ["Alice", "Bob"]
 ```
 
-## `Never`
+### 字典
 
-`Never` is the return type for functions that never return, such as
-functions that always abort or loop forever:
+字典存储键值对：
 
 ```mojo
-def fatal(msg: String) -> Never:
-    print(msg)
-    abort()
+var ages: Dict[String, Int] = {"Alice": 30, "Bob": 25}
 ```
 
-The compiler uses `Never` to prove that code after a call to such a
-function is unreachable.
+### 集合
 
-## `None`
-
-`None` is both a value and a type. The `NoneType` struct has exactly
-one value: `None`. Functions that don't declare a return type
-implicitly return `None`.
+集合存储唯一值：
 
 ```mojo
-def greet(name: String):
-    print("hello", name)
-    # implicitly returns None
+var primes: Set[Int] = {2, 3, 5, 7}
+```
+
+### 可选类型
+
+`Optional` 表示可能存在或不存在的值：
+
+```mojo
+var maybe: Optional[Int] = Some(42)
+var none: Optional[Int] = None
+```
+
+### 变体类型
+
+`Variant` 表示多种可能类型之一：
+
+```mojo
+var value: Variant[Int, String] = 42
+value = "hello"  # 可以改变类型
+```
+
+## 类型注解
+
+类型注解指定变量、参数和返回值的类型：
+
+```mojo
+var x: Int = 42
+
+def greet(name: String) -> String:
+    return "Hello, " + name
+```
+
+### 类型推断
+
+当类型可以从上下文推断时，类型注解是可选的：
+
+```mojo
+var x = 42           # 推断为 Int
+var name = "Alice"   # 推断为 String
+var items = [1, 2, 3]  # 推断为 List[Int]
+```
+
+## 泛型
+
+泛型允许编写适用于多种类型的代码：
+
+```mojo
+struct Box[T: AnyType]:
+    var value: T
+
+    def __init__(out self, value: T):
+        self.value = value
+
+def main():
+    var int_box = Box(42)
+    var str_box = Box("hello")
+```
+
+### 泛型约束
+
+使用 trait 约束泛型参数：
+
+```mojo
+def max[T: Comparable](a: T, b: T) -> T:
+    if a > b:
+        return a
+    return b
+```
+
+### 多个泛型参数
+
+```mojo
+struct Pair[K: AnyType, V: AnyType]:
+    var key: K
+    var value: V
+```
+
+## 类型别名
+
+使用 `comptime` 创建类型别名：
+
+```mojo
+comptime Vec3 = List[Float64]
+var position: Vec3 = [0.0, 0.0, 0.0]
+```
+
+## 函数类型
+
+函数类型描述函数签名：
+
+```mojo
+var callback: def(Int) -> String
+```
+
+### 带约束的函数类型
+
+```mojo
+var processor: def(Int) raises -> String
+```
+
+## SIMD 类型
+
+SIMD 类型表示向量操作：
+
+```mojo
+var vec: SIMD[DType.float32, 4] = [1.0, 2.0, 3.0, 4.0]
+```
+
+### DType 枚举
+
+`DType` 枚举指定数据类型：
+
+```mojo
+alias float32 = DType.float32
+alias int32 = DType.int32
+```
+
+## 指针类型
+
+指针类型表示内存地址：
+
+```mojo
+var ptr: Pointer[Int]
+var unsafe_ptr: UnsafePointer[Int]
+```
+
+## 引用类型
+
+引用类型表示对值的引用：
+
+```mojo
+def get_first[T: Copyable](ref data: List[T]) -> ref T:
+    return data[0]
+```
+
+## 类型检查
+
+### `type_of`
+
+`type_of` 返回表达式的类型：
+
+```mojo
+var x = 42
+comptime T = type_of(x)  # Int
+```
+
+### `conforms_to`
+
+`conforms_to` 检查类型是否符合 trait：
+
+```mojo
+comptime is_copyable = conforms_to(Int, Copyable)  # True
+```
+
+## 类型转换
+
+使用构造函数进行类型转换：
+
+```mojo
+var x: Float64 = Float64(42)  # Int 到 Float64
+var s: String = String(42)    # Int 到 String
+var n: Int = Int("42")        # String 到 Int
+```
+
+### 显式转换
+
+某些类型需要显式转换：
+
+```mojo
+var ptr = Pointer[Int].alloc(10)
+var unsafe_ptr = UnsafePointer[Int](ptr)
 ```

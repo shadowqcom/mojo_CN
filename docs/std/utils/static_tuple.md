@@ -1,14 +1,14 @@
 ---
 title: "static_tuple"
 sidebar_label: "static_tuple"
-description: "Implements StaticTuple, a statically-sized uniform container.  You can import these APIs from the `utils` package. For example:  ```mojo from std.utils import StaticTuple ```"
+description: "实现 StaticTuple，一种静态大小的统一容器。您可以从 `utils` 包导入这些 API。例如：```mojo from std.utils import StaticTuple ```"
 ---
 
 # static_tuple
 
-Implements StaticTuple, a statically-sized uniform container.
+实现 StaticTuple，一种静态大小的统一容器。
 
-You can import these APIs from the `utils` package. For example:
+您可以从 `utils` 包导入这些 API。例如：
 
 ```mojo
 from std.utils import StaticTuple

@@ -1,15 +1,14 @@
 ---
 title: "fast_div"
 sidebar_label: "fast_div"
-description: "Implements the fast division algorithm.  This method replaces division by constants with a sequence of shifts and multiplications, significantly optimizing division performance."
+description: "实现快速除法算法。此方法用移位和乘法序列替换常量除法，显著优化除法性能。"
 ---
 
 # fast_div
 
-Implements the fast division algorithm.
+实现快速除法算法。
 
-This method replaces division by constants with a sequence of shifts and
-multiplications, significantly optimizing division performance.
+此方法用移位和乘法序列替换常量除法，显著优化除法性能。
 
 ## 类型
 

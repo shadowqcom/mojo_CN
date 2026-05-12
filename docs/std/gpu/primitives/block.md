@@ -1,30 +1,24 @@
 ---
 title: "block"
 sidebar_label: "block"
-description: "GPU block-level operations and utilities.  This module provides block-level operations for NVIDIA and AMD GPUs, including:  - Block-wide reductions:   - sum: Compute sum across block   - max: Find max"
+description: "GPU 块级操作和工具。此模块提供 NVIDIA 和 AMD GPU 的块级操作，包括：- 块级归约：- sum：计算块内的总和- max：查找块内的最大值"
 ---
 
 # block
 
-GPU block-level operations and utilities.
+GPU 块级操作和工具。
 
-This module provides block-level operations for NVIDIA and AMD GPUs, including:
+此模块提供 NVIDIA 和 AMD GPU 的块级操作，包括：
 
-- Block-wide reductions:
-  - sum: Compute sum across block
-  - max: Find maximum value across block
-  - min: Find minimum value across block
-  - broadcast: Broadcast value to all threads
+- 块级归约：
+  - sum：计算块内的总和
+  - max：查找块内的最大值
+  - min：查找块内的最小值
+  - broadcast：将值广播到所有线程
 
-The module builds on warp-level operations from the warp module, extending them
-to work across a full thread block (potentially multiple warps). It handles both
-NVIDIA and AMD GPU architectures and supports various data types with SIMD
-vectorization.
+该模块建立在 warp 模块的 warp 级操作之上，将其扩展到整个线程块（可能是多个 warp）。它处理 NVIDIA 和 AMD GPU 架构，并支持各种数据类型和 SIMD 向量化。
 
-All operations support 1D blocks via the `block_size` parameter, as well as 2D
-and 3D blocks via the `block_dim_x`, `block_dim_y`, and `block_dim_z` parameters.
-For multi-dimensional blocks, thread linearization follows the standard row-major
-order: `linear_id = x + y * dim_x + z * dim_x * dim_y`.
+所有操作通过 `block_size` 参数支持 1D 块，以及通过 `block_dim_x`、`block_dim_y` 和 `block_dim_z` 参数支持 2D 和 3D 块。对于多维块，线程线性化遵循标准的行主序：`linear_id = x + y * dim_x + z * dim_x * dim_y`。
 
 ## 函数
 

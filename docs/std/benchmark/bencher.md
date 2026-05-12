@@ -1,17 +1,14 @@
 ---
 title: "bencher"
 sidebar_label: "bencher"
-description: "Implements comprehensive benchmarking infrastructure with statistical analysis.  This module provides the core types and functions for running benchmarks with configurable execution parameters, statis"
+description: "实现具有统计分析的综合基准测试基础设施。此模块提供了用于运行基准测试的核心类型和函数，具有可配置的执行参数、统计分析和格式化输出。"
 ---
 
 # bencher
 
-Implements comprehensive benchmarking infrastructure with statistical analysis.
+实现具有统计分析的综合基准测试基础设施。
 
-This module provides the core types and functions for running benchmarks with
-configurable execution parameters, statistical analysis, and formatted output.
-It includes support for throughput metrics, warmup iterations, batch execution,
-and both CPU and GPU kernel benchmarking.
+此模块提供了用于运行基准测试的核心类型和函数，具有可配置的执行参数、统计分析和格式化输出。它支持吞吐量指标、预热迭代、批量执行以及 CPU 和 GPU 内核基准测试。
 
 ## 类型
 

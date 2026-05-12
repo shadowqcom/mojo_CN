@@ -1,16 +1,14 @@
 ---
 title: "info"
 sidebar_label: "info"
-description: "Contains information about GPU architectures and their capabilities.  This module provides detailed specifications for various GPU models including NVIDIA and AMD GPUs. It includes information about c"
+description: "包含 GPU 架构及其功能的信息。此模块提供各种 GPU 型号的详细规格，包括 NVIDIA 和 AMD GPU。包括计算能力、内存规格、线程组织和性能特征等信息。"
 ---
 
 # info
 
-Contains information about GPU architectures and their capabilities.
+包含 GPU 架构及其功能的信息。
 
-This module provides detailed specifications for various GPU models including
-NVIDIA and AMD GPUs. It includes information about compute capabilities,
-memory specifications, thread organization, and performance characteristics.
+此模块提供各种 GPU 型号的详细规格，包括 NVIDIA 和 AMD GPU。包括计算能力、内存规格、线程组织和性能特征等信息。
 
 ## 类型
 

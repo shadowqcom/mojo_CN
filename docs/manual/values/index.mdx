@@ -1,103 +1,42 @@
 ---
-title: Intro to value ownership
+title: 值所有权简介
 sidebar_position: 1
-description: Introduction to Mojo value ownership.
+description: Mojo 值所有权介绍。
 ---
 
-A program is nothing without data, and all modern programming languages store
-data in one of two places: the call stack and the heap (also sometimes in CPU
-registers, but we won't get into that here). However, each language reads and
-writes data a bit differently—sometimes very differently. So in the following
-sections, we'll explain how Mojo manages memory in your programs and how this
-affects the way you write Mojo code.
+程序离不开数据，所有现代编程语言都将数据存储在两个地方之一：调用栈和堆（有时也在 CPU 寄存器中，但我们这里不涉及）。然而，每种语言读取和写入数据的方式略有不同——有时差异很大。因此，在接下来的章节中，我们将解释 Mojo 如何在程序中管理内存，以及这如何影响你编写 Mojo 代码的方式。
 
-## Stack and heap overview
+## 栈和堆概述
 
-In general, all modern programming languages divide a running program's memory
-into four segments:
+一般来说，所有现代编程语言都将运行中程序的内存分为四个段：
 
-- Text. The compiled program.
-- Data. Global data, either initialized or uninitialized.
-- Stack. Local data, automatically managed during the program's runtime.
-- Heap. Dynamically-allocated data, managed by the programmer.
+- 文本段。编译后的程序。
+- 数据段。全局数据，已初始化或未初始化。
+- 栈段。局部数据，在程序运行期间自动管理。
+- 堆段。动态分配的数据，由程序员管理。
 
-The text and data segments are statically sized, but the stack and heap change
-size as the program runs.
+文本段和数据段的大小是静态的，但栈和堆的大小会随着程序的运行而变化。
 
-The *stack* stores data local to the current function. When a function is
-called, the program allocates a block of memory—a *stack frame*—that is exactly
-the size required to store the function's data, including any *fixed-size*
-local variables. When another function is called, a new stack frame is pushed
-onto the top of the stack. When a function is done, its stack frame is popped
-off the stack.
+栈存储当前函数的局部数据。当调用一个函数时，程序会分配一块内存——一个栈帧——其大小正好足以存储该函数的数据，包括任何固定大小的局部变量。当调用另一个函数时，会在栈顶推入一个新的栈帧。当函数完成时，其栈帧会从栈中弹出。
 
-Notice that we said only "*fixed-size* local values" are stored in the stack.
-Dynamically-sized values that can change in size at runtime are instead stored
-in the heap, which is a much larger region of memory that allows for dynamic
-memory allocation. Technically, a local variable for such a value is still
-stored in the call stack, but its value is a fixed-size pointer to the real
-value on the heap. Consider a Mojo string: it can be any length, and its length
-can change at runtime. So the Mojo `String` struct includes some
-statically-sized fields, plus a pointer to a dynamically-allocated buffer
-holding the actual string data.
+注意我们只说"固定大小"的局部值存储在栈中。在运行时可以改变大小动态大小的值则存储在堆中，这是一个允许动态内存分配的更大内存区域。从技术上讲，这样一个值的局部变量仍然存储在调用栈中，但其值是一个指向堆上实际值的固定大小指针。考虑一个 Mojo 字符串：它可以有任何长度，其长度可以在运行时改变。因此，Mojo `String` 结构体包含一些固定大小的字段，以及一个指向动态分配的缓冲区的指针，该缓冲区保存实际的字符串数据。
 
-Another important difference between the heap and the stack is that the stack is
-managed automatically—the code to push and pop stack frames is added by the
-compiler. Heap memory, on the other hand, is managed by the programmer
-explicitly allocating and deallocating memory. You may do this indirectly—by
-using standard library types like `List` and `String`—or directly, using the
-[`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) API.
+堆和栈之间的另一个重要区别是栈是自动管理的——推入和弹出栈帧的代码由编译器添加。另一方面，堆内存由程序员显式分配和释放内存来管理。你可以通过使用标准库类型如 `List` 和 `String` 间接地这样做，或者使用 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) API 直接这样做。
 
-Values that need to outlive the lifetime of a function (such as
-an array that's passed between functions and should not be copied) are stored
-in the heap, because heap memory is accessible from anywhere in the call stack,
-even after the function that created it is removed from the stack. This sort of
-situation—in which a heap-allocated value is used by multiple functions—is where
-most memory errors occur, and it's where memory management strategies vary the
-most between programming languages.
+需要比函数生命周期更长的值（例如，在函数之间传递且不应被复制的数组）存储在堆中，因为堆内存可以从调用栈的任何地方访问，即使创建它的函数从栈中移除也是如此。这种情况下——堆分配的值被多个函数使用——大多数内存错误发生在这里，这也是不同编程语言之间内存管理策略差异最大的地方。
 
-## Memory management strategies
+## 内存管理策略
 
-Because memory is limited, it's important that programs remove unused data from
-the heap ("free" the memory) as quickly as possible. Figuring out when to free
-that memory is pretty complicated.
+由于内存是有限的，因此程序应尽可能快地从堆中移除未使用的数据（"释放"内存）。确定何时释放该内存相当复杂。
 
-Some programming languages try to hide the complexities of memory management
-from you by utilizing a "garbage collector" process that tracks all memory
-usage and deallocates unused heap memory periodically (also known as automatic
-memory management). A significant benefit of this method is that it relieves
-developers from the burden of manual memory management, generally avoiding more
-errors and making developers more productive. However, it incurs a performance
-cost because the garbage collector interrupts the program's execution, and it
-might not reclaim memory very quickly.
+一些编程语言通过使用"垃圾收集器"进程来隐藏内存管理的复杂性，该进程跟踪所有内存使用情况并定期释放未使用的堆内存（也称为自动内存管理）。这种方法的一个显著好处是它减轻了手动内存管理的负担，通常避免更多错误，并使开发人员更高效。然而，它会产生性能成本，因为垃圾收集器会中断程序的执行，并且可能不会很快回收内存。
 
-Other languages require that you manually free data that's allocated on the
-heap. When done properly, this makes programs execute quickly, because there's
-no processing time consumed by a garbage collector. However, the challenge with
-this approach is that programmers make mistakes, especially when multiple parts
-of the program need access to the same memory—it becomes difficult to know
-which part of the program "owns" the data and must deallocate it. Programmers
-might accidentally deallocate data before the program is done with it (causing
-"use-after-free" errors), or they might deallocate it twice ("double free"
-errors), or they might never deallocate it ("leaked memory" errors). Mistakes
-like these and others can have catastrophic results for the program, and these
-bugs are often hard to track down, making it especially important that they
-don't occur in the first place.
+其他语言要求你手动释放在堆上分配的数据。当正确完成时，这会使程序执行得更快，因为没有垃圾收集器消耗的处理时间。然而，这种方法的问题是程序员会犯错，特别是当程序的多个部分需要访问同一内存时——很难知道程序的哪一部分"拥有"数据并必须释放它。程序员可能会在程序完成之前意外释放数据（导致"释放后使用"错误），或者可能两次释放它（"双重释放"错误），或者可能永远不会释放它（"内存泄漏"错误）。这样的错误和其他错误可能对程序产生灾难性的后果，这些错误通常很难追踪，因此它们不首先发生尤为重要。
 
-Mojo uses a third approach called "ownership" that relies on a collection of
-rules that programmers must follow when passing values. The rules ensure there
-is only one "owner" for a given value at a time. When a value's lifetime ends,
-Mojo calls its destructor, which is responsible for deallocating any heap memory
-that needs to be deallocated.
+Mojo 使用第三种方法，称为"所有权"，它依赖于程序员在传递值时必须遵循的规则集合。这些规则确保在给定时间只有一个"所有者"拥有某个值。当一个值的生命周期结束时，Mojo 调用其析构函数，该析构函数负责释放任何需要释放的堆内存。
 
-In this way, Mojo helps ensure memory is freed, but it does so in a way that's
-deterministic and safe from errors such as use-after-free, double-free and
-memory leaks. Plus, it does so with a very low performance overhead.
+通过这种方式，Mojo 有助于确保内存被释放，但它是确定性的，并且从释放后使用、双重释放和内存泄漏等错误中是安全的。此外，它以非常低的性能开销实现这一点。
 
-Mojo's value ownership model provides an excellent balance of programming
-productivity and strong memory safety. It only requires that you learn some new
-syntax and a few rules about how to share access to memory within your program.
+Mojo 的值所有权模型提供了编程生产力和强内存安全的优秀平衡。它只要求你学习一些新的语法和关于如何在程序中共享内存访问的几条规则。
 
-But before we explain the rules and syntax for Mojo's value ownership model,
-you first need to understand [value
-semantics](/docs/manual/values/value-semantics).
+但在我们解释 Mojo 值所有权模型的规则和语法之前，你首先需要理解[值语义](/docs/manual/values/value-semantics)。

@@ -1,12 +1,12 @@
 ---
 title: "testing/prop/strategy"
 sidebar_label: "testing/prop/strategy"
-description: "Implements the `Strategy` trait and exports built-in strategies for property-based testing."
+description: "实现 `Strategy` trait 并导出用于属性测试的内置策略。"
 ---
 
 # testing/prop/strategy
 
-Implements the `Strategy` trait and exports built-in strategies for property-based testing.
+实现 `Strategy` trait 并导出用于属性测试的内置策略。
 
 ## 模块
 

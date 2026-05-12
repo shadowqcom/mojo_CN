@@ -1,14 +1,14 @@
 ---
 title: "range"
 sidebar_label: "range"
-description: "Implements a 'range' call.  These are Mojo built-ins, so you don't need to import them."
+description: "实现 'range' 调用。这些是 Mojo 内置类型，因此您不需要导入它们。"
 ---
 
 # range
 
-Implements a 'range' call.
+实现 'range' 调用。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置类型，因此您不需要导入它们。
 
 ## 类型
 

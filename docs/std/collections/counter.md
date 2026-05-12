@@ -1,23 +1,21 @@
 ---
 title: "counter"
 sidebar_label: "counter"
-description: "Defines the `Counter` type.  Import these APIs from the `collections` package:  ```mojo from std.collections import Counter  ```  Counters provide convenient tallying objects that use a dictionary to "
+description: "定义 `Counter` 类型。从 `collections` 包导入这些 API：```mojo from std.collections import Counter ``` 计数器提供了使用字典存储键及其计数的便捷计数对象。"
 ---
 
 # counter
 
-Defines the `Counter` type.
+定义 `Counter` 类型。
 
-Import these APIs from the `collections` package:
+从 `collections` 包导入这些 API：
 
 ```mojo
 from std.collections import Counter
 
 ```
 
-Counters provide convenient tallying objects that use a dictionary to
-store keys and their counts. They offer the full functionality of
-counted sets, also called bags or multisets, and extend that model by
+计数器提供了使用字典存储键及其计数的便捷计数对象。它们提供计数集合（也称为包或多重集合）的全部功能，并通过以下方式扩展该模型：
 supporting negative counts.
 
 ## 类型

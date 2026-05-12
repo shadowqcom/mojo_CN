@@ -1,20 +1,18 @@
 ---
 title: "cluster"
 sidebar_label: "cluster"
-description: "This module provides low-level NVIDIA GPU cluster synchronization primitives for SM90+ architectures.  The module implements thread block cluster operations that enable efficient communication and syn"
+description: "此模块提供 SM90+ 架构的底层 NVIDIA GPU 集群同步原语。该模块实现线程块集群操作，支持 NVIDIA Hopper 架构及更新 GPU 上集群内线程块 (CTA) 之间的高效通信和同步。"
 ---
 
 # cluster
 
-This module provides low-level NVIDIA GPU cluster synchronization primitives for SM90+ architectures.
+此模块提供 SM90+ 架构的底层 NVIDIA GPU 集群同步原语。
 
-The module implements thread block cluster operations that enable efficient communication and
-synchronization between thread blocks (CTAs) within a cluster on NVIDIA Hopper architecture and newer GPUs.
+该模块实现线程块集群操作，支持 NVIDIA Hopper 架构及更新 GPU 上集群内线程块 (CTA) 之间的高效通信和同步。
 
-All functions are constrained to NVIDIA SM90+ GPUs and will raise an error if used on unsupported hardware.
+所有函数仅限于 NVIDIA SM90+ GPU，在不支持的硬件上使用会引发错误。
 
-Note: These are low-level primitives that correspond directly to PTX/NVVM instructions and should be used
-with careful consideration of the underlying hardware synchronization mechanisms.
+注意：这些是对应 PTX/NVVM 指令的底层原语，应仔细考虑底层硬件同步机制后使用。
 
 ## 函数
 

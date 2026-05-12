@@ -1,16 +1,16 @@
 ---
 title: "file"
 sidebar_label: "file"
-description: "Provides APIs to read and write files.  These are Mojo built-ins, so you don't need to import them.  For example, here's how to read a file:  ```mojo var  f = open(\"my_file.txt\", \"r\") print(f.r..."
+description: "提供读写文件的 API。这些是 Mojo 内置功能，无需导入。例如，读取文件的方法：```mojo var  f = open(\"my_file.txt\", \"r\") print(f.read()..."
 ---
 
 # file
 
-Provides APIs to read and write files.
+提供读写文件的 API。
 
-These are Mojo built-ins, so you don't need to import them.
+这些是 Mojo 内置功能，无需导入。
 
-For example, here's how to read a file:
+例如，读取文件的方法：
 
 ```mojo
 var  f = open("my_file.txt", "r")
@@ -18,7 +18,7 @@ print(f.read())
 f.close()
 ```
 
-Or use a `with` statement to close the file automatically:
+或使用 `with` 语句自动关闭文件：
 
 ```mojo
 with open("my_file.txt", "r") as f:

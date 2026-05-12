@@ -1,12 +1,12 @@
 ---
 title: "repr"
 sidebar_label: "repr"
-description: "Implements the `repr()` function for producing string representations of values."
+description: "实现 `repr()` 函数，用于生成值的字符串表示。"
 ---
 
 # repr
 
-Implements the `repr()` function for producing string representations of values.
+实现 `repr()` 函数，用于生成值的字符串表示。
 
 ## 函数
 

@@ -1,14 +1,15 @@
 ---
 title: "math"
+slug: math
 sidebar_label: "math"
-description: "Defines math utilities.  You can import these APIs from the `math` package. For example:  ```mojo from std.math import floor ```"
+description: "定义数学工具。您可以从 `math` 包导入这些 API。例如：```mojo from std.math import floor ```"
 ---
 
 # math
 
-Defines math utilities.
+定义数学工具。
 
-You can import these APIs from the `math` package. For example:
+您可以从 `math` 包导入这些 API。例如：
 
 ```mojo
 from std.math import floor

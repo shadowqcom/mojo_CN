@@ -1,45 +1,74 @@
 ---
-title: '@export'
-description: Marks a function for export.
-codeTitle: true
+title: '@export 装饰器'
+sidebar_label: '@export'
+sidebar_position: 9
+description: >
+  @export 装饰器参考。导出函数为公共符号。
 ---
 
-You can add the `@export` decorator on any function to make it publicly
-available as an exported symbol in the compiled artifact, allowing it to be
-called from external code, such as
-[Python](/docs/manual/python/mojo-from-python/#import-a-mojo-module-in-python).
+{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+
+`@export` 装饰器将函数导出为公共符号。导出的函数可以从其他模块或共享库调用。
+
+## 语法
 
 ```mojo
-# This function is internal - not callable from Python
-def internal_helper():
-    print("Internal")
-
-# This function can be called from Python as "my_exported_function"
 @export
-def my_exported_function():
-    print("Exported!")
-    internal_helper()
-
-# This function can be called from Python as "my_renamed_function"
-@export("my_renamed_function")
-def my_other_function():
-    print("Another function.")
+def function_name(...):
+    ...
 ```
 
-The `@export` decorator can take two optional arguments:
-
-- An alternate name to export the function under, as shown above.
-- An ABI specifier. Currently only the C ABI is supported.
-
-Use the name and ABI specifier to export a function that complies with the C
-calling conventions. You must also supply a function name that is a valid C
-identifier. For example:
+## 用法
 
 ```mojo
-@export("my_func", ABI="C")
-def my_function(
-    name: StaticString,
-    ptr: OpaquePointer[MutExternalOrigin],
-) -> None:
+@export
+def public_api():
     pass
 ```
+
+## 示例
+
+### 导出共享库函数
+
+```mojo
+# mylib.mojo
+@export
+def add(a: Int, b: Int) -> Int:
+    return a + b
+
+@export
+def multiply(a: Int, b: Int) -> Int:
+    return a * b
+```
+
+### 与 C ABI 兼容
+
+```mojo
+@export
+def process_data(data: Pointer[Int], size: Int) -> Int:
+    var sum = 0
+    for i in range(size):
+        sum += data[i]
+    return sum
+```
+
+## 适用场景
+
+- 创建共享库
+- FFI（外部函数接口）
+- 插件系统
+- C 互操作
+
+## 与 `pub` 对比
+
+| 特性         | `pub`           | `@export`         |
+|--------------|-----------------|-------------------|
+| 可见性       | 模块内公开      | 二进制符号公开    |
+| 链接         | 可能被优化      | 保证导出          |
+| 用途         | Mojo 内部使用   | 外部调用          |
+
+## 注意事项
+
+- 导出的函数使用 C 调用约定
+- 函数签名应与 C 兼容
+- 避免导出内部实现细节

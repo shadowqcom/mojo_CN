@@ -1,14 +1,15 @@
 ---
 title: "testing"
+slug: testing
 sidebar_label: "testing"
-description: "Implements various testing utils.  You can import these APIs from the `testing` package. For example:  ```mojo from std.testing import assert_true  def main() raises:     x = 1     y = 2     try:     "
+description: "实现各种测试工具。您可以从 `testing` 包导入这些 API。例如：```mojo from std.testing import assert_true  def main() raises:     x = 1     y = 2     try:     "
 ---
 
 # testing
 
-Implements various testing utils.
+实现各种测试工具。
 
-You can import these APIs from the `testing` package. For example:
+您可以从 `testing` 包导入这些 API。例如：
 
 ```mojo
 from std.testing import assert_true

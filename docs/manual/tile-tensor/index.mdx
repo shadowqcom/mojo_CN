@@ -1,48 +1,23 @@
 ---
-title: Introduction to TileTensor
+title: TileTensor 简介
 sidebar_position: 1
-description: Efficient abstractions for multidimensional data.
+description: 用于多维数据的高效抽象。
 ---
 
-Mojo's [`layout` package](/docs/layout/) provides a number of APIs for
-working with dense multidimensional arrays, which simplify writing algorithms
-for handling linear algebra.
+Mojo 的 [`layout` 包](/docs/layout/)提供了许多用于处理密集多维数组的 API，简化了编写线性代数算法的工作。
 
-This section discusses the `TileTensor` abstraction and its related types:
+本节讨论 `TileTensor` 抽象及其相关类型：
 
-- [`TileTensor`](/docs/layout/tile_tensor/TileTensor/) is a flexible
-  tensor type that combines a `tile_layout.Layout` and a pointer to data.
-- The [`tile_layout.Layout`](/docs/layout/tile_layout/Layout/) struct
-  describes an arrangement of data in memory. A *layout* is a function that maps
-  a set of logical coordinates (like (*x*, *y*) in a two-dimensional array) to a
-  linear index value (such as an offset into a memory buffer). Layouts can
-  describe simple row-major or column-major matrices, but also
-  more complex organizations, like a matrix subdivided into tiles.
-- [`Coord`](/docs/layout/coord/Coord/) is a tuple-like container for
-  storing integer coordinates that supports both compile-time and run-time
-  values. It's used for defining logical coordinates and layout shapes, among
-  other things.
+- [`TileTensor`](/docs/layout/tile_tensor/TileTensor/) 是一种灵活的张量类型，它将 `tile_layout.Layout` 和数据指针组合在一起。
+- [`tile_layout.Layout`](/docs/layout/tile_layout/Layout/) 结构体描述了数据在内存中的排列方式。*布局*是一个函数，将一组逻辑坐标（如二维数组中的 (*x*, *y*)）映射到一个线性索引值（如内存缓冲区中的偏移量）。布局可以描述简单的行主序或列主序矩阵，也可以描述更复杂的组织方式，如细分为瓦片的矩阵。
+- [`Coord`](/docs/layout/coord/Coord/) 是一个类似元组的容器，用于存储整数坐标，同时支持编译时和运行时值。它用于定义逻辑坐标和布局形状等。
 
-The `layout` package also includes the older `LayoutTensor` type, and its
-associated `IntTuple`-based layout type, `layout.Layout`. `TileTensor` is
-essentially a new version of `LayoutTensor` that addresses several of the
-shortcomings of that type. Most of the concepts are the same for both the old
-and new types. However, `TileTensor` doesn't yet implement all the features
-supported by `LayoutTensor`. Here are some guidelines for when to use each type:
+`layout` 包还包含较早的 `LayoutTensor` 类型及其关联的基于 `IntTuple` 的布局类型 `layout.Layout`。`TileTensor` 本质上是 `LayoutTensor` 的新版本，解决了该类型的若干不足。新旧类型的大部分概念是相同的。然而，`TileTensor` 尚未实现 `LayoutTensor` 支持的所有功能。以下是关于何时使用各类型的指导：
 
-- Use `TileTensor` when you need layouts with run-time dimensions,
-  nested layouts, or when working with the newer `Coord`-based layout system.
-  The `Coord`-based layout system minimizes the memory footprint of the
-  layout struct, which can help reduce register pressure on GPUs.
+- 当你需要具有运行时维度的布局、嵌套布局，或使用较新的基于 `Coord` 的布局系统时，请使用 `TileTensor`。基于 `Coord` 的布局系统最小化了布局结构体的内存占用，有助于减少 GPU 上的寄存器压力。
 
-- Use `LayoutTensor` when you need established operations like `copy_dma()`,
-  `collective_load()`, or compatibility with existing code using
-  `IntTuple`-based layouts.
+- 当你需要已有的操作（如 `copy_dma()`、`collective_load()`），或需要与使用基于 `IntTuple` 的布局的现有代码兼容时，请使用 `LayoutTensor`。
 
-You can convert a `TileTensor` into a `LayoutTensor`, so you can
-use both types if necessary. Likewise, you can easily convert a
-`Coord`-based layout into an `IntTuple`-based layout.
+你可以将 `TileTensor` 转换为 `LayoutTensor`因此在必要时可以同时使用两种类型。同样，你可以轻松地将基于 `Coord` 的布局转换为基于 `IntTuple` 的布局。
 
-For more information on `LayoutTensor`, see the pages on
-[`IntTuple`-based layouts](/docs/manual/layout/layouts/) and
-[`LayoutTensor`](/docs/manual/layout/tensors/).
+有关 `LayoutTensor` 的更多信息，请参阅[基于 `IntTuple` 的布局](/docs/manual/layout/layouts/)和 [`LayoutTensor`](/docs/manual/layout/tensors/)页面。

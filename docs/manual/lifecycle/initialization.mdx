@@ -1,412 +1,479 @@
 ---
-title: Deep dive - Instance initialization
-sidebar_position: 2
-description: Understanding logical and fieldwise initialization is fundamental to working with structs.
+title: 实例初始化
+sidebar_position: 4
+description: 解释实例是如何初始化的。
 ---
 
-Mojo tracks two kinds of initialization for structs: _fieldwise_ and
-_logical_.
+Mojo 结构体默认不创建任何构造函数、复制构造函数或移动构造函数。这意味着你可以定义一个没有构造函数的结构体，但它不能被实例化。相反，它将仅作为静态方法的某种命名空间有用。
 
-Fieldwise initialization means the struct's storage holds valid values
-for each field. Logical initialization means the instance as a whole is
-in a valid, usable state.
-
-Understanding the difference between these two forms of initialization
-is essential for working with structs correctly.
-
-## The basics
-
-You create struct instances by calling the `__init__()` constructor:
+例如：
 
 ```mojo
-struct Person:
+struct NoInstances:
+    var state: Int
+
+    @staticmethod
+    def print_hello():
+        print("Hello world!")
+```
+
+没有构造函数，这不能被实例化，因此它没有生命周期。`state` 字段也是无用的，因为它不能被初始化（Mojo 结构体不支持默认字段值——你必须在中构造函数中初始化它们）。
+
+所以你唯一能做的就是调用静态方法：
+
+```mojo
+NoInstances.print_hello()
+```
+
+```output
+Hello world!
+```
+
+## 构造函数
+
+要创建 Mojo 类型的实例，它需要 `__init__()` 构造函数方法。构造函数的主要责任是初始化所有字段。例如：
+
+```mojo
+struct MyPet:
     var name: String
     var age: Int
 
     def __init__(out self, name: String, age: Int):
         self.name = name
         self.age = age
-
-def main():
-    var me = Person("Alice", 30)
 ```
 
-Calling `Person("Alice", 30)` is syntactic sugar for calling the
-constructor directly:
+现在我们可以创建一个实例：
 
 ```mojo
-var me: Person
-me = Person.__init__("Alice", 30) # Identical
+var mine = MyPet("Loki", 4)
 ```
 
-When constructing a Person, the compiler first allocates stack
-space for the instance `me`, then `__init__()` initializes
-that space.
+`MyPet` 的实例也可以被读取和销毁，但它目前不能被复制或移动。
 
-## Fieldwise vs logical initialization
+我们认为这是一个很好的默认起点，因为没有内置的生命周期事件和意外行为。你——类型作者——必须通过实现复制和移动构造函数，明确决定类型是否以及如何可以复制或移动。
 
-Initializing a struct by assigning values directly to its fields may
-populate the data, but it does not make the instance usable:
-
-```mojo
-struct Person(Writable):
-    var age: Int
-    var height: Int
-
-    ...
-
-def main():
-    var me: Person
-    me.age = 25
-    me.height = 6
-    print(me)  # Error
-    # error: 'me' used with all fields manually initialized
-    # but without calling an '__init__' method
-```
-
-In this example, all fields contain valid values, but the instance is
-still not considered initialized.
-
-Mojo tracks two distinct initialization states:
-
-- Fieldwise initialization means each field contains valid data and the
-  instance's storage has been populated.
-- Logical initialization means the instance as a whole is valid and its
-  `__init__()` method has run.
-
-Fieldwise initialization alone isn't enough. The compiler requires
-logical initialization before an instance can be used:
-
-```mojo
-var me = Person(25, 6)  # Now OK: __init__() ran
-print(me)
-```
-
-Calling `__init__()` makes an instance _logically_ initialized. This
-process isn't just about assigning data. It ensures that any required
-initialization logic ran and that the instance is safe to use.
-
-## Inside `__init__()`
-
-Within `__init__()`, the incoming `self` instance is considered
-logically initialized, but its fields are still uninitialized:
-
-```mojo
-def __init__(out self, name: String, age: Int):
-    # At this point:
-    # - Logically initialized (self is valid as an instance)
-    # - Fieldwise uninitialized (fields have no values yet)
-
-    self.name = name
-    self.age = age
-
-    # Now both logically and fieldwise initialized
-```
-
-This distinction is intentional. Entering `__init__()` establishes the
-instance itself, but it's your responsibility to populate its fields.
-
-You must initialize _every field_ in `__init__()`:
-
-```mojo
-def __init__(out self, name: String, age: Int):
-    self.name = name
-    # Error: field 'age' not initialized in __init__
-```
-
-The `__init__()` signature doesn't have to mirror the struct's fields.
-You can use parameters, constants, or external values to initialize
-those fields:
-
-```mojo
-# Parameters can be used to initialize fields
-self._store = List[T](capacity=Count)
-
-# Constants can be used to initialize fields
-self.string = ""
-
-# External values can be used to initialize fields
-from std.math import pi
-self.default_angle = pi / 2.0
-self.uuid = MyUUIDImplementation.uuid()
-```
-
-You can't call methods until all fields are initialized:
-
-```mojo
-def __init__(out self, name: String):
-    self.greet()      # Error: self not fully initialized
-    self.name = name
-    self.greet()      # OK: all fields initialized
-```
-
-Field initialization is restricted to `__init__()` methods. Regular
-functions can't _initialize_ individual fields of an `out`
-argument, but `__init__()` methods can.
-
-## Moving from fields
-
-Moving a value out of a field _deinitializes that field_:
-
-```mojo
-struct Person(Writable):
-    var name: String
-    var age: Int
-
-    def __init__(out self, name: String, age: Int):
-        self.name = name
-        self.age = age
-
-def main():
-    var me = Person("Connor", 25)
-    var name_owner = me.name^  # Move value from me.name.
-    print(me)     # Error: use of uninitialized value 'me'
-```
-
-After the move, the instance is still _logically initialized_, but it's
-only partially _fieldwise initialized_. Mojo doesn't allow using
-instances with uninitialized fields.
-
-To make the instance usable again, you must reinitialize the moved-from
-field:
-
-```mojo
-var me = Person("Connor", 25)
-var name_owner = me.name^
-me.name = "John"      # Reinitialize field
-print(me)             # OK
-use_value(name_owner) # Now, use name_owner
-```
-
-Any moved field requires a new value before you can use the instance
-again. Even if _all_ fields are moved, the instance itself remains
-logically initialized.
-
-## Mojo's default destructor
-
-`__del__()` is Mojo's default _destructor_ (or _deinitializer_). While it
-runs, the instance remains logically initialized, and it becomes
-logically deinitialized when the method completes:
+上面显示的模式——构造函数接受结构体每个字段的参数并直接从参数初始化字段——称为*按字段构造*。这是一个足够常见的模式，Mojo 包含一个 [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 装饰器来综合按字段构造函数。所以你可以像这样重写前面的示例：
 
 ```mojo
 @fieldwise_init
-struct Contact:
+struct MyPet:
     var name: String
-    var email: String
+    var age: Int
+```
+
+:::note
+
+Mojo 不需要析构函数来销毁实例。但在某些情况下，你可能需要定义自定义析构函数来释放资源（例如，如果结构体使用 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 动态分配内存）。我们将在[值的死亡](/docs/manual/lifecycle/death/)中更详细地讨论这一点。
+
+:::
+
+:::note["构造函数"名称]
+
+在 Python 类中，对象构造发生在 `__new__()` 和 `__init__()` 方法之间，因此 `__init__()` 方法技术上只是属性的初始化程序（但它通常仍被称为构造函数）。然而，在 Mojo 结构体中，没有 `__new__()` 方法，所以我们更喜欢始终将 `__init__()` 称为构造函数。
+
+:::
+
+### 重载构造函数
+
+像任何其他函数/方法一样，你可以[重载](/docs/manual/functions/#overloaded-functions) `__init__()` 构造函数以使用不同的参数初始化对象。例如，你可能希望有一个设置一些默认值且不带参数的默认构造函数，然后是接受更多参数的附加构造函数。
+
+只需注意，为了修改任何字段，每个构造函数必须使用 [`out`](/docs/manual/values/ownership#argument-conventions) 约定声明 `self` 参数。如果你想从一个构造函数调用另一个构造函数，你只需像从外部一样调用该构造函数（你不需要传递 `self`）。
+
+例如，以下是如何从重载构造函数委托工作的方法：
+
+```mojo
+struct MyPet:
+    var name: String
+    var age: Int
+
+    def __init__(out self):
+        self.name = ""
+        self.age = 0
+
+    def __init__(out self, name: String):
+        self = MyPet()
+        self.name = name
+```
+
+### 字段初始化
+
+注意在前面示例中，在构造函数结束时，所有字段都必须被初始化。这是构造函数中唯一的要求。
+
+实际上，`__init__()` 构造函数足够智能，可以在构造函数完成之前将 `self` 对象视为完全初始化，只要所有字段都被初始化。例如，此构造函数可以在所有字段初始化后立即传递 `self`：
+
+```mojo
+def use(arg: MyPet):
+    pass
+
+struct MyPet:
+    var name: String
+    var age: Int
+
+    def __init__(out self, name: String, age: Int, cond: Bool):
+        self.name = name
+        if cond:
+            self.age = age
+            use(self)  # 立即使用是安全的！
+
+        self.age = age
+        use(self)  # 立即使用是安全的！
+```
+
+### 构造函数和隐式转换
+
+Mojo 支持从一种类型到另一种类型的隐式转换。当发生以下情况之一时，隐式转换可能发生：
+
+- 你将一个类型的值赋给具有不同类型的变量。
+- 你将一个类型的值传递给需要不同类型的函数。
+- 你从指定不同返回类型的函数返回一个类型的值。
+
+在所有情况下，当目标类型定义满足以下条件的构造函数时，支持隐式转换：
+
+- 使用 `@implicit` 装饰器声明。
+- 拥有一个源类型的单个必需的非关键字参数。
+
+例如：
+
+```mojo
+var a = Source()
+var b: Target = a
+```
+
+如果 `Target` 定义了像这样的匹配构造函数，Mojo 会隐式地将 `a` 中的 `Source` 值转换为 `Target` 值：
+
+```mojo
+struct Target:
+
+    @implicit
+    def __init__(out self, s: Source): ...
+```
+
+通过隐式转换，上面的赋值本质上是相同的：
+
+```mojo
+var b = Target(a)
+```
+
+一般来说，类型应该只在转换是无损且理想情况下成本低廉时才支持隐式转换。例如，将整数转换为浮点数通常是无损的（除了非常大的正整数和负整数，其中转换可能是近似的），但将浮点数转换为整数很可能会丢失信息。因此，Mojo 支持 `Int` 到 `Float64` 的隐式转换，但不支持反向转换。
+
+用于隐式转换的构造函数可以接受可选参数，因此以下构造函数也将支持从 `Source` 到 `Target` 的隐式转换：
+
+```mojo
+struct Target:
+
+    @implicit
+    def __init__(out self, s: Source, reverse: Bool = False): ...
+```
+
+如果 Mojo 无法明确地将转换匹配到构造函数，隐式转换可能会失败。例如，如果目标类型有两个接受不同类型的重载构造函数，并且这些类型中的每一个都支持从源类型的隐式转换，则编译器有两个同等有效的路径来转换值：
+
+```mojo
+struct A:
+    @implicit
+    def __init__(out self, s: Source): ...
+
+struct B:
+    @implicit
+    def __init__(out self, s: Source): ...
+
+struct OverloadedTarget:
+    @implicit
+    def __init__(out self, a: A): ...
+    @implicit
+    def __init__(out self, b: B): ...
+
+var t = OverloadedTarget(Source()) # 错误：对 '__init__' 的调用不明确：每个候选者都需要 1 次隐式转换
+```
+
+在这种情况下，你可以通过显式转换为中间类型之一来修复此问题。例如：
+
+```mojo
+var t = OverloadedTarget(A(Source())) # OK
+```
+
+Mojo 对变量最多应用一次隐式转换。例如：
+
+```mojo
+var t: OverloadedTarget = Source() # 错误：无法隐式转换 Source 到 Target
+```
+
+会失败，因为没有从 `Source` 到 `OverloadedTarget` 的直接转换。
+
+对于具有单个字段的结构体，你可以使用 `@fieldwise_init("implicit")` 装饰器生成隐式构造函数。
+
+```mojo
+@fieldwise_init("implicit")
+struct Counter:
+    var count: Int
+
+def main():
+    var c: Counter = 5  # 隐式从 Int 转换
+```
+
+## 复制构造函数
+
+在 Mojo 中，值可以被*显式地*或*隐式地*复制：
+
+```mojo
+# 显式复制
+var s = "Test string"
+var s2 = s.copy()
+
+# 隐式复制
+var i = 15
+var i2 = i
+```
+
+要使结构体可显式复制，你需要：
+
+- 添加 `Copyable` trait。
+- （可选）如果需要，定义自定义复制构造函数，写入 `def __init__(out self, *, copy: Self)`。
+
+通过添加 `Copyable` trait，Mojo 可以为你生成默认复制构造函数，除非你已经编写了一个。此默认方法将 `copy` 值的每个字段复制到新值。`Copyable` trait 还定义了一个默认的 `copy()` 方法，它提供了一种复制值的其他方法，而不是直接调用复制构造函数。
+
+```mojo
+@fieldwise_init
+struct MyPet(Copyable):
+    var name: String
+    var age: Int
+```
+
+现在此代码可以用于创建副本：
+
+```mojo
+var mine = MyPet("Loki", 4)
+var yours = mine.copy()
+```
+
+:::note
+
+技术上讲，你可以创建一个具有复制构造函数的结构体，但*不*添加 `Copyable` trait，但这不推荐。Mojo 可以复制该值，但你不能将此结构体与任何需要 `Copyable` trait 的泛型容器或函数一起使用。
+
+:::
+
+生成的复制构造函数只是将现有值中的每个字段复制到新值。例如，如果你为 `MyPet` 手动编写了复制构造函数，它看起来会是这样：
+
+```mojo
+def __init__(out self, *, copy: Self):
+    self.name = copy.name
+    self.age = copy.age
+```
+
+此默认复制构造函数在大多数情况下有效，但有一些情况你需要定义自定义复制构造函数：
+
+- 结构体的一个或多个字段不是 `Copyable`。
+
+- 结构体包含非拥有类型（如 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/)），并且你想要进行数据的深度复制。
+
+- 结构体持有其他需要管理的资源（如文件描述符或网络套接字）。
+
+### 自定义复制构造函数
+
+与其他语言相比，Mojo 的复制行为的不同之处在于，复制构造函数被设计为按[值语义](/docs/manual/values/value-semantics/)复制类型中的所有字段。也就是说，它复制堆分配的值，而不仅仅是复制指针。
+
+然而，Mojo 编译器不强制执行此操作，因此实现具有值语义的复制构造函数是类型作者的责任。
+
+例如，这里有一个新的 `HeapArray` 类型，具有执行深度复制的自定义复制构造函数：
+
+```mojo
+struct HeapArray(Copyable):
+    var data: UnsafePointer[Int, MutExternalOrigin]
+    var size: Int
+    var cap: Int
+
+    def __init__(out self, size: Int, val: Int):
+        self.size = size
+        self.cap = size * 2
+        self.data = alloc[Int](self.cap)
+        for i in range(self.size):
+            (self.data + i).init_pointee_copy(val)
+
+    def __init__(out self, *, copy: Self):
+        # 深度复制现有值
+        self.size = copy.size
+        self.cap = copy.cap
+        self.data = alloc[Int](self.cap)
+        for i in range(self.size):
+            (self.data + i).init_pointee_copy(copy.data[i])
+        # `copy` 的生命周期保持不变
 
     def __del__(deinit self):
-        # `self` is initialized
-        print("destroying contact")
-        # `self is deinitialized
+        # 我们必须释放堆分配的数据，但
+        # Mojo 知道如何销毁其他字段
+        for i in range(self.size):
+            (self.data + i).destroy_pointee()
+        self.data.free()
 
-def main():
-    var me = Contact("Alice", "alice@example.com")
-    # Last use of `me` (and end of scope)
-    # Prints "destroying contact" along with a warning
-    # since the instance was never used after assignment.
+    def append(mut self, val: Int):
+        # 更新数组用于演示目的
+        if self.size < self.cap:
+            (self.data + self.size).init_pointee_copy(val)
+            self.size += 1
+        else:
+            print("Out of bounds")
+
+    def dump(self):
+        # 打印数组内容用于演示目的
+        print("[", end="")
+        for i in range(self.size):
+            if i > 0:
+                print(", ", end="")
+            print(self.data[i], end="")
+        print("]")
 ```
 
-## Destructors and moving fields
+请注意，复制构造函数不复制 `UnsafePointer` 值（这样做会使复制的值引用与原始值相同的 `data` 内存地址，这是一个浅复制）。相反，我们初始化一个新的 `UnsafePointer` 来分配一个新的内存块，然后复制所有堆分配的值（这是一个深度复制）。
 
-Destructors are the only place where you can safely move values out of an
-instance's fields without having to reinitialize the field before its
-next use.
-
-This special rule isn't about where the code lives. It's about
-guarantees:
+因此，当我们复制 `HeapArray` 的实例时，每个副本在堆上都有自己的值集，所以对一个数组的更改不会影响另一个，如下所示：
 
 ```mojo
-def __del__(deinit self):
-    var name = self.name^  # OK: can take ownership of fields
+def copies():
+    var a = HeapArray(2, 1)
+    var b = a.copy()  # 调用复制方法
+    a.dump()  # 打印 [1, 1]
+    b.dump()  # 打印 [1, 1]
+
+    b.append(2)  # 更改复制的数据
+    b.dump()  # 打印 [1, 1, 2]
+    a.dump()  # 打印 [1, 1]（原始的没有改变）
 ```
 
-The compiler knows that destructors like `__del__()` are the final use of
-an instance. Because of this, it allows you to move values out of fields
-without reinitializing them.
+从复制构造函数中还有两件事值得注意：
 
-This ensures that fields are only moved out of struct instances when the
-compiler can guarantee the instance is at the end of its lifetime.
+- `copy` 参数是 `Self` 类型（大写 "S"）。`Self` 是当前类型名的别名（在此示例中为 `HeapArray`）。使用此别名是避免在引用当前结构体名称时出现任何错误的最佳实践。
 
-Like instances, struct fields use ASAP destruction within deinit
-methods. For example:
+- `copy` 参数是不可变的，因为默认的[参数约定](/docs/manual/values/ownership#argument-conventions)是 `read`——这是一件好事，因为此函数不应该修改被复制的值的内容。
 
-```mojo
-struct S:
-   var a: String
-   var b: String
+:::note
 
-   def __del__(deinit self):
-       # Mojo calls a.__del__() here.
-       use(b)
-       # Mojo calls b.__del__() here.
-```
+在 `HeapArray` 中，我们必须在 `HeapArray` 生命周期结束时使用 `__del__()` 析构函数来释放堆分配的数据，但 Mojo 会自动销毁所有其他字段，当它们各自的生命周期结束时。我们将在[值的死亡](/docs/manual/lifecycle/death/)中更详细地讨论此析构函数。
 
-## The `deinit` convention
+:::
 
-A destructor's secret sauce is the `deinit` convention. Because of this,
-`deinit self` works in named destructors as well as `__del__()`:
+如果你的类型不使用任何指针进行堆分配数据，那么编写构造函数和复制构造函数就是你不应该编写的样板代码。对于大多数不显式管理内存的结构体，你可以只需在结构体定义中添加 `Copyable` trait，Mojo 将综合复制构造函数。
 
-```mojo
-struct Parent:
-    def consume(deinit self):
-        # `consume` is a named destructor
-        # Can move values out of fields here too
-```
+:::note
 
-When you use the `deinit self` convention in a method, the compiler
-recognizes the method as a destructor and lets you move a field without
-reinitializing it:
+当值传递给使用参数作为 [`var`](/docs/manual/values/ownership/#transfer-arguments-var-and-) 的函数时，Mojo 也会调用复制构造函数，并且*并且*给定值的生命周期*不*在此结束。如果值的生命周期确实在那里结束（通常用转移信号 `^` 指示），那么 Mojo 相反会调用移动构造函数。
 
-```mojo
-struct Parent:
-    def consume(deinit self):
-        """valid destructor"""
-        var name = self.name^
-        print("Name:", name) # Prints name
-```
+:::
 
-Any struct method that uses `deinit self` as its first argument is a destructor.
-As a destructor, you can use this `consume` method for
-[explicit destruction types](/docs/manual/lifecycle/death/#explicitly-destroyed-types).
+### 隐式可复制类型
 
-## Explicit and implicit destructors
-
-The `__del__()` method is the core of implicit destruction types. It's
-Mojo's default destructor and works hand in hand with
-`ImplicitlyDestructible`, a trait that all structs conform to by default.
-The compiler calls `__del__()` automatically when it detects the final
-use of an implicitly destructible struct value.
-
-As the name suggests, explicit destruction requires you to call a
-destructor. An explicitly destroyed type must define at least one
-custom destructor, such as the `consume()` method shown in the
-previous section. The compiler make sure that the final use of an
-explicitly destroyed value will be a call to one of its custom
-destructors.
-
-### Using `deinit` with other arguments
-
-The `deinit` convention isn't limited to `self`. You can write methods
-and functions that destruct other instances:
-
-```mojo
-struct Pair:
-    def destroy_other(self, deinit other: Self):
-        # Can take from fields of `other` here
-```
-
-Like `deinit self`, the `deinit` convention in this example tells the
-compiler that `other` is tagged for destruction.
-
-Using `deinit` means `other` is logically deinitialized at the end of the
-method. Because of this, it's safe to move values out of `other`, since
-the instance's lifetime is guaranteed to complete.
-
-## Normal methods and moving fields
-
-In ordinary methods, you can't move values out of a struct's fields
-without reinitializing them:
+要使类型*隐式可复制*，添加 `ImplicitlyCopyable` trait：
 
 ```mojo
 @fieldwise_init
-struct MyStruct:
-    var name: String
-
-    def move_field(mut self, var new_name: String):
-        var name = self.name^ # Error
-        # error: 'self.name' is uninitialized at the implicit return
-        #        from this function
-        print("Name:", name)
+struct MyPair(ImplicitlyCopyable):
+    var first: Int
+    var second: Int
 
 def main():
-    var instance = MyStruct("Ken")
-    instance.move_field("Scott")
-    print("Name:", instance.name) # Prints: "Name: Scott"
+    pair = MyPair(3, 4)
+    copy = pair
+    print(pair.first, copy.second)
 ```
 
-To move safely, reinitialize the instance's fields before the end of
-scope. The following update fixes the bug by reinitializing the field:
+`ImplicitlyCopyable` trait 细化了 `Copyable`，因此将 `ImplicitlyCopyable` 添加到你的类型会给你 `Copyable` 的复制构造函数和一个 `copy()` 方法。它还给你自动 `Movable` 一致性。
+
+该 trait 没有定义任何自己的方法：它作为信号告诉编译器，它可以根据需要插入复制构造函数的调用。例如，在前面示例中，编译器可能会生成等效于以下内容的代码：
 
 ```mojo
-def move_field(mut self, var new_name: String):
-    var name = self.name^
-    print("Name:", name)  # Prints name
-    self.name = new_name^ # reinitialize the name field
+pair = MyPair(3, 4)
+copy = pair.copy()
 ```
 
-## Destroying instances
+只有当复制类型成本低廉且没有副作用时，类型才应该是隐式可复制的。不必要的复制可能是内存和性能的大消耗，因此谨慎使用此 trait。
 
-Unless you opt into
-[explicit destructors](/docs/manual/lifecycle/death/#explicitly-destroyed-types),
-Mojo uses implicit destruction. Both explicit and implicit destructors use ASAP
-("As Soon As Possible") destruction:
+特别是，任何动态分配内存或管理其他资源的类型可能不应该隐式可复制。
+
+## 移动构造函数
+
+虽然复制值提供了与 Mojo 的[值语义](/docs/manual/values/value-semantics/)一致的可预测行为，但复制某些数据类型可能会对性能产生重大影响。
+
+Mojo 使用移动构造函数将值的所有权从一个变量转移到另一个变量，*而不*复制其字段。可复制但没有移动构造函数的值仍然可以通过复制然后丢弃原始值来转移。因此，在这种情况下，移动构造函数作为优化。
+
+要使类型*可移动*：
+
+- 添加 `Movable` trait*或*符合 `Copyable`。
+- （可选）实现自定义移动构造函数。
+
+这是 `MyPet` 结构体的可移动（也是可复制）版本：
 
 ```mojo
-def example():
-    var x = SomeType()
-    use(x) # last use in scope
-    # x destroyed here, immediately after last use
-
-    more_code()  # x is already gone
+@fieldwise_init
+struct MyPet(Copyable):
+    var name: String
+    var age: Int
 ```
 
-With ASAP, Mojo destroys instances immediately after their last use, not
-at the end of scope. This can happen even in the middle of an
-expression.
+以下是如何为 `MyPet` 调用移动构造函数的示例：
 
-This differs from many languages with compiler-managed lifecycles, where
-destruction happens at end of scope. Mojo's ASAP destruction enables
-better tail call optimization, but it also means destructors can run
-earlier than you might expect.
+```mojo
+def moves():
+    var a = MyPet("Bobo", 2)
 
-Mojo also supports _explicitly-destroyed types_, which require you to make an
-explicit call to a destructor method. For more information, see
-[Explicitly-destroyed types](/docs/manual/lifecycle/death/#explicitly-destroyed-types).
+    print(a.name) # 打印 "bobo"
 
-Mojo tracks the lifetimes of values in your code. It knows when you move
-out of a value using the transfer operator (`^`), or when you call a
-`deinit` method that explicitly destroys it. If the compiler finds a
-live value that hasn't otherwise been cleaned up, it uses the implicit
-destructor (`__del__(deinit self...)`) to destroy it.
+    var b = a^ # `a` 的生命周期在这里结束
 
-If a type doesn't have an implicit destructor because it requires
-explicit destruction, the compiler emits an error, as indicated by the
-`@explicit_destroy` decorator.
+    print(b.name) # 打印 "bobo"
+    # print(a.name)  # 错误：使用未初始化的值 'a'
+```
 
-While the compiler checks that a destructor is called before an
-instance goes out of scope, you're responsible for choosing _when_ that
-happens. The key differences are:
+如果你包含 `Movable` trait 且没有定义移动构造函数，Mojo 会为你生成默认移动构造函数。此移动构造函数只是将每个字段移动到新实例。
 
-- Destruction doesn't automatically happen at the point of last use.
-- The explicit destructor isn't named `__del__()`.
+如果你自己编写，`MyPet` 的生成移动构造函数会是这样：
 
-## Object initialization summary
+```mojo
+def __init__(out self, *, deinit take: Self):
+    self.name = take.name^
+    self.age = take.age
+```
 
-Creating, using, and destroying instances in Mojo follows a consistent
-set of rules based on initialization state.
+移动构造函数使用 `deinit`[参数约定](/docs/manual/values/ownership#argument-conventions)接收其 `take` 参数，该约定授予值的独占所有权并在函数结束时将其标记为已销毁。（有关 `deinit` 约定的更多信息，请参阅[析构和移动期间的字段生命周期](/docs/manual/lifecycle/death/#field-lifetimes-during-destruct-and-move)）。
 
-Create instances by calling `__init__()`. You must initialize every
-field in the initializer, especially if you plan to use the instance
-within the method scope. You can't call methods on a struct unless all
-its fields are initialized.
+移动构造函数使用转移信号（`^`）指示 `name` 值的所有权从 `take` 转移到 `self`。对于像 `Int` 这样的简单寄存器可传递类型，省略转移信号。简单类型总是可移动的。由于它们不能定义自定义移动构造函数或析构函数，因此移动不需要特殊逻辑。
 
-You must _logically_ initialize an instance before using it, which
-means calling the initializer. You must also initialize fields before
-accessing them. Partially initialized instances can't be used in many
-contexts, including method calls and return values.
+在移动构造函数方法结束时，Mojo 立即使原始变量无效，防止对其的任何访问。因为参数被声明为 `deinit`，它*不*调用析构函数，因为这将销毁已转移到新实例的资源。使原始变量无效对于避免堆分配数据上的内存错误（如释放后使用和双重释放错误）很重要。
 
-For implicitly destroyed structs, the compiler inserts a destructor
-call after the instance's last use. For explicitly destroyed values,
-you must call a destructor before the instance goes out of scope.
-Destruction is compiler-checked, but you choose when it happens.
-The value's final use in scope must be that explicit destructor call.
+:::note
 
-Field operations are also constrained. Fieldwise initialization must
-happen inside the `__init__()` constructor. You can move values out of a
-field only when the compiler can prove that the instance won't be used
-again, or that the field will be reinitialized before the end of a
-normal method.
+移动构造函数*不需要*转移值的所有权。Mojo 可以复制值并使原始实例无效。你可以在关于[所有权转移](/docs/manual/values/ownership#transfer-arguments-var-and-)的部分了解更多信息。
 
-This split between logical and fieldwise initialization gives Mojo
-fine-grained control over instance lifetimes, while ensuring that
-initialization, use, and destruction remain safe and explicit.
+如果复制类型很昂贵，使用移动构造函数移动它要高效得多。例如，如果一个类型具有堆分配数据，复制构造函数通常需要分配新存储来对数据进行深度复制。
+
+对于没有堆分配字段的结构体，你从移动构造函数中得不到真正的好处。在栈上复制简单数据类型（如整数、浮点数和布尔值）非常便宜。然而，如果你允许你的类型被复制，那么通常没有理由禁止移动。
+
+:::
+
+### 自定义移动构造函数
+
+实际上，结构体很少需要自定义移动构造函数。如果类型指向自身或其字段之一，则类型可能需要自定义实现，因为结构体在移动时其内存中的位置会改变。
+
+移动构造函数执行消耗移动：当原始变量的生命周期结束时，它将从一个变量将值[转移所有权](/docs/manual/values/ownership#transfer-arguments-var-and-)到另一个变量（也称为"破坏性移动"）。
+
+移动构造函数的一个关键功能是它将传入值作为 `deinit` 参数接收，这意味着此方法获得值的唯一所有权。此外，由于这是 Mojo 只在执行移动（在所有权转移期间）时调用的 dunder 方法，因此 `take` 参数保证是原始值的可变引用，*不是副本*（与其他可能将参数声明为 `var` 的方法不同，但如果在没有 [`^` 转移信号](/docs/manual/values/ownership/#transfer-arguments-var-and-) 的情况下调用方法，该方法可能会接收副本）。也就是说，Mojo *只有*在原始变量的生命周期确实在转移点结束时才调用此移动构造函数。
+
+## 仅可移动和不可移动类型
+
+要确保你的类型不能被隐式复制，你可以通过使其 `Movable` 但不是 `Copyable` 使其"仅可移动"。仅可移动类型可以传递给其他变量，并使用任何参数约定（`read`、`mut` 和 `var`）传递给函数——唯一的注意事项是，你必须使用 `^` 转移信号在将其分配给新变量或作为 `var` 参数传递时结束仅可移动类型的生命周期。[`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) 是仅可移动类型的示例：因为它被设计为提供存储值的清晰单一所有权，所以 `OwnedPointer` 可以移动，但不能复制。
+
+在某些（罕见）情况下，你可能不希望类型可复制*或*可移动。[`Atomic`](/docs/std/atomic/atomic/Atomic/) 类型是不可复制也不可移动的类型的示例。
+
+:::note[简单类型]
+
+像 `Int`、`Bool` 或 `Float64` 这样的简单类型是系统编程中最常见的类型。Mojo 不需要对此提供特殊支持。它们没有所有权语义，没有析构函数，并且总是在 CPU 寄存器中传递。
+
+:::
+
+### 简单生命周期方法
+
+使用装饰器来识别简单类型的做法将被废弃，取而代之的是一组更细粒度的别名，它们是编译器设置的布尔标志：
+
+- `Copyable` trait 定义别名 `__copy_ctor_is_trivial`，这是一个优化提示，保证该值可以通过其位从一位置复制到另一位置而不引起任何副作用。
+
+- `Movable` trait 定义别名 `__move_ctor_is_trivial`，这是一个优化提示，保证该值可以通过其位从一位置移动到另一位置而不引起任何副作用。
+
+- `AnyType` trait 定义别名 `__del__is_trivial`，这是一个提示，表明 `__del__()` 方法是无操作。

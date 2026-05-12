@@ -1,22 +1,22 @@
 ---
 title: "benchmark"
+slug: benchmark
 sidebar_label: "benchmark"
-description: "Implements the benchmark module for runtime benchmarking.  You can import these APIs from the `benchmark` package. For example:  ```mojo from std.benchmark import run, Unit from std.time import sleep "
+description: "实现运行时基准测试的 benchmark 模块。您可以从 `benchmark` 包导入这些 API。例如：```mojo from std.benchmark import run, Unit from std.time import sleep "
 ---
 
 # benchmark
 
-Implements the benchmark module for runtime benchmarking.
+实现运行时基准测试的 benchmark 模块。
 
-You can import these APIs from the `benchmark` package. For example:
+您可以从 `benchmark` 包导入这些 API。例如：
 
 ```mojo
 from std.benchmark import run, Unit
 from std.time import sleep
 ```
 
-You can pass any `fn` as a parameter into `run[...]()`, it will return
-a `Report` where you can get the mean, duration, max, and more:
+您可以将任何 `fn` 作为参数传递给 `run[...]()`,它将返回一个 `Report`,您可以从中获取平均值、持续时间、最大值等信息：
 
 ```mojo
 from std.benchmark import run
@@ -33,7 +33,7 @@ print(report.mean())
 0.012256487394957985
 ```
 
-You can print a full report:
+您可以打印完整报告：
 
 ```mojo
 from std.benchmark import run
@@ -59,7 +59,7 @@ Slowest Mean: 0.012321428571428572
 
 ```
 
-Or all the batch runs:
+或者查看所有批量运行：
 
 ```mojo
 from std.benchmark import run
@@ -99,8 +99,7 @@ Mean: 0.012380562499999999
 Duration: 0.59426699999999999
 ```
 
-If you want to use a different time unit you can bring in the Unit and pass
-it in as an argument:
+如果您想使用不同的时间单位，可以导入 Unit 并将其作为参数传递：
 
 ```mojo
 from std.benchmark import run, Unit
@@ -125,7 +124,7 @@ Fastest Mean: 0.012015649999999999
 Slowest Mean: 0.012421204081632654
 ```
 
-The unit's are just aliases for string constants, so you can for example:
+单位只是字符串常量的别名，因此您可以这样做：
 
 ```mojo
 from std.benchmark import run
@@ -142,8 +141,7 @@ print(report.mean("ms"))
 12.199145299145298
 ```
 
-Benchmark.run takes four arguments to change the behaviour, to set warmup
-iterations to 5:
+Benchmark.run 接受四个参数来更改行为，将预热迭代设置为 5：
 
 ```mojo
 from std.benchmark import run
@@ -159,8 +157,7 @@ var r = run[func2=sleeper](5)
 0.012004808080808081
 ```
 
-To set 1 warmup iteration, 2 max iterations, a min total time of 3 sec, and a
-max total time of 4 s:
+设置 1 次预热迭代、2 次最大迭代、最小总时间 3 秒和最大总时间 4 秒：
 
 ```mojo
 from std.benchmark import run
@@ -172,8 +169,7 @@ def sleeper():
 var r = run[func2=sleeper](1, 2, 3, 4)
 ```
 
-Note that benchmarking continues until `min_runtime_secs` has
-elapsed and either `max_runtime_secs` OR `max_iters` is achieved.
+请注意，基准测试会持续进行，直到 `min_runtime_secs` 已经过去，并且达到 `max_runtime_secs` 或 `max_iters` 中的任意一个。
 
 ## 类型
 

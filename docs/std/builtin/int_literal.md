@@ -1,12 +1,12 @@
 ---
 title: "int_literal"
 sidebar_label: "int_literal"
-description: "Implements the IntLiteral class."
+description: "实现 IntLiteral 类。"
 ---
 
 # int_literal
 
-Implements the IntLiteral class.
+实现 IntLiteral 类。
 
 ## 类型
 

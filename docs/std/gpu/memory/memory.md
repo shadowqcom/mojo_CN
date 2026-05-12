@@ -1,25 +1,24 @@
 ---
 title: "memory"
+slug: memory
 sidebar_label: "memory"
-description: "This module provides GPU memory operations and utilities.  The module implements low-level memory operations for GPU programming, with a focus on:  - Memory address space abstractions (global, shared,"
+description: "此模块提供 GPU 内存操作和工具。该模块实现了 GPU 编程的低级内存操作，重点关注：- 内存地址空间抽象（全局、共享、常量）"
 ---
 
 # memory
 
-This module provides GPU memory operations and utilities.
+此模块提供 GPU 内存操作和工具。
 
-The module implements low-level memory operations for GPU programming, with a focus on:
+该模块实现了 GPU 编程的低级内存操作，重点关注：
 
-- Memory address space abstractions (global, shared, constant)
-- Cache control operations and policies
-- Memory access patterns and optimizations
-- Memory alignment and pointer manipulation
+- 内存地址空间抽象（全局、共享、常量）
+- 缓存控制操作和策略
+- 内存访问模式和优化
+- 内存对齐和指针操作
 
-It provides a unified interface for memory operations across different GPU architectures,
-with specialized implementations for NVIDIA and AMD GPUs where needed.
+它为不同 GPU 架构的内存操作提供统一接口，并在需要时为 NVIDIA 和 AMD GPU 提供专门的实现。
 
-The module is designed for performance-critical code and requires careful usage to
-achieve optimal memory access patterns and cache utilization.
+该模块专为性能关键代码设计，需要谨慎使用以实现最佳内存访问模式和缓存利用率。
 
 ## 类型
 

@@ -1,14 +1,14 @@
 ---
 title: "constants"
 sidebar_label: "constants"
-description: "Defines math utilities.  You can import these APIs from the `math` package. For example:  ```mojo from std.math import pi ```"
+description: "定义数学常量。您可以从 `math` 包导入这些 API。例如：```mojo from std.math import pi ```"
 ---
 
 # constants
 
-Defines math utilities.
+定义数学常量。
 
-You can import these APIs from the `math` package. For example:
+您可以从 `math` 包导入这些 API。例如：
 
 ```mojo
 from std.math import pi

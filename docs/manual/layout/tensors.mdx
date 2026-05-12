@@ -1,110 +1,76 @@
 ---
-title: Using LayoutTensor
+title: 使用 LayoutTensor
 sidebar_position: 2
-description: Using LayoutTensor to manipulate multidimensional data.
+description: 使用 LayoutTensor 操作多维数据。
 ---
 
-A [`LayoutTensor`](/docs/layout/layout_tensor/LayoutTensor/)
-provides a view of multi-dimensional data stored in a linear
-array. `LayoutTensor` abstracts the logical organization of multi-dimensional
-data from its actual arrangement in memory. You can generate new tensor "views"
-of the same data without copying the underlying data.
-This facilitates essential patterns for writing performant computational
-algorithms, such as:
+[`LayoutTensor`](/docs/layout/layout_tensor/LayoutTensor/)
+提供了对存储在线性数组中的多维数据的视图。`LayoutTensor` 将多维数据的逻辑组织与其在内存中的实际排列方式进行抽象。你可以生成相同数据的新张量"视图"，而无需复制底层数据。
+这为编写高性能计算算法提供了关键模式，例如：
 
-- Extracting tiles (sub-tensors) from existing tensors. This is especially
-  valuable on the GPU, allowing a thread block to load a tile into shared
-  memory, for faster access and more efficient caching.
-- Vectorizing tensors—reorganizing them into multi-element vectors for more
-  performant memory loads and stores.
-- Partitioning a tensor into thread-local fragments to distribute work across a
-  thread block.
+- 从现有张量中提取分块（子张量）。这在 GPU 上尤其有价值，允许线程块将一个分块加载到共享内存中，以实现更快的访问和更高效的缓存。
+- 向量化张量——将它们重组为多元素向量，以实现更高效的内存加载和存储。
+- 将张量划分为线程本地片段（fragment），以便在线程块间分配工作。
 
-`LayoutTensor` is especially valuable for writing GPU kernels, and a number of
-its APIs are GPU-specific. However, `LayoutTensor` can also be used for
-CPU-based algorithms.
+`LayoutTensor` 对于编写 GPU 内核尤其有价值，它的许多 API 是 GPU 专用的。不过，`LayoutTensor` 也可用于基于 CPU 的算法。
 
-A `LayoutTensor` consists of three main properties:
+`LayoutTensor` 由三个主要属性组成：
 
-- A [layout](/docs/manual/layout/layouts/), defining how the elements are
-  laid out in memory.
-- A `DType`, defining the data type stored in the tensor.
-- A pointer to memory where the data is stored.
+- 一个[布局（layout）](/docs/manual/layout/layouts/)，定义元素在内存中的排列方式。
+- 一个 `DType`，定义张量中存储的数据类型。
+- 一个指向存储数据的内存的指针。
 
-Figure 1 shows the relationship between the layout and the storage.
+图 1 展示了布局和存储之间的关系。
 
 <figure>
 
 ![](../images/layout/tensors/layout-tensor-indexing-simple.png#light)
 ![](../images/layout/tensors/layout-tensor-indexing-simple-dark.png#dark)
 
-<figcaption><b>Figure 1.</b> Layout and storage for a 2D tensor</figcaption>
+<figcaption><b>图 1.</b> 二维张量的布局和存储</figcaption>
 
 </figure>
 
-Figure 1 shows a 2D column-major layout, and the corresponding linear array of
-storage. The values shown inside the layout are offsets into the storage: so the
-coordinates (0, 1) correspond to offset 2 in the storage.
+图 1 展示了一个二维列主序布局以及对应的线性存储数组。布局中显示的值是存储中的偏移量：因此坐标 (0, 1) 对应存储中的偏移量 2。
 
-Because `LayoutTensor` is a view, creating a new tensor based on an existing
-tensor doesn't require copying the underlying data. So you can easily create a
-new view, representing a tile (sub-tensor), or accessing the elements in a
-different order. These views all access the same data, so changing the stored
-data in one view changes the data seen by all of the views.
+由于 `LayoutTensor` 是一个视图，基于现有张量创建新张量不需要复制底层数据。因此你可以轻松创建一个新视图，表示一个分块（子张量），或以不同顺序访问元素。这些视图都访问相同的数据，因此在某个视图中更改存储的数据会改变所有视图看到的数据。
 
-Each element in a tensor can be either a single (scalar) value or a SIMD vector
-of values. For a vectorized layout, you can specify an *element layout* that
-determines how the vector elements are laid out in memory. For more information,
-see [Vectorizing tensors](#vectorizing-tensors).
+张量中的每个元素可以是单个（标量）值或 SIMD 向量值。对于向量化布局，你可以指定一个*元素布局（element layout）*来确定向量元素在内存中的排列方式。更多信息请参见[向量化张量](#vectorizing-tensors)。
 
-## Accessing tensor elements
+## 访问张量元素
 
-For tensors with simple row-major or column-major layouts, you can address a
-layout tensor like a multidimensional array to access elements:
+对于具有简单行主序或列主序布局的张量，你可以像访问多维数组一样通过下标访问布局张量的元素：
 
 ```mojo
 element = tensor2d[x, y]
 tensor2d[x, y] = z
 ```
 
-The number of indices passed to the subscript operator must match the number of
-coordinates required by the tensor. For simple layouts, this is the same as the
-layout's *rank*: two for a 2D tensor, three for a 3D tensor, and so on. If the
-number of indices is incorrect, you may see a cryptic runtime error.
+传递给下标运算符的索引数量必须与张量所需的坐标数量匹配。对于简单布局，这与布局的*秩（rank）*相同：二维张量为 2，三维张量为 3，以此类推。如果索引数量不正确，你可能会看到一个晦涩的运行时错误。
 
 ```mojo
-# Indexing into a 2D tensor requires two indices
-el1 = tensor2d[x, y]  # Works
-el2 = tensor2d[x]  # Runtime error
+# 对二维张量进行索引需要两个索引
+el1 = tensor2d[x, y]  # 正确
+el2 = tensor2d[x]  # 运行时错误
 ```
 
-For more complicated "nested" layouts, such as tiled layouts, the
-number of indices **doesn't** match the rank of the tensor. For details, see
-[Tensor indexing and nested layouts](#tensor-indexing-and-nested-layouts).
+对于更复杂的"嵌套"布局（如分块布局），索引数量**不**匹配张量的秩。详情请参见[张量索引和嵌套布局](#tensor-indexing-and-nested-layouts)。
 
-The `__getitem__()` method returns a SIMD vector of elements, and the compiler
-can't statically determine the size of the vector (which is the size of the
-tensor's element layout). This can cause type checking errors at compile time,
-because some APIs can only accept scalar values (SIMD vectors of width 1). For
-example, consider the following code:
+`__getitem__()` 方法返回一个 SIMD 向量元素，编译器无法静态确定向量的大小（即张量元素布局的大小）。这可能在编译时导致类型检查错误，因为某些 API 只接受标量值（宽度为 1 的 SIMD 向量）。例如，考虑以下代码：
 
 ```mojo
 i: Int = SIMD[DType.int32, width](15)
 ```
 
-If `width` is 1, the vector can be implicitly converted to an `Int`, but if
-`width` is any other value, the vector can't be implicitly converted. If `width`
-isn't known at compile time, this produces an error.
+如果 `width` 为 1，向量可以隐式转换为 `Int`，但如果 `width` 为任何其他值，向量则不能隐式转换。如果 `width` 在编译时未知，这会产生错误。
 
-If your tensor stores scalar values, you can work around this by explicitly
-taking the first item in the vector:
+如果你的张量存储标量值，你可以通过显式取向量中的第一个元素来解决这个问题：
 
 ```mojo
-var element = tensor[row, col][0]  # element is guaranteed to be a scalar value
+var element = tensor[row, col][0]  # element 保证是标量值
 ```
 
-You can also access elements using the `load()` and `store()` methods, which
-let you specify the vector width explicitly:
+你也可以使用 `load()` 和 `store()` 方法访问元素，这些方法允许你显式指定向量宽度：
 
 ```mojo
 var elements: SIMD[DType.float32, 4]
@@ -113,71 +79,54 @@ elements = elements * 2
 tensor.store(row, col, elements)
 ```
 
-### Tensor indexing and nested layouts
+### 张量索引和嵌套布局
 
-A tensor's layout may have nested modes (or sub-layouts), as described in
-[Introduction to layouts](/docs/manual/layout/layouts/#modes). These layouts
-have one or more of their dimensions divided into sub-layouts. For example,
-Figure 2 shows a tensor with a nested layout:
+张量的布局可能具有嵌套模式（或子布局），如[布局简介](/docs/manual/layout/layouts/#modes)中所述。这些布局的一个或多个维度被划分为子布局。例如，图 2 展示了一个具有嵌套布局的张量：
 
 <figure>
 
 ![](../images/layout/tensors/layout-tensor-indexing-nested.png#light)
 ![](../images/layout/tensors/layout-tensor-indexing-nested-dark.png#dark)
 
-<figcaption><b>Figure 2.</b> Tensor with nested layout</figcaption>
+<figcaption><b>图 2.</b> 具有嵌套布局的张量</figcaption>
 
 </figure>
 
-Figure 2 shows a tensor with a tile-major nested layout. Instead of being
-addressed with a single coordinate on each axis, it has a pair of coordinates
-per axis. For example, the coordinates `((1, 0), (0, 1))` map to the offset 6.
+图 2 展示了一个具有分块主序嵌套布局的张量。它不是在每个轴上使用单个坐标进行寻址，而是每个轴使用一对坐标。例如，坐标 `((1, 0), (0, 1))` 映射到偏移量 6。
 
-You can't pass nested coordinates to the subscript operator `[]`, but you can
-pass a flattened version of the coordinates. For example:
+你不能将嵌套坐标传递给下标运算符 `[]`，但可以传递坐标的扁平化版本。例如：
 
 ```mojo
-# retrieve the value at ((1, 0), (0, 1))
+# 获取 ((1, 0), (0, 1)) 处的值
 element = nested_tensor[1, 0, 0, 1][0]
 ```
 
-The number of indices passed to the subscript operator must match the *flattened
-rank* of the tensor.
+传递给下标运算符的索引数量必须与张量的*扁平化秩（flattened rank）*匹配。
 
-You can't currently use the `load()` and `store()` methods for tensors with
-nested layouts. However, these methods are usually used on tensors that have
-been [*tiled*](#tiling-tensors), which yields a tensor with a simple layout.
+目前你不能对具有嵌套布局的张量使用 `load()` 和 `store()` 方法。不过，这些方法通常用于已经被[*分块化*](#tiling-tensors)的张量，分块化后会产生具有简单布局的张量。
 
-## Creating a LayoutTensor
+## 创建 LayoutTensor
 
-There are several ways to create a `LayoutTensor`, depending on where the tensor
-data resides:
+根据张量数据所在的位置，有几种创建 `LayoutTensor` 的方式：
 
-- On the CPU.
-- In GPU global memory.
-- In GPU shared or local memory.
+- 在 CPU 上。
+- 在 GPU 全局内存中。
+- 在 GPU 共享内存或本地内存中。
 
-In addition to methods for creating a tensor from scratch, `LayoutTensor`
-provides a number of methods for producing a new view of an existing tensor.
+除了从头创建张量的方法外，`LayoutTensor` 还提供了多种方法来生成现有张量的新视图。
 
-:::note[No bounds checking]
+:::note[无边界检查]
 
-The `LayoutTensor` constructors don't do any bounds-checking to verify
-that the allocated memory is large enough to hold all of the elements specified
-in the layout. It's up to the user to ensure that the proper amount of space is
-allocated.
+`LayoutTensor` 构造函数不会进行任何边界检查来验证分配的内存是否足够容纳布局中指定的所有元素。用户需要确保分配了足够的空间。
 
 :::
 
-### Creating a `LayoutTensor` on the CPU
+### 在 CPU 上创建 `LayoutTensor`
 
-While `LayoutTensor` is often used on the GPU, you can also use it to create
-tensors for use on the CPU.
+虽然 `LayoutTensor` 通常在 GPU 上使用，但你也可以用它来创建用于 CPU 的张量。
 
-To create a `LayoutTensor` for use on the CPU, you need a `Layout` and a block
-of memory to store the tensor data. A common way to allocate memory for a
-`LayoutTensor` is to use an
-[`InlineArray`](/docs/std/collections/inline_array/InlineArray/):
+要在 CPU 上创建 `LayoutTensor`，你需要一个 `Layout` 和一块用于存储张量数据的内存。为 `LayoutTensor` 分配内存的一种常见方式是使用
+[`InlineArray`](/docs/std/collections/inline_array/InlineArray/)：
 
 ```mojo
 comptime rows = 8
@@ -187,12 +136,9 @@ var storage = InlineArray[Float32, rows * columns](uninitialized=True)
 var tensor = LayoutTensor[DType.float32, layout](storage).fill(0)
 ```
 
-`InlineArray` is a statically-sized, stack-allocated array, so it's a fast and
-efficient way to allocate storage for most kinds of `LayoutTensor`. There are
-target-dependent limits on how much memory can be allocated this way, however.
+`InlineArray` 是一个静态大小的栈分配数组，因此它是为大多数类型的 `LayoutTensor` 分配存储的一种快速高效的方式。不过，以这种方式分配的内存大小存在依赖于目标平台的限制。
 
-You can also create a `LayoutTensor` using an `UnsafePointer`. This may be
-preferable for very large tensors.
+你也可以使用 `UnsafePointer` 创建 `LayoutTensor`。对于非常大的张量，这可能更可取。
 
 ```mojo
 comptime rows = 1024
@@ -204,43 +150,30 @@ memset(ptr, 0, buf_size)
 var tensor = LayoutTensor[DType.float32, layout](ptr)
 ```
 
-Note that this example uses [`memset()`](/docs/std/memory/memory/memset/)
-instead of the `LayoutTensor` `fill()` method. The `fill()` method performs
-elementwise initialization of the tensor, so it may be slow for large tensors.
+注意此示例使用 [`memset()`](/docs/std/memory/memory/memset/) 而不是 `LayoutTensor` 的 `fill()` 方法。`fill()` 方法执行张量的逐元素初始化，因此对于大型张量可能较慢。
 
-### Creating a `LayoutTensor` on the GPU
+### 在 GPU 上创建 `LayoutTensor`
 
-When creating a `LayoutTensor` for use on the GPU, you need to consider which
-memory space the tensor data will be stored in:
+在为 GPU 使用创建 `LayoutTensor` 时，你需要考虑张量数据将存储在哪个内存空间：
 
-- GPU global memory can only be allocated from the host (CPU), as a
-  `DeviceBuffer`.
-- GPU shared or local memory can be statically allocated on the GPU.
+- GPU 全局内存只能从主机端（CPU）分配，作为 `DeviceBuffer`。
+- GPU 共享内存或本地内存可以在 GPU 上静态分配。
 
-#### Creating a `LayoutTensor` in global memory
+#### 在全局内存中创建 `LayoutTensor`
 
-You must allocate global memory from the host side, by allocating a
-[`DeviceBuffer`](/docs/std/gpu/host/device_context/DeviceBuffer/). You can
-either construct a `LayoutTensor` using this memory on the host side, before
-invoking a GPU kernel, or you can construct a LayoutTensor inside the kernel
-itself:
+你必须从主机端分配全局内存，通过分配一个
+[`DeviceBuffer`](/docs/std/gpu/host/device_context/DeviceBuffer/)。你可以在调用 GPU 内核之前在主机端使用此内存构造 `LayoutTensor`，也可以在内核内部构造 LayoutTensor：
 
-- On the CPU, you can construct a `LayoutTensor` using a `DeviceBuffer` as its
-  storage. Although you can create this tensor on the CPU and pass it in to a
-  kernel function, you can't directly modify its values on the CPU, since the
-  memory is on the GPU.
-- On the GPU: When a `DeviceBuffer` is passed in to
-  `enqueue_function()`, the kernel receives a corresponding
-  `UnsafePointer` in place of the `DeviceBuffer.` The kernel can then create a
-  `LayoutTensor` using the `pointer`.
+- 在 CPU 上，你可以使用 `DeviceBuffer` 作为存储来构造 `LayoutTensor`。虽然你可以在 CPU 上创建此张量并将其传入内核函数，但你不能在 CPU 上直接修改其值，因为内存位于 GPU 上。
+- 在 GPU 上：当 `DeviceBuffer` 被传递给
+  `enqueue_function()` 时，内核接收一个对应的
+  `UnsafePointer` 来替代 `DeviceBuffer`。然后内核可以使用该指针创建 `LayoutTensor`。
 
-In both cases, if you want to initialize data for the tensor from the CPU, you
-can call
+在这两种情况下，如果你想从 CPU 初始化张量的数据，可以在调用内核之前对缓冲区调用
 [`enqueue_copy()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_copy)
-or
-[`enqueue_memset()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_memset)
-on the buffer prior to invoking the kernel. The following example shows
-initializing a `LayoutTensor` from the CPU and passing it to a GPU kernel.
+或
+[`enqueue_memset()`](/docs/std/gpu/host/device_context/DeviceContext/#enqueue_memset)。
+以下示例展示了从 CPU 初始化 `LayoutTensor` 并将其传递给 GPU 内核。
 
 ```mojo
 def initialize_tensor_from_cpu_example() raises:
@@ -296,15 +229,11 @@ def initialize_tensor_from_cpu_example() raises:
         print(error)
 ```
 
-#### Creating a `LayoutTensor` in shared or local memory
+#### 在共享内存或本地内存中创建 `LayoutTensor`
 
-To create a tensor on the GPU in shared memory or local memory, use the
-`LayoutTensor.stack_allocation()` static method to create a tensor with backing
-memory in the appropriate memory space.
+要在 GPU 的共享内存或本地内存中创建张量，使用 `LayoutTensor.stack_allocation()` 静态方法来创建在相应内存空间中有后备内存的张量。
 
-Both shared and local memory are very limited resources, so a common pattern
-is to copy a small tile of a larger tensor into shared memory or local memory to
-reduce memory access time.
+共享内存和本地内存都是非常有限的资源，因此一种常见模式是将较大张量的一个小分块复制到共享内存或本地内存中，以减少内存访问时间。
 
 ```mojo
 comptime tile_layout = Layout.row_major(16, 16)
@@ -317,53 +246,30 @@ var shared_tile = LayoutTensor[
 ].stack_allocation()
 ```
 
-In the case of shared memory, all threads in a thread block see the same
-allocation. For local memory, each thread gets a separate allocation.
+对于共享内存，线程块中的所有线程看到相同的分配。对于本地内存，每个线程获得单独的分配。
 
-There's no way to explicitly allocate *register* memory. However, the
-compiler can promote some local memory allocations to registers. To enable
-this optimization, keep the size of the tensor small, and all indexing into the
-tensor static—for example, using `comptime for` loops.
+没有办法显式分配*寄存器*内存。不过，编译器可以将某些本地内存分配提升为寄存器。要启用此优化，请保持张量大小较小，并且对张量的所有索引都是静态的——例如使用 `comptime for` 循环。
 
 :::note
 
-The name `stack_allocation()` is misleading. It is a *static* allocation,
-meaning the allocation is processed at compile time. The allocation is like a
-C/C++ stack allocation in that its lifetime ends when the function in which it
-was allocated returns. This API may be subject to change in the near future.
+`stack_allocation()` 这个名称具有误导性。它是一个*静态*分配，意味着分配在编译时处理。这种分配类似于 C/C++ 的栈分配，其生命周期在分配它的函数返回时结束。此 API 可能在不久的将来发生变化。
 
 :::
 
-## Tiling tensors
+## 张量分块
 
-A fundamental pattern for using a layout tensor is to divide the tensor into
-smaller tiles to achieve better data locality and cache efficiency. In a GPU
-kernel you may want to select a tile that corresponds to the size of a thread
-block. For example, given a 2D thread block of 16x16 threads, you could use a
-16x16 tile (with each thread handling one element in the tile) or a 64x16 tile
-(with each thread handling 4 elements from the tensor).
+使用布局张量的一种基本模式是将张量划分为更小的分块（tile），以实现更好的数据局部性和缓存效率。在 GPU 内核中，你可能希望选择一个与线程块大小对应的分块。例如，给定一个 16x16 线程的二维线程块，你可以使用 16x16 的分块（每个线程处理分块中的一个元素）或 64x16 的分块（每个线程处理张量中的 4 个元素）。
 
-Tiles are most commonly 1D or 2D. For element-wise calculations, where the
-output value for a given tensor element depends on only one input value, 1D
-tiles are easy to reason about. For calculations that involve neighboring
-elements, 2D tiles can help maintain data locality. For example, matrix
-multiplication or 2D convolution operations usually use 2D tiles.
+分块通常是一维或二维的。对于逐元素计算（给定张量元素的输出值仅取决于一个输入值），一维分块易于推理。对于涉及相邻元素的计算，二维分块有助于保持数据局部性。例如，矩阵乘法或二维卷积操作通常使用二维分块。
 
-`LayoutTensor` provides a `tile()` method for extracting a single tile. You can
-also iterate through tiles using the `LayoutTensorIter` type.
+`LayoutTensor` 提供了 `tile()` 方法用于提取单个分块。你也可以使用 `LayoutTensorIter` 类型遍历分块。
 
-When tiling a tensor that isn't an exact multiple of the tile size, you can
-create the tensor as a *masked tensor* (with the optional `masked` parameter set
-to True). When tiling a masked tensor, the tile operations will return partial
-tiles at the edges of the tensor. These tiles will be smaller than the requested
-tile size. You can use the `tensor.dim(axis)` method to query the tile
-dimensions at runtime.
+当对不是分块大小整数倍的张量进行分块时，你可以将张量创建为*掩码张量*（将可选参数 `masked` 设置为 True）。对掩码张量进行分块时，分块操作将在张量边缘返回部分分块。这些分块将小于请求的分块大小。你可以使用 `tensor.dim(axis)` 方法在运行时查询分块维度。
 
-### Extracting a tile
+### 提取分块
 
-The
 [`LayoutTensor.tile()`](/docs/layout/layout_tensor/LayoutTensor/#tile)
-method extracts a tile with a given size at a given set of coordinates:
+方法在给定坐标处提取给定大小的分块：
 
 ```mojo
 comptime rows = 2
@@ -379,62 +285,50 @@ var tensor = LayoutTensor[DType.float32, tiled_layout](storage)
 var tile = tensor.tile[tile_size, tile_size](0, 1)
 ```
 
-This code creates a 64x128 tensor with 32x32 tiles, and extracts the tile
-at row 0, column 1, as shown in Figure 3.
+此代码创建了一个 64x128 的张量，使用 32x32 的分块，并提取第 0 行、第 1 列的分块，如图 3 所示。
 
 <figure>
 
 ![](../images/layout/tensors/layout-tensor-tile.png#light)
 ![](../images/layout/tensors/layout-tensor-tile-dark.png#dark)
 
-<figcaption><b>Figure 3.</b> Extracting a tile from a tensor</figcaption>
+<figcaption><b>图 3.</b> 从张量中提取分块</figcaption>
 
 </figure>
 
-Note that the coordinates are specified in *tiles*.
+注意坐标是以*分块*为单位指定的。
 
-The layout of the extracted tile depends on the layout of the parent tensor. For
-example, if the parent tensor has a column-major layout, the extract tile has a
-column-major layout.
+提取的分块的布局取决于父张量的布局。例如，如果父张量具有列主序布局，则提取的分块也具有列主序布局。
 
-If you're extracting a tile from a tensor with a tiled layout, the extracted
-tile must match the tile boundaries of the parent tensor. For example, if the
-parent tensor is composed of 8x8 row-major tiles, a tile size of 8x8 yields an
-extracted tile with an 8x8 row-major layout.
+如果你从具有分块布局的张量中提取分块，提取的分块必须与父张量的分块边界匹配。例如，如果父张量由 8x8 行主序分块组成，8x8 的分块大小会产生一个具有 8x8 行主序布局的提取分块。
 
 :::note
 
-Trying to extract a tile that's not an even multiple of the parent tile size
-usually results in an error.
+尝试提取不是父分块大小整数倍的分块通常会导致错误。
 
 :::
 
-If you need to know the type of the tile (to declare a variable, for example),
-you can use the `TileType` type alias, with the same tile size parameters.
+如果你需要知道分块的类型（例如用于声明变量），你可以使用 `TileType` 类型别名，并传入相同的分块大小参数。
 
 ```mojo
 var my_tile: tensor.TileType[tile_size, tile_size]
 for i in range (rows):
     for j in range(columns):
         my_tile = tensor.tile[tile_size, tile_size](i, j)
-        # ... do something with the tile ...
+        # ... 对分块进行操作 ...
 ```
 
-### Tiled iterators
+### 分块迭代器
 
-The [`LayoutTensorIter`](/docs/layout/layout_tensor/LayoutTensorIter/)
-struct provides a way to iterate through a block of memory, generating a layout
-tensor for each position. There are two ways to use `LayoutTensorIter`:
+[`LayoutTensorIter`](/docs/layout/layout_tensor/LayoutTensorIter/)
+结构体提供了一种遍历内存块的方式，为每个位置生成一个布局张量。使用 `LayoutTensorIter` 有两种方式：
 
-- Starting with a memory buffer, you can generate a series of tiles.
-- Given an existing layout tensor, you can extract a set of tiles along a given
-  axis.
+- 从内存缓冲区开始，你可以生成一系列分块。
+- 给定一个现有的布局张量，你可以沿给定轴提取一组分块。
 
-#### Tiling a memory buffer
+#### 对内存缓冲区进行分块
 
-When you start with a memory buffer, `LayoutTensorIter` iterates through the
-memory one tile at a time. This essentially treats the memory as a flat array of
-tiles.
+当你从内存缓冲区开始时，`LayoutTensorIter` 每次遍历一个分块的内存。这本质上将内存视为分块的扁平数组。
 
 ```mojo
 comptime buf_size = 128
@@ -450,23 +344,15 @@ var iter = LayoutTensorIter[
 
 for i in range(ceildiv(buf_size, comptime (tile_layout.size()))):
     var tile = iter[]
-    # ... do something with tile
+    # ... 对分块进行操作
     iter += 1
 ```
 
-The iterator constructor takes all of the parameters you'd use to construct a
-`LayoutTensor`—a `DType`, layout, and an origin—and as arguments it takes a
-pointer and the size of the memory buffer.
+迭代器构造函数接受构造 `LayoutTensor` 所需的所有参数——一个 `DType`、布局和一个来源（origin）——以及一个指针和内存缓冲区大小作为参数。
 
-Note that the iterator doesn't work like a standard iterator, and you can't use
-it directly in a `for` statement like you would use a collection. Instead, you
-can use either the dereference operator (`iter[]`) or the `get()` method to
-retrieve a `LayoutTensor` representing the tile at the current position.
+注意迭代器不像标准迭代器那样工作，你不能像使用集合那样直接在 `for` 语句中使用它。相反，你可以使用解引用运算符（`iter[]`）或 `get()` 方法来检索表示当前位置分块的 `LayoutTensor`。
 
-You can advance the iterator by incrementing it, as shown above. The iterator
-also supports `next()` and `next_unsafe()` methods, which return a copy of the
-iterator incremented by a specified offset (default 1). This means you can also
-use a pattern like this:
+你可以通过递增来推进迭代器，如上所示。迭代器还支持 `next()` 和 `next_unsafe()` 方法，它们返回按指定偏移量（默认为 1）递增的迭代器副本。这意味着你也可以使用如下模式：
 
 ```mojo
 for i in range(num_tiles):
@@ -474,19 +360,16 @@ for i in range(num_tiles):
     …
 ```
 
-`LayoutTensorIter` also has an optional boolean `circular` parameter. A
-`LayoutTensorIter`created with `circular=True` treats the memory buffer as
-circular; when it hits the end of the buffer, it starts over again at the
-beginning.
+`LayoutTensorIter` 还有一个可选的布尔参数 `circular`。使用 `circular=True` 创建的 `LayoutTensorIter` 将内存缓冲区视为循环的；当到达缓冲区末尾时，它会从头重新开始。
 
-### Tiling a `LayoutTensor`
+### 对 `LayoutTensor` 进行分块
 
-To iterate over an existing tensor, call the
+要遍历现有张量，调用
 [`tiled_iterator()`](/docs/layout/layout_tensor/LayoutTensor/#tiled_iterator)
-method, which produces a `LayoutTensorIter`:
+方法，它会产生一个 `LayoutTensorIter`：
 
 ```mojo
-# given a tensor of size rows x cols
+# 给定一个大小为 rows x cols 的张量
 comptime num_row_tiles = ceildiv(rows, tile_size)
 comptime num_col_tiles = ceildiv(cols, tile_size)
 
@@ -495,110 +378,76 @@ for i in range(num_row_tiles):
 
     for _ in range(num_col_tiles):
         var tile = iter[]
-        # ... do something with the tile
+        # ... 对分块进行操作
         iter += 1
 ```
 
-## Vectorizing tensors
+## 向量化张量
 
-When working with tensors, it's frequently efficient to access more than one
-value at a time. For example, having a single GPU thread calculate multiple
-output values ("thread coarsening") can frequently improve performance.
-Likewise, when copying data from one memory space to another, it's often helpful
-for each thread to copy a SIMD vector worth of values, instead of a single
-value. Many GPUs have vectorized copy instructions that can make copying more
-efficient.
+在处理张量时，一次访问多个值通常是高效的。例如，让单个 GPU 线程计算多个输出值（"线程粗化"）通常可以提高性能。同样，在将数据从一个内存空间复制到另一个内存空间时，让每个线程复制一个 SIMD 向量大小的值而不是单个值通常更有帮助。许多 GPU 具有向量化复制指令，可以使复制更高效。
 
-To choose the optimum vector size, you need to know the vector operations
-supported for your current GPU for the data type you're working with. (For
-example, if you're working with 4 byte values and the GPU supports 16 byte copy
-operations, you can use a vector width of 4.) The `LayoutTensor` copy operations
-support copy sizes up to 16 bytes.
+要选择最佳向量大小，你需要了解当前 GPU 对你正在使用的数据类型支持的向量操作。（例如，如果你正在处理 4 字节的值，而 GPU 支持 16 字节的复制操作，你可以使用 4 的向量宽度。）`LayoutTensor` 的复制操作支持最大 16 字节的复制大小。
 
-The [`vectorize()`](/docs/layout/layout_tensor/LayoutTensor/#vectorize)
-method creates a new view of the tensor where each element of the tensor is a
-vector of values.
+[`vectorize()`](/docs/layout/layout_tensor/LayoutTensor/#vectorize)
+方法创建张量的一个新视图，其中张量的每个元素是一个值的向量。
 
 ```mojo
 var vectorized_tensor = tensor.vectorize[1, 4]()
 ```
 
-The vectorized tensor is a view of the original tensor, pointing to the same
-data. The underlying number of scalar values remains the same, but the tensor
-layout and element layout changes, as shown in Figure 4.
+向量化张量是原始张量的视图，指向相同的数据。底层标量值的数量保持不变，但张量布局和元素布局发生了变化，如图 4 所示。
 
 <figure>
 
 ![](../images/layout/tensors/vectorized-tensor.png#light)
 ![](../images/layout/tensors/vectorized-tensor-dark.png#dark)
 
-<figcaption><b>Figure 4.</b> Vectorizing a tensor</figcaption>
+<figcaption><b>图 4.</b> 向量化张量</figcaption>
 
 </figure>
 
-## Partitioning a tensor across threads
+## 跨线程划分张量
 
-When working with tensors on the GPU, it's sometimes desirable to distribute the
-elements of a tensor across the threads in a thread block. The
+在 GPU 上处理张量时，有时需要将张量的元素分配给线程块中的各个线程。
 [`distribute()`](/docs/layout/layout_tensor/LayoutTensor/#distribute)
-method takes a thread layout and a thread ID and returns a thread-specific
-*fragment* of the tensor.
+方法接受一个线程布局和一个线程 ID，并返回张量的一个线程特定*片段（fragment）*。
 
-The thread layout is tiled across the tensor. The *N*th thread receives a
-fragment consisting of the *N*th value from each tile. For example, Figure 5
-shows how `distribute()` forms fragments given a 4x4, row-major tensor and a
-2x2, column-major thread layout:
+线程布局被平铺在张量上。第 *N* 个线程接收由每个分块中的第 *N* 个值组成的片段。例如，图 5 展示了给定一个 4x4 行主序张量和一个 2x2 列主序线程布局时，`distribute()` 如何形成片段：
 
 <figure>
 
 ![](../images/layout/tensors/distribute-layout.png#light)
 ![](../images/layout/tensors/distribute-layout-dark.png#dark)
 
-<figcaption><b>Figure 5.</b> Partitioning a tensor into fragments</figcaption>
+<figcaption><b>图 5.</b> 将张量划分为片段</figcaption>
 
 </figure>
 
-In Figure 5, the numbers in the data layout represent offsets into storage, as
-usual. The numbers in the thread layout represent thread IDs.
+在图 5 中，数据布局中的数字表示存储中的偏移量（如通常一样）。线程布局中的数字表示线程 ID。
 
-The example in Figure 5 uses a small thread layout for illustration purposes. In
-practice, it's usually optimal to use a thread layout that's the same size as
-the warp size of your GPU, so the work is divided across all available threads.
-For example, the following code vectorizes and partitions a tensor over a full
-warp worth of threads:
+图 5 中的示例使用了较小的线程布局用于说明目的。在实践中，通常最佳做法是使用与 GPU 的 warp 大小相同的线程布局，以便将工作分配给所有可用线程。例如，以下代码在一个完整 warp 的线程上对张量进行向量化和划分：
 
 ```mojo
 comptime thread_layout = Layout.row_major(WARP_SIZE // simd_size, simd_size)
 var fragment = tile.vectorize[1, simd_size]().distribute[thread_layout](lane_id())
 ```
 
-Given a 16x16 tile size, a warp size of 32 and a `simd_size` of 4, this code
-produces a 16x4 tensor of 1x4 vectors. The thread layout is an 8x4 row major
-layout.
+给定 16x16 的分块大小、32 的 warp 大小和 4 的 `simd_size`，此代码产生一个 16x4 的 1x4 向量张量。线程布局是一个 8x4 的行主序布局。
 
-## Copying tensors
+## 复制张量
 
-The `layout-tensor` package provides a large set of utilities for copying
-tensors. A number of these are specialized for copying between various GPU
-memory spaces. All of the layout tensor copy methods respect the layouts—so you
-can transform a tensor by copying it to a tensor with a different layout.
+`layout-tensor` 包提供了大量用于复制张量的工具。其中许多专门用于在各种 GPU 内存空间之间复制。所有布局张量复制方法都遵循布局——因此你可以通过将张量复制到具有不同布局的张量来变换张量。
 
-`LayoutTensor` itself provides two methods for copying tensor data:
+`LayoutTensor` 本身提供了两种复制张量数据的方法：
 
 - [`copy_from()`](/docs/layout/layout_tensor/LayoutTensor/#copy_from)
-  copies data from a source tensor to the current tensor, which may be in a
-  different memory space.
+  将数据从源张量复制到当前张量，两者可能在不同的内存空间中。
 - [`copy_from_async()`](/docs/layout/layout_tensor/LayoutTensor/#copy_from_async)
-  is an optimized copy mechanism for asynchronously copying from GPU global
-  memory to shared memory.
+  是一种优化的复制机制，用于从 GPU 全局内存异步复制到共享内存。
 
-Both of these methods copy the entire source tensor. To divide the copying work
-among multiple threads, you need to use `distribute()` to create thread-local
-tensor fragments, as described in
-[Partitioning a tensor across threads](#partitioning-a-tensor-across-threads).
+这两种方法都复制整个源张量。要将复制工作分配给多个线程，你需要使用 `distribute()` 创建线程本地张量片段，如[跨线程划分张量](#partitioning-a-tensor-across-threads)中所述。
 
-The following code sample demonstrates using both copy methods to copy data to
-and from shared memory.
+以下代码示例演示了使用两种复制方法在共享内存之间复制数据。
 
 ```mojo
 def copy_from_async_example():
@@ -612,7 +461,7 @@ def copy_from_async_example():
     comptime simd_width = 4
 
     def kernel(tensor: LayoutTensor[dtype, input_layout, MutAnyOrigin]):
-        # extract a tile from the input tensor.
+        # 从输入张量中提取一个分块
         var global_tile = tensor.tile[block_size, block_size](
             Int(block_idx.y), Int(block_idx.x)
         )
@@ -624,7 +473,7 @@ def copy_from_async_example():
             address_space=AddressSpace.SHARED,
         ].stack_allocation()
 
-        # Create thread layouts for copying
+        # 创建用于复制的线程布局
         comptime thread_layout = Layout.row_major(
             WARP_SIZE // simd_width, simd_width
         )
@@ -640,7 +489,7 @@ def copy_from_async_example():
             async_copy_wait_all()
         barrier()
 
-        # Put some data into the shared tile that we can verify on the host.
+        # 向共享分块中放入一些数据，以便在主机端验证
         if global_idx.y < rows and global_idx.x < cols:
             shared_tile[thread_idx.y, thread_idx.x] = (
                 shared_tile[thread_idx.y, thread_idx.x] + 1
@@ -673,45 +522,26 @@ def copy_from_async_example():
         print(error)
 ```
 
-### Thread-aware copy functions
+### 线程感知复制函数
 
-The [`layout_tensor` package](/docs/layout/layout_tensor/) also includes
-a number of specialized copy functions for different scenarios, such as copying
-from shared memory to local memory. These functions are all *thread-aware*:
-instead of passing in tensor fragments, you pass in a thread layout which the
-function uses to partition the work.
+[`layout_tensor` 包](/docs/layout/layout_tensor/)还包含许多用于不同场景的专用复制函数，例如从共享内存复制到本地内存。这些函数都是*线程感知*的：你不需要传入张量片段，而是传入一个线程布局，函数使用它来划分工作。
 
-As with the `copy_from()` and `copy_from_async()` methods, use the `vectorize()`
-method prior to copying to take advantage of vectorized copy operations.
+与 `copy_from()` 和 `copy_from_async()` 方法一样，在复制之前使用 `vectorize()` 方法可以利用向量化复制操作。
 
-Many of the thread-aware copy functions have very specific requirements for the
-shape of the copied tensor and thread layout, based on the specific GPU and data
-type in use.
+许多线程感知复制函数对复制的张量形状和线程布局有非常具体的要求，这取决于所使用的特定 GPU 和数据类型。
 
-## Summary
+## 总结
 
-In this document, we've explored the fundamental concepts and practical usage of
-`LayoutTensor`. At its core, `LayoutTensor` provides
-a powerful abstraction for working with multi-dimensional data.
-By combining a layout (which defines memory organization), a data type, and a
-memory pointer, `LayoutTensor` enables flexible and efficient data manipulation
-without unnecessary copying of the underlying data.
+在本文档中，我们探讨了 `LayoutTensor` 的基本概念和实际用法。`LayoutTensor` 的核心提供了一种处理多维数据的强大抽象。通过组合布局（定义内存组织）、数据类型和内存指针，`LayoutTensor` 实现了灵活高效的数据操作，而无需不必要地复制底层数据。
 
-We covered several essential tensor operations that form the
-foundation of working with `LayoutTensor`, including creating tensors,
-accessing tensor elements, and copying data between tensors.
+我们介绍了几种构成使用 `LayoutTensor` 基础的基本张量操作，包括创建张量、访问张量元素以及在张量之间复制数据。
 
-We also covered key patterns for optimizing data access:
+我们还介绍了优化数据访问的关键模式：
 
-- Tiling tensors for data locality. Accessing tensors one tile at a time can
-  improve cache efficiency. On the GPU, tiling can allow the threads of a
-  thread block to share high-speed access to a subset of a tensor.
-- Vectorizing tensors for more efficient data loads and stores.
-- Partitioning or distributing tensors into thread-local fragments for
-  processing.
+- 分块张量以实现数据局部性。逐块访问张量可以提高缓存效率。在 GPU 上，分块可以让线程块中的线程高速访问张量的子集。
+- 向量化张量以实现更高效的数据加载和存储。
+- 将张量划分或分配为线程本地片段进行处理。
 
-These patterns provide the building blocks for writing efficient kernels in Mojo
-while maintaining clean, readable code.
+这些模式为在 Mojo 中编写高效内核提供了构建块，同时保持代码整洁可读。
 
-To see some practical examples of `LayoutTensor` in use, see the MAX guide,
-[Optimize custom ops for GPUs with Mojo](https://docs.modular.com/max/develop/custom-ops-matmul/).
+要查看 `LayoutTensor` 实际使用的示例，请参阅 MAX 指南，[使用 Mojo 优化 GPU 自定义操作](https://docs.modular.com/max/develop/custom-ops-matmul/)。

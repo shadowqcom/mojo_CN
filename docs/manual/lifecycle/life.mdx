@@ -1,26 +1,14 @@
 ---
-title: Value creation
+title: 值创建
 sidebar_position: 2
-description: An explanation of when and how Mojo creates values.
+description: 解释 Mojo 何时以及如何创建值。
 ---
 
-The life of a value in Mojo begins when a variable is initialized and continues
-up until the value is last used, at which point Mojo destroys it. This page
-describes how every value in Mojo is created, copied, and moved. (The next
-page describes [how values are
-destroyed](/docs/manual/lifecycle/death).)
+Mojo 中值的生命周期在变量被初始化时开始，持续直到值最后一次使用，此时 Mojo 销毁它。本页描述了 Mojo 中每个值是如何创建、复制和移动的。（下一页描述[值如何被销毁](/docs/manual/lifecycle/death)。)
 
-All data types in Mojo—including basic types in the standard library such as
-[`Bool`](/docs/std/builtin/bool/Bool/), [`Int`](/docs/std/builtin/int/Int/),
-and [`String`](/docs/std/collections/string/string/String/)—are defined as
-[structs](/docs/manual/structs/). This means the creation and destruction of any
-piece of data follows the same lifecycle rules, and you can define your own data
-types that work exactly the same way.
+Mojo 中的所有数据类型——包括标准库中的基本类型，如 [`Bool`](/docs/std/builtin/bool/Bool/)、[`Int`](/docs/std/builtin/int/Int/) 和 [`String`](/docs/std/collections/string/string/String/)——都定义为[结构体](/docs/manual/structs/)。这意味着任何数据片段的创建和销毁都遵循相同的生命周期规则，你可以定义以完全相同方式工作的自定义数据类型。
 
-Mojo structs don't get any default lifecycle methods, such as a
-constructor, copy constructor, or move constructor. That means you can define
-a struct without a constructor, but then you can't instantiate it, and it
-would be useful only as a sort of namespace for static methods. For example:
+Mojo 结构体不会获得任何默认生命周期方法，如构造函数、复制构造函数或移动构造函数。这意味着你可以定义一个没有构造函数的结构体，但你不能实例化它，它将仅作为静态方法的某种命名空间有用。例如：
 
 ```mojo
 struct NoInstances:
@@ -31,11 +19,9 @@ struct NoInstances:
         print("Hello world!")
 ```
 
-Without a constructor, this can't be instantiated, so it has no lifecycle. The
-`state` field is also useless because it can't be initialized (Mojo structs do
-not support default field values—you must initialize them in a constructor).
+没有构造函数，这不能被实例化，因此它没有生命周期。`state` 字段也是无用的，因为它不能被初始化（Mojo 结构体不支持默认字段值——你必须在中构造函数中初始化它们）。
 
-So the only thing you can do is call the static method:
+所以你唯一能做的就是调用静态方法：
 
 ```mojo
 NoInstances.print_hello()
@@ -45,11 +31,9 @@ NoInstances.print_hello()
 Hello world!
 ```
 
-## Constructor
+## 构造函数
 
-To create an instance of a Mojo type, it needs the `__init__()` constructor
-method. The main responsibility of the constructor is to initialize all fields.
-For example:
+要创建 Mojo 类型的实例，它需要 `__init__()` 构造函数方法。构造函数的主要责任是初始化所有字段。例如：
 
 ```mojo
 struct MyPet:
@@ -61,26 +45,17 @@ struct MyPet:
         self.age = age
 ```
 
-Now we can create an instance:
+现在我们可以创建一个实例：
 
 ```mojo
 var mine = MyPet("Loki", 4)
 ```
 
-An instance of `MyPet` can also be read
-and destroyed, but it currently can't be copied or moved.
+`MyPet` 的实例也可以被读取和销毁，但它目前不能被复制或移动。
 
-We believe this is a good default starting point, because there are no built-in
-lifecycle events and no surprise behaviors. You—the type author—must
-explicitly decide whether and how the type can be copied or moved, by
-implementing the copy and move constructors.
+我们认为这是一个很好的默认起点，因为没有内置的生命周期事件和意外行为。你——类型作者——必须通过实现复制和移动构造函数，明确决定类型是否以及如何可以复制或移动。
 
-The pattern shown above—a constructor that takes an argument for each of the
-struct's fields and initializes the fields directly from the arguments—is called
-a *field-wise constructor*. It's a common enough pattern that Mojo includes a
-[`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) decorator to
-synthesize the field-wise constructor. So you can rewrite the previous example
-like this:
+上面显示的模式——构造函数接受结构体每个字段的参数并直接从参数初始化字段——称为*按字段构造*。这是一个足够常见的模式，Mojo 包含一个 [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 装饰器来综合按字段构造函数。所以你可以像这样重写前面的示例：
 
 ```mojo
 @fieldwise_init
@@ -91,39 +66,23 @@ struct MyPet:
 
 :::note
 
-Mojo does not require a destructor to destroy an instance. But in some cases,
-you may need to define a custom destructor to release resources (for example, if
-a struct dynamically allocates memory using
-[`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/)). We'll
-discuss that more in [Death of a value](/docs/manual/lifecycle/death/).
+Mojo 不需要析构函数来销毁实例。但在某些情况下，你可能需要定义自定义析构函数来释放资源（例如，如果结构体使用 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 动态分配内存）。我们将在[值的死亡](/docs/manual/lifecycle/death/)中更详细地讨论这一点。
 
 :::
 
-:::note[The "constructor" name]
+:::note["构造函数"名称]
 
-In a Python class, object construction happens across both the `__new__()` and
-`__init__()` methods, so the `__init__()` method is technically just the
-initializer for attributes (but it's often still called the constructor).
-However, in a Mojo struct, there is no `__new__()` method, so we prefer to
-always call `__init__()` the constructor.
+在 Python 类中，对象构造发生在 `__new__()` 和 `__init__()` 方法之间，因此 `__init__()` 方法技术上只是属性的初始化程序（但它通常仍被称为构造函数）。然而，在 Mojo 结构体中，没有 `__new__()` 方法，所以我们更喜欢始终将 `__init__()` 称为构造函数。
 
 :::
 
-### Overloading the constructor
+### 重载构造函数
 
-Like any other function/method, you can
-[overload](/docs/manual/functions/#overloaded-functions) the
-`__init__()` constructor to initialize the object with different arguments. For
-example, you might want a default constructor that sets some default values and
-takes no arguments, and then additional constructors that accept more arguments.
+像任何其他函数/方法一样，你可以[重载](/docs/manual/functions/#overloaded-functions) `__init__()` 构造函数以使用不同的参数初始化对象。例如，你可能希望有一个设置一些默认值且不带参数的默认构造函数，然后是接受更多参数的附加构造函数。
 
-Just be aware that, in order to modify any fields, each constructor must
-declare the `self` argument with the [`out`
-convention](/docs/manual/values/ownership#argument-conventions). If you
-want to call one constructor from another, you simply call upon that
-constructor as you would externally (you don't need to pass `self`).
+只需注意，为了修改任何字段，每个构造函数必须使用 [`out`](/docs/manual/values/ownership#argument-conventions) 约定声明 `self` 参数。如果你想从一个构造函数调用另一个构造函数，你只需像从外部一样调用该构造函数（你不需要传递 `self`）。
 
-For example, here's how you can delegate work from an overloaded constructor:
+例如，以下是如何从重载构造函数委托工作的方法：
 
 ```mojo
 struct MyPet:
@@ -139,15 +98,11 @@ struct MyPet:
         self.name = name
 ```
 
-### Field initialization
+### 字段初始化
 
-Notice in the previous example that, by the end of each constructor, all fields
-must be initialized. That's the only requirement in the constructor.
+注意在前面示例中，在构造函数结束时，所有字段都必须被初始化。这是构造函数中唯一的要求。
 
-In fact, the `__init__()` constructor is smart enough to treat the `self`
-object as fully initialized even before the constructor is finished, as long
-as all fields are initialized. For example, this constructor can pass around
-`self` as soon as all fields are initialized:
+实际上，`__init__()` 构造函数足够智能，可以在构造函数完成之前将 `self` 对象视为完全初始化，只要所有字段都被初始化。例如，此构造函数可以在所有字段初始化后立即传递 `self`：
 
 ```mojo
 def use(arg: MyPet):
@@ -161,37 +116,33 @@ struct MyPet:
         self.name = name
         if cond:
             self.age = age
-            use(self)  # Safe to use immediately!
+            use(self)  # 立即使用是安全的！
 
         self.age = age
-        use(self)  # Safe to use immediately!
+        use(self)  # 立即使用是安全的！
 ```
 
-### Constructors and implicit conversion
+### 构造函数和隐式转换
 
-Mojo supports implicit conversion from one type to another. Implicit conversion
-can happen when one of the following occurs:
+Mojo 支持从一种类型到另一种类型的隐式转换。当发生以下情况之一时，隐式转换可能发生：
 
-- You assign a value of one type to a variable with a different type.
-- You pass a value of one type to a function that requires a different type.
-- You return a value of one type from a function that specifies a different
-  return type.
+- 你将一个类型的值赋给具有不同类型的变量。
+- 你将一个类型的值传递给需要不同类型的函数。
+- 你从指定不同返回类型的函数返回一个类型的值。
 
-In all cases, implicit conversion is supported when the target type
-defines a constructor that meets the following criteria:
+在所有情况下，当目标类型定义满足以下条件的构造函数时，支持隐式转换：
 
-- Is declared with the `@implicit` decorator.
-- Has a single required, non-keyword argument of the source type.
+- 使用 `@implicit` 装饰器声明。
+- 拥有一个源类型的单个必需的非关键字参数。
 
-For example:
+例如：
 
 ```mojo
 var a = Source()
 var b: Target = a
 ```
 
-Mojo implicitly converts the `Source` value in `a` to a `Target` value if
-`Target` defines a matching constructor like this:
+如果 `Target` 定义了像这样的匹配构造函数，Mojo 会隐式地将 `a` 中的 `Source` 值转换为 `Target` 值：
 
 ```mojo
 struct Target:
@@ -200,22 +151,15 @@ struct Target:
     def __init__(out self, s: Source): ...
 ```
 
-With implicit conversion, the assignment above is essentially identical to:
+通过隐式转换，上面的赋值本质上是相同的：
 
 ```mojo
 var b = Target(a)
 ```
 
-In general, types should only support implicit conversions when the conversion
-is lossless and ideally inexpensive. For example, converting an integer to a
-floating-point number is usually lossless (except for very large positive and
-negative integers, where the conversion may be approximate), but converting a
-floating-point number to an integer is very likely to lose information. So
-Mojo supports implicit conversion from `Int` to `Float64`, but not the reverse.
+一般来说，类型应该只在转换是无损且理想情况下成本低廉时才支持隐式转换。例如，将整数转换为浮点数通常是无损的（除了非常大的正整数和负整数，其中转换可能是近似的），但将浮点数转换为整数很可能会丢失信息。因此，Mojo 支持 `Int` 到 `Float64` 的隐式转换，但不支持反向转换。
 
-The constructor used for implicit conversion can take optional arguments, so
-the following constructor would also support implicit conversion from `Source`
-to `Target`:
+用于隐式转换的构造函数可以接受可选参数，因此以下构造函数也将支持从 `Source` 到 `Target` 的隐式转换：
 
 ```mojo
 struct Target:
@@ -224,11 +168,7 @@ struct Target:
     def __init__(out self, s: Source, reverse: Bool = False): ...
 ```
 
-Implicit conversion can fail if Mojo can't unambiguously match the conversion to
-a constructor. For example, if the target type has two overloaded constructors
-that take different types, and each of those types supports an implicit
-conversion from the source type, the compiler has two equally-valid paths to
-convert the values:
+如果 Mojo 无法明确地将转换匹配到构造函数，隐式转换可能会失败。例如，如果目标类型有两个接受不同类型的重载构造函数，并且这些类型中的每一个都支持从源类型的隐式转换，则编译器有两个同等有效的路径来转换值：
 
 ```mojo
 struct A:
@@ -245,29 +185,24 @@ struct OverloadedTarget:
     @implicit
     def __init__(out self, b: B): ...
 
-var t = OverloadedTarget(Source()) # Error: ambiguous call to '__init__': each
-                                   # candidate requires 1 implicit conversion
+var t = OverloadedTarget(Source()) # 错误：对 '__init__' 的调用不明确：每个候选者都需要 1 次隐式转换
 ```
 
-In this case, you can fix the issue by explicitly casting to one of the
-intermediate types. For example:
+在这种情况下，你可以通过显式转换为中间类型之一来修复此问题。例如：
 
 ```mojo
 var t = OverloadedTarget(A(Source())) # OK
 ```
 
-Mojo applies at most one implicit conversion to a variable. For example:
+Mojo 对变量最多应用一次隐式转换。例如：
 
 ```mojo
-var t: OverloadedTarget = Source() # Error: can't implicitly convert Source
-                                   # to Target
+var t: OverloadedTarget = Source() # 错误：无法隐式转换 Source 到 Target
 ```
 
-Would fail because there's no direct conversion from `Source` to
-`OverloadedTarget`.
+会失败，因为没有从 `Source` 到 `OverloadedTarget` 的直接转换。
 
-For structs with a single field, you can generate an implicit constructor with
-the `@fieldwise_init("implicit")` decorator.
+对于具有单个字段的结构体，你可以使用 `@fieldwise_init("implicit")` 装饰器生成隐式构造函数。
 
 ```mojo
 @fieldwise_init("implicit")
@@ -275,35 +210,29 @@ struct Counter:
     var count: Int
 
 def main():
-    var c: Counter = 5  # implicitly converts from Int
+    var c: Counter = 5  # 隐式从 Int 转换
 ```
 
-## Copy constructor
+## 复制构造函数
 
-In Mojo, a value can be copied either *explicitly* or *implicitly*:
+在 Mojo 中，值可以被*显式地*或*隐式地*复制：
 
 ```mojo
-# Explicit copy
+# 显式复制
 var s = "Test string"
 var s2 = s.copy()
 
-# Implicit copy
+# 隐式复制
 var i = 15
 var i2 = i
 ```
 
-To make a struct explicitly copyable, you need to:
+要使结构体可显式复制，你需要：
 
-- Add the `Copyable` trait.
-- (Optionally) define a custom copy constructor if needed, written
-  `def __init__(out self, *, copy: Self)`.
+- 添加 `Copyable` trait。
+- （可选）如果需要，定义自定义复制构造函数，写入 `def __init__(out self, *, copy: Self)`。
 
-By adding the `Copyable` trait, Mojo can generate a default
-copy constructor for you unless you've written one yourself.
-This default method copies each field of the `copy` value
-into the new value. The `Copyable` trait also defines a default
-`copy()` method which provides an additional way to copy a value,
-versus calling the copy constructor directly.
+通过添加 `Copyable` trait，Mojo 可以为你生成默认复制构造函数，除非你已经编写了一个。此默认方法将 `copy` 值的每个字段复制到新值。`Copyable` trait 还定义了一个默认的 `copy()` 方法，它提供了一种复制值的其他方法，而不是直接调用复制构造函数。
 
 ```mojo
 @fieldwise_init
@@ -312,7 +241,7 @@ struct MyPet(Copyable):
     var age: Int
 ```
 
-Now this code works to make a copy:
+现在此代码可以用于创建副本：
 
 ```mojo
 var mine = MyPet("Loki", 4)
@@ -321,16 +250,11 @@ var yours = mine.copy()
 
 :::note
 
-Technically, you *could* make a struct with a copy constructor and *not* add the
-`Copyable` trait, but this is not recommended. Mojo would be able to copy the
-value, but you couldn't use the struct with any generic containers or functions
-that require the `Copyable` trait.
+技术上讲，你可以创建一个具有复制构造函数的结构体，但*不*添加 `Copyable` trait，但这不推荐。Mojo 可以复制该值，但你不能将此结构体与任何需要 `Copyable` trait 的泛型容器或函数一起使用。
 
 :::
 
-The generated copy constructor simply copies each field from the existing value
-into the new value. For example, if you manually wrote the copy constructor for
-`MyPet`, it would look like this:
+生成的复制构造函数只是将现有值中的每个字段复制到新值。例如，如果你为 `MyPet` 手动编写了复制构造函数，它看起来会是这样：
 
 ```mojo
 def __init__(out self, *, copy: Self):
@@ -338,28 +262,21 @@ def __init__(out self, *, copy: Self):
     self.age = copy.age
 ```
 
-This default copy constructor works in most cases, but there are a few cases
-where you need to define a custom copy constructor:
+此默认复制构造函数在大多数情况下有效，但有一些情况你需要定义自定义复制构造函数：
 
-- One or more of the struct's fields is not `Copyable`.
-- The struct includes a non-owning type (like
-  [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/)), and you
-  want to make a deep copy of the data.
-- The struct holds other resources (like file descriptors or network sockets)
-  that need to be managed.
+- 结构体的一个或多个字段不是 `Copyable`。
 
-### Custom copy constructor
+- 结构体包含非拥有类型（如 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/)），并且你想要进行数据的深度复制。
 
-What makes Mojo's copy behavior different, compared to other languages, is that
-copy constructor is designed to perform a deep copy of all fields in the type
-(as per [value semantics](/docs/manual/values/value-semantics/)). That is,
-it copies heap-allocated values, rather than just copying the pointer.
+- 结构体持有其他需要管理的资源（如文件描述符或网络套接字）。
 
-However, the Mojo compiler doesn't enforce this, so it's the type author's
-responsibility to implement copy constructor with value semantics.
+### 自定义复制构造函数
 
-For example, here's a new `HeapArray` type with a custom copy constructor that
-performs a deep copy:
+与其他语言相比，Mojo 的复制行为的不同之处在于，复制构造函数被设计为按[值语义](/docs/manual/values/value-semantics/)复制类型中的所有字段。也就是说，它复制堆分配的值，而不仅仅是复制指针。
+
+然而，Mojo 编译器不强制执行此操作，因此实现具有值语义的复制构造函数是类型作者的责任。
+
+例如，这里有一个新的 `HeapArray` 类型，具有执行深度复制的自定义复制构造函数：
 
 ```mojo
 struct HeapArray(Copyable):
@@ -375,23 +292,23 @@ struct HeapArray(Copyable):
             (self.data + i).init_pointee_copy(val)
 
     def __init__(out self, *, copy: Self):
-        # Deep-copy the existing value
+        # 深度复制现有值
         self.size = copy.size
         self.cap = copy.cap
         self.data = alloc[Int](self.cap)
         for i in range(self.size):
             (self.data + i).init_pointee_copy(copy.data[i])
-        # The lifetime of `copy` continues unchanged
+        # `copy` 的生命周期保持不变
 
     def __del__(deinit self):
-        # We must free the heap-allocated data, but
-        # Mojo knows how to destroy the other fields
+        # 我们必须释放堆分配的数据，但
+        # Mojo 知道如何销毁其他字段
         for i in range(self.size):
             (self.data + i).destroy_pointee()
         self.data.free()
 
     def append(mut self, val: Int):
-        # Update the array for demo purposes
+        # 更新数组用于演示目的
         if self.size < self.cap:
             (self.data + self.size).init_pointee_copy(val)
             self.size += 1
@@ -399,7 +316,7 @@ struct HeapArray(Copyable):
             print("Out of bounds")
 
     def dump(self):
-        # Print the array contents for demo purposes
+        # 打印数组内容用于演示目的
         print("[", end="")
         for i in range(self.size):
             if i > 0:
@@ -408,68 +325,45 @@ struct HeapArray(Copyable):
         print("]")
 ```
 
-Notice that the copy constructor doesn't copy the `UnsafePointer` value (doing
-so would make the copied value refer to the same `data` memory address as the
-original value, which is a shallow copy). Instead, we initialize a new
-`UnsafePointer` to allocate a new block of memory, and then copy over all the
-heap-allocated values (this is a deep copy).
+请注意，复制构造函数不复制 `UnsafePointer` 值（这样做会使复制的值引用与原始值相同的 `data` 内存地址，这是一个浅复制）。相反，我们初始化一个新的 `UnsafePointer` 来分配一个新的内存块，然后复制所有堆分配的值（这是一个深度复制）。
 
-Thus, when we copy an instance of `HeapArray`, each copy has its own set of
-values on the heap, so changes to one array do not affect the other, as shown
-here:
+因此，当我们复制 `HeapArray` 的实例时，每个副本在堆上都有自己的值集，所以对一个数组的更改不会影响另一个，如下所示：
 
 ```mojo
 def copies():
     var a = HeapArray(2, 1)
-    var b = a.copy()  # Calls the copy method
-    a.dump()  # Prints [1, 1]
-    b.dump()  # Prints [1, 1]
+    var b = a.copy()  # 调用复制方法
+    a.dump()  # 打印 [1, 1]
+    b.dump()  # 打印 [1, 1]
 
-    b.append(2)  # Changes the copied data
-    b.dump()  # Prints [1, 1, 2]
-    a.dump()  # Prints [1, 1] (the original did not change)
+    b.append(2)  # 更改复制的数据
+    b.dump()  # 打印 [1, 1, 2]
+    a.dump()  # 打印 [1, 1]（原始的没有改变）
 ```
 
-Two other things to note from the copy constructor:
+从复制构造函数中还有两件事值得注意：
 
-- The `copy` argument is type `Self` (capital "S"). `Self` is an alias for
-  the current type name (`HeapArray`, in this example). Using this alias is a
-  best practice to avoid any mistakes when referring to the current struct name.
+- `copy` 参数是 `Self` 类型（大写 "S"）。`Self` 是当前类型名的别名（在此示例中为 `HeapArray`）。使用此别名是避免在引用当前结构体名称时出现任何错误的最佳实践。
 
-- The `copy` argument is immutable because the default [argument
-  convention](/docs/manual/values/ownership#argument-conventions) is
-  `read`—this is a good thing because this function should not modify the
-  contents of the value being copied.
+- `copy` 参数是不可变的，因为默认的[参数约定](/docs/manual/values/ownership#argument-conventions)是 `read`——这是一件好事，因为此函数不应该修改被复制的值的内容。
 
 :::note
 
-In `HeapArray`, we must use the `__del__()` destructor to free the
-heap-allocated data when the `HeapArray` lifetime ends, but Mojo automatically
-destroys all other fields when their respective lifetimes end. We'll discuss
-this destructor more in [Death of a value](/docs/manual/lifecycle/death/).
+在 `HeapArray` 中，我们必须在 `HeapArray` 生命周期结束时使用 `__del__()` 析构函数来释放堆分配的数据，但 Mojo 会自动销毁所有其他字段，当它们各自的生命周期结束时。我们将在[值的死亡](/docs/manual/lifecycle/death/)中更详细地讨论此析构函数。
 
 :::
 
-If your type doesn't use any pointers for heap-allocated data, then writing the
-constructor and copy constructor is all boilerplate code that you shouldn't have
-to write. For most structs that don't manage memory explicitly, you can just add
-the `Copyable` trait to your struct definition, and Mojo will synthesize the
-copy constructor.
+如果你的类型不使用任何指针进行堆分配数据，那么编写构造函数和复制构造函数就是你不应该编写的样板代码。对于大多数不显式管理内存的结构体，你可以只需在结构体定义中添加 `Copyable` trait，Mojo 将综合复制构造函数。
 
 :::note
 
-Mojo also calls upon the copy constructor when a value is passed to a
-function that takes the argument as
-[`var`](/docs/manual/values/ownership/#transfer-arguments-var-and-)
-*and* when the lifetime of the given value does *not* end at that point. If the
-lifetime of the value does end there (usually indicated with the transfer
-sigil `^`), then Mojo instead invokes the move constructor.
+当值传递给使用参数作为 [`var`](/docs/manual/values/ownership/#transfer-arguments-var-and-) 的函数时，Mojo 也会调用复制构造函数，并且*并且*给定值的生命周期*不*在此结束。如果值的生命周期确实在那里结束（通常用转移信号 `^` 指示），那么 Mojo 相反会调用移动构造函数。
 
 :::
 
-### Implicitly-copyable types
+### 隐式可复制类型
 
-To make a type *implicitly copyable*, add the `ImplicitlyCopyable` trait:
+要使类型*隐式可复制*，添加 `ImplicitlyCopyable` trait：
 
 ```mojo
 @fieldwise_init
@@ -483,46 +377,31 @@ def main():
     print(pair.first, copy.second)
 ```
 
-The `ImplicitlyCopyable` trait refines `Copyable`, so adding
-`ImplicitlyCopyable` to your type gives you `Copyable`'s copy
-constructor and a `copy()` method. It also gives you automatic
-`Movable` conformance.
+`ImplicitlyCopyable` trait 细化了 `Copyable`，因此将 `ImplicitlyCopyable` 添加到你的类型会给你 `Copyable` 的复制构造函数和一个 `copy()` 方法。它还给你自动 `Movable` 一致性。
 
-The trait doesn't define any methods of its own: it serves as a signal
-to the compiler that it can insert calls to copy constructor as needed. For
-example, in the previous example, the compiler might generate code equivalent
-to:
+该 trait 没有定义任何自己的方法：它作为信号告诉编译器，它可以根据需要插入复制构造函数的调用。例如，在前面示例中，编译器可能会生成等效于以下内容的代码：
 
 ```mojo
 pair = MyPair(3, 4)
 copy = pair.copy()
 ```
 
-A type should be implicitly copyable only if copying the type is inexpensive and
-has no side effects. Unnecessary copies can be a big drain on memory and
-performance, so use this trait with caution.
+只有当复制类型成本低廉且没有副作用时，类型才应该是隐式可复制的。不必要的复制可能是内存和性能的大消耗，因此谨慎使用此 trait。
 
-In particular, any type that dynamically allocates memory or manages other
-resources probably shouldn't be implicitly copyable.
+特别是，任何动态分配内存或管理其他资源的类型可能不应该隐式可复制。
 
-## Move constructor
+## 移动构造函数
 
-Although copying values provides predictable behavior that matches Mojo's
-[value semantics](/docs/manual/values/value-semantics/), copying some data
-types can be a significant hit on performance.
+虽然复制值提供了与 Mojo 的[值语义](/docs/manual/values/value-semantics/)一致的可预测行为，但复制某些数据类型可能会对性能产生重大影响。
 
-Mojo uses the move constructor to transfer ownership of a value from one
-variable to another, *without* copying its fields. A value that's copyable
-but doesn't have a move constructor can still be transferred by making a copy
-and then discarding the original. So in this case, the move constructor serves
-as an optimization.
+Mojo 使用移动构造函数将值的所有权从一个变量转移到另一个变量，*而不*复制其字段。可复制但没有移动构造函数的值仍然可以通过复制然后丢弃原始值来转移。因此，在这种情况下，移动构造函数作为优化。
 
-To make a type *movable*:
+要使类型*可移动*：
 
-- Add the `Movable` trait *or* conform to `Copyable`.
-- (Optionally) implement a custom move constructor.
+- 添加 `Movable` trait*或*符合 `Copyable`。
+- （可选）实现自定义移动构造函数。
 
-Here's a movable (also copyable) version of the `MyPet` struct:
+这是 `MyPet` 结构体的可移动（也是可复制）版本：
 
 ```mojo
 @fieldwise_init
@@ -531,26 +410,23 @@ struct MyPet(Copyable):
     var age: Int
 ```
 
-Here's an example showing how to invoke the move constructor for `MyPet`:
+以下是如何为 `MyPet` 调用移动构造函数的示例：
 
 ```mojo
 def moves():
     var a = MyPet("Bobo", 2)
 
-    print(a.name) # Prints "bobo"
+    print(a.name) # 打印 "bobo"
 
-    var b = a^ # the lifetime of `a` ends here
+    var b = a^ # `a` 的生命周期在这里结束
 
-    print(b.name) # prints "bobo"
-    # print(a.name)  # ERROR: use of uninitialized value 'a'
+    print(b.name) # 打印 "bobo"
+    # print(a.name)  # 错误：使用未初始化的值 'a'
 ```
 
-If you include the `Movable` trait and don't define a move constructor, Mojo
-generates a default move constructor for you. This move constructor simply moves
-each of the fields to the new instance.
+如果你包含 `Movable` trait 且没有定义移动构造函数，Mojo 会为你生成默认移动构造函数。此移动构造函数只是将每个字段移动到新实例。
 
-The generated move constructor for `MyPet` would look like this if you wrote
-it yourself:
+如果你自己编写，`MyPet` 的生成移动构造函数会是这样：
 
 ```mojo
 def __init__(out self, *, deinit take: Self):
@@ -558,103 +434,48 @@ def __init__(out self, *, deinit take: Self):
     self.age = take.age
 ```
 
-The move constructor takes its `take` argument using the `deinit`
-[argument convention](/docs/manual/values/ownership/#argument-conventions),
-which grants exclusive ownership of the value and marks it as destroyed at the
-end of the function. (For more information on the `deinit` convention, see
-[Field lifetimes during destruct and move](/docs/manual/lifecycle/death/#field-lifetimes-during-destruct-and-move)).
+移动构造函数使用 `deinit`[参数约定](/docs/manual/values/ownership#argument-conventions)接收其 `take` 参数，该约定授予值的独占所有权并在函数结束时将其标记为已销毁。（有关 `deinit` 约定的更多信息，请参阅[析构和移动期间的字段生命周期](/docs/manual/lifecycle/death/#field-lifetimes-during-destruct-and-move)）。
 
-The move constructor uses the transfer sigil (`^`) to indicate that
-ownership of the `name` value transfers from `take` to `self`. For
-trivial register-passable types like `Int`, omit the transfer sigil.
-Trivial types are always movable. Since they can't define custom move
-constructors or destructors, there's no special logic required to move.
+移动构造函数使用转移信号（`^`）指示 `name` 值的所有权从 `take` 转移到 `self`。对于像 `Int` 这样的简单寄存器可传递类型，省略转移信号。简单类型总是可移动的。由于它们不能定义自定义移动构造函数或析构函数，因此移动不需要特殊逻辑。
 
-At the end of the move constructor method, Mojo immediately invalidates the
-original variable, preventing any access to it. Because the argument is declared
-as `deinit`, it does *not* call the destructor, since that would destroy
-resources that have been transferred to the
-new instance. Invalidating the original variable is important to avoid memory
-errors on heap-allocated data, such as use-after-free and double-free errors.
+在移动构造函数方法结束时，Mojo 立即使原始变量无效，防止对其的任何访问。因为参数被声明为 `deinit`，它*不*调用析构函数，因为这将销毁已转移到新实例的资源。使原始变量无效对于避免堆分配数据上的内存错误（如释放后使用和双重释放错误）很重要。
 
 :::note
 
-A move constructor is *not required* to transfer ownership of a
-value. Mojo can copy the value and
-invalidate the original instance. You can learn more in the section about
-[ownership
-transfer](/docs/manual/values/ownership#transfer-arguments-var-and-).
+移动构造函数*不需要*转移值的所有权。Mojo 可以复制值并使原始实例无效。你可以在关于[所有权转移](/docs/manual/values/ownership#transfer-arguments-var-and-)的部分了解更多信息。
 
-If copying a type is expensive, moving it with a move constructor is much
-more efficient. For example, if a type has heap-allocated data, a copy
-constructor typically needs to allocate new storage to make a deep copy of the
-data.
+如果复制类型很昂贵，使用移动构造函数移动它要高效得多。例如，如果一个类型具有堆分配数据，复制构造函数通常需要分配新存储来对数据进行深度复制。
 
-For types without heap-allocated fields, you get no real benefit from the move
-constructor. Making copies of simple data types on the stack, like integers,
-floats, and booleans, is very cheap. Yet, if you allow your type to be copied,
-then there's generally no reason to disallow moves.
+对于没有堆分配字段的结构体，你从移动构造函数中得不到真正的好处。在栈上复制简单数据类型（如整数、浮点数和布尔值）非常便宜。然而，如果你允许你的类型被复制，那么通常没有理由禁止移动。
 
 :::
 
-### Custom move constructor
+### 自定义移动构造函数
 
-In practice, structs very rarely require a custom move constructor. A type might
-require a custom implementation if it has a pointer to itself or one of its
-fields, for example, since the struct's location in memory changes when it's
-moved.
+实际上，结构体很少需要自定义移动构造函数。如果类型指向自身或其字段之一，则类型可能需要自定义实现，因为结构体在移动时其内存中的位置会改变。
 
-The move constructor performs a consuming move: it [transfers
-ownership](/docs/manual/values/ownership#transfer-arguments-var-and-) of a
-value from one variable to another when the original variable's lifetime ends
-(also called a "destructive move").
+移动构造函数执行消耗移动：当原始变量的生命周期结束时，它将从一个变量将值[转移所有权](/docs/manual/values/ownership#transfer-arguments-var-and-)到另一个变量（也称为"破坏性移动"）。
 
-A critical feature of move constructors is that it takes the incoming value as a
-`deinit` argument, meaning this method gets unique ownership of the value.
-Moreover, because this is a dunder method that Mojo calls only when performing a
-move (during ownership transfer), the `take` argument is guaranteed to be a
-mutable reference to the original value, *not a copy* (unlike other methods that
-may declare an argument as `var`, but might receive the value as a copy if the
-method is called without the
-[`^` transfer sigil](/docs/manual/values/ownership/#transfer-arguments-var-and-)).
-That is, Mojo calls this move constructor *only* when the original variable's
-lifetime actually ends at the point of transfer.
+移动构造函数的一个关键功能是它将传入值作为 `deinit` 参数接收，这意味着此方法获得值的唯一所有权。此外，由于这是 Mojo 只在执行移动（在所有权转移期间）时调用的 dunder 方法，因此 `take` 参数保证是原始值的可变引用，*不是副本*（与其他可能将参数声明为 `var` 的方法不同，但如果在没有 [`^` 转移信号](/docs/manual/values/ownership/#transfer-arguments-var-and-) 的情况下调用方法，该方法可能会接收副本）。也就是说，Mojo *只有*在原始变量的生命周期确实在转移点结束时才调用此移动构造函数。
 
-## Move-only and immovable types
+## 仅可移动和不可移动类型
 
-To ensure your type can't be implicitly copied, you can make it "move-only" by
-making it `Movable` but not `Copyable`. A move-only type can be
-passed to other variables and passed into functions with any argument convention
-(`read`, `mut`, and `var`)—the only catch is that you must use the `^`
-transfer sigil to end the lifetime of a move-only type when assigning it to a
-new variable or when passing it as a `var` argument. The
-[`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) is an
-example of a move-only type: because it is designed to provide clear single
-ownership of a stored value, the `OwnedPointer` can be moved, but not copied.
+要确保你的类型不能被隐式复制，你可以通过使其 `Movable` 但不是 `Copyable` 使其"仅可移动"。仅可移动类型可以传递给其他变量，并使用任何参数约定（`read`、`mut` 和 `var`）传递给函数——唯一的注意事项是，你必须使用 `^` 转移信号在将其分配给新变量或作为 `var` 参数传递时结束仅可移动类型的生命周期。[`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) 是仅可移动类型的示例：因为它被设计为提供存储值的清晰单一所有权，所以 `OwnedPointer` 可以移动，但不能复制。
 
-In some (rare) cases, you may not want a type to be copyable *or* movable. The
-[`Atomic`](/docs/std/atomic/atomic/Atomic/) type is an example of a type that's
-neither copyable nor movable.
+在某些（罕见）情况下，你可能不希望类型可复制*或*可移动。[`Atomic`](/docs/std/atomic/atomic/Atomic/) 类型是不可复制也不可移动的类型的示例。
 
-:::note[Trivial types]
-Trivial types like `Int`, `Bool`, or `Float64` are the most common
-types in systems programming. Mojo doesn't need special support for
-these. They have no ownership semantics, no destructors, and are always
-passed in CPU registers.
+:::note[简单类型]
+
+像 `Int`、`Bool` 或 `Float64` 这样的简单类型是系统编程中最常见的类型。Mojo 不需要对此提供特殊支持。它们没有所有权语义，没有析构函数，并且总是在 CPU 寄存器中传递。
+
 :::
 
-### Trivial lifecycle methods
+### 简单生命周期方法
 
-The use of a decorator to identify trivial types will be phased out in favor
-of a more granular set of aliases, which are boolean flags set by the compiler:
+使用装饰器来识别简单类型的做法将被废弃，取而代之的是一组更细粒度的别名，它们是编译器设置的布尔标志：
 
-- The `Copyable` trait defines the alias `__copy_ctor_is_trivial`, which is an
-  optimization hint that guarantees that the value can be copied by its bits
-  from one location to another without causing any side effects.
+- `Copyable` trait 定义别名 `__copy_ctor_is_trivial`，这是一个优化提示，保证该值可以通过其位从一位置复制到另一位置而不引起任何副作用。
 
-- The `Movable` trait defines the alias `__move_ctor_is_trivial`, which is an
-  optimization hint that guarantees that the value can be moved by its bits
-  from one location to another without causing any side effects.
+- `Movable` trait 定义别名 `__move_ctor_is_trivial`，这是一个优化提示，保证该值可以通过其位从一位置移动到另一位置而不引起任何副作用。
 
-- The `AnyType` trait defines the alias `__del__is_trivial`, which is a hint
-  that the `__del__()` method is a no-op.
+- `AnyType` trait 定义别名 `__del__is_trivial`，这是一个提示，表明 `__del__()` 方法是无操作。

@@ -1,282 +1,139 @@
 ---
-title: GPU block and warp operations and synchronization
-sidebar_label: Block and warp operations and synchronization
-description: A description of GPU block and warp operations and synchronization.
+title: GPU 线程块和线程束操作与同步
+sidebar_label: 线程块和线程束操作与同步
+description: 介绍 GPU 线程块和线程束操作与同步机制。
 github_url: https://github.com/modular/modular/tree/main/mojo/examples/gpu-block-and-warp
 ---
 
-When multiple GPU threads write to the same memory location without a defined
-order of execution, a *race condition* occurs. The final outcome of the
-computation becomes non-deterministic, depending on the scheduling and timing
-of execution of threads by the GPU hardware. Such bugs are notoriously
-difficult to debug because they may not appear consistently in every run.
+当多个 GPU 线程在没有定义执行顺序的情况下写入同一内存位置时，就会发生*竞态条件*。计算的最终结果变得不确定，取决于 GPU 硬件对线程的调度和执行时序。这类 bug 以难以调试而闻名，因为它们可能不会在每次运行中一致地出现。
 
-To write correct and robust parallel programs, you need explicit
-mechanisms to coordinate the execution of threads and manage the visibility of
-their memory operations. These mechanisms are known as *synchronization
-primitives*. They are not merely performance optimizations; they are essential
-tools for correctness. Without them, threads operate in complete isolation,
-unable to safely share intermediate results, divide complex tasks, or perform
-the collective computations that are the hallmark of high-performance GPU
-algorithms.
+要编写正确且健壮的并行程序，你需要显式的机制来协调线程的执行并管理其内存操作的可见性。这些机制被称为*同步原语*。它们不仅仅是性能优化，而是确保正确性的必要工具。没有它们，线程将完全隔离运行，无法安全地共享中间结果、分配复杂任务或执行高性能 GPU 算法标志性的集体计算。
 
-A *barrier* is a fundamental synchronization primitive that creates a meeting
-point in the program where all participating threads must wait for each other.
-When a thread reaches a barrier, it pauses execution until every other thread
-in the group also arrives. This ensures that all threads proceed together past
-the barrier, maintaining consistent state and preventing race conditions when
-accessing shared data.
+*屏障*是一种基本的同步原语，它在程序中创建一个汇合点，所有参与的线程必须在此相互等待。当一个线程到达屏障时，它会暂停执行，直到组中的所有其他线程也到达。这确保了所有线程一起通过屏障，保持一致的状态并防止访问共享数据时的竞态条件。
 
-Mojo provides two complementary categories of GPU coordination tools.
-*Synchronization primitives* like `barrier()` and `syncwarp()` coordinate
-thread execution and enforce memory visibility, but they don't perform
-computation themselves—they're pure coordination mechanisms. In contrast,
-*collective operations* like reductions, broadcasts, and prefix sums combine
-synchronization with common computational patterns: they coordinate threads
-*and* compute a result. Use synchronization primitives when you need explicit
-control over when threads coordinate (such as managing access to shared memory
-between distinct phases of an algorithm), and use collective operations when
-you need to aggregate or distribute data across threads (such as computing a
-sum or maximum across a thread block or warp). Both types of tools are
-essential for writing correct and efficient GPU code, and understanding when to
-use each is key to building robust parallel algorithms.
+Mojo 提供了两类互补的 GPU 协调工具。*同步原语*（如 `barrier()` 和 `syncwarp()`）协调线程执行并强制内存可见性，但它们本身不执行计算——它们是纯粹的协调机制。相比之下，*集合操作*（如归约、广播和前缀和）将同步与常见计算模式结合：它们既协调线程*又*计算结果。当你需要显式控制线程何时协调时（例如在算法的不同阶段之间管理对共享内存的访问），使用同步原语；当你需要在线程之间聚合或分发数据时（例如计算线程块或线程束中的总和或最大值），使用集合操作。这两种工具对于编写正确且高效的 GPU 代码都是必不可少的，理解何时使用每种工具是构建健壮并行算法的关键。
 
-This guide covers Mojo's low-level primitives for managing coordination at the
-thread block and warp levels. For foundational GPU architecture concepts and
-detailed explanations of the GPU execution model, see
-[Intro to GPUs](/docs/manual/gpu/architecture/). For a discussion of basic
-kernel creation and device management, see
-[GPU programming fundamentals](/docs/manual/gpu/fundamentals/). The tiled matrix
-multiplication example later in this chapter uses
-[`TileTensor`](/docs/layout/tile_tensor/TileTensor/) and
-[`stack_allocation()`](/docs/layout/tile_tensor/stack_allocation/) to allocate
-shared memory tiles. For an introduction to `TileTensor` itself—including how to
-create one in global, shared, or local memory—see
-[Using `TileTensor`](/docs/manual/tile-tensor/tensors/#creating-a-tiletensor-in-shared-or-local-memory).
+本指南涵盖 Mojo 用于管理线程块和线程束级别协调的低级原语。有关基础 GPU 架构概念和 GPU 执行模型的详细说明，请参阅 [GPU 简介](/docs/manual/gpu/architecture/)。有关基本内核创建和设备管理的讨论，请参阅 [GPU 编程基础](/docs/manual/gpu/fundamentals/)。本章后面的分块矩阵乘法示例使用 [`TileTensor`](/docs/layout/tile_tensor/TileTensor/) 和 [`stack_allocation()`](/docs/layout/tile_tensor/stack_allocation/) 来分配共享内存块。有关 `TileTensor` 本身的介绍——包括如何在全局、共享或本地内存中创建它——请参阅[使用 `TileTensor`](/docs/manual/tile-tensor/tensors/#creating-a-tiletensor-in-shared-or-local-memory)。
 
-We'll explore Mojo's synchronization and collective communication primitives
-for coordinating parallel work on the GPU. Key topics include:
+我们将探索 Mojo 的同步和集合通信原语，用于协调 GPU 上的并行工作。关键主题包括：
 
-- [Block-level synchronization and operations](#block-level-synchronization-and-operations):
-  How to coordinate all threads within a thread block using
-  [`barrier()`](/docs/std/gpu/sync/sync/barrier/) and block reduction operations
-  from the [`gpu.primitives.block`](/docs/std/gpu/primitives/block/) module.
-- [Warp-level operations](#warp-level-operations): How to perform fine-grained
-  synchronization with [`syncwarp()`](/docs/std/gpu/sync/sync/syncwarp/) and
-  leverage high-speed data exchange using
-  [`gpu.primitives.warp`](/docs/std/gpu/primitives/warp/) primitives.
-- [Best practices and common pitfalls](#best-practices-and-common-pitfalls): How
-  to use these primitives correctly to write reliable and portable GPU code.
+- [线程块级同步和操作](#block-level-synchronization-and-operations)：如何使用 [`barrier()`](/docs/std/gpu/sync/sync/barrier/) 和 [`gpu.primitives.block`](/docs/std/gpu/primitives/block/) 模块中的线程块归约操作来协调线程块内的所有线程。
+- [线程束级操作](#warp-level-operations)：如何使用 [`syncwarp()`](/docs/std/gpu/sync/sync/syncwarp/) 执行细粒度同步，以及如何利用 [`gpu.primitives.warp`](/docs/std/gpu/primitives/warp/) 原语进行高速数据交换。
+- [最佳实践和常见陷阱](#best-practices-and-common-pitfalls)：如何正确使用这些原语来编写可靠且可移植的 GPU 代码。
 
-## Block-level synchronization and operations
+## 线程块级同步和操作
 
-This section covers coordination mechanisms for all threads within a thread
-block:
+本节涵盖线程块内所有线程的协调机制：
 
-- [The `barrier()` primitive](#the-barrier-primitive): The fundamental
-  synchronization primitive that ensures all threads reach the same point
-  before proceeding.
-- [Block-level reduction operations](#block-level-reduction-operations):
-  Higher-level collective operations (`sum`, `max`, `min`, `broadcast`,
-  `prefix_sum`) that combine synchronization with computation.
-- [Block synchronization example](#block-synchronization-example-tiled-matrix-multiplication):
-  A complete tiled matrix multiplication demonstrating practical barrier usage.
+- [`barrier()` 原语](#the-barrier-primitive)：基本的同步原语，确保所有线程在继续执行之前到达同一点。
+- [线程块级归约操作](#block-level-reduction-operations)：更高级的集合操作（`sum`、`max`、`min`、`broadcast`、`prefix_sum`），将同步与计算结合。
+- [线程块同步示例](#block-synchronization-example-tiled-matrix-multiplication)：一个完整的分块矩阵乘法示例，演示屏障的实际使用。
 
-These tools serve different but complementary purposes: `barrier()` is a pure
-synchronization primitive for coordinating execution and memory visibility,
-while block reduction operations are collective computations that internally
-handle their own synchronization. You can use `barrier()` to build custom
-coordination patterns, or use block reductions when you need both coordination
-and computation together.
+这些工具服务于不同但互补的目的：`barrier()` 是用于协调执行和内存可见性的纯同步原语，而线程块归约操作是内部自行处理同步的集合计算。你可以使用 `barrier()` 构建自定义协调模式，或者在需要同时进行协调和计算时使用线程块归约操作。
 
-### The `barrier()` primitive
+### `barrier()` 原语
 
-The [`gpu.sync.barrier()`](/docs/std/gpu/sync/sync/barrier/) function is the
-primary mechanism for coordinating all threads within a single thread block. It
-creates a synchronization point in the kernel's execution flow that no thread
-can pass until every other thread in its block has also reached that point.
+[`gpu.sync.barrier()`](/docs/std/gpu/sync/sync/barrier/) 函数是协调单个线程块内所有线程的主要机制。它在内核的执行流中创建一个同步点，任何线程都不能通过该点，直到其块中的所有其他线程也到达该点。
 
-The `barrier()` primitive does two things: it acts as both an execution barrier
-and a memory fence.
+`barrier()` 原语做两件事：它既充当执行屏障，又充当内存栅栏。
 
-- Execution barrier: As an execution barrier, `barrier()` ensures that the
-  execution of all threads in a block is paused at that point in the program.
-  The hardware scheduler will not allow any thread to proceed past the barrier
-  until all threads in that block have signaled their arrival.
+- 执行屏障：作为执行屏障，`barrier()` 确保块中所有线程的执行在程序中的该点暂停。硬件调度器不允许任何线程继续通过屏障，直到该块中的所有线程都已发出到达信号。
 
-- Memory fence: As a memory fence, `barrier()` enforces a strict ordering on
-  memory operations. It guarantees that all writes to shared memory (and global
-  memory, with respect to other threads in the same block) performed by any
-  thread *before* the barrier are completed and made visible to all other
-  threads in the block *after* they pass the barrier. This guarantee is what
-  prevents race conditions when threads communicate via shared memory.
+- 内存栅栏：作为内存栅栏，`barrier()` 对内存操作强制执行严格的顺序。它保证任何线程在屏障*之前*执行的对共享内存（以及相对于同一块中其他线程的全局内存）的所有写入操作都已完成，并在所有其他线程通过屏障*之后*对块中的所有其他线程可见。这个保证正是防止线程通过共享内存通信时发生竞态条件的关键。
 
-The most common use case for `barrier()` is managing access to the fast,
-on-chip shared memory shared by all threads within a block. Here's how a
-typical algorithm works:
+`barrier()` 最常见的用例是管理对线程块内所有线程共享的快速片上共享内存的访问。以下是典型算法的工作方式：
 
-1. Threads in a block cooperatively load a segment of data from the high-latency
-   global memory into a shared memory array. Each thread is responsible for
-   loading one or more elements.
+1. 块中的线程协作将一段数据从高延迟的全局内存加载到共享内存数组中。每个线程负责加载一个或多个元素。
 
-2. A call to `barrier()` is made. This is essential to ensure that the entire
-   data segment is fully loaded into shared memory before any thread attempts to
-   use it.
+2. 调用 `barrier()`。这对于确保在任何线程尝试使用数据之前，整个数据段已完全加载到共享内存中至关重要。
 
-3. Threads perform computations, reading from and writing to the shared memory
-   array. This phase leverages the low latency of shared memory to accelerate
-   the algorithm.
+3. 线程执行计算，对共享内存数组进行读写。此阶段利用共享内存的低延迟来加速算法。
 
-4. If the computation itself involves multiple stages of shared memory
-   communication, another `barrier()` call may be necessary to ensure the
-   results of one stage are visible before the next begins.
+4. 如果计算本身涉及多阶段共享内存通信，可能需要另一次 `barrier()` 调用，以确保一个阶段的结果在下一个阶段开始之前可见。
 
-5. Finally, threads write their results from shared memory back to global
-   memory.
+5. 最后，线程将其结果从共享内存写回全局内存。
 
-:::caution[Caution]
+:::caution[注意]
 
-A `barrier()` must be encountered by all threads within a block to avoid a
-deadlock. Placing a `barrier()` inside a conditional statement (such as an `if`
-or `else` block) is a common source of bugs. If the condition causes some
-threads to execute the `barrier()` while others skip it, the threads that reach
-the barrier will wait indefinitely for the other threads to arrive, causing the
-kernel to hang. Therefore, `barrier()` should be used in conditional code only
-if it is guaranteed that all threads in the block will evaluate the condition
-identically and follow the same execution path.
+`barrier()` 必须被块内的所有线程遇到，以避免死锁。将 `barrier()` 放在条件语句（如 `if` 或 `else` 块）中是常见的 bug 来源。如果条件导致某些线程执行 `barrier()` 而其他线程跳过它，到达屏障的线程将无限期地等待其他线程到达，导致内核挂起。因此，只有在保证块中的所有线程将相同地评估条件并遵循相同的执行路径时，才应在条件代码中使用 `barrier()`。
 
 :::
 
-The Mojo `barrier()` function is functionally equivalent to the
-`__syncthreads()` intrinsic in both NVIDIA CUDA and AMD HIP and
-`threadgroup_barrier(mem_flags::mem_threadgroup)` in Apple Metal, providing a
-portable syntax for this fundamental operation.
+Mojo 的 `barrier()` 函数在功能上等同于 NVIDIA CUDA 和 AMD HIP 中的 `__syncthreads()` 内建函数，以及 Apple Metal 中的 `threadgroup_barrier(mem_flags::mem_threadgroup)`，为这一基本操作提供了可移植的语法。
 
 :::tip
 
-For fine-grained synchronization within a single warp, see
-[`syncwarp()`](#warp-level-synchronization), which provides faster coordination
-for threads executing together in the same warp without requiring block-wide
-synchronization.
+有关单个线程束内的细粒度同步，请参阅 [`syncwarp()`](#warp-level-synchronization)，它为在同一线程束中一起执行的线程提供了更快的协调，无需块级同步。
 
 :::
 
-### Block-level reduction operations
+### 线程块级归约操作
 
-In addition to the basic `barrier()` primitive, Mojo provides higher-level
-block-wide collective operations through the
-[`gpu.primitives.block`](/docs/std/gpu/primitives/block/) module. These
-operations combine the coordination functionality of `barrier()` with common
-computational patterns, offering both convenience and performance benefits.
+除了基本的 `barrier()` 原语外，Mojo 还通过 [`gpu.primitives.block`](/docs/std/gpu/primitives/block/) 模块提供更高级的块级集合操作。这些操作将 `barrier()` 的协调功能与常见计算模式相结合，提供了便利性和性能优势。
 
-The `gpu.primitives.block` module includes several reduction primitives:
+`gpu.primitives.block` 模块包含几个归约原语：
 
-- [`sum(val)`](/docs/std/gpu/primitives/block/sum/): Computes the sum of `val`
-  across all threads in the block.
-- [`max(val)`](/docs/std/gpu/primitives/block/max/): Computes the maximum
-  `val` across all threads in the block.
-- [`min(val)`](/docs/std/gpu/primitives/block/min/): Computes the minimum
-  `val` across all threads in the block.
-- [`broadcast(val, src_thread=0)`](/docs/std/gpu/primitives/block/broadcast/):
-  Broadcasts the value from `src_thread` to all other threads in the block.
-- [`prefix_sum[exclusive=False](val)`](/docs/std/gpu/primitives/block/prefix_sum/):
-  Computes an inclusive (default) or exclusive prefix sum (scan) across threads
-  in the block. A prefix sum transforms an input sequence into cumulative sums:
-  given $[x_0, x_1, x_2, x_3]$, an *inclusive* scan produces $[x_0, x_0+x_1,
-  x_0+x_1+x_2, x_0+x_1+x_2+x_3]$ where each thread receives the sum of all
-  values up to and including its own, while an *exclusive* scan produces $[0,
-  x_0, x_0+x_1, x_0+x_1+x_2]$ where each thread receives the sum of all values
-  *before* it.
+- [`sum(val)`](/docs/std/gpu/primitives/block/sum/)：计算块中所有线程的 `val` 之和。
+- [`max(val)`](/docs/std/gpu/primitives/block/max/)：计算块中所有线程的 `val` 的最大值。
+- [`min(val)`](/docs/std/gpu/primitives/block/min/)：计算块中所有线程的 `val` 的最小值。
+- [`broadcast(val, src_thread=0)`](/docs/std/gpu/primitives/block/broadcast/)：将 `src_thread` 的值广播到块中的所有其他线程。
+- [`prefix_sum[exclusive=False](val)`](/docs/std/gpu/primitives/block/prefix_sum/)：计算块中线程的包含（默认）或排他前缀和（扫描）。前缀和将输入序列转换为累积和：给定 $[x_0, x_1, x_2, x_3]$，*包含*扫描产生 $[x_0, x_0+x_1, x_0+x_1+x_2, x_0+x_1+x_2+x_3]$，其中每个线程接收包括自身在内的所有值的和，而*排他*扫描产生 $[0, x_0, x_0+x_1, x_0+x_1+x_2]$，其中每个线程接收其*之前*所有值的和。
 
-These operations automatically handle the necessary synchronization and shared
-memory management internally, making them both easier to use correctly and
-often more efficient than manually implementing equivalent functionality with
-`barrier()` and shared memory operations.
+这些操作在内部自动处理必要的同步和共享内存管理，使它们比使用 `barrier()` 和共享内存操作手动实现等效功能更容易正确使用，且通常更高效。
 
-:::tip[Tip]
+:::tip[提示]
 
-Use `gpu.primitives.block` operations when you need to aggregate data across all
-threads in a thread block (which may span multiple warps). Use
-`gpu.primitives.warp` operations, as described in
-[Warp-level reduction operations](#warp-level-reduction-operations), when you
-need to aggregate only within a single warp, as they are significantly faster.
-For algorithms that reduce large datasets, use a hybrid approach: first reduce
-within warps using `gpu.primitives.warp` primitives, then combine warp results
-using `gpu.primitives.block` operations.
+当你需要聚合线程块中所有线程的数据（可能跨越多个线程束）时，使用 `gpu.primitives.block` 操作。当你只需要在单个线程束内聚合时，使用 `gpu.primitives.warp` 操作（如[线程束级归约操作](#warp-level-reduction-operations)中所述），因为它们明显更快。对于归约大型数据集的算法，使用混合方法：首先使用 `gpu.primitives.warp` 原语在线程束内归约，然后使用 `gpu.primitives.block` 操作合并线程束结果。
 
 :::
 
-### Using block operations in practice
+### 实践中使用线程块操作
 
-Block-level operations are commonly used in multi-stage algorithms where
-threads must coordinate through shared memory. A typical pattern involves:
+线程块级操作通常用于线程必须通过共享内存协调的多阶段算法。典型模式包括：
 
-1. Load phase: Threads cooperatively load data into shared memory
-2. Synchronize: Use `barrier()` to ensure all data is loaded
-3. Compute phase: Process data using shared memory
-4. Reduce phase: Use block reduction operations to aggregate results
+1. 加载阶段：线程协作将数据加载到共享内存
+2. 同步：使用 `barrier()` 确保所有数据已加载
+3. 计算阶段：使用共享内存处理数据
+4. 归约阶段：使用线程块归约操作聚合结果
 
-This pattern appears in algorithms like tiled matrix multiplication, stencil
-operations, and parallel reductions, where the combination of shared memory
-and proper synchronization enables significant performance improvements over
-naive approaches.
+这种模式出现在分块矩阵乘法、模板操作和并行归约等算法中，其中共享内存和正确同步的结合比朴素方法带来了显著的性能提升。
 
-### Block synchronization example: tiled matrix multiplication
+### 线程块同步示例：分块矩阵乘法
 
-Matrix multiplication benefits from a technique called *tiling*, where we break
-large matrices into smaller tiles that fit in the GPU's fast shared memory.
-Instead of repeatedly reading from slow global memory, threads in a block
-cooperatively load a tile into shared memory once, then all threads can access
-it multiple times. This creates a classic *producer-consumer* pattern: threads
-work together to load data (producer phase), then all threads use that data to
-compute results (consumer phase). Without proper synchronization between these
-phases, the algorithm produces incorrect results. For a deeper understanding of
-the tiling strategy, see
-[this section of our blog post on optimizing matrix multiplication on NVIDIA's Blackwell](https://www.modular.com/blog/matrix-multiplication-on-nvidias-blackwell-part-2-using-hardware-features-to-optimize-matmul#shared-memory).
+矩阵乘法受益于一种称为*分块*的技术，我们将大矩阵分解为适合 GPU 快速共享内存的小块。线程块中的线程协作将一个块加载到共享内存中一次，然后所有线程可以多次访问它，而不是重复从慢速全局内存读取。这创建了一个经典的*生产者-消费者*模式：线程协作加载数据（生产者阶段），然后所有线程使用该数据计算结果（消费者阶段）。如果这些阶段之间没有适当的同步，算法会产生不正确的结果。要更深入地理解分块策略，请参阅[我们关于在 NVIDIA Blackwell 上优化矩阵乘法的博客文章中的这一部分](https://www.modular.com/blog/matrix-multiplication-on-nvidias-blackwell-part-2-using-hardware-features-to-optimize-matmul#shared-memory)。
 
 ```mojo title="tiled_matmul.mojo"
 from std.math import ceildiv
 from std.sys import exit, has_accelerator
 
-# GPU programming imports from open source stdlib
 from std.gpu.sync import barrier
 from std.gpu.host import DeviceContext
 from std.gpu import thread_idx, block_idx
 from std.gpu.memory import AddressSpace
 
-# TileTensor support from open source layout package
 from layout import TileTensor, stack_allocation
 from layout.tile_layout import row_major
 
-# Data type selection: float32 provides good balance of precision and performance
 comptime float_dtype = DType.float32
 
-# Matrix dimensions: chosen to be small enough for easy understanding
-# while still demonstrating tiling concepts effectively
-comptime MATRIX_SIZE = 64  # 64x64 matrices
-comptime MATRIX_M = MATRIX_SIZE  # Number of rows in matrices A and C
-comptime MATRIX_N = MATRIX_SIZE  # Number of columns in matrices B and C
-comptime MATRIX_K = MATRIX_SIZE  # Shared dimension (A cols = B rows)
+comptime MATRIX_SIZE = 64
+comptime MATRIX_M = MATRIX_SIZE
+comptime MATRIX_N = MATRIX_SIZE
+comptime MATRIX_K = MATRIX_SIZE
 
-# Tile dimensions: chosen to fit comfortably in GPU shared memory
-# and demonstrate clear blocking behavior
-comptime TILE_SIZE = 16  # 16x16 tiles balance memory usage and parallelism
-comptime TILE_M = TILE_SIZE  # Tile height for matrix A and C
-comptime TILE_N = TILE_SIZE  # Tile width for matrix B and C
-comptime TILE_K = TILE_SIZE  # Tile depth for the K dimension
+comptime TILE_SIZE = 16
+comptime TILE_M = TILE_SIZE
+comptime TILE_N = TILE_SIZE
+comptime TILE_K = TILE_SIZE
 
-# Derived constants
-comptime NUM_TILES_PER_SIDE = MATRIX_SIZE // TILE_SIZE  # Number of tiles per matrix side (4)
-comptime THREADS_PER_TILE = TILE_SIZE * TILE_SIZE  # Threads needed per tile (256)
-comptime TOTAL_TILES_TO_PROCESS = NUM_TILES_PER_SIDE  # Tiles to process in K dimension
+comptime NUM_TILES_PER_SIDE = MATRIX_SIZE // TILE_SIZE
+comptime THREADS_PER_TILE = TILE_SIZE * TILE_SIZE
+comptime TOTAL_TILES_TO_PROCESS = NUM_TILES_PER_SIDE
 
-# TileTensor provides type-safe multi-dimensional data access with automatic memory layout handling
-# Layout definitions using example matrix dimensions
-comptime matrix_a_layout = row_major[MATRIX_M, MATRIX_K]()  # A: M x K
-comptime matrix_b_layout = row_major[MATRIX_K, MATRIX_N]()  # B: K x N
-comptime matrix_c_layout = row_major[MATRIX_M, MATRIX_N]()  # C: M x N
+comptime matrix_a_layout = row_major[MATRIX_M, MATRIX_K]()
+comptime matrix_b_layout = row_major[MATRIX_K, MATRIX_N]()
+comptime matrix_c_layout = row_major[MATRIX_M, MATRIX_N]()
 
-# Layout definitions for tile access
 comptime tile_a_layout = row_major[TILE_M, TILE_K]()
 comptime tile_b_layout = row_major[TILE_K, TILE_N]()
 
@@ -286,21 +143,17 @@ def tiled_matmul_kernel(
     matrix_b: TileTensor[float_dtype, type_of(matrix_b_layout), MutAnyOrigin],
     matrix_c: TileTensor[float_dtype, type_of(matrix_c_layout), MutAnyOrigin],
 ):
-    # Thread and block indices
     var thread_x = thread_idx.x
     var thread_y = thread_idx.y
     var block_x = block_idx.x
     var block_y = block_idx.y
 
-    # Global matrix coordinates
     var global_row = block_y * TILE_M + thread_y
     var global_col = block_x * TILE_N + thread_x
 
-    # Tile starting positions
     var tile_row_start = block_y * TILE_M
     var tile_col_start = block_x * TILE_N
 
-    # Allocate shared memory tiles for fast on-chip access
     var tile_a_shared = stack_allocation[
         float_dtype, address_space=AddressSpace.SHARED
     ](tile_a_layout)
@@ -309,20 +162,14 @@ def tiled_matmul_kernel(
         float_dtype, address_space=AddressSpace.SHARED
     ](tile_b_layout)
 
-    # Initialize accumulator and start tiling loop
     var accumulator: matrix_c.ElementType = 0.0
 
-    # Iterate through tiles along K dimension
-    # Use comptime for to unroll the loop at compile time
     comptime for k_tile in range(0, MATRIX_K, TILE_K):
-        # Cooperative tile loading
-        # Calculate global coordinates for tile loading
         var a_global_row = tile_row_start + thread_y
         var a_global_col = k_tile + thread_x
         var b_global_row = k_tile + thread_y
         var b_global_col = tile_col_start + thread_x
 
-        # Bounds checking
         var load_a_valid = (a_global_row < MATRIX_M) and (
             a_global_col < MATRIX_K
         )
@@ -330,7 +177,6 @@ def tiled_matmul_kernel(
             b_global_col < MATRIX_N
         )
 
-        # Load tiles into shared memory with bounds checking
         if load_a_valid:
             tile_a_shared[thread_y, thread_x] = matrix_a[
                 a_global_row, a_global_col
@@ -345,174 +191,81 @@ def tiled_matmul_kernel(
         else:
             tile_b_shared[thread_y, thread_x] = 0.0
 
-        # Ensure all threads finish loading tiles before any thread starts computing
         barrier()
 
-        # Compute dot product using shared memory tiles
         comptime for k in range(TILE_K):
             var a_element = tile_a_shared[thread_y, k]
             var b_element = tile_b_shared[k, thread_x]
             accumulator += a_element * b_element
 
-        # Ensure all threads finish computing before any thread loads next tiles
         barrier()
 
-    # Write final result to global memory with bounds checking
     if (global_row < MATRIX_M) and (global_col < MATRIX_N):
         matrix_c[global_row, global_col] = accumulator
 ```
 
-This tiled algorithm leverages the GPU's memory hierarchy for better
-performance. Shared memory is an on-chip cache that's much faster than global
-memory, but it's limited in size—a typical block might have only 48KB available.
-We break the computation into stages: threads cooperatively load small tiles
-from global memory into this fast shared memory, perform computations on those
-tiles, then repeat for the next set of tiles. Each thread loads one element per
-tile, creating coalesced memory accesses that maximize bandwidth. Once a tile
-sits in shared memory, all threads in the block can access it repeatedly without
-triggering expensive global memory reads.
+这种分块算法利用 GPU 的内存层次结构来获得更好的性能。共享内存是一种片上缓存，比全局内存快得多，但大小有限——一个典型的块可能只有 48KB 可用。我们将计算分为多个阶段：线程协作将小块从全局内存加载到这个快速共享内存中，对这些块执行计算，然后对下一组块重复此过程。每个线程加载每个块中的一个元素，创建合并的内存访问以最大化带宽。一旦一个块位于共享内存中，块中的所有线程都可以重复访问它，而不会触发昂贵的全局内存读取。
 
-The first `barrier()` call appears immediately after the cooperative tile
-loading phase. This synchronization point is critical: it ensures that all
-threads in the block finish writing their elements to shared memory before any
-thread begins reading from it to compute results. Without this barrier, you'd
-have a classic read-before-write race condition. Fast threads could race ahead
-and start reading from shared memory locations that slow threads haven't
-populated yet, leading to incorrect results from uninitialized data. Even worse,
-the bug would be non-deterministic—sometimes the code would work (if threads
-happened to execute in a favorable order), and sometimes it would fail, making
-debugging extremely difficult. The barrier eliminates this unpredictability by
-establishing a clear happens-before relationship: all writes complete before any
-reads begin.
+第一个 `barrier()` 调用出现在协作块加载阶段之后。这个同步点至关重要：它确保块中的所有线程在开始从中读取数据以计算结果之前，完成将其元素写入共享内存。没有这个屏障，就会出现经典的先读后写竞态条件。快速的线程可能抢先开始从慢速线程尚未填充的共享内存位置读取，导致从未初始化数据得到不正确的结果。更糟糕的是，这个 bug 是不确定的——有时代码会工作（如果线程碰巧以有利的顺序执行），有时会失败，使调试极其困难。屏障通过建立明确的先发生关系消除了这种不可预测性：所有写入在任何读取开始之前完成。
 
-The second `barrier()` call appears at the end of the computation phase, right
-before the loop continues to load the next set of tiles. This barrier solves the
-opposite problem: it prevents write-during-read races. Without it, fast threads
-could finish their computations and start loading new tile data into shared
-memory while slow threads are still reading the old data for their calculations.
-This would corrupt the shared memory with partially overwritten values, again
-producing incorrect results. The pattern is symmetric: the first barrier
-protects readers from seeing incomplete writes, while the second protects
-readers from concurrent overwrites. Together, these two barriers implement a
-safe producer-consumer cycle: load → barrier → compute → barrier → repeat. Both
-barriers are absolutely essential—removing either one breaks the algorithm's
-correctness.
+第二个 `barrier()` 调用出现在计算阶段的末尾，就在循环继续加载下一组块之前。这个屏障解决了相反的问题：它防止写入期间读取竞态。没有它，快速线程可能完成计算并开始将新的块数据加载到共享内存中，而慢速线程仍在读取旧数据进行计算。这会用部分覆盖的值损坏共享内存，再次产生不正确的结果。这种模式是对称的：第一个屏障保护读取者免受看到不完整写入的影响，而第二个屏障保护读取者免受并发覆盖的影响。这两个屏障一起实现了一个安全的生产者-消费者循环：加载 → 屏障 → 计算 → 屏障 → 重复。两个屏障都是绝对必要的——移除任何一个都会破坏算法的正确性。
 
-## Warp-level operations
+## 线程束级操作
 
-While the thread block is the scope for shared memory communication, the warp is
-the fundamental unit of execution scheduling. Because threads within a warp are
-executed simultaneously by the hardware, communication between them happens much
-faster than communication that requires coordination across different warps.
-Mojo provides a suite of primitives for these high-speed, intra-warp operations,
-which are essential for many performance-critical optimization patterns.
+虽然线程块是共享内存通信的范围，但线程束是执行调度的基本单位。由于线程束内的线程由硬件同时执行，它们之间的通信比需要跨不同线程束协调的通信快得多。Mojo 为这些高速的线程束内操作提供了一套原语，这对许多性能关键的优化模式至关重要。
 
-This section covers high-speed coordination and data exchange within a single
-warp:
+本节涵盖单个线程束内的高速协调和数据交换：
 
-- [Warp-level synchronization](#warp-level-synchronization): How to use
-  `syncwarp()` for fine-grained synchronization within a warp, and when it's
-  needed vs. when it's not.
-- [Warp-level data exchange](#warp-level-data-exchange): Register-to-register
-  communication with shuffle operations (`shuffle_up`, `shuffle_down`,
-  `shuffle_xor`, `shuffle_idx`, `broadcast`).
-- [Warp-level reduction operations](#warp-level-reduction-operations):
-  High-performance collective operations (`sum`, `max`, `min`, `prefix_sum`)
-  that operate only within a warp.
+- [线程束级同步](#warp-level-synchronization)：如何使用 `syncwarp()` 进行线程束内的细粒度同步，以及何时需要它，何时不需要。
+- [线程束级数据交换](#warp-level-data-exchange)：使用 shuffle 操作（`shuffle_up`、`shuffle_down`、`shuffle_xor`、`shuffle_idx`、`broadcast`）进行寄存器到寄存器通信。
+- [线程束级归约操作](#warp-level-reduction-operations)：仅在线程束内操作的高性能集合操作（`sum`、`max`、`min`、`prefix_sum`）。
 
-### Warp-level synchronization
+### 线程束级同步
 
-The [`gpu.sync.syncwarp()`](/docs/std/gpu/sync/sync/syncwarp/) function
-provides a more granular synchronization barrier that operates only on the
-threads within a single warp.
+[`gpu.sync.syncwarp()`](/docs/std/gpu/sync/sync/syncwarp/) 函数提供了更细粒度的同步屏障，仅对单个线程束内的线程进行操作。
 
-This function handles *thread divergence*. On some GPU architectures, threads
-within a warp can follow different execution paths due to conditional branching.
-`syncwarp()` forces the specified threads in the warp to reconverge at a single
-point before proceeding.
+此函数处理*线程分歧*。在某些 GPU 架构上，线程束内的线程可能由于条件分支而遵循不同的执行路径。`syncwarp()` 强制线程束中指定的线程在继续之前在单一点重新汇聚。
 
 :::tip
 
-For coordinating threads across multiple warps within a thread block, use
-[`barrier()`](#the-barrier-primitive) instead, which synchronizes all threads in
-the block and provides memory fence guarantees for shared memory access.
+要协调线程块内跨多个线程束的线程，请使用 [`barrier()`](#the-barrier-primitive)，它会同步块中的所有线程并为共享内存访问提供内存栅栏保证。
 
 :::
 
-The `syncwarp()` function takes an optional `mask` argument. This is a 32-bit or
-64-bit integer (depending on the warp size of the architecture) that acts as a
-bitmask. The `i`th bit of the mask corresponds to the thread at lane `i` within
-the warp. If a bit is set to 1, the corresponding thread participates in the
-synchronization; if it is 0, it does not. The default value of -1 (all bits set
-to 1) synchronizes all threads in the warp.
+`syncwarp()` 函数接受一个可选的 `mask` 参数。这是一个 32 位或 64 位整数（取决于架构的线程束大小），用作位掩码。掩码的第 `i` 位对应线程束中通道 `i` 的线程。如果某位设置为 1，则对应的线程参与同步；如果为 0，则不参与。默认值 -1（所有位设置为 1）同步线程束中的所有线程。
 
-Understanding `syncwarp()` requires knowing its platform-dependent behavior,
-which Mojo's portable API abstracts away:
+理解 `syncwarp()` 需要了解其平台相关的行为，Mojo 的可移植 API 将其抽象化了：
 
-- On NVIDIA GPUs supporting independent thread scheduling (Volta architecture
-  and newer), threads within a warp can genuinely diverge. In this context,
-  `syncwarp()` compiles to an active hardware instruction (`bar.warp.sync`) that
-  forces the participating threads to wait for each other. It is necessary for
-  correctness in algorithms that rely on warp-synchronous behavior.
+- 在支持独立线程调度的 NVIDIA GPU（Volta 架构及更新版本）上，线程束内的线程可以真正地分歧。在这种情况下，`syncwarp()` 编译为活动的硬件指令（`bar.warp.sync`），强制参与的线程相互等待。对于依赖线程束同步行为的算法的正确性而言，它是必要的。
 
-- On AMD GPUs, threads within a wavefront (the AMD equivalent of a warp) are
-  guaranteed by the hardware to execute in lock-step. They cannot diverge in the
-  same way. Consequently, `syncwarp()` is a **no-op** on AMD architectures; the
-  Mojo compiler emits no instruction for it.
+- 在 AMD GPU 上，波前（AMD 中与线程束等价的概念）内的线程由硬件保证以锁步方式执行。它们不能以同样的方式分歧。因此，`syncwarp()` 在 AMD 架构上是**空操作**；Mojo 编译器不会为其发出任何指令。
 
-- On Apple silicon GPUs, this provides only execution synchronization within a
-  SIMD group (the Apple equivalent of a warp), with no memory fence (the Apple
-  Metal equivalent of `simdgroup_barrier(mem_flags::mem_none)`). Lane masks are
-  not supported, so the `mask` argument is ignored and all active lanes must
-  reach this point.
+- 在 Apple Silicon GPU 上，这仅提供 SIMD 组（Apple 中与线程束等价的概念）内的执行同步，没有内存栅栏（等同于 Apple Metal 的 `simdgroup_barrier(mem_flags::mem_none)`）。不支持通道掩码，因此 `mask` 参数被忽略，所有活动通道必须到达此点。
 
-This difference highlights a key benefit of Mojo. You write code against a
-single, portable API. The compiler is responsible for generating the correct,
-architecture-specific code. Therefore, if an algorithm relies on `syncwarp()`
-for correctness on NVIDIA hardware, it still behaves as expected on other
-vendors' hardware.
+这种差异突显了 Mojo 的一个关键优势。你针对单一的可移植 API 编写代码。编译器负责生成正确的、特定于架构的代码。因此，如果算法依赖 `syncwarp()` 在 NVIDIA 硬件上的正确性，它在其他厂商的硬件上仍然会按预期运行。
 
 :::note
 
-[Warp shuffle operations](#warp-level-data-exchange) (like `shuffle_down()`,
-`shuffle_xor()`, etc.) and
-[warp reduction operations](#warp-level-reduction-operations) (like `max()`,
-`prefix_sum()`, `sum()`, etc.) provide **implicit synchronization** and do
-**not** require `syncwarp()` calls before them. Calling `syncwarp()` before a
-warp shuffle or reduction operation is redundant and unnecessary.
+[线程束 shuffle 操作](#warp-level-data-exchange)（如 `shuffle_down()`、`shuffle_xor()` 等）和[线程束归约操作](#warp-level-reduction-operations)（如 `max()`、`prefix_sum()`、`sum()` 等）提供**隐式同步**，**不**需要在它们之前调用 `syncwarp()`。在线程束 shuffle 或归约操作之前调用 `syncwarp()` 是冗余且不必要的。
 
 :::
 
-### Warp-level data exchange
+### 线程束级数据交换
 
-Shuffle operations are the cornerstone of high-performance warp-level
-algorithms. These primitives enable threads within a warp to exchange data
-directly through registers, making them essential for implementing efficient
-parallel patterns like reductions, stencil computations, and sliding window
-operations.
+Shuffle 操作是高性能线程束级算法的基石。这些原语使线程束内的线程能够直接通过寄存器交换数据，使其成为实现高效并行模式（如归约、模板计算和滑动窗口操作）的关键。
 
-Unlike shared memory communication that requires explicit synchronization and
-memory transactions, shuffle operations use the warp's simultaneous execution
-to achieve near-zero latency data exchange. This makes them ideal for:
+与需要显式同步和内存事务的共享内存通信不同，shuffle 操作利用线程束的同时执行来实现接近零延迟的数据交换。这使它们非常适合：
 
-- Neighbor data access: Access elements from adjacent threads in stencil
-  operations or convolutions.
-- Tree-structured reductions: Implement butterfly patterns for parallel
-  reductions and prefix operations.
-- Data broadcasting: Distribute computed values or constants across all threads
-  in a warp.
-- Sliding window algorithms: Efficiently compute running maximums, minimums, or
-  moving averages.
+- 邻居数据访问：在模板操作或卷积中访问相邻线程的元素。
+- 树结构归约：实现用于并行归约和前缀操作的蝶形模式。
+- 数据广播：将计算值或常量分发到线程束中的所有线程。
+- 滑动窗口算法：高效计算运行最大值、最小值或移动平均值。
 
-#### Warp shuffle operations
+#### 线程束 shuffle 操作
 
-The [`gpu.primitives.warp`](/docs/std/gpu/primitives/warp/) module provides
-five shuffle primitives, each optimized for specific data movement patterns:
+[`gpu.primitives.warp`](/docs/std/gpu/primitives/warp/) 模块提供五个 shuffle 原语，每个都针对特定的数据移动模式进行了优化：
 
-- [`shuffle_up(value, offset)`](/docs/std/gpu/primitives/warp/shuffle_up/):
-  Each thread receives the value from a thread with a lower lane ID (that is,
-  from lane current_lane - `offset`). If the resulting lane ID is less than 0,
-  the thread receives an undefined value.
+- [`shuffle_up(value, offset)`](/docs/std/gpu/primitives/warp/shuffle_up/)：每个线程从具有较低通道 ID 的线程（即通道 current_lane - `offset`）接收值。如果结果通道 ID 小于 0，线程接收未定义的值。
 
   <figure>
 
@@ -520,15 +273,12 @@ five shuffle primitives, each optimized for specific data movement patterns:
   ![](../images/gpu/shuffle-up-dark.png#dark)
 
   <figcaption>
-    <b>Figure 1.</b> The `shuffle_up()` operation, with a `offset` of 2.
+    <b>图 1。</b>`shuffle_up()` 操作，`offset` 为 2。
   </figcaption>
 
   </figure>
 
-- [`shuffle_down(value, offset)`](/docs/std/gpu/primitives/warp/shuffle_down/):
-  Each thread receives a value from a thread with a higher lane ID (that is,
-  from lane current_lane + `offset`). If the resulting lane ID is greater than
-  or equal to the warp size, the thread receives an undefined value.
+- [`shuffle_down(value, offset)`](/docs/std/gpu/primitives/warp/shuffle_down/)：每个线程从具有较高通道 ID 的线程（即通道 current_lane + `offset`）接收值。如果结果通道 ID 大于或等于线程束大小，线程接收未定义的值。
 
   <figure>
 
@@ -536,15 +286,12 @@ five shuffle primitives, each optimized for specific data movement patterns:
   ![](../images/gpu/shuffle-down-dark.png#dark)
 
   <figcaption>
-  <b>Figure 2.</b> The `shuffle_down()` operation, with a `offset` of 2.
+  <b>图 2。</b>`shuffle_down()` 操作，`offset` 为 2。
   </figcaption>
 
   </figure>
 
-- [`shuffle_xor(value, offset)`](/docs/std/gpu/primitives/warp/shuffle_xor/):
-  Each thread exchanges its value with the thread at lane current_lane XOR
-  `offset`. This is particularly useful for implementing butterfly patterns
-  common in algorithms like FFTs and parallel reductions.
+- [`shuffle_xor(value, offset)`](/docs/std/gpu/primitives/warp/shuffle_xor/)：每个线程与通道 current_lane XOR `offset` 处的线程交换值。这对于实现 FFT 和并行归约等算法中常见的蝶形模式特别有用。
 
   <figure>
 
@@ -552,15 +299,12 @@ five shuffle primitives, each optimized for specific data movement patterns:
   ![](../images/gpu/shuffle-xor-dark.png#dark)
 
   <figcaption>
-    <b>Figure 3.</b> The `shuffle_xor()` operation, with an `offset` of 1.
+    <b>图 3。</b>`shuffle_xor()` 操作，`offset` 为 1。
   </figcaption>
 
   </figure>
 
-- [`shuffle_idx(value, offset)`](/docs/std/gpu/primitives/warp/shuffle_idx/):
-  Each thread receives the value from the thread at the specified `offset`.
-  This is effectively a broadcast from one lane to all others in the warp.
-  Essential for sharing computed results or constants across the entire warp.
+- [`shuffle_idx(value, offset)`](/docs/std/gpu/primitives/warp/shuffle_idx/)：每个线程从指定 `offset` 位置的线程接收值。这实际上是从一个通道向线程束中所有其他通道的广播。对于在线程束中共享计算结果或常量至关重要。
 
   <figure>
 
@@ -568,14 +312,12 @@ five shuffle primitives, each optimized for specific data movement patterns:
   ![](../images/gpu/shuffle-idx-dark.png#dark)
 
   <figcaption>
-    <b>Figure 4.</b> The `shuffle_idx()` operation, with a `offset` of 2.
+    <b>图 4。</b>`shuffle_idx()` 操作，`offset` 为 2。
   </figcaption>
 
   </figure>
 
-- [`broadcast(value)`](/docs/std/gpu/primitives/warp/broadcast/): A
-  convenience wrapper around `shuffle_idx()` that distributes the value from
-  lane 0 to all other threads in the warp.
+- [`broadcast(value)`](/docs/std/gpu/primitives/warp/broadcast/)：`shuffle_idx()` 的便捷封装，将通道 0 的值分发到线程束中的所有其他线程。
 
   <figure>
 
@@ -583,292 +325,185 @@ five shuffle primitives, each optimized for specific data movement patterns:
   ![](../images/gpu/broadcast-dark.png#dark)
 
   <figcaption>
-    <b>Figure 5.</b> The `broadcast()` operation.
+    <b>图 5。</b>`broadcast()` 操作。
   </figcaption>
 
   </figure>
 
-All of these primitives other than `broadcast()` take an optional `mask`
-argument that serves a dual purpose:
+除 `broadcast()` 外，所有这些原语都接受一个可选的 `mask` 参数，该参数具有双重目的：
 
-1. **Thread participation**: The mask specifies which threads participate in the
-   shuffle operation. It is a 32-bit or 64-bit integer (depending on the warp
-   size) where the `i`th bit corresponds to lane `i`. If a bit is set to 1, that
-   thread participates; if 0, it does not.
+1. **线程参与**：掩码指定哪些线程参与 shuffle 操作。它是一个 32 位或 64 位整数（取决于线程束大小），其中第 `i` 位对应通道 `i`。如果某位设置为 1，则该线程参与；如果为 0，则不参与。
 
-2. **Implicit synchronization**: The mask also provides automatic
-   synchronization for all participating threads. All threads whose bits are set
-   in the mask will be synchronized before the shuffle completes, ensuring
-   correct data exchange even after divergent control flow.
+2. **隐式同步**：掩码还为所有参与线程提供自动同步。掩码中设置了位的所有线程将在 shuffle 完成之前被同步，确保即使在分歧控制流之后也能正确交换数据。
 
-The default value of -1 (all bits set to 1) includes all threads in the warp.
+默认值 -1（所有位设置为 1）包括线程束中的所有线程。
 
-:::caution[Warning]
+:::caution[警告]
 
-When using a full mask (all bits set) in divergent code, **all threads in the
-warp must eventually reach the shuffle instruction**, even if some threads don't
-actively use the result. If some threads take a path that never reaches the
-shuffle, those threads will never arrive at the synchronization point, causing
-the other threads to hang indefinitely waiting for them.
+在分歧代码中使用完整掩码（所有位设置）时，**线程束中的所有线程最终都必须到达 shuffle 指令**，即使某些线程不主动使用结果。如果某些线程走了一条永远不会到达 shuffle 的路径，这些线程将永远不会到达同步点，导致其他线程无限期地等待它们。
 
 :::
 
-These five primitives form the foundation for complex warp-level algorithms and
-serve as building blocks for higher-level collective operations.
+这五个原语构成了复杂线程束级算法的基础，并作为更高级集合操作的构建块。
 
-#### Choosing the right shuffle primitive
+#### 选择正确的 shuffle 原语
 
-While each shuffle primitive can technically perform any data exchange pattern,
-certain operations naturally fit specific use cases. Understanding these
-patterns helps you write more efficient and readable code.
+虽然每个 shuffle 原语在技术上都可以执行任何数据交换模式，但某些操作自然适合特定的用例。理解这些模式有助于你编写更高效和可读的代码。
 
-- If you need to share one thread's data with everyone else, reach for
-  `broadcast()` when the source is lane 0, or `shuffle_idx()` for any other
-  lane. Think of distributing a loop bound that one thread computed, or sharing
-  a decision that a "leader" thread made.
+- 如果你需要将一个线程的数据与所有其他线程共享，当源是通道 0 时使用 `broadcast()`，对于任何其他通道使用 `shuffle_idx()`。想象分发一个线程计算的循环边界，或共享"领导"线程做出的决策。
 
-- For algorithms that process neighboring data—like stencil operations or
-  convolutions—`shuffle_up()` and `shuffle_down()` are your best bet. These let
-  you grab values from adjacent threads without the coordination overhead of
-  shared memory. A sliding window average becomes as simple as adding your
-  neighbors' values to your own.
+- 对于处理邻居数据的算法——如模板操作或卷积——`shuffle_up()` 和 `shuffle_down()` 是最佳选择。它们让你从相邻线程获取值，而无需共享内存的协调开销。滑动窗口平均值变得像将邻居的值加到你自己的值一样简单。
 
-- When implementing tree-structured algorithms like parallel reductions,
-  `shuffle_xor()` shines. Its butterfly communication pattern naturally maps to
-  how these algorithms exchange data. Most high-performance reduction
-  implementations use `shuffle_xor()` because it has excellent instruction
-  scheduling properties.
+- 在实现树结构算法（如并行归约）时，`shuffle_xor()` 表现出色。其蝶形通信模式自然映射到这些算法交换数据的方式。大多数高性能归约实现使用 `shuffle_xor()`，因为它具有出色的指令调度特性。
 
-Here are some specific patterns where each primitive excels.
+以下是每个原语表现出色的一些具体模式。
 
-`shuffle_idx()` and `broadcast()` work well for:
+`shuffle_idx()` 和 `broadcast()` 适用于：
 
-- Distributing computed constants or array bounds
-- Implementing voting mechanisms across the warp
-- Sharing results from a designated "leader" thread
+- 分发计算常量或数组边界
+- 在线程束中实现投票机制
+- 共享指定"领导"线程的结果
 
-`shuffle_up()` and `shuffle_down()` are perfect for:
+`shuffle_up()` 和 `shuffle_down()` 非常适合：
 
-- Stencil computations that need neighboring grid points
-- Finite difference schemes requiring adjacent values
-- Any sliding window algorithm (moving averages, local extrema)
+- 需要相邻网格点的模板计算
+- 需要相邻值的有限差分方案
+- 任何滑动窗口算法（移动平均值、局部极值）
 
-`shuffle_xor()` excels at:
+`shuffle_xor()` 擅长：
 
-- Parallel reductions using butterfly patterns
-- Any computation with power-of-2 communication strides
+- 使用蝶形模式的并行归约
+- 任何具有 2 的幂通信步长的计算
 
-When optimizing performance, prefer shuffle operations over shared memory for
-register-sized data, and remember that `shuffle_xor()` typically has the best
-instruction scheduling characteristics for reduction patterns.
+在优化性能时，对于寄存器大小的数据，优先使用 shuffle 操作而不是共享内存，并记住 `shuffle_xor()` 对于归约模式通常具有最佳的指令调度特性。
 
-### Warp-level reduction operations
+### 线程束级归约操作
 
-The `gpu.primitives.warp` module also provides higher-level functions for
-performing common reduction computations across all threads in a warp. These
-functions take advantage of hardware-specific intrinsics where possible, and
-fall back to shuffle-based reduction on other architectures:
+`gpu.primitives.warp` 模块还提供更高级的函数，用于在线程束中的所有线程之间执行常见的归约计算。这些函数在可能的情况下利用硬件特定的内建函数，在其他架构上回退到基于 shuffle 的归约：
 
-- [`max(value)`](/docs/std/gpu/primitives/warp/max/): Computes the maximum
-  `value` across all threads in the warp. The result is broadcast to all lanes.
+- [`max(value)`](/docs/std/gpu/primitives/warp/max/)：计算线程束中所有线程的 `value` 的最大值。结果广播到所有通道。
 
-- [`min(value)`](/docs/std/gpu/primitives/warp/min/): Computes the minimum
-  `value` across all threads in the warp. The result is broadcast to all lanes.
+- [`min(value)`](/docs/std/gpu/primitives/warp/min/)：计算线程束中所有线程的 `value` 的最小值。结果广播到所有通道。
 
-- [`sum(value)`](/docs/std/gpu/primitives/warp/sum/): Computes the sum of
-  `value` across all threads in the warp. The result is broadcast to all lanes.
+- [`sum(value)`](/docs/std/gpu/primitives/warp/sum/)：计算线程束中所有线程的 `value` 之和。结果广播到所有通道。
 
-- [`prefix_sum[exclusive=False](value)`](/docs/std/gpu/primitives/warp/prefix_sum/):
-  Computes an inclusive (default) or exclusive prefix sum (scan) across threads
-  in the warp. A prefix sum transforms an input sequence into cumulative sums:
-  given $[x_0, x_1, x_2, x_3]$, an *inclusive* scan produces $[x_0, x_0+x_1,
-  x_0+x_1+x_2, x_0+x_1+x_2+x_3]$ where each thread receives the sum of all
-  values up to and including its own, while an *exclusive* scan produces $[0,
-  x_0, x_0+x_1, x_0+x_1+x_2]$ where each thread receives the sum of all values
-  *before* it.
+- [`prefix_sum[exclusive=False](value)`](/docs/std/gpu/primitives/warp/prefix_sum/)：计算线程束中线程的包含（默认）或排他前缀和（扫描）。前缀和将输入序列转换为累积和：给定 $[x_0, x_1, x_2, x_3]$，*包含*扫描产生 $[x_0, x_0+x_1, x_0+x_1+x_2, x_0+x_1+x_2+x_3]$，其中每个线程接收包括自身在内的所有值的和，而*排他*扫描产生 $[0, x_0, x_0+x_1, x_0+x_1+x_2]$，其中每个线程接收其*之前*所有值的和。
 
-You'll find these primitives most useful when computing aggregates across
-threads that are already working closely together. Use `sum()` for computing
-totals, averages, or accumulating values across small data segments. The `max()`
-and `min()` functions work well for finding extremes in your data or
-implementing voting mechanisms where threads need consensus. `prefix_sum()` is
-particularly valuable for *scan* operations—computing running totals or building
-cumulative results as you process data. It's essential for algorithms that need
-to track "how much have we processed so far?" at each step. These operations are
-significantly faster than a block-level reduction that uses shared memory and
-`barrier()` calls.
+你会发现这些原语在计算已经紧密协作的线程之间的聚合时最有用。使用 `sum()` 计算小数据段的总计、平均值或累积值。`max()` 和 `min()` 函数适用于查找数据中的极值或实现线程需要共识的投票机制。`prefix_sum()` 对于*扫描*操作特别有价值——在处理数据时计算运行总计或构建累积结果。它对于需要在每一步跟踪"到目前为止处理了多少？"的算法至关重要。这些操作比使用共享内存和 `barrier()` 调用的线程块级归约快得多。
 
-### Using warp operations in practice
+### 实践中使用线程束操作
 
-Warp operations excel in algorithms that require frequent, fine-grained data
-exchange between nearby threads. Common patterns include:
+线程束操作在需要频繁、细粒度数据交换的算法中表现出色。常见模式包括：
 
-- Sliding window operations: Use `shuffle_up()` and `shuffle_down()` to
-  access neighboring lane values.
+- 滑动窗口操作：使用 `shuffle_up()` 和 `shuffle_down()` 访问相邻通道值。
 
-- Butterfly reductions: Use `shuffle_xor()` for efficient tree-like
-  reduction patterns that minimize the number of shuffle steps.
+- 蝶形归约：使用 `shuffle_xor()` 实现高效的树状归约模式，最小化 shuffle 步数。
 
-- Broadcasting computed values: Use `broadcast()` to share a single thread's
-  computation result (like a loop bound or pointer) across the entire warp.
+- 广播计算值：使用 `broadcast()` 在整个线程束中共享单个线程的计算结果（如循环边界或指针）。
 
-These operations are particularly valuable in algorithms where the overhead of
-block-level synchronization would be prohibitive, such as in inner loops of
-compute-intensive kernels or when processing data that naturally aligns with
-warp boundaries.
+这些操作在块级同步开销过大的算法中特别有价值，例如在计算密集型内核的内部循环中，或处理自然对齐线程束边界的数据时。
 
-## Advanced synchronization mechanisms
+## 高级同步机制
 
-Beyond the fundamental `barrier()` and `syncwarp()` primitives, Mojo provides
-additional synchronization mechanisms for specialized use cases and
-architecture-specific optimizations. These advanced primitives enable
-fine-grained control over memory ordering, asynchronous operations, and
-instruction scheduling. However, most of these mechanisms are available only on
-specific architectures. Consult the Mojo API reference documentation for the
-latest information on availability.
+除了基本的 `barrier()` 和 `syncwarp()` 原语外，Mojo 还为专门用例和架构特定优化提供了额外的同步机制。这些高级原语支持对内存排序、异步操作和指令调度进行细粒度控制。然而，这些机制中的大多数仅在特定架构上可用。有关可用性的最新信息，请参阅 Mojo API 参考文档。
 
-Mechanisms currently available only on NVIDIA GPUs:
+目前仅在 NVIDIA GPU 上可用的机制：
 
-- **Semaphores**
-  ([`gpu.sync.semaphore.Semaphore`](/docs/std/gpu/sync/semaphore/Semaphore/),
-  [`gpu.sync.semaphore.NamedBarrierSemaphore`](/docs/std/gpu/sync/semaphore/NamedBarrierSemaphore/)):
-  Device-wide semaphore implementations for inter-CTA synchronization using
-  shared lock variables. Provides
-  [`fetch()`](/docs/std/gpu/sync/semaphore/Semaphore/#fetch),
-  [`wait()`](/docs/std/gpu/sync/semaphore/Semaphore/#wait),
-  [`release()`](/docs/std/gpu/sync/semaphore/Semaphore/#release), and
-  [`state()`](/docs/std/gpu/sync/semaphore/Semaphore/#state) methods for state
-  management methods for coordinating work across thread blocks.
+- **信号量**
+  ([`gpu.sync.semaphore.Semaphore`](/docs/std/gpu/sync/semaphore/Semaphore/)、
+  [`gpu.sync.semaphore.NamedBarrierSemaphore`](/docs/std/gpu/sync/semaphore/NamedBarrierSemaphore/))：
+  使用共享锁变量的设备级信号量实现，用于 CTA 间同步。提供
+  [`fetch()`](/docs/std/gpu/sync/semaphore/Semaphore/#fetch)、
+  [`wait()`](/docs/std/gpu/sync/semaphore/Semaphore/#wait)、
+  [`release()`](/docs/std/gpu/sync/semaphore/Semaphore/#release) 和
+  [`state()`](/docs/std/gpu/sync/semaphore/Semaphore/#state) 方法，用于协调跨线程块工作的状态管理。
 
-- **Named barriers**
-  ([`gpu.sync.named_barrier()`](/docs/std/gpu/sync/sync/named_barrier/),
-  [`gpu.sync.named_barrier_arrive()`](/docs/std/gpu/sync/sync/named_barrier_arrive/)):
-  Hardware-accelerated block-level barriers using barrier IDs (0-16) for
-  split-phase synchronization patterns. Useful for TMA operations and
-  high-performance pipeline algorithms.
+- **命名屏障**
+  ([`gpu.sync.named_barrier()`](/docs/std/gpu/sync/sync/named_barrier/)、
+  [`gpu.sync.named_barrier_arrive()`](/docs/std/gpu/sync/sync/named_barrier_arrive/))：
+  使用屏障 ID（0-16）的硬件加速块级屏障，用于分阶段同步模式。适用于 TMA 操作和高性能流水线算法。
 
-- **Memory barriers**: A suite of functions for tracking asynchronous memory
-  operations and coordinating phased synchronization in shared memory. Includes
-  [`gpu.sync.mbarrier_init()`](/docs/std/gpu/sync/sync/mbarrier_init/),
-  ([`gpu.sync.mbarrier_arrive()`](/docs/std/gpu/sync/sync/mbarrier_arrive/),
-  [`gpu.sync.mbarrier_arrive_expect_tx_shared()`](/docs/std/gpu/sync/sync/mbarrier_arrive_expect_tx_shared/),
-  [`gpu.sync.mbarrier_arrive_expect_tx_relaxed()`](/docs/std/gpu/sync/sync/mbarrier_arrive_expect_tx_relaxed/),
-  [`gpu.sync.mbarrier_test_wait()`](/docs/std/gpu/sync/sync/mbarrier_test_wait/),
-  and
-  [`gpu.sync.mbarrier_try_wait_parity_shared()`](/docs/std/gpu/sync/sync/mbarrier_try_wait_parity_shared/)).
+- **内存屏障**：一套用于跟踪异步内存操作和协调共享内存中分阶段同步的函数。包括
+  [`gpu.sync.mbarrier_init()`](/docs/std/gpu/sync/sync/mbarrier_init/)、
+  ([`gpu.sync.mbarrier_arrive()`](/docs/std/gpu/sync/sync/mbarrier_arrive/)、
+  [`gpu.sync.mbarrier_arrive_expect_tx_shared()`](/docs/std/gpu/sync/sync/mbarrier_arrive_expect_tx_shared/)、
+  [`gpu.sync.mbarrier_arrive_expect_tx_relaxed()`](/docs/std/gpu/sync/sync/mbarrier_arrive_expect_tx_relaxed/)、
+  [`gpu.sync.mbarrier_test_wait()`](/docs/std/gpu/sync/sync/mbarrier_test_wait/)
+  和
+  [`gpu.sync.mbarrier_try_wait_parity_shared()`](/docs/std/gpu/sync/sync/mbarrier_try_wait_parity_shared/))。
 
-- **Thread fence**
-  ([`gpu.intrinsics.threadfence()`](/docs/std/gpu/intrinsics/threadfence/)):
-  Memory ordering fence (no execution barrier) that ensures memory operations
-  are visible within a specified scope (block, GPU-wide, or system). Essential
-  for lock-free algorithms and cross-block communication.
+- **线程栅栏**
+  ([`gpu.intrinsics.threadfence()`](/docs/std/gpu/intrinsics/threadfence/))：
+  内存排序栅栏（无执行屏障），确保内存操作在指定范围（块、GPU 级或系统级）内可见。对无锁算法和跨块通信至关重要。
 
-- **Async bulk copy synchronization**
-  ([`gpu.sync.cp_async_bulk_commit_group()`](/docs/std/gpu/sync/sync/cp_async_bulk_commit_group/),
-  [`gpu.sync.cp_async_bulk_wait_group()`](/docs/std/gpu/sync/sync/cp_async_bulk_wait_group/)):
-  Functions for coordinating asynchronous bulk memory transfer groups. Essential
-  for managing pipeline stages with bulk memory operations.
+- **异步批量拷贝同步**
+  ([`gpu.sync.cp_async_bulk_commit_group()`](/docs/std/gpu/sync/sync/cp_async_bulk_commit_group/)、
+  [`gpu.sync.cp_async_bulk_wait_group()`](/docs/std/gpu/sync/sync/cp_async_bulk_wait_group/))：
+  用于协调异步批量内存传输组的函数。对于管理具有批量内存操作的流水线阶段至关重要。
 
-Mechanisms currently available only on AMD GPUs:
+目前仅在 AMD GPU 上可用的机制：
 
-- **Schedule barriers**
-  ([`gpu.sync.schedule_barrier()`](/docs/std/gpu/sync/sync/schedule_barrier/),
-  [`gpu.sync.schedule_group_barrier()`](/docs/std/gpu/sync/sync/schedule_group_barrier/)):
-  Compiler instruction scheduling controls that allow selective reordering of
-  instruction types across barriers. Enables performance optimizations by
-  controlling which instruction categories can cross the barrier.
+- **调度屏障**
+  ([`gpu.sync.schedule_barrier()`](/docs/std/gpu/sync/sync/schedule_barrier/)、
+  [`gpu.sync.schedule_group_barrier()`](/docs/std/gpu/sync/sync/schedule_group_barrier/))：
+  编译器指令调度控制，允许跨屏障选择性重排指令类型。通过控制哪些指令类别可以跨越屏障来实现性能优化。
 
-- **Wait count**
-  ([`gpu.sync.s_waitcnt()`](/docs/std/gpu/sync/sync/s_waitcnt/),
-  [`gpu.sync.s_waitcnt_barrier()`](/docs/std/gpu/sync/sync/s_waitcnt_barrier/)):
-  Precise synchronization primitives that wait for outstanding memory operations
-  to complete based on counter values (vector memory, export, and LGKM
-  counters). Available on **AMD CDNA GPUs only** (not available on older AMD
-  architectures).
+- **等待计数**
+  ([`gpu.sync.s_waitcnt()`](/docs/std/gpu/sync/sync/s_waitcnt/)、
+  [`gpu.sync.s_waitcnt_barrier()`](/docs/std/gpu/sync/sync/s_waitcnt_barrier/))：
+  基于计数值（向量内存、导出和 LGKM 计数器）等待未完成内存操作完成的精确同步原语。仅在 **AMD CDNA GPU** 上可用（在较旧的 AMD 架构上不可用）。
 
-## Best practices and common pitfalls
+## 最佳实践和常见陷阱
 
-Now that we've covered the core synchronization primitives, let's focus on using
-them correctly to write reliable and portable GPU code. Understanding common
-pitfalls is essential for avoiding bugs that are difficult to reproduce and
-debug.
+现在我们已经介绍了核心同步原语，让我们重点关注如何正确使用它们来编写可靠且可移植的 GPU 代码。理解常见陷阱对于避免难以重现和调试的 bug 至关重要。
 
-This section provides guidance for writing correct, portable, and efficient GPU
-code:
+本节提供编写正确、可移植和高效 GPU 代码的指导：
 
-- [Writing correct synchronized code](#writing-correct-synchronized-code):
-  Avoiding race conditions, deadlocks, and understanding when to use
-  `syncwarp()` vs. when shuffle operations handle synchronization automatically.
-- [Choosing the right synchronization level](#choosing-the-right-synchronization-level):
-  When to use warp-level operations vs. block-level synchronization.
-- [Writing portable GPU code](#writing-portable-gpu-code): Using Mojo's
-  abstractions to write code that works across NVIDIA, AMD, and Apple hardware.
+- [编写正确的同步代码](#writing-correct-synchronized-code)：避免竞态条件、死锁，以及理解何时使用 `syncwarp()` 与 shuffle 操作自动处理同步。
+- [选择正确的同步级别](#choosing-the-right-synchronization-level)：何时使用线程束级操作与线程块级同步。
+- [编写可移植的 GPU 代码](#writing-portable-gpu-code)：使用 Mojo 的抽象来编写在 NVIDIA、AMD 和 Apple 硬件上都能工作的代码。
 
-### Writing correct synchronized code
+### 编写正确的同步代码
 
-Correctness should always be your first priority. The following issues are
-common sources of bugs in parallel programs.
+正确性应始终是你的首要任务。以下问题是并行程序中常见的 bug 来源。
 
-#### Understanding and avoiding race conditions
+#### 理解和避免竞态条件
 
-As a quick reminder, a race condition occurs when multiple threads write to the
-same memory location without a defined order of execution, leading to a
-non-deterministic outcome. Here's a simple example where threads attempt to
-update a shared counter:
+快速提醒一下，当多个线程在没有定义执行顺序的情况下写入同一内存位置时，就会发生竞态条件，导致不确定的结果。以下是一个简单示例，线程尝试更新共享计数器：
 
 ```mojo
-# INCORRECT: Race condition
-shared_counter[0] += my_value  # Multiple threads modify same location
+# 错误：竞态条件
+shared_counter[0] += my_value  # 多个线程修改同一位置
 ```
 
-This leads to "lost updates" because the read-modify-write sequence isn't
-atomic. To prevent this, you must use synchronization primitives like
-`barrier()` to coordinate access or use
-[`Atomic`](/docs/std/atomic/atomic/Atomic/) operations for simple updates. For
-example, you could use the
-[`Atomic.fetch_add()`](/docs/std/atomic/atomic/Atomic/#fetch_add) method to
-atomically increment the counter:
+这会导致"更新丢失"，因为读-修改-写序列不是原子的。为防止这种情况，你必须使用 `barrier()` 等同步原语来协调访问，或对简单更新使用 [`Atomic`](/docs/std/atomic/atomic/Atomic/) 操作。例如，你可以使用 [`Atomic.fetch_add()`](/docs/std/atomic/atomic/Atomic/#fetch_add) 方法原子地递增计数器：
 
 ```mojo
-# CORRECT: Atomic increment
+# 正确：原子递增
 _ = Atomic.fetch_add(shared_counter[0], my_value)
 ```
 
-#### Avoiding deadlocks with `barrier()`
+#### 避免使用 `barrier()` 时出现死锁
 
-A `barrier()` must be encountered by all threads within a block to avoid a
-deadlock. Placing a `barrier()` inside a conditional statement is a frequent
-source of bugs. If the condition causes some threads to execute the `barrier()`
-while others skip it, the threads that reach the barrier will wait indefinitely
-for the others to arrive, causing the kernel to hang.
+`barrier()` 必须被块内的所有线程遇到，以避免死锁。将 `barrier()` 放在条件语句中是常见的 bug 来源。如果条件导致某些线程执行 `barrier()` 而其他线程跳过它，到达屏障的线程将无限期地等待其他线程到达，导致内核挂起。
 
-Therefore, `barrier()` should be used in conditional code only if it's
-guaranteed that all threads in the block will evaluate the condition identically
-and follow the same execution path.
+因此，只有在保证块中的所有线程将相同地评估条件并遵循相同的执行路径时，才应在条件代码中使用 `barrier()`。
 
-#### When to use `syncwarp()`
+#### 何时使用 `syncwarp()`
 
-The `syncwarp()` primitive is needed when coordinating access to shared or
-global memory after divergent control flow within a warp. However, it is **not**
-needed before warp shuffle operations or warp reduction operations, as those
-operations provide their own implicit synchronization via the mask parameter.
+当线程束内分歧控制流后需要协调对共享或全局内存的访问时，需要 `syncwarp()` 原语。然而，在线程束 shuffle 操作或线程束归约操作之前**不**需要它，因为这些操作通过 mask 参数提供自己的隐式同步。
 
-Use `syncwarp()` when:
+使用 `syncwarp()` 的情况：
 
-- Threads in a warp diverge and then need to synchronize before accessing shared
-  memory
-- You need to ensure all threads in a warp have completed their divergent
-  execution paths before proceeding to a shared memory operation
+- 线程束中的线程分歧后需要在访问共享内存之前同步
+- 你需要确保线程束中的所有线程在继续共享内存操作之前已完成其分歧执行路径
 
-Do **not** use `syncwarp()` before:
+**不**要使用 `syncwarp()` 的情况：
 
-- Warp shuffle operations (`shuffle_down()`, `shuffle_xor()`, etc.) - these
-  synchronize automatically
-- Warp reduction operations (`warp.sum()`, `warp.max()`, etc.) - these also
-  synchronize automatically
+- 线程束 shuffle 操作（`shuffle_down()`、`shuffle_xor()` 等）——这些会自动同步
+- 线程束归约操作（`warp.sum()`、`warp.max()` 等）——这些也会自动同步
 
-Here's an example where `syncwarp()` **is** needed (for shared memory
-coordination):
+以下是 `syncwarp()` **需要**使用的示例（用于共享内存协调）：
 
 ```mojo
 if thread_idx.x < 16:
@@ -876,12 +511,12 @@ if thread_idx.x < 16:
 else:
     shared_data[thread_idx.x] = compute_something_else()
 
-# syncwarp() needed here because threads diverged before writing to shared memory
+# 这里需要 syncwarp()，因为线程在写入共享内存之前发生了分歧
 syncwarp()
-var result = shared_data[some_index]  # Now safe to read
+var result = shared_data[some_index]  # 现在可以安全读取
 ```
 
-And here's an example where `syncwarp()` is **not** needed (shuffle operations):
+以下是 `syncwarp()` **不**需要的示例（shuffle 操作）：
 
 ```mojo
 if thread_idx.x < 16:
@@ -889,57 +524,40 @@ if thread_idx.x < 16:
 else:
     value = compute_something_else()
 
-# No syncwarp() needed - shuffle_down() synchronizes automatically via its mask
+# 不需要 syncwarp() - shuffle_down() 通过其 mask 自动同步
 result = warp.shuffle_down(value, 1)
 ```
 
-#### Handling shuffle boundary conditions
+#### 处理 shuffle 边界条件
 
-When using `shuffle_up()` and `shuffle_down()`, be mindful of edge cases. A
-thread will receive an undefined value if the source lane is out of bounds
-(for example, `current_lane - offset < 0`). When implementing patterns like
-sliding windows, you must add logic to handle these boundary conditions
-correctly.
+使用 `shuffle_up()` 和 `shuffle_down()` 时，要注意边界情况。如果源通道越界（例如 `current_lane - offset < 0`），线程将接收未定义的值。在实现滑动窗口等模式时，你必须添加逻辑来正确处理这些边界条件。
 
-### Choosing the right synchronization level
+### 选择正确的同步级别
 
-The core principle for designing efficient GPU algorithms is to coordinate
-between warps with `barrier()` and shared memory, and optimize within warps with
-`gpu.primitives.warp` primitives.
+设计高效 GPU 算法的核心原则是：使用 `barrier()` 和共享内存在线程束之间协调，使用 `gpu.primitives.warp` 原语在线程束内优化。
 
-This hierarchical approach mirrors the GPU's architecture. Intra-warp
-communication is extremely fast, while cross-warp communication is more
-expensive.
+这种层次化方法反映了 GPU 的架构。线程束内通信非常快，而跨线程束通信则更昂贵。
 
-- Use `gpu.primitives.warp` primitives for:
-  - High-frequency operations inside tight loops.
-  - Data exchange between neighboring threads (stencils, sliding windows).
-  - Reductions or scans over small, warp-sized chunks of data.
-  - Anywhere performance is latency-critical.
+- 使用 `gpu.primitives.warp` 原语用于：
+  - 紧密循环内的高频操作。
+  - 相邻线程之间的数据交换（模板、滑动窗口）。
+  - 对小的、线程束大小的数据块进行归约或扫描。
+  - 任何性能对延迟关键的地方。
 
-- Use `barrier()` and `gpu.primitives.block` primitives for:
-  - Coordinating access to shared memory between multiple warps.
-  - Implementing multi-phase algorithms with distinct load, compute, and store
-    stages.
-  - Aggregating results from multiple warps within a block.
+- 使用 `barrier()` 和 `gpu.primitives.block` 原语用于：
+  - 协调多个线程束之间对共享内存的访问。
+  - 实现具有不同加载、计算和存储阶段的多阶段算法。
+  - 聚合块内多个线程束的结果。
 
-### Writing portable GPU code
+### 编写可移植的 GPU 代码
 
-Mojo is designed to write portable GPU code, but it's helpful to understand how.
+Mojo 旨在编写可移植的 GPU 代码，但了解其工作原理是有帮助的。
 
-First, Mojo's GPU operations have automatic fallback mechanisms. For example, a
-`gpu.primitives.warp.max()` call will automatically use specialized `redux`
-instructions on the newest NVIDIA hardware but will fall back to a shuffle-based
-implementation that works on any other GPU. You get performance where available
-and correctness everywhere else.
+首先，Mojo 的 GPU 操作具有自动回退机制。例如，`gpu.primitives.warp.max()` 调用会在最新的 NVIDIA 硬件上自动使用专门的 `redux` 指令，但在其他 GPU 上会回退到基于 shuffle 的实现。你在有专用指令的地方获得性能，在其他地方获得正确性。
 
-Second, always avoid hardcoding hardware-specific values. The most common
-mistake is assuming a warp size of 32. Use the
-[`gpu.WARP_SIZE`](/docs/std/gpu/globals/#warp_size) constant to ensure your
-code works correctly on all vendors' hardware.
+其次，始终避免硬编码硬件特定的值。最常见的错误是假设线程束大小为 32。使用 [`gpu.WARP_SIZE`](/docs/std/gpu/globals/#warp_size) 常量来确保你的代码在所有厂商的硬件上正确工作。
 
-Finally, for highly-tuned kernels, you can use `comptime if` blocks to write
-architecture-specific code paths while keeping a single source file.
+最后，对于高度优化的内核，你可以使用 `comptime if` 块来编写架构特定的代码路径，同时保持单一源文件。
 
 ```mojo
 from std.sys import is_amd_gpu, is_apple_gpu, is_nvidia_gpu
@@ -952,86 +570,52 @@ def adaptive_algorithm():
     elif is_apple_gpu():
         apple_optimized_path()
     else:
-        # Conservative fallback for future hardware support
+        # 为未来硬件支持提供保守的回退方案
         portable_path()
 ```
 
-### Debugging synchronization issues
+### 调试同步问题
 
-Synchronization bugs can be tricky. Here are some strategies to find them:
+同步 bug 可能很棘手。以下是一些发现它们的策略：
 
-- Isolate the problem: Use simple, predictable data patterns (like each thread's
-  ID) to verify your logic before using real data. Validate your parallel
-  algorithm's output against a simple, sequential CPU version.
+- 隔离问题：使用简单、可预测的数据模式（如每个线程的 ID）在使用真实数据之前验证你的逻辑。将你的并行算法的输出与简单的顺序 CPU 版本进行验证。
 
-- Trace execution: Add `print()` statements to trace intermediate values and
-  understand how data flows through your warp-level shuffles or reduction trees.
+- 跟踪执行：添加 `print()` 语句来跟踪中间值，了解数据如何通过线程束级 shuffle 或归约树流动。
 
-  :::note[Known limitation]
+  :::note[已知限制]
 
-  On Apple silicon GPUs, each `print()` call inside a GPU kernel currently
-  supports at most one string literal argument. This restriction does not apply
-  to NVIDIA or AMD GPUs.
+  在 Apple Silicon GPU 上，GPU 内核内的每个 `print()` 调用目前最多支持一个字符串字面量参数。此限制不适用于 NVIDIA 或 AMD GPU。
 
   :::
 
-- Expose scheduling-dependent bugs: Test with different thread block sizes. A
-  bug that appears with one configuration but not another often points to a race
-  condition.
+- 暴露调度依赖的 bug：使用不同的线程块大小进行测试。在一种配置中出现但在另一种配置中不出现的 bug 通常指向竞态条件。
 
-- Use dedicated tools: For complex issues, use vendor-provided GPU debugging
-  tools (like the
-  [NVIDIA Compute Sanitizer](https://developer.nvidia.com/compute-sanitizer))
-  which can detect race conditions and memory access errors.
+- 使用专用工具：对于复杂问题，使用厂商提供的 GPU 调试工具（如 [NVIDIA Compute Sanitizer](https://developer.nvidia.com/compute-sanitizer)），它可以检测竞态条件和内存访问错误。
 
-## Conclusion and key takeaways
+## 结论和要点
 
-### Summary of primitives and patterns
+### 原语和模式总结
 
-We've covered Mojo's low-level toolkit for managing concurrency and
-communication in GPU kernels. These primitives are the fundamental building
-blocks for writing correct and high-performance parallel algorithms.
+我们介绍了 Mojo 用于管理 GPU 内核中并发和通信的低级工具包。这些原语是编写正确和高性能并行算法的基本构建块。
 
-- `gpu.sync.barrier()`: The essential primitive for correctness across warps. It
-  provides a block-wide synchronization point that acts as both an execution
-  barrier and a memory fence, primarily to coordinate access to shared memory.
+- `gpu.sync.barrier()`：跨线程束确保正确性的基本原语。它提供块级同步点，既充当执行屏障又充当内存栅栏，主要用于协调对共享内存的访问。
 
-- `gpu.sync.syncwarp()`: A fine-grained primitive for managing thread divergence
-  within a single warp. It's necessary for correctness on hardware that supports
-  independent thread scheduling.
+- `gpu.sync.syncwarp()`：用于管理单个线程束内线程分歧的细粒度原语。在支持独立线程调度的硬件上，它对正确性是必要的。
 
-- `gpu.primitives.block` operations: High-level primitives that combine
-  synchronization with common computational patterns (like reductions) across
-  all threads in a block. They simplify code and are often more efficient than
-  manual implementations.
+- `gpu.primitives.block` 操作：将同步与常见计算模式（如归约）结合的高级原语，跨块中的所有线程操作。它们简化了代码，且通常比手动实现更高效。
 
-- `gpu.primitives.warp` primitives: The essential toolkit for performance. By
-  enabling direct register-to-register communication within a warp, these
-  primitives allow for extremely fast collective operations that avoid the
-  higher latency of shared memory.
+- `gpu.primitives.warp` 原语：性能的关键工具包。通过在线程束内实现直接的寄存器到寄存器通信，这些原语允许极其快速的集合操作，避免共享内存的较高延迟。
 
-### The core mental model
+### 核心思维模型
 
-The effective use of these primitives stems from a hierarchical approach to GPU
-algorithm design. Your key takeaway should be to coordinate between warps with
-`barrier()` and shared memory, and optimize within warps with
-`gpu.primitives.warp` primitives.
+有效使用这些原语源于 GPU 算法设计的层次化方法。你的关键要点应该是：使用 `barrier()` 和共享内存在线程束之间协调，使用 `gpu.primitives.warp` 原语在线程束内优化。
 
-This principle encourages you to structure algorithms to maximize intra-warp
-computation and communication, which is extremely fast, and to use the more
-costly block-level synchronization only when necessary to combine results or
-manage data dependencies between warps.
+这个原则鼓励你构建算法以最大化线程束内计算和通信（这非常快），并且仅在必要时使用更昂贵的块级同步来合并结果或管理线程束之间的数据依赖。
 
-### Next steps
+### 下一步
 
-To gain hands-on experience with the concepts in this guide, we encourage you
-to explore the following resources:
+要获得本指南中概念的实践经验，我们鼓励你探索以下资源：
 
-- [Mojo GPU Puzzles](https://puzzles.modular.com/): An interactive, hands-on
-  guide to mastering GPU programming patterns in Mojo, including parallel
-  reductions and other algorithms that rely on these primitives.
+- [Mojo GPU 谜题](https://puzzles.modular.com/)：一个交互式的实践指南，帮助你掌握 Mojo 中的 GPU 编程模式，包括并行归约和其他依赖这些原语的算法。
 
-- [MAX AI Kernels Library](https://github.com/modular/modular/tree/main/max/kernels):
-  For higher-level examples, the MAX AI Kernels library contains numerous
-  production-grade kernels that use these low-level primitives to build highly
-  optimized operations for AI and numerical computing.
+- [MAX AI 内核库](https://github.com/modular/modular/tree/main/max/kernels)：对于更高级的示例，MAX AI 内核库包含许多生产级内核，它们使用这些低级原语来构建高度优化的 AI 和数值计算操作。

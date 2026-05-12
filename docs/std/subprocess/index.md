@@ -1,20 +1,16 @@
 ---
 title: "subprocess"
 sidebar_label: "subprocess"
-description: "Execute external processes and commands.  The `subprocess` package provides utilities for spawning and interacting with external processes. It enables running shell commands, capturing their output, a"
+description: "执行外部进程和命令。`subprocess` 包提供用于生成和与外部进程交互的工具。"
 ---
 
 # subprocess
 
-Execute external processes and commands.
+执行外部进程和命令。
 
-The `subprocess` package provides utilities for spawning and interacting with
-external processes. It enables running shell commands, capturing their output,
-and integrating external tools into Mojo programs. This package handles process
-execution, output capture, and resource cleanup automatically.
+`subprocess` 包提供用于生成和与外部进程交互的工具。它支持运行 shell 命令、捕获其输出，以及将外部工具集成到 Mojo 程序中。此包自动处理进程执行、输出捕获和资源清理。
 
-Use this package when you need to execute shell commands, integrate with
-external tools, or automate system tasks from within Mojo code.
+使用此包当您需要执行 shell 命令、与外部工具集成，或从 Mojo 代码中自动化系统任务时。
 
 ## 模块
 

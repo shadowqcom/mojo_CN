@@ -1,57 +1,29 @@
 ---
-title: Intro to metaprogramming
-sidebar_label: Intro
-description: An overview of Mojo's metaprogramming features.
+title: 元编程简介
+sidebar_label: 简介
+description: Mojo 元编程功能的概述。
 ---
 
-Many languages have facilities for *metaprogramming*: writing code
-that generates or modifies code. Python has facilities for dynamic
-metaprogramming: features like decorators, metaclasses, and many more. These
-features make Python very flexible and productive, but since they're dynamic,
-they come with run-time overhead. Other languages have static or compile-time
-metaprogramming features, like C preprocessor macros and C++ templates. These
-can be limiting and hard to use.
+许多语言都有*元编程*的设施：编写能够生成或修改代码的代码。Python 具有动态元编程的设施：装饰器、元类等特性。这些特性使 Python 非常灵活和高效，但由于它们是动态的，所以带有运行时开销。其他语言具有静态或编译时元编程特性，如 C 预处理器宏和 C++ 模板。这些特性可能有限制且难以使用。
 
-Mojo's compile-time metaprogramming system uses the same language as run-time
-programs, so you don't have to learn a new language—just a few new features.
-The primary features you'll need to learn are:
+Mojo 的编译时元编程系统使用与运行时程序相同的语言，因此您无需学习新语言——只需学习几个新特性。您需要学习的主要特性有：
 
-- Compile-time statements and expressions
-- Compile-time parameters
-- Generics and traits
+- 编译时语句和表达式
+- 编译时参数
+- 泛型和特性
 
-## Compile-time statements and expressions
+## 编译时语句和表达式
 
-The `comptime` keyword identifies a statement or expression that needs to be
-evaluated at compile time. For example, the `comptime` keyword is used to
-declare compile-time constant values and to introduce compile-time conditionals
-and loops. For information on compile-time assignments and control flow, see
-[Compile-time evaluation](/docs/manual/metaprogramming/comptime-evaluation/).
+`comptime` 关键字标识需要在编译时求值的语句或表达式。例如，`comptime` 关键字用于声明编译时常量值，并引入编译时条件和循环。有关编译时赋值和控制流的信息，请参阅[编译时求值](/docs/manual/metaprogramming/comptime-evaluation/)。
 
-## Compile-time parameters
+## 编译时参数
 
-Functions and structs can be *parameterized* with compile-time parameters,
-allowing you to define a container that holds different data types, or a matrix
-multiplication algorithm that's parameterized by the matrix dimensions.
-Compile-time parameters are similar to C++ template parameters or Rust generic
-parameters. At compile time, Mojo *specializes* parameterized code to make
-*concrete* versions—that is, it replaces parameters with constant values.
+函数和结构体可以使用编译时参数进行*参数化*，允许您定义一个容器来保存不同的数据类型，或者定义一个由矩阵维度参数化的矩阵乘法算法。编译时参数类似于 C++ 模板参数或 Rust 泛型参数。在编译时，Mojo 会*专门化*参数化代码以生成*具体*版本——即用常量值替换参数。
 
-For example, a matrix multiplication function parameterized on its matrix
-dimensions can be specialized at compile time to select the most efficient
-algorithm based on those dimensions. For information on parameterization, see
-[Parameters](/docs/manual/parameters/).
+例如，一个以其矩阵维度为参数的矩阵乘法函数可以在编译时专门化，以根据这些维度选择最有效的算法。有关参数化的信息，请参阅[参数](/docs/manual/parameters/)。
 
-## Traits and generics
+## 特性和泛型
 
-Generic functions and structs are made to handle different data types—for
-example, a list that can hold `Int`, `Float32`, or `String` values. In Mojo, you
-build generics using compile-time parameters—generic functions and structs are
-parameterized on *types*.
+泛型函数和结构体用于处理不同的数据类型——例如，可以保存 `Int`、`Float32` 或 `String` 值的列表。在 Mojo 中，您使用编译时参数构建泛型——泛型函数和结构体是针对*类型*进行参数化的。
 
-  A *trait* defines a set of shared behaviors for structs. Generic code uses
-  traits to identify the behaviors it requires. For example, instead of being
-  bound to a specific type, a sort function could require that the type being
-  sorted is `Movable` and `Comparable`. For more information, see the sections
-  on [traits](/docs/manual/traits/) and
-  [generics](/docs/manual/generics/).
+*特性*定义了一组结构体的共享行为。泛型代码使用特性来标识其所需的行为。例如，排序函数不需要绑定到特定类型，而可以要求被排序的类型是 `Movable` 和 `Comparable`。有关更多信息，请参阅[特性](/docs/manual/traits/)和[泛型](/docs/manual/generics/)部分。

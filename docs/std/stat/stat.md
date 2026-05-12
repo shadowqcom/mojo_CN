@@ -1,17 +1,15 @@
 ---
 title: "stat"
+slug: stat
 sidebar_label: "stat"
-description: "Provides constants and functions for interpreting file mode bits.  This module defines file type constants and functions for testing file modes, similar to Python's `stat` module. It includes bit mask"
+description: "提供解释文件模式位的常量和函数。此模块定义文件类型常量和测试文件模式的函数，类似于 Python 的 `stat` 模块。"
 ---
 
 # stat
 
-Provides constants and functions for interpreting file mode bits.
+提供解释文件模式位的常量和函数。
 
-This module defines file type constants and functions for testing file modes,
-similar to Python's `stat` module. It includes bit masks for identifying different
-file types (regular files, directories, symbolic links, devices, etc.) and
-convenience functions for mode testing.
+此模块定义文件类型常量和测试文件模式的函数，类似于 Python 的 `stat` 模块。它包括用于识别不同文件类型（常规文件、目录、符号链接、设备等）的位掩码和方便的模式测试函数。
 
 ## 函数
 

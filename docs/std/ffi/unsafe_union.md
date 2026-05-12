@@ -1,24 +1,20 @@
 ---
 title: "unsafe_union"
 sidebar_label: "unsafe_union"
-description: "Defines an untagged union type for C FFI interoperability.  This module provides a C-style union type that allows storing different types in the same memory location without runtime type tracking. Unl"
+description: "定义用于 C FFI 互操作性的无标签联合类型。此模块提供 C 风格的联合类型，允许在同一内存位置存储不同类型而无需运行时类型跟踪。"
 ---
 
 # unsafe_union
 
-Defines an untagged union type for C FFI interoperability.
+定义用于 C FFI 互操作性的无标签联合类型。
 
-This module provides a C-style union type that allows storing different types
-in the same memory location without runtime type tracking. Unlike `Variant`,
-`UnsafeUnion` does not maintain a discriminant field, making it suitable for:
+此模块提供 C 风格的联合类型，允许在同一内存位置存储不同类型而无需运行时类型跟踪。与 `Variant` 不同，`UnsafeUnion` 不维护判别字段，使其适用于：
 
-- Interfacing with C libraries that use union types
-- Low-level memory manipulation and type punning
-- Situations where memory layout must exactly match C unions
+- 与使用联合类型的 C 库接口
+- 低级内存操作和类型双关
+- 内存布局必须与 C 联合完全匹配的情况
 
-Warning: Using `UnsafeUnion` is inherently unsafe. Reading a value as the wrong
-type results in undefined behavior, just like in C. Prefer `Variant` for safe,
-type-checked sum types.
+警告：使用 `UnsafeUnion` 本质上是不安全的。以错误的类型读取值会导致未定义行为，就像在 C 中一样。对于安全的、类型检查的和类型，请使用 `Variant`。
 
 ## 类型
 

@@ -1,12 +1,12 @@
 ---
 title: "comparable"
 sidebar_label: "comparable"
-description: "Implements comparison and equality traits for Mojo types."
+description: "为 Mojo 类型实现比较和相等 trait。"
 ---
 
 # comparable
 
-Implements comparison and equality traits for Mojo types.
+为 Mojo 类型实现比较和相等 trait。
 
 ## Traits
 

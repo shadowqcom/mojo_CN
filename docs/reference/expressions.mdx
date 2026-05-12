@@ -1,48 +1,38 @@
 ---
-title: Mojo expression reference
-sidebar_label: Expressions
+title: Mojo 表达式参考
+sidebar_label: 表达式
 sidebar_position: 3
 description: >
-  Complete reference for Mojo expressions. Covers
-  parenthesized expressions, tuples, collection displays,
-  member access, calls, subscripts, slices, ternary
-  conditionals, walrus operator, compile-time expressions,
-  and comprehensions.
+  Mojo 表达式完整参考。涵盖括号表达式、元组、集合显示、
+  成员访问、调用、下标、切片、三元条件、海象运算符、
+  编译时表达式和推导式。
 ---
 
 {/*  VERIFIED: ParserExprs.cpp, ExprNode.h, ParserBase.h,
      ExprNodes.h  */}
 
-An *expression* is any piece of code that produces a value.
-Expressions are the building blocks of computation: you combine
-them with operators, pass them as arguments, assign their
-results to variables, and use them as conditions in control
-flow.
+*表达式*是任何产生值的代码片段。表达式是计算的基本构建块：你可以将它们与运算符组合、作为参数传递、将结果赋值给变量，并在控制流中用作条件。
 
-## Identifier expressions
+## 标识符表达式
 
-An identifier refers to a named element: a variable, function,
-type, or module. Using an identifier in an expression gives you
-the thing it refers to:
+标识符引用命名元素：变量、函数、类型或模块。在表达式中使用标识符可以获得它所引用的内容：
 
 ```mojo
-score        # a variable
-Int          # a type
-range        # a function
+score        # 一个变量
+Int          # 一个类型
+range        # 一个函数
 ```
 
-## Parenthesized expressions
+## 括号表达式
 
-Parentheses group subexpressions, overriding default
-precedence:
+括号用于分组子表达式，覆盖默认优先级：
 
 ```mojo
-(a + b) * c  # add a and b, multiply by c
-(x)          # just x
+(a + b) * c  # 将 a 和 b 相加，再乘以 c
+(x)          # 就是 x
 ```
 
-Parentheses also let expressions span multiple lines without
-using backslash escapes:
+括号还允许表达式跨越多行而无需使用反斜杠转义：
 
 ```mojo
 var result = (
@@ -52,42 +42,38 @@ var result = (
 )
 ```
 
-## Tuples
+## 元组
 
-A *tuple* is a fixed-size, ordered group of values. The comma
-is what creates a tuple, not the parentheses:
-
-```mojo
-var a = 2, 3       # tuple without parentheses
-var b = (2, 3)     # same tuple with parentheses
-var x, y = b       # x is 2, y is 3
-```
-
-Use a trailing comma to create a one-element tuple. Without it,
-`(1)` is just the integer `1` in parentheses:
+*元组*是固定大小、有序的值组。逗号创建元组，而不是括号：
 
 ```mojo
-()          # empty tuple
-(1,)        # one-element tuple
-(1, 2, 3)   # three-element tuple
+var a = 2, 3       # 没有括号的元组
+var b = (2, 3)     # 带括号的相同元组
+var x, y = b       # x 是 2，y 是 3
 ```
 
-Tuples support indexing:
+使用尾随逗号创建单元素元组。没有它，`(1)` 只是括号中的整数 `1`：
+
+```mojo
+()          # 空元组
+(1,)        # 单元素元组
+(1, 2, 3)   # 三元素元组
+```
+
+元组支持索引：
 
 ```mojo
 var point = (10, 20)
 print(point[0])  # 10
 ```
 
-## Collection displays
+## 集合显示
 
-The compiler calls these *displays*. Displays are similar to
-literals, but unlike literals, displays can contain expressions
-as well as fixed values.
+编译器称这些为*显示*。显示类似于字面量，但与字面量不同，显示可以包含表达式和固定值。
 
-### Lists
+### 列表
 
-A *list display* creates a list from comma-separated values:
+*列表显示*从逗号分隔的值创建列表：
 
 ```mojo
 var empty = []
@@ -95,57 +81,48 @@ var numbers = [1, 2, 3]
 var mixed = [1, "two", 3.0,]
 ```
 
-Mojo allows trailing commas after all collection elements,
-including the final one.
+Mojo 允许在所有集合元素后使用尾随逗号，包括最后一个。
 
-### Dictionaries
+### 字典
 
-A *dict display* maps keys to values with `:` between each
-pair:
+*字典显示*使用 `:` 分隔每个键值对：
 
 ```mojo
 var empty = {}
 var ages = {"Alice": 30, "Bob": 25}
 ```
 
-### Sets
+### 集合
 
-A *set display* uses braces with values but no colons:
+*集合显示*使用带值但不带冒号的花括号：
 
 ```mojo
 var primes = {2, 3, 5, 7}
 ```
 
-Don't mix set and dict syntax. `{1, 2}` is a set. `{1: 2}` is a dict.
+不要混淆集合和字典语法。`{1, 2}` 是集合。`{1: 2}` 是字典。
 
 ```mojo
-{"a": 1, 2}   # Error: cannot mix 'key: value' pairs and set elements
-{1, "b": 2}   # Error: cannot mix 'key: value' pairs and set elements
+{"a": 1, 2}   # 错误：不能混合 'key: value' 对和集合元素
+{1, "b": 2}   # 错误：不能混合 'key: value' 对和集合元素
 ```
 
-Brace syntax also serves as an *initializer list* that creates
-an instance of an inferred type. Without type context, the
-compiler can't distinguish a set from an initializer list, so
-the distinction is resolved at type-check time. Initializer
-lists can include positional values and keyword arguments:
+花括号语法还用作*初始化列表*，创建推断类型的实例。没有类型上下文，编译器无法区分集合和初始化列表，因此区别在类型检查时解决。初始化列表可以包含位置值和关键字参数：
 
 ```mojo
-{x, y}           # set or initializer list, without context
-{z=4, "foo"}     # initializer list with keyword argument
+{x, y}           # 集合或初始化列表，没有上下文
+{z=4, "foo"}     # 带关键字参数的初始化列表
 ```
 
-Initializer lists are syntactic sugar for constructor calls.
-`{1, "hello"}` is equivalent to `T(1, "hello")` when the
-type `T` is known from context. Use them for passing
-initialized instances as arguments:
+初始化列表是构造函数调用的语法糖。当类型 `T` 从上下文中已知时，`{1, "hello"}` 等同于 `T(1, "hello")`。使用它们将初始化的实例作为参数传递：
 
 ```mojo
-process({1, "hello"})  # type inferred from signature
+process({1, "hello"})  # 类型从签名推断
 ```
 
-## Member access
+## 成员访问
 
-The dot operator accesses an attribute or method on a value:
+点运算符访问值上的属性或方法：
 
 ```mojo
 var length = text.count()
@@ -153,13 +130,11 @@ var x = point.x
 var name = person.name.upper()
 ```
 
-Chaining is left to right: `a.b.c` accesses `c` on the
-result of `a.b`.
+链式调用从左到右：`a.b.c` 访问 `a.b` 结果上的 `c`。
 
-## Calls
+## 调用
 
-A *call expression* invokes a function or constructs a value
-by appending `()` to an expression:
+*调用表达式*通过在表达式后附加 `()` 来调用函数或构造值：
 
 ```mojo
 print("hello")
@@ -167,10 +142,9 @@ var result = compute(a, b)
 var p = Point(1.0, 2.0)
 ```
 
-### Positional and keyword arguments
+### 位置参数和关键字参数
 
-Arguments before any keyword argument are positional. Keyword
-arguments use `name=value` syntax.
+任何关键字参数之前的参数是位置参数。关键字参数使用 `name=value` 语法。
 
 ```mojo
 def greet(name: String, loud: Bool = False):
@@ -181,24 +155,23 @@ greet("Alice", loud=True)  # Hello, ALICE!
 greet(name="Bob") # Hello, Bob!
 ```
 
-Positional arguments can't follow keyword arguments:
+位置参数不能跟在关键字参数之后：
 
 ```mojo
     # greet(loud=True, "Alice")
-    # Error: positional argument follows keyword argument
+    # 错误：位置参数跟在关键字参数之后
 ```
 
-Keyword arguments can't be repeated:
+关键字参数不能重复：
 
 ```mojo
 greet(name="Alice", name="Bob")
-# Error: duplicate keyword argument 'name'
+# 错误：重复的关键字参数 'name'
 ```
 
-## Subscripts and slices
+## 下标和切片
 
-Square brackets after an expression look up a value by
-index(es) or key(s):
+表达式后的方括号通过索引或键查找值：
 
 ```mojo
 var item = collection[0]
@@ -206,39 +179,32 @@ var value = mapping["key"]
 var cell = matrix[i, j]
 ```
 
-### Slices
+### 切片
 
-Colons inside square brackets create *slices*. Slices select
-a range of elements using `start:stop` or
-`start:stop:stride`:
+方括号内的冒号创建*切片*。切片使用 `start:stop` 或 `start:stop:stride` 选择元素范围：
 
 ```mojo
 var items = [0, 1, 2, 3, 4, 5]
 
-var first_three = items[0:3]   # [0, 1, 2] (3 not included)
+var first_three = items[0:3]   # [0, 1, 2]（不包含 3）
 var from_three  = items[3:]    # [3, 4, 5]
 var every_other = items[::2]   # [0, 2, 4]
 var reversed    = items[::-1]  # [5, 4, 3, 2, 1, 0]
 ```
 
-All three parts are optional. Start defaults to the beginning,
-stop defaults to the end, and stride defaults to 1. The
-element at the stop position isn't included in the result.
+所有三个部分都是可选的。起始默认为开头，结束默认为末尾，步长默认为 1。结束位置的元素不包含在结果中。
 
-## Ternary conditional
+## 三元条件
 
-The `if`-`else` expression selects between two values based
-on a condition:
+`if`-`else` 表达式根据条件在两个值之间选择：
 
 ```mojo
 var label = "even" if x % 2 == 0 else "odd"
 ```
 
-The condition follows `if`, and the alternate value follows
-`else`. If the condition is true, the expression evaluates to
-the first value. If false, the alternate.
+条件跟在 `if` 后，替代值跟在 `else` 后。如果条件为真，表达式求值为第一个值。如果为假，则为替代值。
 
-Ternary expressions are right-associative and can be chained:
+三元表达式是右结合的，可以链式使用：
 
 ```mojo
 var size = (
@@ -248,15 +214,12 @@ var size = (
 )
 ```
 
-This groups as
-`"small" if n < 10 else ("large" if n > 100 else "medium")`.
+这分组为
+`"small" if n < 10 else ("large" if n > 100 else "medium")`。
 
-## Walrus operator
+## 海象运算符
 
-Regular assignment (`=`) is a statement. It can't appear inside a larger
-expression. The walrus operator (also known as the assignment expression)
-`:=` is the expression form of assignment: it binds a value to a name and
-evaluates to that same value, so the result can be used immediately:
+常规赋值（`=`）是语句。它不能出现在更大的表达式中。海象运算符（也称为赋值表达式）`:=` 是赋值的表达式形式：它将值绑定到名称并求值为该值，因此结果可以立即使用：
 
 ```mojo
 if (n := len(items)) > 10:
@@ -266,24 +229,21 @@ while (name := input("Prompt: ")) != "quit":
     print(name)
 ```
 
-The walrus operator implicitly declares the variable in `def` methods and
-functions. It has the lowest precedence of any expression operator, so
-parentheses are typically needed when used inside larger expressions.
+海象运算符在 `def` 方法和函数中隐式声明变量。它是所有表达式运算符中优先级最低的，因此通常需要在更大的表达式中使用时加括号。
 
 ```mojo
-# Walrus requires a function scope
-n := len(items)      # Error: expressions must be inside a function
+# 海象运算符需要函数作用域
+n := len(items)      # 错误：表达式必须在函数内部
 
-# Walrus is not valid inside subscripts
+# 海象运算符在下标中无效
 def main():
     items = [1, 2, 3]
-    items[n := 2]    # Error: walrus is not allowed in subscripts
+    items[n := 2]    # 错误：下标中不允许使用海象运算符
 ```
 
-## Compile-time expressions
+## 编译时表达式
 
-`comptime` forces an expression to evaluate at compile time.
-Parentheses are required:
+`comptime` 强制表达式在编译时求值。需要括号：
 
 ```mojo
 def heavy_calculation() -> Int:
@@ -293,31 +253,23 @@ def heavy_calculation() -> Int:
     return sum
 
 # var x = comptime heavy_calculation()
-# Error: requires parentheses
+# 错误：需要括号
 
-var x = comptime(heavy_calculation())  # O(1) at runtime
+var x = comptime(heavy_calculation())  # 运行时 O(1)
 print(x)  # 499999500000
 ```
 
-The loop runs once during compilation. At runtime, `x` is
-a constant. If the expression can't be evaluated at compile
-time, the compiler reports an error.
+循环在编译期间运行一次。在运行时，`x` 是常量。如果表达式无法在编译时求值，编译器会报错。
 
-Mojo also provides built-in expressions for compile-time
-type introspection. These look like function calls but
-they're keywords that operate on types and traits at
-compile time:
+Mojo 还为编译时类型内省提供内置表达式。这些看起来像函数调用，但它们是对类型和 trait 在编译时操作的关键字：
 
 ```mojo
-type_of(x)             # type of an expression
-conforms_to(T, Trait)  # test trait conformance
-origin_of(x)           # origin of a reference
+type_of(x)             # 表达式的类型
+conforms_to(T, Trait)  # 测试 trait 一致性
+origin_of(x)           # 引用的来源
 ```
 
-These three expressions don't work the way most people
-expect. They're used for reflection, conditional type
-conformance, and origin sets. They return compiler-internal
-types and won't print.
+这三个表达式的工作方式与大多数人预期的不同。它们用于反射、条件类型一致性和源集。它们返回编译器内部类型，不会打印。
 
 {/*  TODO: Uncomment when closure design stabilizes.
 ## Function type expressions
@@ -336,16 +288,13 @@ Function type expressions can include argument types with
 conventions, return types, and effects like `raises`.
  */}
 
-## Comprehension expressions
+## 推导式表达式
 
-A comprehension is a concise way to build a new collection by
-iterating over existing values and optionally filtering or
-transforming them. It replaces common loop-and-append patterns
-with a single, (usually) readable expression.
+推导式是一种通过遍历现有值并可选地过滤或转换它们来构建新集合的简洁方式。它用单个（通常）可读的表达式替换常见的循环追加模式。
 
-### List comprehensions
+### 列表推导式
 
-List comprehensions create lists:
+列表推导式创建列表：
 
 ```mojo
 var squares = [x * x for x in [0, 1, 2, 3, 4] if x % 2 == 0]
@@ -355,26 +304,25 @@ var positive = [x for x in range(-3, 3) if x > 0]
 # [1, 2]
 ```
 
-**Syntax:** `[expr for pattern in iterable if condition]`
+**语法：** `[expr for pattern in iterable if condition]`
 
-- Multiple `for` clauses create nested iteration
-- `if` clauses filter elements
+- 多个 `for` 子句创建嵌套迭代
+- `if` 子句过滤元素
 
-### Set comprehensions
+### 集合推导式
 
-Set comprehensions create sets. Sets don't store duplicates,
-so you may get fewer elements than iterations:
+集合推导式创建集合。集合不存储重复项，因此你可能得到比迭代次数更少的元素：
 
 ```mojo
 var fibs = {fib(x) for x in range(6)}
-# {1, 2, 3, 5, 8}, 5 elements from 6 iterations
+# {1, 2, 3, 5, 8}，6 次迭代得到 5 个元素
 ```
 
-**Syntax:** `{expr for pattern in iterable if condition}`
+**语法：** `{expr for pattern in iterable if condition}`
 
-### Dictionary comprehensions
+### 字典推导式
 
-Dictionary comprehensions create dictionaries:
+字典推导式创建字典：
 
 ```mojo
 var dict_squares = {x: x * x for x in range(3)}
@@ -386,12 +334,12 @@ var lengths: Dict[String, Int] = {
 # {one: 3, two: 3, three: 5, four: 4}
 ```
 
-**Syntax:**
+**语法：**
 `{key_expr: value_expr for pattern in iterable if condition}`
 
-### Comprehension clauses
+### 推导式子句
 
-Comprehensions support multiple `for` and `if` clauses:
+推导式支持多个 `for` 和 `if` 子句：
 
 ```mojo
 var products = [
@@ -403,7 +351,7 @@ var products = [
 # [(0, 0, 0), (0, 2, 0), (1, 1, 1), (2, 0, 0), (2, 2, 4)]
 ```
 
-Clauses are evaluated left to right:
+子句从左到右求值：
 
-- Each `for` introduces a new iteration variable
-- Each `if` filters based on the current values
+- 每个 `for` 引入一个新的迭代变量
+- 每个 `if` 基于当前值进行过滤

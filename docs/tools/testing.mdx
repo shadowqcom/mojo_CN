@@ -1,50 +1,36 @@
 ---
-title: Testing
+title: 测试
 sidebar_position: 4
-description: Testing Mojo programs.
-github_url: https://github.com/modular/modular/tree/main/mojo/examples/testing
+description: 测试 Mojo 程序。
 ---
 
-:::caution[The `mojo test` command has been removed]
+:::caution[`mojo test` 命令已被移除]
 
-The `mojo test` command was removed as of October 31, 2025. For more
-information, see the
-[deprecation proposal](https://github.com/modular/modular/blob/main/mojo/proposals/mojo-test-deprecation.md)
-and
-[forum announcement](https://forum.modular.com/t/proposal-deprecating-mojo-test/2371).
+`mojo test` 命令已于 2025 年 10 月 31 日被移除。更多信息请参见[弃用提案](https://github.com/modular/modular/blob/main/mojo/proposals/mojo-test-deprecation.md)和[论坛公告](https://forum.modular.com/t/proposal-deprecating-mojo-test/2371)。
 
-The recommended approach for testing is now to use the
-[`TestSuite`](/docs/std/testing/suite/TestSuite/) struct from the standard
-library, which provides automatic test discovery and execution. Continue reading
-for current testing instructions using `TestSuite`.
+现在推荐的测试方法是使用标准库中的 [`TestSuite`](/docs/std/testing/suite/TestSuite/) 结构体，它提供自动测试发现和执行。请继续阅读有关使用 `TestSuite` 的当前测试说明。
 
 :::
 
-Mojo includes a framework for developing and executing unit tests. The Mojo
-testing framework consists of a set of assertions defined as part of the [Mojo
-standard library](/docs/std) and the
-[`TestSuite`](/docs/std/testing/suite/TestSuite/) struct for automatic test
-discovery and execution.
+Mojo 包含一个用于开发和执行单元测试的框架。Mojo 测试框架由 [Mojo 标准库](/docs/std)中定义的一组断言和用于自动测试发现和执行的 [`TestSuite`](/docs/std/testing/suite/TestSuite/) 结构体组成。
 
-## Get started
+## 入门
 
-Let's start with a simple example of writing and running Mojo tests.
+让我们从一个编写和运行 Mojo 测试的简单示例开始。
 
-### 1. Write tests
+### 1. 编写测试
 
-For your first example of using the Mojo testing framework, create a file named
-`test_quickstart.mojo` containing the following code:
+作为使用 Mojo 测试框架的第一个示例，创建一个名为 `test_quickstart.mojo` 的文件，包含以下代码：
 
 ```mojo
-# Content of test_quickstart.mojo
+# test_quickstart.mojo 的内容
 from std.testing import assert_equal, TestSuite
 
 def inc(n: Int) -> Int:
     return n + 1
 
 def test_inc_zero() raises:
-    # This test contains an intentional logical error to show an example of
-    # what a test failure looks like at runtime.
+    # 此测试包含一个故意的逻辑错误，以展示运行时测试失败的样子
     assert_equal(inc(0), 0)
 
 def test_inc_one() raises:
@@ -54,34 +40,25 @@ def main() raises:
     TestSuite.discover_tests[__functions_in_module()]().run()
 ```
 
-In this file, the `inc()` function is the test *target*. The functions whose
-names begin with `test_` are the tests. Usually you should define the target in
-a separate source file from its tests, but you can define them in the same file
-for this simple example.
+在此文件中，`inc()` 函数是测试*目标*。名称以 `test_` 开头的函数是测试。通常你应该将目标定义在与测试分开的源文件中，但对于这个简单示例，你可以在同一文件中定义它们。
 
-A test function *fails* if it raises an error when executed, otherwise it
-*passes*. The two tests in this example use the `assert_equal()` function,
-which raises an error if the two values provided are not equal.
+测试函数在执行时如果抛出错误则*失败*，否则*通过*。此示例中的两个测试使用 `assert_equal()` 函数，如果提供的两个值不相等，它会抛出错误。
 
 :::note
 
-The implementation of `test_inc_zero()` contains an intentional logical error
-so that you can see an example of a failed test when you execute it in the
-next step of this tutorial.
+`test_inc_zero()` 的实现包含一个故意的逻辑错误，以便你在下一步执行时可以看到失败测试的示例。
 
 :::
 
-### 2. Execute tests
+### 2. 执行测试
 
-Then in the directory containing the file, execute the following command in your
-shell:
+然后在包含该文件的目录中，在 shell 中执行以下命令：
 
 ```bash
 mojo run test_quickstart.mojo
 ```
 
-You should see output similar to this (note that this example elides the full
-filesystem paths from the output shown):
+你应该看到类似以下的输出（注意此示例省略了输出中显示的完整文件系统路径）：
 
 ```output
 Unhandled exception caught during execution:
@@ -98,39 +75,25 @@ Test suite 'ROOT_DIR/test_quickstart.mojo' failed!
 mojo: error: execution exited with a non-zero result: 1
 ```
 
-The output shows each test as it runs with PASS or FAIL status and execution
-time, followed by a summary of tests run, passed, failed, and skipped. Failed
-tests display their error messages inline.
+输出显示每个测试运行时的通过或失败状态以及执行时间，随后是运行、通过、失败和跳过的测试摘要。失败的测试会内联显示其错误消息。
 
-### Next steps
+### 后续步骤
 
-- [Using Mojo assertion functions](#using-mojo-assertion-functions) describes
-  the assertion functions available to help implement tests.
-- [Writing unit tests](#writing-unit-tests) shows how to write unit tests and
-  organize them into test files.
-- Our GitHub repo contains an [example
-  project](https://github.com/modular/modular/tree/main/mojo/examples/testing)
-  to demonstrate unit testing. Several of the examples shown later are based on
-  this project.
+- [使用 Mojo 断言函数](#using-mojo-assertion-functions)描述了可用于帮助实现测试的断言函数。
+- [编写单元测试](#writing-unit-tests)展示了如何编写单元测试并将它们组织到测试文件中。
+- 我们的 GitHub 仓库包含一个[示例项目](https://github.com/modular/modular/tree/main/mojo/examples/testing)来演示单元测试。后面展示的几个示例基于此项目。
 
-## Using Mojo assertion functions
+## 使用 Mojo 断言函数
 
-The Mojo standard library includes a [`testing`](/docs/std/testing/testing/)
-module that defines several assertion functions for implementing tests. Each
-assertion returns `None` if its condition is met or raises an error if it isn't.
+Mojo 标准库包含一个 [`testing`](/docs/std/testing/testing/) 模块，其中定义了多个用于实现测试的断言函数。每个断言在其条件满足时返回 `None`，不满足时抛出错误。
 
-- [`assert_true()`](/docs/std/testing/testing/assert_true/):
-  Asserts that the input value is `True`.
-- [`assert_false()`](/docs/std/testing/testing/assert_false/):
-  Asserts that the input value is `False`.
-- [`assert_equal()`](/docs/std/testing/testing/assert_equal/):
-  Asserts that the input values are equal.
-- [`assert_not_equal()`](/docs/std/testing/testing/assert_not_equal/):
-  Asserts that the input values are not equal.
-- [`assert_almost_equal()`](/docs/std/testing/testing/assert_almost_equal/):
-  Asserts that the input values are equal up to a tolerance.
+- [`assert_true()`](/docs/std/testing/testing/assert_true/)：断言输入值为 `True`。
+- [`assert_false()`](/docs/std/testing/testing/assert_false/)：断言输入值为 `False`。
+- [`assert_equal()`](/docs/std/testing/testing/assert_equal/)：断言输入值相等。
+- [`assert_not_equal()`](/docs/std/testing/testing/assert_not_equal/)：断言输入值不相等。
+- [`assert_almost_equal()`](/docs/std/testing/testing/assert_almost_equal/)：断言输入值在容差范围内相等。
 
-The boolean assertions report a basic error message when they fail.
+布尔断言在失败时报告基本的错误消息。
 
 ```mojo
 from std.testing import *
@@ -143,8 +106,7 @@ Unhandled exception caught during execution
 Error: At Expression [1] wrapper:14:16: AssertionError: condition was unexpectedly False
 ```
 
-Each function also accepts an optional `msg` keyword argument for providing a
-custom message to include if the assertion fails.
+每个函数还接受一个可选的 `msg` 关键字参数，用于在断言失败时提供自定义消息。
 
 ```mojo
 assert_true(False, msg="paradoxes are not allowed")
@@ -156,8 +118,7 @@ Unhandled exception caught during execution
 Error: At Expression [2] wrapper:14:16: AssertionError: paradoxes are not allowed
 ```
 
-For comparing floating-point values, you should use `assert_almost_equal()`,
-which allows you to specify either an absolute or relative tolerance.
+对于比较浮点值，你应该使用 `assert_almost_equal()`，它允许你指定绝对或相对容差。
 
 ```mojo
 result = 10 / 3
@@ -170,10 +131,7 @@ Unhandled exception caught during execution
 Error: At Expression [3] wrapper:15:24: AssertionError: 3.3333333333333335 is not close to 3.3300000000000001 with a diff of 0.0033333333333334103 (close but no cigar)
 ```
 
-The testing module also defines a [context
-manager](/docs/manual/errors#use-a-context-manager),
-[`assert_raises()`](/docs/std/testing/testing/assert_raises/), to assert that
-a given code block correctly raises an expected error.
+testing 模块还定义了一个[上下文管理器](/docs/manual/errors#use-a-context-manager)，[`assert_raises()`](/docs/std/testing/testing/assert_raises/)，用于断言给定代码块正确抛出了预期的错误。
 
 ```mojo
 def inc(n: Int) raises -> Int:
@@ -200,15 +158,11 @@ Error: AssertionError: Didn't raise at Expression [4] wrapper:18:23
 
 :::note
 
-The example above assigns the return value from `inc()` to a
-[*discard pattern*](/docs/manual/lifecycle/death/#explicit-lifetime-extension).
-Without it, the Mojo compiler reports a warning that the return value is unused.
+上面的示例将 `inc()` 的返回值赋给了一个[*丢弃模式*](/docs/manual/lifecycle/death/#explicit-lifetime-extension)。没有它，Mojo 编译器会报告返回值未使用的警告。
 
 :::
 
-You can also provide an optional `contains` argument to `assert_raises()` to
-indicate that the test passes only if the error message contains the substring
-specified. Other errors are propagated, failing the test.
+你还可以为 `assert_raises()` 提供一个可选的 `contains` 参数，指示只有当错误消息包含指定子字符串时测试才通过。其他错误会被传播，导致测试失败。
 
 ```mojo
 print("Test passes because the error contains the substring")
@@ -228,36 +182,26 @@ Test fails because the error doesn't contain the substring
 Error: invalid value
 ```
 
-## Writing unit tests
+## 编写单元测试
 
-A Mojo unit test is simply a function that fulfills all of these requirements:
+Mojo 单元测试就是一个满足以下所有要求的函数：
 
-- Has a name that starts with `test_` for automatic discovery.
-- Accepts no arguments.
-- Returns `None`.
-- Raises an error to indicate test failure.
-- Is defined at the module scope, not as a Mojo struct method.
+- 名称以 `test_` 开头，以便自动发现。
+- 不接受任何参数。
+- 返回 `None`。
+- 抛出错误以指示测试失败。
+- 在模块作用域定义，而不是作为 Mojo 结构体的方法。
 
-Generally, you should use the assertion utilities from the Mojo standard library
-[`testing`](/docs/std/testing/testing/) module to implement your tests.
-You can include multiple related assertions in the same test function. However,
-if an assertion raises an error during execution, then the test function returns
-immediately, skipping any subsequent assertions.
+通常，你应该使用 Mojo 标准库 [`testing`](/docs/std/testing/testing/) 模块中的断言工具来实现测试。你可以在同一个测试函数中包含多个相关断言。但是，如果断言在执行期间抛出错误，则测试函数立即返回，跳过后续的所有断言。
 
-## Running tests with TestSuite
+## 使用 TestSuite 运行测试
 
-To run your tests, each test file must include a `main()` function that uses
-[`TestSuite.discover_tests()`](/docs/std/testing/suite/TestSuite/#discover_tests)
-to automatically discover and execute all test functions in the module. The
-`__functions_in_module()` compiler intrinsic provides a list of all functions
-defined in the current module, which `discover_tests()` filters to find those
-with the `test_` prefix.
+要运行你的测试，每个测试文件必须包含一个 `main()` 函数，使用 [`TestSuite.discover_tests()`](/docs/std/testing/suite/TestSuite/#discover_tests) 自动发现并执行模块中的所有测试函数。`__functions_in_module()` 编译器内建函数提供当前模块中定义的所有函数列表，`discover_tests()` 会过滤出带有 `test_` 前缀的函数。
 
-Here is an example of a test file containing three tests for functions defined
-in a source module named `my_target_module` (which is not shown here).
+以下是一个测试文件示例，包含对名为 `my_target_module` 的源模块中定义的函数的三个测试（该模块未在此展示）。
 
 ```mojo
-# File: test_my_target_module.mojo
+# 文件：test_my_target_module.mojo
 
 from my_target_module import convert_input, validate_input
 from std.testing import assert_equal, assert_false, assert_raises, assert_true, TestSuite
@@ -278,5 +222,4 @@ def main() raises:
     TestSuite.discover_tests[__functions_in_module()]().run()
 ```
 
-You can then use `mojo run test_my_target_module.mojo` to run the tests and
-report the results.
+然后你可以使用 `mojo run test_my_target_module.mojo` 来运行测试并报告结果。

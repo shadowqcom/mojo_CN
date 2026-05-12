@@ -1,16 +1,16 @@
 ---
 title: "deque"
 sidebar_label: "deque"
-description: "Defines the Deque type.  You can import these APIs from the `collections` package.  Examples:  ```mojo from std.collections import Deque ```"
+description: "定义 Deque 类型。您可以从 `collections` 包导入这些 API。示例：```mojo from std.collections import Deque ```"
 ---
 
 # deque
 
-Defines the Deque type.
+定义 Deque 类型。
 
-You can import these APIs from the `collections` package.
+您可以从 `collections` 包导入这些 API。
 
-Examples:
+示例：
 
 ```mojo
 from std.collections import Deque

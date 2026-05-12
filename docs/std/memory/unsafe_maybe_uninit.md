@@ -1,12 +1,12 @@
 ---
 title: "unsafe_maybe_uninit"
 sidebar_label: "unsafe_maybe_uninit"
-description: "Implements `UnsafeMaybeUninit`, a wrapper for memory that may or may not be initialized."
+description: "实现 `UnsafeMaybeUninit`，一个用于可能初始化或未初始化内存的包装器。"
 ---
 
 # unsafe_maybe_uninit
 
-Implements `UnsafeMaybeUninit`, a wrapper for memory that may or may not be initialized.
+实现 `UnsafeMaybeUninit`，一个用于可能初始化或未初始化内存的包装器。
 
 ## 类型
 

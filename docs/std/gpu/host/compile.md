@@ -1,12 +1,12 @@
 ---
 title: "compile"
 sidebar_label: "compile"
-description: "Implements CUDA compilation operations."
+description: "实现 CUDA 编译操作。"
 ---
 
 # compile
 
-Implements CUDA compilation operations.
+实现 CUDA 编译操作。
 
 ## 函数
 

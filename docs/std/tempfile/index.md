@@ -1,22 +1,16 @@
 ---
 title: "tempfile"
 sidebar_label: "tempfile"
-description: "Manage temporary files and directories: create, locate, and cleanup.  The `tempfile` package provides utilities for creating and managing temporary files and directories. It handles platform-specific "
+description: "管理临时文件和目录：创建、定位和清理。`tempfile` 包提供用于创建和管理临时文件和目录的工具。"
 ---
 
 # tempfile
 
-Manage temporary files and directories: create, locate, and cleanup.
+管理临时文件和目录：创建、定位和清理。
 
-The `tempfile` package provides utilities for creating and managing temporary
-files and directories. It handles platform-specific temporary storage locations
-and ensures proper cleanup of temporary resources. Temporary files are useful
-for intermediate data, testing, and operations that need scratch space without
-polluting permanent storage.
+`tempfile` 包提供用于创建和管理临时文件和目录的工具。它处理特定于平台的临时存储位置，并确保正确清理临时资源。临时文件对于中间数据、测试以及需要临时空间而不污染永久存储的操作非常有用。
 
-Use this package when you need scratch space for intermediate computations,
-temporary storage during testing, or any operation requiring files that
-shouldn't persist after program execution.
+使用此包当您需要中间计算的临时空间、测试期间的临时存储，或任何需要程序执行后不应持久存在的文件的操作时。
 
 ## 模块
 

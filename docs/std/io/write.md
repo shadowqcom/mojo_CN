@@ -1,9 +1,9 @@
 ---
 title: "write"
 sidebar_label: "write"
-description: "Implements I/O write interfaces."
+description: "实现 I/O 写入接口。"
 ---
 
 # write
 
-Implements I/O write interfaces.
+实现 I/O 写入接口。

@@ -1,44 +1,41 @@
 ---
 title: "gpu/compute/arch"
 sidebar_label: "gpu/compute/arch"
-description: "Architecture-specific MMA implementations.  This package contains GPU architecture-specific implementations of matrix multiply-accumulate (MMA) operations:  - **mma_nvidia**: NVIDIA tensor cores (SM70"
+description: "架构特定的 MMA 实现。此包包含 GPU 架构特定的矩阵乘累加 (MMA) 操作实现：- **mma_nvidia**：NVIDIA 张量核心 (SM70-SM90) - Volta 到 Hopper"
 ---
 
 # gpu/compute/arch
 
-Architecture-specific MMA implementations.
+架构特定的 MMA 实现。
 
-This package contains GPU architecture-specific implementations of matrix
-multiply-accumulate (MMA) operations:
+此包包含 GPU 架构特定的矩阵乘累加 (MMA) 操作实现：
 
-- **mma_nvidia**: NVIDIA tensor cores (SM70-SM90) - Volta through Hopper
-- **mma_nvidia_sm100**: NVIDIA Blackwell (SM100) tensor cores - 5th gen tensor cores
-- **mma_amd**: AMD Matrix Cores (CDNA2/3/4) - Data center GPUs
-- **mma_amd_rdna**: AMD WMMA (RDNA3/4) - Consumer GPUs
-- **mma_apple**: Apple Silicon (M5) - 1st gen neural accelerator
+- **mma_nvidia**：NVIDIA 张量核心 (SM70-SM90) - Volta 到 Hopper
+- **mma_nvidia_sm100**：NVIDIA Blackwell (SM100) 张量核心 - 第五代张量核心
+- **mma_amd**：AMD 矩阵核心 (CDNA2/3/4) - 数据中心 GPU
+- **mma_amd_rdna**：AMD WMMA (RDNA3/4) - 消费级 GPU
+- **mma_apple**：Apple Silicon (M5) - 第一代神经加速器
 
-## Module Organization
+## 模块组织
 
-Each architecture module contains:
-- Private implementation functions (prefixed with `_`)
-- Architecture-specific intrinsic calls
-- Data type conversions specific to that architecture
+每个架构模块包含：
+- 私有实现函数（以 `_` 为前缀）
+- 架构特定的内部函数调用
+- 该架构特定的数据类型转换
 
-## Usage
+## 用法
 
-These modules should **not** be imported directly by user code. Instead, use the
-unified interface in `gpu.compute.mma` which automatically dispatches to the
-appropriate architecture-specific implementation at compile time:
+这些模块**不应**由用户代码直接导入。应使用 `gpu.compute.mma` 中的统一接口，它在编译时自动分派到适当的架构特定实现：
 
 ```mojo
 from std.gpu.compute import mma
 
-# Usage: var result = mma.mma(a, b, c)
+# 用法：var result = mma.mma(a, b, c)
 ```
 
-## Internal Implementation Details
+## 内部实现细节
 
-The main `gpu.compute.mma` module imports these implementations:
+主 `gpu.compute.mma` 模块导入这些实现：
 
 ```mojo
 from std.gpu.compute.arch.mma_nvidia import _mma_nvidia
@@ -46,7 +43,7 @@ from std.gpu.compute.arch.mma_amd import _mma_amd
 from std.gpu.compute.arch.mma_apple import _mma_apple
 ```
 
-And dispatches based on compile-time architecture detection:
+并根据编译时架构检测进行分派：
 
 ```text
 comptime if is_nvidia_gpu():

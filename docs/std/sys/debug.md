@@ -1,12 +1,12 @@
 ---
 title: "debug"
 sidebar_label: "debug"
-description: "This module includes the debug hook functions."
+description: "此模块包含调试钩子函数。"
 ---
 
 # debug
 
-This module includes the debug hook functions.
+此模块包含调试钩子函数。
 
 ## 函数
 
