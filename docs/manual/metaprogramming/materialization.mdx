@@ -4,51 +4,51 @@ sidebar_label: 实例化
 description: 如何在运行时使用编译时值。
 ---
 
-Mojo 的编译时元编程使其易于在编译时进行计算以供以后使用。在运行时使*编译时值*可用称为*实例化*。对于可以轻松复制的类型，这不是问题。编译器可以简单地将其值插入到需要它的已编译程序中。
+Mojo 的编译时元编程使你能轻松地在编译时进行计算以供后续使用。将一个*编译时值*（compile-time value）在运行时中可用化的过程称为*实例化*（materialization）。对于可以平凡拷贝（trivially copyable）的类型而言，这不成问题。编译器只需在需要时将该值插入到已编译的程序中即可。
 
 ```mojo
-comptime threshold: Int = some_calculation()  # 在编译时计算
+comptime threshold: Int = some_calculation()  # calculate at compile time
 
 for i in range(1000):
-    my_function(i, threshold)  # 在运行时使用值
+    my_function(i, threshold)  # use value at runtime
 ```
 
-然而，Mojo 还允许您在编译时创建更复杂类型的实例：那些动态分配内存的类型，如 `List` 和 `Dict`。在运行时重用这些值会带来一些问题，比如内存在哪里分配，谁拥有值，以及何时销毁值。
+然而，Mojo 还允许你在编译时创建更复杂类型的实例：那些动态分配内存的类型，比如 `List` 和 `Dict`。在运行时复用这些值会带来一些问题，例如内存在何处分配、谁拥有这些值、以及这些值何时被销毁。
 
-本页面描述了 Mojo 何时实例化值，并介绍了一些避免不必要实例化复杂值的技术。
+本页面描述了 Mojo 何时实例化值，并介绍了一些避免不必要地实例化复杂值的技术。
 
-## 隐式和显式实例化
+## 隐式与显式实例化
 
-当您在运行时使用 `comptime` 值时，您是显式或隐式地将值复制到运行时变量中：
+当你在运行时使用一个 `comptime` 值时，你是在显式或隐式地将该值拷贝到一个运行时变量中：
 
 ```mojo
 comptime comptime_value = 1000
 var runtime_value = comptime_value
 ```
 
-将编译时值移动到运行时变量的这个过程称为*实例化*。如果值是隐式可复制的，如 `Int` 或 `Bool`，Mojo 将其视为*隐式可实例化*。
+将一个编译时值移动到运行时变量的这一过程称为*实例化*（materialization）。如果该值是隐式可拷贝的（implicitly copyable），例如 `Int` 或 `Bool`，Mojo 也会将其视为*隐式可实例化*（implicitly materializable）。
 
-但那些**不是**隐式可复制的类型会带来其他挑战。考虑以下代码：
+但那些**不**是隐式可拷贝的类型会带来其他挑战。考虑以下代码：
 
 ```mojo
 def lookup_fn(count: Int):
     comptime list_of_values = [1, 3, 5, 7]
 
     for i in range(count):
-        # 一些计算，无论它是什么。
-        idx = dynamic_function(i)
+        # Some computation, doesn't matter what it is.
+        var idx = dynamic_function(i)
 
-        # 查找另一个值
-        lookup = list_of_values[idx]
+        # Look up another value
+        var lookup = list_of_values[idx]
 
-        # 使用值
+        # Use the value
         process(lookup)
 ```
 
-这看起来是合理的，但编译它会在这一行产生错误：
+这看起来合理，但编译它时会在这一行报错：
 
 ```mojo
-lookup = list_of_values[idx]
+var lookup = list_of_values[idx]
 ```
 
 ```output
@@ -56,28 +56,29 @@ cannot materialize comptime value of type 'List[Int]' to runtime
 because it is not 'ImplicitlyCopyable'
 ```
 
-就像 Mojo 强制您显式复制昂贵复制的值一样，它强制您通过调用 [`materialize()`](/docs/std/builtin/value/materialize/) 函数显式实例化昂贵实例化的值。
+正如 Mojo 强制你显式拷贝那些拷贝代价高昂的值一样，它也强制你通过调用
+[`materialize()`](/docs/std/builtin/value/materialize/) 函数来显式实例化那些实例化代价高昂的值。
 
-这是添加了显式实例化的上面的代码：
+下面是上面代码加上显式实例化后的版本：
 
 ```mojo
 def lookup_fn(count: Int):
     comptime list_of_values = [1, 3, 5, 7]
 
     for i in range(count):
-        idx = dynamic_function(i)
+        var idx = dynamic_function(i)
 
-        # 这是问题所在
+        # This is the problem
         var tmp: List[Int] = materialize[list_of_values]()
-        lookup = tmp[idx]
-        # tmp 在这里被销毁
+        var lookup = tmp[idx]
+        # tmp is destroyed here
 
         process(lookup)
 ```
 
-此代码在循环*内部*实例化值列表，这包括动态分配堆内存并将四个元素存储到该内存中。由于 `tmp` 的最后一次使用在下一行，内存然后在循环迭代之前被释放。这会在循环的每次迭代中创建和销毁列表，这显然是浪费的。
+这段代码在循环*内部*实例化了值列表，其中包含动态分配堆内存并将四个元素存入该内存。由于 `tmp` 的最后一次使用就在下一行，因此该内存在循环进入下一次迭代之前就会被释放。这相当于在循环的每次迭代中都创建并销毁该列表，显然是浪费的。
 
-更高效的版本会在循环*外部*实例化列表：
+更高效的版本会将列表实例化放在循环*外部*：
 
 ```mojo
 def lookup_fn(count: Int):
@@ -85,29 +86,31 @@ def lookup_fn(count: Int):
 
     var list = materialize[list_of_values]()
     for i in range(count):
-        idx = dynamic_function(i)
+        var idx = dynamic_function(i)
 
-        lookup = list[idx]
+        var lookup = list[idx]
 
         process(lookup)
-    # 实例化的列表在这里被销毁
+    # materialized list is destroyed here
 ```
 
-这就是为什么 Mojo 要求您显式实例化非平凡值；它让您控制程序何时分配资源。
+这就是 Mojo 要求你显式实例化非平凡值的原因；它将程序何时分配资源的控制权交给了你。
 
 ## 全局查找表
 
-Mojo 目前没有创建全局静态数据的通用机制。这对于某些性能敏感的代码来说是个问题，您想使用静态查找表。即使您将表声明为 `comptime` 值，您也需要在每次想使用数据时实例化它。
+Mojo 目前尚无用于创建全局静态数据的通用机制。这对某些性能敏感、希望使用静态查找表的代码来说是个问题。即使你将该表声明为 `comptime` 值，每次使用该数据时也需要实例化它。
 
-[`global_constant()`](/docs/std/builtin/globals/global_constant/) 函数提供了将编译时值存储到静态全局存储的解决方案，因此您可以在不重复实例化值的情况下访问它。然而，这目前仅适用于不包含指向内存中其他位置的指针的自包含值。这排除了使用 `List` 和 `Dict` 等集合类型。
+[`global_constant()`](/docs/std/builtin/globals/global_constant/) 函数提供了一种将编译时值存入静态全局存储的解决方案，使你无需重复实例化该值即可访问它。然而，目前这仅适用于不包含指向内存中其他位置指针的自包含值。这就排除了使用 `List` 和 `Dict` 等集合类型的可能。
 
-使用 `global_constant()` 的最简单方法是使用 [`InlineArray`](/docs/std/collections/inline_array/InlineArray/)，它在堆栈上分配静态大小的元素数组。以下代码使用 `global_constant()` 创建静态查找表。
+使用 `global_constant()` 最简单的方式是搭配
+[`Array`](/docs/std/collections/array/Array/)，
+它会在栈上分配一个静态大小的元素数组。以下代码使用 `global_constant()` 创建一个静态查找表。
 
 ```mojo
 from std.builtin.globals import global_constant
 
 def use_lookup(idx: Int) -> Int64:
-    comptime numbers: InlineArray[Int64, 10] = [
+    comptime numbers: Array[Int64, 10] = [
         1, 3, 14, 34, 63, 101, 148, 204, 269, 343
     ]
     ref lookup_table = global_constant[numbers]()
@@ -120,46 +123,46 @@ def main():
 
 ```
 
-在编译时，Mojo 分配 `numbers` 数组，然后 `global_constant()` 函数将其复制到静态常量内存中，代码可以在其中引用它，而无需任何动态逻辑来创建或填充数组。在运行时，`lookup_table` 标识符接收对此内存的不可变引用。
+在编译时，Mojo 分配 `numbers` 数组，然后 `global_constant()` 函数将其拷贝到静态常量内存中，代码可以在无需任何动态逻辑来创建或填充数组的情况下引用它。在运行时，`lookup_table` 标识符获得指向该内存的不可变引用。
 
-注意使用 `ref lookup_table` 来绑定 `global_constant()` 返回的引用。使用 `var lookup_table` 会导致编译器错误，因为它会触发复制，而 `InlineArray` 不支持隐式复制。
+注意此处使用 `ref lookup_table` 来绑定 `global_constant()` 返回的引用。如果使用 `var lookup_table` 会导致编译器报错，因为这会触发拷贝，而 `Array` 不支持隐式拷贝。
 
 ## 使用 `comptime` 关键字
 
-您可以使用的另一种避免实例化复杂值的方法是使用 `comptime` 关键字来控制 Mojo 何时求值表达式。将表达式赋值给 `comptime` 值会导致 Mojo 在编译时求值表达式。
+另一种可以用来避免实例化复杂值的方法是使用 `comptime` 关键字来控制 Mojo 何时对表达式求值。将一个表达式赋值给一个 `comptime` 值会让 Mojo 在编译时对该表达式求值。
 
-例如，如果您想强制函数在编译时运行：
+例如，如果你想强制一个函数在编译时运行：
 
 ```mojo
-comptime tmp = calculate_something()  # 在编译时执行
-var y = x * tmp  # 在运行时执行
+comptime tmp = calculate_something()  # executed at compile time
+var y = x * tmp  # executed at run time
 ```
 
-如果您只为单次使用创建 `comptime` 值，您可以使用 `comptime` 子表达式代替：
+如果你仅为单次使用而创建一个 `comptime` 值，可以改用 `comptime` 子表达式：
 
 ```mojo
 var y = x * comptime (calculate_something())
 ```
 
-这完全像前面的示例一样工作，而没有创建命名临时值。这里的 `comptime` 关键字告诉 Mojo 在括号内（`calculate_something()`）求值表达式。
+这与前一个示例的工作方式完全相同，只是没有创建命名的临时值。此处的 `comptime` 关键字告诉 Mojo 在编译时对括号内的表达式（`calculate_something()`）求值。
 
-例如，您可以在使用 `Layout` 类型时使用 `comptime` 子表达式，它确定您如何存储和检索 `LayoutTensor` 中的数据。实例化 `Layout` 需要动态分配，这在 GPU 上不支持。因此，在 GPU 上调用此代码会产生错误：
+例如，你可以在使用 `Layout` 类型时使用 `comptime` 子表达式——该类型决定了你如何在 `LayoutTensor` 中存储和取回数据。实例化一个 `Layout` 需要动态分配，这在 GPU 上不受支持。因此在 GPU 上调用以下代码会产生错误：
 
 ```mojo
 comptime layout = Layout.row_major(16, 8)
-var x = layout.size() // WARP_SIZE  # 无法隐式实例化布局
+var x = layout.size() // WARP_SIZE  # Can't implicitly materialize layout
 ```
 
-`comptime` 子表达式修复了这个问题：
+使用 `comptime` 子表达式可以修复这一问题：
 
 ```mojo
 comptime layout = Layout.row_major(16, 8)
 var x = comptime (layout.size()) // WARP_SIZE
 ```
 
-现在，表达式 `layout.size()` 在编译时求值，因此不需要实例化布局。
+现在，表达式 `layout.size()` 会在编译时被求值，因此无需实例化该 layout。
 
-您还可以使用命名的 `comptime` 值实现相同的效果。
+你也可以使用命名的 `comptime` 值来达到同样效果。
 
 ```mojo
 comptime layout = Layout.row_major(16, 8)
@@ -167,16 +170,16 @@ comptime layout_size = layout.size()
 var x = layout_size // WARP_SIZE
 ```
 
-`comptime` 子表达式只是表达同一事物的更紧凑方式。
+`comptime` 子表达式只是表达同样意思的一种更紧凑写法。
 
 ## 实例化字面量
 
-字面量值，如字符串字面量和数值字面量也会实例化为它们的运行时等价物，但这主要由编译器自动处理：
+字面量值，例如字符串字面量和数值字面量，也会被实例化为它们在运行时的等价物，但这主要由编译器自动处理：
 
 ```mojo
-comptime str_literal = "Hello"  # 在编译时，一个 StringLiteral
-var str = str_literal  # 在运行时，一个 String。
-var static_str: StaticString = str_literal  # 或一个 StaticString
+comptime str_literal = "Hello"  # at compile time, a StringLiteral
+var str = str_literal  # at run time, a String.
+var static_str: StaticString = str_literal  # or a StaticString
 ```
 
-`String` 和 `StaticString` 都可以从 `StringLiteral` 隐式创建，但没有类型注释，Mojo 默认将 `StringLiteral` 实例化为 `String`。
+`String` 和 `StaticString` 都可以从 `StringLiteral` 隐式创建，但如果没有类型注解，Mojo 默认将 `StringLiteral` 实例化为 `String`。

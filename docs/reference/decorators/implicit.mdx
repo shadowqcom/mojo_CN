@@ -1,24 +1,14 @@
 ---
-title: '@implicit 装饰器'
+title: '@implicit'
 sidebar_label: '@implicit'
 sidebar_position: 11
-description: >
-  @implicit 装饰器参考。标记转换函数为隐式转换。
+description: 将初始化器标记为可进行隐式转换。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+你可以在任何单参数初始化器上添加 `@implicit` 装饰器，将其标识为可进行隐式转换。
 
-`@implicit` 装饰器标记转换函数为隐式转换。当类型不匹配时，编译器会自动调用标记的转换函数。
-
-## 语法
-
-```mojo
-@implicit
-def __init__(out self, ...):
-    ...
-```
-
-## 用法
+例如：
 
 ```mojo
 struct MyInt:
@@ -28,57 +18,39 @@ struct MyInt:
     def __init__(out self, value: Int):
         self.value = value
 
-def process(x: MyInt):
-    print(x.value)
-
-def main():
-    process(42)  # 隐式转换 Int 到 MyInt
-```
-
-## 示例
-
-### 类型包装
-
-```mojo
-struct Meters:
-    var value: Float64
-
-    @implicit
-    def __init__(out self, value: Float64):
-        self.value = value
-
-def measure(distance: Meters):
-    print(t"Distance: {distance.value}m")
-
-def main():
-    measure(10.5)  # 隐式转换
-```
-
-### 多种转换
-
-```mojo
-struct Flexible:
-    var value: Int
-
-    @implicit
-    def __init__(out self, value: Int):
-        self.value = value
-
-    @implicit
     def __init__(out self, value: Float64):
         self.value = Int(value)
-
-def process(x: Flexible):
-    print(x.value)
-
-def main():
-    process(42)     # 从 Int 隐式转换
-    process(3.14)   # 从 Float64 隐式转换
 ```
 
-## 注意事项
+此隐式转换初始化器允许你将 `Int` 传递给接受 `MyInt` 参数的函数，或将 `Int` 赋值给 `MyInt` 类型的变量。但是，接受 `Float64` 值的初始化器 **不是** 隐式转换初始化器，因此必须显式调用：
 
-- 过度使用隐式转换可能导致代码难以理解
-- 隐式转换可能有性能开销
-- 编译器只会尝试一次隐式转换
-- 避免创建循环转换链
+```mojo
+def func(n: MyInt):
+    print("MyInt value: ", n.value)
+
+def main():
+    func(Int(42))             # Implicit conversion from Int: OK
+    func(MyInt(Float64(4.2))) # Explicit conversion from Float64: OK
+    func(Float64(4.2))        # Error: can't convert Float64 to MyInt
+```
+
+## 弃用
+
+随着时间的推移，你可能会决定隐式转换不再适合你的代码库。例如，它可能掩盖复杂性或导致函数重载歧义。在这种情况下，Mojo 允许你使用 `@implicit` 装饰器内置的 `deprecated` 参数将转换标记为已弃用。弃用允许你逐步淘汰转换，而不是导致行为的突然变化。
+
+向 `deprecated` 参数提供一个布尔值：
+
+```mojo
+struct MyStruct:
+    @implicit(deprecated=True)
+    def __init__(out self, value: Int):
+        # ...
+```
+
+这告诉编译器在隐式使用该转换时发出警告，而不会破坏现有代码：
+
+```mojo
+_: MyStruct = 1  # Warns on implicit conversion
+
+_ = MyStruct(1)  # No warning. Conversion is explicit
+```

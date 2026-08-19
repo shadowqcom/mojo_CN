@@ -3,283 +3,563 @@ title: Mojo 数值类型参考
 sidebar_label: 数值类型
 sidebar_position: 12
 description: >
-  Mojo 数值类型完整参考。涵盖整数、浮点数、SIMD 向量、
-  数值运算和类型转换。
+  Mojo 数值类型完整参考。涵盖 SIMD、DType、Scalar、Int、UInt、
+  定宽整数、浮点类型、Byte、数值字面量和显式转换。
 ---
 
-{/*  VERIFIED: builtin/int.mojo, builtin/float.mojo,
-     builtin/simd.mojo, builtin/dtype.mojo  */}
+{/*
+VERIFIED: builtin/simd.mojo (SIMD, Scalar, UInt, Byte, sized
+type aliases, MAX/MIN/MAX_FINITE/MIN_FINITE),
+builtin/int.mojo (Int, Indexer, BITWIDTH),
+builtin/dtype.mojo (DType enum), builtin/int_literal.mojo
+(IntLiteral, arbitrary precision, materializes to Int),
+builtin/float_literal.mojo (FloatLiteral, materializes to
+Float64, nan/infinity/negative_infinity/negative_zero),
+builtin/type_aliases.mojo, ExprNode.h (kIntLiteral,
+kFloatLiteral), ASTType.h (register passability),
+prelude __init__.mojo,
+DType support matrix (compiler team, Notion),
+BFloat16 Apple Silicon status (DevRel)
+*/}
 
-Mojo 提供丰富的数值类型，包括有符号和无符号整数、浮点数和 SIMD 向量。本页涵盖这些类型及其操作。
+Mojo 的数值原语建立在 `SIMD` 向量之上。每个定宽数值类型都是一个单元素 `SIMD`，称为 `Scalar`。`DType` 指定 `SIMD` 向量中存储的值类型，例如 `int`、`uint`、`float32`、`int64` 或 `uint8`。Mojo 提供了定宽和无宽整数类型、浮点类型，以及用于原始字节数据的 `Byte`。
 
-## 整数类型
+## `SIMD`
 
-### 有符号整数
+`SIMD` 是 "Single Instruction, Multiple Data"（单指令多数据）的缩写。它让 CPU 能够用一条指令同时处理多个值。
 
-| 类型    | 范围                                      | 大小   |
-|---------|-------------------------------------------|--------|
-| `Int`   | 机器宽度（通常 -2^63 到 2^63-1）          | 64 位  |
-| `Int8`  | -128 到 127                               | 8 位   |
-| `Int16` | -32,768 到 32,767                         | 16 位  |
-| `Int32` | -2,147,483,648 到 2,147,483,647           | 32 位  |
-| `Int64` | -2^63 到 2^63-1                           | 64 位  |
+一个 `SIMD` 值在固定大小的向量中存储一个或多个相同类型的值。值的数量称为*宽度*（width），且必须是 2 的幂。
 
-### 无符号整数
+宽度是类型的一部分。例如，`SIMD[DType.float32, 4]` 是一个包含四个 32 位浮点数的向量。`SIMD[DType.int8, 16]` 是一个包含十六个 8 位整数的向量。
 
-| 类型     | 范围                    | 大小   |
-|----------|-------------------------|--------|
-| `UInt8`  | 0 到 255                | 8 位   |
-| `UInt16` | 0 到 65,535             | 16 位  |
-| `UInt32` | 0 到 4,294,967,295      | 32 位  |
-| `UInt64` | 0 到 2^64-1             | 64 位  |
-
-### 整数字面量
-
-```mojo
-var decimal = 42
-var hex = 0xFF
-var octal = 0o52
-var binary = 0b101010
-```
-
-### 整数运算
+当 `SIMD` 值只持有一个值时，其行为类似标量。当它持有多个值时，操作会同时作用于所有值：
 
 ```mojo
-var a: Int = 10
-var b: Int = 3
-
-print(a + b)   # 13（加法）
-print(a - b)   # 7（减法）
-print(a * b)   # 30（乘法）
-print(a / b)   # 3（除法，向零取整）
-print(a // b)  # 3（截断除法）
-print(a % b)   # 1（取模）
-print(a ** 2)  # 100（幂运算）
+var v = SIMD[DType.float32, 4](1.0, 2.0, 3.0, 4.0)
+var doubled = v * 2.0   # All four elements doubled
+print(doubled) # [2.0, 4.0, 6.0, 8.0]
 ```
 
-### 位运算
+现代 CPU 可以用 SIMD 并行处理 4、8、16 或更多个值，相比标量操作可以显著提升性能。
+
+:::note
+`SIMD` 有一个硬性上限：2**15 (32768) 个元素。这是一个编译时限制，而非运行时限制。
+
+实际上，可用的宽度要小得多，并且取决于硬件。例如，`SIMD[DType.float32, 4]` 可放入 128 位寄存器，而 `SIMD[DType.float32, 16]` 需要 512 位，这已达到或超过大多数 SIMD 寄存器的宽度。
+
+始终通过基准测试来找到适合你的工作负载和目标硬件的最佳宽度。
+:::
+
+### 元素访问
+
+通过索引（"*lane*"，通道）读写单个元素：
 
 ```mojo
-var a: Int = 0b1010
-var b: Int = 0b1100
-
-print(a & b)   # 8（与）
-print(a | b)   # 14（或）
-print(a ^ b)   # 6（异或）
-print(~a)      # -11（取反）
-print(a << 2)  # 40（左移）
-print(a >> 2)  # 2（右移）
+v[0]       # Read element 0 → Scalar[DType.float32]
+v[0] = 5.0 # Write element 0
 ```
 
-## 浮点类型
+### 运算
 
-| 类型      | 描述             | 精度           | 大小   |
-|-----------|------------------|----------------|--------|
-| `Float16` | 半精度浮点数     | ~3 位小数      | 16 位  |
-| `Float32` | 单精度浮点数     | ~7 位小数      | 32 位  |
-| `Float64` | 双精度浮点数     | ~15 位小数     | 64 位  |
-
-### 浮点字面量
-
-```mojo
-var a = 3.14
-var b = 2.5e-3
-var c: Float32 = 1.0
-```
-
-### 浮点运算
-
-```mojo
-var a: Float64 = 3.14
-var b: Float64 = 2.0
-
-print(a + b)   # 5.14
-print(a - b)   # 1.14
-print(a * b)   # 6.28
-print(a / b)   # 1.57
-print(a ** 2)  # 9.8596
-```
-
-### 特殊值
-
-```mojo
-var inf = Float64.inf
-var neg_inf = Float64.neg_inf
-var nan = Float64.nan
-```
-
-## SIMD 类型
-
-SIMD（单指令多数据）类型允许并行处理多个值：
+算术运算、比较运算和位运算会同时作用于所有元素：
 
 ```mojo
 var a = SIMD[DType.float32, 4](1.0, 2.0, 3.0, 4.0)
 var b = SIMD[DType.float32, 4](5.0, 6.0, 7.0, 8.0)
 
-var sum = a + b   # [6.0, 8.0, 10.0, 12.0]
-var prod = a * b  # [5.0, 12.0, 21.0, 32.0]
+var sum = a + b        # [6.0, 8.0, 10.0, 12.0]
+var prod = a * b       # [5.0, 12.0, 21.0, 32.0]
 ```
 
-### 创建 SIMD 值
+归约（reduction）运算将所有元素合并为一个值：
 
 ```mojo
-# 从标量广播
-var a = SIMD[DType.float32, 4](1.0)
-
-# 从列表
-var b = SIMD[DType.float32, 4]([1.0, 2.0, 3.0, 4.0])
-
-# 从值
-var c = SIMD[DType.float32, 4](1.0, 2.0, 3.0, 4.0)
+a.reduce_add()         # 10.0
+a.reduce_max()         # 4.0
+a.reduce_min()         # 1.0
 ```
 
-### SIMD 运算
-
-```mojo
-var a = SIMD[DType.int32, 4](1, 2, 3, 4)
-var b = SIMD[DType.int32, 4](5, 6, 7, 8)
-
-# 算术运算
-var sum = a + b
-var diff = a - b
-var prod = a * b
-var quot = a / b
-
-# 比较运算
-var eq = a == b  # SIMD[bool, 4]
-var lt = a < b
-
-# 位运算
-var and_result = a & b
-var or_result = a | b
-var xor_result = a ^ b
-```
-
-### 归约运算
+转换（cast）将每个元素转换为不同的数值类型。元素数量保持不变，即使目标类型更宽或更窄：
 
 ```mojo
 var a = SIMD[DType.float32, 4](1.0, 2.0, 3.0, 4.0)
-
-print(a.sum())     # 10.0
-print(a.product()) # 24.0
-print(a.min())     # 1.0
-print(a.max())     # 4.0
+var ints = a.cast[DType.int32]()    # [1, 2, 3, 4]
+var wide = a.cast[DType.float64]()  # 4 × Float64
+var tiny = a.cast[DType.float16]()  # 4 × Float16
 ```
 
-## DType 枚举
-
-`DType` 枚举指定数值类型：
+钳位（clamp）将元素限制在一个范围内。两个边界都是包含的，因此结果可以等于边界值：
 
 ```mojo
-alias int8 = DType.int8
-alias int16 = DType.int16
-alias int32 = DType.int32
-alias int64 = DType.int64
-alias float16 = DType.float16
-alias float32 = DType.float32
-alias float64 = DType.float64
-alias bool = DType.bool
+# max(min(self, upper_bound), lower_bound)
+a.clamp(1.5, 3.5)     # [1.5, 2.0, 3.0, 3.5]
 ```
 
-### 类型大小
+`min()` 和 `max()` 是自由函数，而非方法：
 
 ```mojo
-print(size_of[Int32]())   # 4
-print(size_of[Float64]()) # 8
+min(a, b)              # Element-wise minimum
+max(a, b)              # Element-wise maximum
 ```
 
-## 类型转换
+## `Scalar`
 
-### 整数之间
+具有单个元素的 `SIMD` 称为 `Scalar`。Mojo 中每个定宽数值名称都是 `Scalar` 别名：
 
 ```mojo
-var a: Int32 = 42
-var b: Int64 = Int64(a)
-var c: Int16 = Int16(a)
+# These are all the same type
+var a: Scalar[DType.float32] = 3.14
+var b: Float32 = 3.14
+var c: SIMD[DType.float32, 1] = 3.14
 ```
 
-### 整数到浮点
+当你写 `Float32` 时，实际上是在写 `Scalar[DType.float32]`，即 `SIMD[DType.float32, 1]`。
+
+## `DType` 规范
+
+`DType` 用于命名 `SIMD` 向量中存储的值类型，例如 `float32`、`int64` 或 `uint8`。`DType` 本身不存储数据。它告诉 `SIMD` 如何解释每个元素以及使用哪些运算：
 
 ```mojo
-var a: Int = 42
-var b: Float64 = Float64(a)
+# DType selects a number kind, such as 32-bit float or 8-bit integer
+var x: SIMD[DType.float32, 4] = # ...  # four 32-bit floats
+var y: SIMD[DType.int8, 16] = # ...    # sixteen 8-bit ints
 ```
 
-### 浮点到整数
+使用 `DType` 编写可跨数值种类的函数：
 
 ```mojo
-var a: Float64 = 3.14
-var b: Int = Int(a)  # 3（截断）
+# Double a value. The cast is required because the parameterized type
+# parameter can't be used directly with the literal `2`.
+def double[T: DType](x: Scalar[T]) -> Scalar[T]:
+    return x * UInt8(2).cast[T]()
 ```
 
-### 饱和转换
+### 整数 DType 规范
+
+| 有符号        | 宽度    | 无符号         | 宽度    |
+|---------------|---------|----------------|---------|
+| `DType.int8`   | 8 位   | `DType.uint8`   | 8 位   |
+| `DType.int16`  | 16 位  | `DType.uint16`  | 16 位  |
+| `DType.int32`  | 32 位  | `DType.uint32`  | 32 位  |
+| `DType.int64`  | 64 位  | `DType.uint64`  | 64 位  |
+| `DType.int128` | 128 位 | `DType.uint128` | 128 位 |
+| `DType.int256` | 256 位 | `DType.uint256` | 256 位 |
+| `DType.int`    | 机器字 | `DType.uint`    | 机器字 |
+
+### 浮点 DType 规范
+
+| 值                      | 选择                       |
+|-------------------------|----------------------------|
+| `DType.float16`         | 16 位 IEEE 半精度          |
+| `DType.bfloat16`        | 16 位 brain float          |
+| `DType.float32`         | 32 位 IEEE 单精度          |
+| `DType.float64`         | 64 位 IEEE 双精度          |
+| `DType.float8_e4m3fn`   | 8 位（4 位指数，3 位尾数）  |
+| `DType.float8_e4m3fnuz` | 8 位，无符号零             |
+| `DType.float8_e5m2`     | 8 位（5 位指数，2 位尾数）  |
+| `DType.float8_e5m2fnuz` | 8 位，无符号零             |
+| `DType.float8_e8m0fnu`  | 8 位（8 位指数，无尾数）   |
+| `DType.float4_e2m1fn`   | 4 位（2 位指数，1 位尾数）  |
+
+### 其他 DType 规范
+
+| 值         | 选择            |
+|------------|-----------------|
+| `DType.bool` | 布尔值（1 位） |
+
+## 整数
+
+### 无宽 `Int` 类型
+
+`Int` 是 Mojo 的默认整数类型。当你写 `var x = 42` 时，赋值的就是 `Int`。它是循环计数器、集合索引和 `len()` 结果背后的类型：
 
 ```mojo
-var a: Int64 = 300
-var b: UInt8 = UInt8(a)  # 255（饱和到最大值）
+def main():
+    var a: Int = 42
+    comptime a_type = reflect[type_of(a)].name()
+    print("a:", a_type) # a: SIMD[DType.int, 1]
 ```
 
-## 数值 Trait
+`Int` 与硬件的原生字长一致。在底层它直接包装机器的索引寄存器，这也是它成为计数和寻址的自然选择的原因。
 
-### `Numeric`
+`Int` 在当今大多数平台上是 64 位的，但这并非保证。依赖特定宽度的代码应使用定宽类型。
 
-`Numeric` trait 组合基本数值操作：
+`Int` 等价于 `Scalar[DType.int]` 和 `SIMD[DType.int, 1]`。
+
+### 整数类型的边界
+
+`Int` 将其边界作为编译时常量暴露：
+
+| 常量          | 值                         |
+|---------------|----------------------------|
+| `Int.MAX`      | 可表示的最大值             |
+| `Int.MIN`      | 可表示的最小值             |
 
 ```mojo
-trait Numeric(
-    Addable, Subable, Mulable, Divable,
-    Comparable, Copyable
-):
-    ...
+print(Int.MIN)        # -9223372036854775808
+print(Int.MAX)        # 9223372036854775807
 ```
 
-### `Intable`
+所有整数类型也都提供 `MAX` 和 `MIN`：
 
-可以转换为整数：
+| 常量                  | 值                         |
+|-----------------------|----------------------------|
+| `<Integer-Type>.MAX` | 可表示的最大值             |
+| `<Integer-Type>.MIN` | 可表示的最小值             |
+
+例如：
 
 ```mojo
-def process[T: Intable](value: T):
-    var n = Int(value)
+print(UInt.MIN)       # 0
+print(UInt.MAX)       # 18446744073709551615
+
+print(UInt8.MAX)      # 255
+print(Int8.MIN)       # -128
+print(UInt32.MAX)     # 4294967295
+print(Int32.MIN)     # -2147483648
+
+print(SIMD[DType.int16, 1].MIN)  # -32768
 ```
 
-### `Floatable`
+### `UInt`
 
-可以转换为浮点数：
+`UInt` 是机器宽度的无符号整数：
 
 ```mojo
-def process[T: Floatable](value: T):
-    var f = Float64(value)
+def main():
+    var b: UInt = 42
+    comptime b_type = reflect[type_of(b)].name()
+    print("b:", b_type) # b: SIMD[DType.uint, 1]
 ```
 
-## 数值函数
+### 定宽整数类型
 
-### 数学函数
+定宽整数类型具有在所有平台上保持一致的声明宽度。
+
+| 有符号    | 宽度    | 无符号   | 宽度    |
+|-----------|---------|----------|---------|
+| `Int8`    | 8 位   | `UInt8`  | 8 位   |
+| `Int16`   | 16 位  | `UInt16` | 16 位  |
+| `Int32`   | 32 位  | `UInt32` | 32 位  |
+| `Int64`   | 64 位  | `UInt64` | 64 位  |
+| `Int128`  | 128 位 | `UInt128`| 128 位 |
+| `Int256`  | 256 位 | `UInt256`| 256 位 |
+
+每个都是单元素 `SIMD` 的别名。例如，`Int32` 是 `Scalar[DType.int32]`，即 `SIMD[DType.int32, 1]`。无符号类型遵循同样的模式。
+
+**定宽与无宽整数的选用**：
+
+- 使用 `Int` 和 `UInt` 用于计数、索引、循环边界和通用数学运算。这是标准库所期望和返回的类型。
+
+- 当宽度至关重要时使用定宽整数：文件布局、像素数据、硬件寄存器，或任何位数属于契约一部分的上下文。
+
+- 对于标量工作使用命名类型，需要向量时使用 `SIMD`。
 
 ```mojo
-from math import sqrt, sin, cos, tan, exp, log, abs
-
-print(sqrt(16.0))  # 4.0
-print(abs(-5))     # 5
-print(sin(0.0))    # 0.0
+var general = 42                         # Int (machine width)
+var small: UInt8 = 255
+var large: Int64 = -9_000_000_000
+var pair = SIMD[DType.uint32, 2](10, 20)  # a 2-element vector
 ```
 
-### 舍入函数
+### `Byte`
+
+`Byte` 是 `UInt8` 的别名：
 
 ```mojo
-from math import floor, ceil, round, trunc
-
-print(floor(3.7))  # 3
-print(ceil(3.2))   # 4
-print(round(3.5))  # 4
-print(trunc(3.7))  # 3
+var buf: List[Byte] = [0x48, 0x65, 0x6C, 0x6C, 0x6F]
 ```
 
-### 范围检查
+当数据表示原始字节而非小数字时使用 `Byte`。它是许多 I/O 和内存接口中使用的元素类型。
+
+## 浮点类型
+
+Mojo 不提供与 `Int` 类似的 `Float` 类型。相反，它提供了多种定宽浮点类型。每个都是单元素 `SIMD` 的别名：
+
+{/* markdownlint-disable MD013 */}
+
+| 类型              | 位数      | 标准              | 是什么                                        |
+|-------------------|-----------|-------------------|-----------------------------------------------|
+| `Float16`         | 16        | IEEE 754 binary16 | `Scalar[DType.float16]`                       |
+| `Float32`         | 32        | IEEE 754 binary32 | `Scalar[DType.float32]`                       |
+| `Float64`         | 64        | IEEE 754 binary64 | `Scalar[DType.float64]`                       |
+| `BFloat16`        | 16        | Brain float       | `Scalar[DType.bfloat16]`                      |
+| `Float4_e2m1fn`   | 4         | OCP MX            | `Scalar[DType.float4_e2m1fn]`                 |
+| `Float8_e4m3fn`   | 8         | OFP8              | `Scalar[DType.float8_e4m3fn]`                 |
+| `Float8_e4m3fnuz` | 8         | --                | `Scalar[DType.float8_e4m3fnuz]`               |
+| `Float8_e5m2`     | 8         | OFP8              | `Scalar[DType.float8_e5m2]`                   |
+| `Float8_e5m2fnuz` | 8         | --                | `Scalar[DType.float8_e5m2fnuz]`               |
+| `Float8_e8m0fnu`  | 8         | OFP8 §5.4         | `Scalar[DType.float8_e8m0fnu]`                |
+| `FloatLiteral`    | 任意精度  | --                | 仅编译时存在。具体化为 `Float64`。|
+
+{/* markdownlint-enable MD013 */}
+
+:::note
+
+- IEEE-754 是 IEEE 浮点运算标准。
+- OFP8 是一种 8 位浮点规范，它为以紧凑格式表示浮点数创建了一个标准。
+
+:::
+
+### `Float16`
+
+16 位 IEEE 754 半精度。其动机是吞吐量和内存带宽：存储空间是 `Float32` 的一半，意味着寄存器和缓存中能容纳两倍的值，并且 GPU 张量核心以更高吞吐量处理它。1 位符号位、5 位指数位、10 位尾数位。
+
+较窄的指数范围将动态范围限制在约 ±65504。超过该范围的值会溢出为无穷大；非常小的值会下溢为零。这使得 `Float16` 适用于推理，但不太适合训练，因为梯度可能跨越多个数量级。训练时请改用 `BFloat16`。
+
+`Float16` 在 GPU 上原生加速。在 CPU 上，它需要 ARM FP16 扩展或 Intel AVX-512 FP16。其他 CPU 回退到软件模拟。
+
+### `Float32`
+
+32 位 IEEE 754 单精度。23 位尾数给出约 7 位有效十进制数字；8 位指数覆盖约从 1e-38 到 3.4e38 的范围。1 位符号位、8 位指数位、23 位尾数位。
+
+`Float32` 在所有 GPU 和 CPU 架构上原生加速。用于通用数值计算和 GPU 计算。
+
+### `Float64`
+
+64 位 IEEE 754 双精度。当 7 位有效十进制数字不够用时使用：科学仿真、金融计算，或舍入误差会累积的累加求和。52 位尾数给出约 15-16 位有效十进制数字。1 位符号位、11 位指数位、52 位尾数位。
+
+### `BFloat16`
+
+由 Google Brain 为深度学习开发的 16 位 brain 浮点数。1 位符号位、8 位指数位、7 位尾数位。
+
+Google Brain 设计它是为了解决 `Float16` 在训练中的特定问题：`Float16` 的 5 位指数位为神经网络创建了过窄的动态范围。梯度会溢出和下溢。`BFloat16` 与 `Float32` 的 8 位指数位完全匹配，因此值在前向和反向传播中始终保持范围内。
+
+匹配的指数范围还使得 `Float32`/`BFloat16` 转换开销很低：只需截断或扩展尾数，无需重映射。这使得混合精度训练可行：以 `BFloat16` 计算以获得速度和内存节省，以 `Float32` 保留优化器状态以获得精度。这种组合推动了它作为训练格式的广泛采用。
+
+在支持的硬件上将其用于 ML 训练和推理。7 位尾数对科学或金融工作而言精度不足。
+
+`BFloat16` 并非在所有平台上都受支持。目前在 Apple Silicon 上不可用。在 NVIDIA Ampere (A100) 及更高版本、AMD MI300X 及更高版本，以及配备 AMX 或 AVX-512 BF16（Sapphire Rapids 及更高版本）的 Intel CPU 上原生加速。
+
+### 低精度类型
+
+每个值位数更少意味着每个寄存器能容纳更多值、内存带宽更低、在专用硬件上吞吐量更高。你用尾数精度换取在相同硅片上容纳更大模型或更大批次的能力。这些格式遵循 OCP Microscaling Formats (MX) 和 OFP8 规范。
+
+Mojo 中没有单一的 `Float8` 类型。它是作为 `Scalar` 别名暴露的五个 8 位浮点变体的通俗统称：`Float8_e4m3fn`、`Float8_e4m3fnuz`、`Float8_e5m2`、`Float8_e5m2fnuz` 和 `Float8_e8m0fnu`。每个都有自己的指数/尾数布局和支持的运算集。`DType.float8_e3m4` 也作为一个 dtype 值存在，但没有 `Scalar` 别名；请直接使用 `Scalar[DType.float8_e3m4]`。
+
+`Float8` 格式用于内存带宽比精度更重要的机器学习工作负载。这些类型需要 GPU 硬件才能高效执行。
+
+`Float8` 类型在任何平台上都不能转换为或转换自任何整数类型，包括 `Bool`。它们只能在浮点类型之间转换：`Float16`、`Float32`、`Float64`、`BFloat16` 以及其他受支持的 `Float8` 变体。
+
+### 浮点命名约定
+
+后缀编码了每种格式的特殊属性：
+
+- **`fn`**：finite（有限）—— 无无穷大或负无穷大编码
+- **`uz`**：unsigned zero（无符号零）—— 无负零编码
+- **`fnu`**：finite, no sign, unsigned zero（有限、无符号、无符号零）
+
+名称编码了布局：`e4m3` 表示 4 位指数位和 3 位尾数位。`fn` 表示无无穷大，`uz` 表示无符号零。
+
+例如，`Float4_e2m1fn` 是一个 4 位格式，具有 2 位指数位和 1 位尾数位，由 Open Compute MX 规范定义。
+
+:::note 厂商命名
+`Float8_e4m3fn` 在不同厂商之间是同一格式，但命名不同：Mojo、PyTorch、JAX 和 LLVM 称其为 `e4m3fn`，而 OCP、NVIDIA CUDA 和 AMD ROCm 称其为 `e4m3`。
+:::
+
+### 硬件要求
+
+支持因类型和运算而异，差异显著。这些类型在 CPU 上都不支持运行时算术运算。
+
+**算术支持**（在 ARM CPU、NVPTX sm_90a、AMDGCN gfx942 上测试）：
+
+| 类型                | 编译时 | CPU | NVPTX | AMDGCN |
+|---------------------|--------|-----|-------|--------|
+| `Float8_e4m3fn`     | ✅     | ❌  | ✅    | ❌     |
+| `Float8_e4m3fnuz`   | ✅     | ❌  | ❌    | ❌     |
+| `Float8_e5m2`       | ✅     | ❌  | ✅    | ❌     |
+| `Float8_e5m2fnuz`   | ✅     | ❌  | ❌    | ❌     |
+| `DType.float8_e3m4` | ❌     | ❌  | ❌    | ❌     |
+
+NVPTX 对 `Float8_e4m3fn` 和 `Float8_e5m2` 的支持由编译器模拟：操作数被向上转换为更宽的类型，运算在该更宽类型中执行，结果再向下转换回来。没有原生的 fp8 算术指令。
+
+- `DType.float8_e3m4` 在任何阶段（包括编译时）都不支持算术运算。它的大多数转换仅在编译时工作。
+
+- `Float4_e2m1fn` 需要 NVIDIA Blackwell (B200) 或更高版本。
+
+- `Float32` 和 `Float64` 是 CPU 和跨平台代码的可移植替代方案。
+
+### IEEE 754 特殊值
+
+IEEE 754 浮点类型支持特殊值：
+
+| 值     | 含义             |
+|--------|------------------|
+| `inf`  | 正无穷大         |
+| `-inf` | 负无穷大         |
+| `nan`  | 非数（Not a number）|
+| `-0.0` | 负零             |
+
+通过 `SIMD` 常量访问这些值：
 
 ```mojo
-from math import clamp, min, max
-
-print(clamp(15, 0, 10))  # 10
-print(min(3, 5))         # 3
-print(max(3, 5))         # 5
+var x = Float32.MAX           # largest value
+var y = Float32.MIN           # smallest value
+var z = Float32.MAX_FINITE    # largest finite value
+var w = Float32.MIN_FINITE    # smallest (most negative) finite value
 ```
+
+对于浮点类型，`MAX` 和 `MIN` 可能是无穷大。`MAX_FINITE` 和 `MIN_FINITE` 给出可表示的最大和最小有限值。
+
+标记为 `fn`（有限）的低精度格式没有无穷大编码。标记为 `uz`（无符号零）的格式没有负零。
+
+### 浮点精度
+
+浮点运算会引入舍入误差。两个在计算后看起来相等的值可能相差一个极小的量。使用 `==` 比较可能产生意外结果：
+
+```mojo
+# Compile-time: exact result
+comptime exact = 3.0 * (4.0 / 3.0 - 1.0)
+
+# Force runtime: rounding error appears
+var three = 3.0
+var finite = three * (4.0 / three - 1.0)
+
+print(exact, finite)
+# 1.0 0.99999999999999978
+print(exact == finite) # False
+```
+
+对于近似比较，使用 `std.math` 的 `isclose()` 检查差值是否在可接受的容差范围内。
+
+## 数值字面量
+
+Mojo 有两种编译时字面量类型：`IntLiteral` 和 `FloatLiteral`。它们支持任意精度，并且仅在编译期间存在。
+
+### IntLiteral
+
+当你写一个裸整数（如 `42`）时，其类型为 `IntLiteral`。直到它被用于一个需要具体类型的上下文之前，它不会成为具体类型：
+
+```mojo
+var a: Int = 42            # Becomes Int
+var b: Int8 = 42           # Becomes Int8
+var c: Float32 = 42        # Becomes Float32
+var d: UInt64 = 1_000_000  # Becomes UInt64
+```
+
+`IntLiteral` 在编译时是任意精度的。它没有固定位宽，因此编译时计算不会溢出或丢失精度。在运行时，`IntLiteral` 值具体化为 `Int`：
+
+```mojo
+# Compile-time: arbitrary precision, no overflow
+comptime big = 2 ** 200
+
+# Runtime: materializes to Int (word-sized)
+var x = 42  # IntLiteral 42 materializes to Int
+```
+
+`IntLiteral` 在编译时支持所有算术和比较运算符。
+
+### FloatLiteral
+
+当你写一个十进制常量（如 `3.14`）时，其类型为 `FloatLiteral`。直到它被用于一个需要具体类型的上下文之前，它不会成为具体类型：
+
+```mojo
+var x: Float32 = 3.14     # Becomes Float32
+var y: Float64 = 3.14     # Becomes Float64
+var z: BFloat16 = 0.5     # Becomes BFloat16
+```
+
+`FloatLiteral` 为特殊值提供编译时常量：
+
+| 常量                              | 值                 |
+|-----------------------------------|--------------------|
+| `FloatLiteral.nan`               | 非数（Not a number）|
+| `FloatLiteral.infinity`          | 正无穷大           |
+| `FloatLiteral.negative_infinity` | 负无穷大           |
+| `FloatLiteral.negative_zero`     | 负零               |
+
+使用 `is_nan()` 和 `is_neg_zero()` 来测试这些值，因为 `nan == nan` 为 `False`，而 `negative_zero == 0.0` 为 `True`。
+
+### 表达式中的字面量
+
+字面量会适应其周围的类型。当一个字面量出现在带类型的值旁边时，它会采用该值的类型：
+
+```mojo
+var x = Float32(1.0)
+var y = x * 0.5           # 0.5 becomes Float32
+var z = x + 2             # 2 becomes Float32
+```
+
+这不是隐式转换。字面量尚无运行时类型。它会变为上下文所需的任何类型。
+
+变量具有固定类型，永远不会隐式转换。
+
+## 显式转换
+
+在数值类型之间转换始终需要显式初始化器或转换。Mojo 不会在变量之间执行隐式数值转换：
+
+```mojo
+var i = 42                        # Int
+var f = Float32(i)                # Int → Float32
+var u = UInt64(i)                 # Int → UInt64
+var narrow = Int8(i)              # Int → Int8
+```
+
+在基于 `SIMD` 的类型之间，使用 `.cast[]`：
+
+```mojo
+var a = Float32(3.14)
+var b = a.cast[DType.int32]()     # Float32 → Int32
+var c = a.cast[DType.float64]()   # Float32 → Float64
+```
+
+在 `Int` 和基于 `SIMD` 的类型之间，使用初始化器：
+
+```mojo
+var i = 42                        # Int
+var s = Int64(i)                  # Int → Int64
+var back = Int(s)                 # Int64 → Int
+```
+
+### 为什么转换是显式的
+
+隐式数值转换可能掩盖精度丢失和符号变化。例如，`Int64(-1)` 变为 `UInt64(18446744073709551615)` 是一个 bug，而非便利。Mojo 要求显式转换，以使意图清晰。
+
+字面量是例外。像 `42` 这样的字面量可以变为 `Float32(42.0)`，因为编译器在编译时执行转换并能保证它是精确的。
+
+变量则不同。像 `x: Int = 300` 这样的值变为 `Int8` 会静默丢失数据，因此 Mojo 要求你显式写出转换。
+
+## 易错之处
+
+### `Int` 宽度与平台相关
+
+`Int` 在当今大多数平台上是 64 位的，但它被定义为机器宽度。假设 `Int` 为 64 位的代码会在 32 位目标上出问题。当需要固定宽度时请使用 `Int64`。
+
+### 整数运算在溢出时回绕
+
+整数运算在溢出时使用二进制补码回绕：
+
+- 有符号溢出回绕到负数范围。向 `Int8` 值 `127` 加 `1` 得到 `-128`。
+- 无符号溢出回绕到零。向 `UInt8` 值 `255` 加 `1` 得到 `0`。
+
+Mojo 不会在溢出时陷入陷阱（trap）。如果需要溢出检测，请在运算前检查操作数。
+
+```mojo
+var x = Int8(127)
+var y = x + Int8(1)    # -128 (wraps)
+```
+
+### 浮点转整数向零截断
+
+```mojo
+var x = Int(Float32(3.9))    # 3, not 4
+var y = Int(Float32(-3.9))   # -3, not -4
+```
+
+### NaN 比较始终返回 `False`
+
+这包括 `NaN == NaN`。它影响 SIMD 掩码和条件选择：
+
+```mojo
+var x = Float32.MAX * 2.0    # inf
+var nan = x - x              # NaN
+print(nan == nan)            # False
+```
+
+### 128 位和 256 位整数由软件模拟
+
+`Int128`、`Int256`、`UInt128` 和 `UInt256` 存在，但在大多数平台上硬件支持有限。在没有基准测试的情况下，避免在性能关键代码中使用它们。
+
+### Float8 类型需要 GPU 硬件
+
+`Float8` 变体专为在具有原生支持的 GPU 上运行 ML 工作负载而设计。在 CPU 上，对这些类型的运算可能被模拟或不可用。

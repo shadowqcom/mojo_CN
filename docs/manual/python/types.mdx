@@ -16,11 +16,11 @@ Mojo 原始类型会隐式转换为 Python 对象。目前我们支持整数、�
 from std.python import Python
 
 def main() raises:
-    py_module = """
+    var py_module = """
 def type_printer(value):
     print(type(value))
 """
-    py_utils = Python.evaluate(py_module, file=True, name="py_utils")
+    var py_utils = Python.evaluate(py_module, file=True, name="py_utils")
 
     py_utils.type_printer(4)
     py_utils.type_printer(3.14)
@@ -41,7 +41,7 @@ def type_printer(value):
 
 ### Mojo 包装对象
 
-当你在 Mojo 代码中使用 Python 对象时，Mojo 会在 Python 对象外添加 [`PythonObject`](/docs/std/python/python_object/PythonObject/) 包装器。此对象暴露了许多常见的双下划线方法（dunder methods），如 `__getitem__()` 和 `__getattr__()`，将它们传递给底层的 Python 对象。大多数情况下，你可以像在 Python 中一样对待包装后的对象。你可以使用点号表示法访问属性和调用方法，使用 `[]` 运算符访问序列中的项。
+当你在 Mojo 代码中使用 Python 对象时，Mojo 会在 Python 对象外添加 [`PythonObject`](/docs/std/python/python_object/PythonObject/) 包装器。此对象暴露了许多常见的双下划线方法（dunder methods），如 `__getitem__()` 和 `__getattr__()`，将它们传递给底层的 Python 对象。大多数情况下，你可以像在 Python 中一样对待包装后的对象。你可以使用点号表示法访问属性和调用方法，并使用 `[]` 运算符访问序列中的项。
 
 你可以通过使用 Mojo 整数、浮点数、布尔值或字符串初始化 `PythonObject` 来显式创建包装的 Python 对象。此外，你可以使用 [`Python.dict()`](/docs/std/python/python/Python/#dict)、[`Python.list()`](/docs/std/python/python/Python/#list) 和 [`Python.tuple()`](/docs/std/python/python/Python/#tuple) 静态方法在 Mojo 中直接创建多种类型的 Python 集合。
 
@@ -51,7 +51,7 @@ def type_printer(value):
 from std.python import Python
 
 def main() raises:
-    py_dict = Python.dict()
+    var py_dict = Python.dict()
     py_dict["item_name"] = "whizbang"
     py_dict["price"] = 11.75
     py_dict["inventory"] = 100
@@ -68,8 +68,8 @@ def main() raises:
 from std.python import Python
 
 def main() raises:
-    py_list = Python.list("cat", 2, 3.14159, 4)
-    n = py_list[2]
+    var py_list = Python.list("cat", 2, 3.14159, 4)
+    var n = py_list[2]
     print("n =", n)
     py_list.append(5)
     py_list[0] = "aardvark"
@@ -87,8 +87,8 @@ n = 3.14159
 from std.python import Python
 
 def main() raises:
-    py_tuple = Python.tuple("cat", 2, 3.1415, "cat")
-    n = py_tuple[2]
+    var py_tuple = Python.tuple("cat", 2, 3.1415, "cat")
+    var n = py_tuple[2]
     print("n =", n)
     print("Number of cats:", py_tuple.count("cat"))
 ```
@@ -105,9 +105,9 @@ from std.python import Python
 
 def main() raises:
     var py_set = Python.evaluate('{2, 3, 2, 7, 11, 3}')
-    num_items = len(py_set)
+    var num_items = len(py_set)
     print(num_items, "items in the set.")
-    contained = 7 in py_set
+    var contained = 7 in py_set
     print("Is 7 in the set:", contained)
 ```
 
@@ -139,7 +139,7 @@ def main() raises:
 
 ### 在 Mojo 中比较 Python 类型
 
-你可以在 Mojo 比较表达式中使用 Python 对象，Mojo 的 `is` 运算符也可以用于比较两个 Python 对象的标识。Python 值如 `False` 和 `None` 在 Mojo 布尔表达式中也会被评估为假值。
+你可以在 Mojo 比较表达式中使用 Python 对象，Mojo 的 `is` 运算符也可以用于比较两个 Python 对象的标识。Python 值如 `False` 和 `None` 在 Mojo 布尔表达式中也会被求值为假值。
 
 如果你需要知道底层 Python 对象的类型，你可以使用 [`Python.type()`](/docs/std/python/python/Python/#type) 方法，它等价于 Python 内置的 `type()` 函数。你可以通过将 Python 对象与类型进行标识比较来测试它是否为特定类型，如下所示：
 
@@ -148,19 +148,19 @@ from std.python import Python
 
 def main() raises:
     var value1 = PythonObject(3.7)
-    value2 = Python.evaluate("10/3")
+    var value2 = Python.evaluate("10/3")
 
-    # 比较值
+    # Compare values
     print("Is value1 greater than 3:", value1 > 3)
     print("Is value1 greater than value2:", value1 > value2)
 
-    # 比较标识
-    value3 = value2
+    # Compare identities
+    var value3 = value2
     print("value1 is value2:", value1 is value2)
     print("value2 is value3:", value2 is value3)
 
-    # 比较类型
-    py_float_type = Python.evaluate("float")
+    # Compare types
+    var py_float_type = Python.evaluate("float")
     print("Python float type:", py_float_type)
     print("value1 type:", Python.type(value1))
     print("Is value1 a Python float:", Python.type(value1) is py_float_type)

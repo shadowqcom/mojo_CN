@@ -1,21 +1,22 @@
 ---
-title: 泛型
-description: 使用泛型编写可跨多种类型构建和运行的代码。
+title: 参数化声明
+description: >
+  使用参数化声明编写可跨多种类型构建和运行的代码。
 ---
 
-类型泛型让你只需编写一次代码，就可以在多种类型上使用，无需重复逻辑。你不需要为每种情况单独实现或进行类型检查。Mojo 会为你使用的每种类型生成专用版本。
+参数化类型让你只需编写一次代码，即可在多种类型上使用而无需重复逻辑。你不需要为每种情况单独实现或进行类型检查。Mojo 会为你使用的每种类型生成专用版本。
 
-大多数语言到此为止，它们的泛型只对类型进行参数化。Mojo 还支持值泛型。它的参数系统使用相同的 `[]` 语法接受类型和编译时值。
+大多数语言只对类型进行参数化。Mojo 还支持值参数。它的参数系统使用相同的 `[]` 语法接受类型和编译时值。
 
 Mojo 在语法上区分编译时参数和运行时参数。参数放在方括号 `[]` 中，在编译时解析。参数放在圆括号 `()` 中，在运行时解析。
 
-你在每个定义和调用点都能看到这种区别，所以你始终知道编译器特化了什么，以及运行时传递了什么。
+你在每个定义和调用点都能看到这种区别，因此你始终知道编译器特化了什么、运行时传递了什么。
 
 ```mojo
-# T 是类型参数，threshold 是值参数
-# 两者都是编译时的。values 是运行时参数。
+# T is a type parameter, threshold is a value parameter.
+# Both are compile-time. values is a runtime argument.
 def count_above[
-    T: Comparable & Copyable, threshold: T
+    T: Comparable & ImplicitlyCopyable & Deinitable, threshold: T
 ](values: List[T]) -> Int:
     var count = 0
     for v in values:
@@ -24,49 +25,33 @@ def count_above[
     return count
 ```
 
-许多泛型使用特征来约束哪些类型可以与代码一起工作。特征定义了类型必须做什么，泛型代码声明它需要哪些特征。
+许多参数化声明使用 trait 来约束哪些类型可以与代码一起工作。trait 定义了类型必须做什么，参数化代码声明它需要哪些 trait。编译器会强制执行这些要求，并在调用点为每个具体类型生成专用代码。
 
-编译器强制执行这些要求，并在调用站点为每个具体类型生成专用代码。
+## 类型参数
 
-## 泛型的价值
+类型参数让你编写可跨多种类型工作的代码。你只需定义一次行为，编译器就会在调用点为每个具体类型对其进行特化。
 
-泛型消除了重复逻辑。你编写一个在编译时适应你使用的类型和值的实现，包括你未编写的库中的类型。
+### 类型约束
 
-类型泛型让一个函数、方法或结构体可以跨多种类型工作。你使用特征约束声明一次要求，编译器就会强制执行它们。你避免了几乎相同的实现，并可以在一处修复错误。
+*约束*（constraint）定义了类型必须做什么。你将它们表示为 trait 或 trait 组合。你必须始终约束或显式指定参数名的类型。如果没有一组固定的必要功能，编译器就无法保证哪些操作是有效的。
 
-值泛型让你可以对编译时常量进行参数化，如大小、阈值或功能标志。编译器可以特化代码路径、移除死分支，并为特定值进行优化，而无需运行时成本。
+- 最宽松的约束是 [`AnyType`](/docs/std/builtin/anytype/AnyType/)。它对类型不施加任何行为要求。
 
-它们一起让你表达一次意图并广泛应用，而不会牺牲正确性、清晰性或性能。
+- [`Deinitable`](/docs/std/builtin/anytype/Deinitable/) 是具有生命周期的类型的常见基线。存储或拥有值的参数化代码通常需要它。
 
-:::note
-编译器在调用站点为具体类型和值的每种组合生成专用代码。这实现了静态检查和优化，但会增加编译时间和代码大小。
-:::
+约束使你的代码健全：你使用的每个操作都保证存在于满足约束的任何类型中。
 
-## 类型泛型
+### 命名约定
 
-类型泛型让你编写可跨多种类型工作的代码。你定义一次行为，编译器在调用站点为每个具体类型特化它。
+Mojo 遵循 Rust 和 C++ 等语言中使用的命名约定。类型参数名使用 PascalCase，可以是简短的（`T`、`E`）也可以是描述性的（`ErrorType`、`Element`）。按照约定，`T`、`U`、`V` 表示通用类型；`K`/`V` 用于键值对；`E` 表示错误；`H` 表示哈希器。值参数名使用 lower_snake_case，应当具有描述性（如 `capacity`、`hasher`、`tile_x`）。
 
-### 设置泛型参数约束
-
-*约束*定义了类型必须做什么。你将它们表示为特征，限制你的泛型代码接受哪些类型。
-
-始终使用特征约束来约束泛型参数。特征定义了你的代码所依赖的操作和保证。它们还暴露了你的实现可以使用的关联类型（编译时别名）。有了这些约束，编译器可以检查正确性并及早报告缺失的要求。
-
-- 最宽松的约束是 [`AnyType`](/docs/std/builtin/anytype/AnyType/)。它对类型没有行为要求，是最不具限制性的选择。
-
-- [`ImplicitlyDestructible`](/docs/std/builtin/anytype/ImplicitlyDestructible/) 是具有生命周期的类型的常见基线。它标记了在超出作用域时需要清理的类型。存储或拥有值的泛型代码通常需要它。
-
-没有约束，泛型代码无法做有意义的工作。编译器无法保证哪些操作是有效的。
-
-本页的示例使用特征组合（如 `Equatable & Copyable`）来声明算法所需的确切能力。每个特征定义了具体类型在调用站点必须提供的必需 API 元素。
-
-## 基本泛型：比较两个列表
+### 基础示例：比较两个列表
 
 考虑比较两个列表以测试它们是否按相同顺序包含相同的值。
 
-你可以为每种元素类型编写单独的实现。或者你可以编写一个泛型函数，适用于任何元素支持所需操作的列表。
+你可以为每种元素类型编写单独的实现。或者，你也可以编写一个参数化函数，适用于任何其元素支持所需操作的列表。
 
-这个具体版本只适用于整数：
+下面这个具体版本只适用于整数：
 
 ```mojo
 def all_equal_int(ref lhs: List[Int], ref rhs: List[Int]) -> Bool:
@@ -78,13 +63,11 @@ def all_equal_int(ref lhs: List[Int], ref rhs: List[Int]) -> Bool:
     return True
 ```
 
-泛型版本不关心元素类型。它只需要算法使用的能力：元素必须支持相等比较并且可复制。
-
-有了这些要求，这个更新的函数逐个元素遍历两个列表，就像整数版本一样：
+参数化版本不关心元素类型。它只要求算法所使用的能力：元素必须支持相等比较、可复制，并且可隐式销毁（这样 `zip()` 产出的元组才能在每次迭代结束时被清理）：
 
 ```mojo
 def all_equal[
-    T: Equatable & Copyable
+    T: Equatable & Copyable & Deinitable
 ](ref lhs: List[T], ref rhs: List[T]) -> Bool:
     if len(lhs) != len(rhs): return False
 
@@ -96,24 +79,7 @@ def all_equal[
 
 两个实现遵循相同的逻辑：检查长度，在第一次不匹配时返回 `False`，如果没有发现差异则返回 `True`。
 
-### 工作原理
-
-这个示例中的泛型部分使函数可以跨多种类型重用。第一个标志是类型参数 `T`。你在函数参数之前的方括号中声明类型参数。这里，`T` 表示两个列表的元素类型。
-
-:::note
-Mojo 倾向于显示目的而非类型的名称。它遵循 Rust 和 C++ 等语言中使用的命名约定，这使泛型签名保持可读性。
-
-类型参数名称使用 PascalCase。它们可以简短（`T`、`E`）或描述性（`ErrorType`、`Element`）。常见约定：
-
-- `T`、`U`、`V` 通用类型参数
-- `K`、`V` 键和值类型
-- `H` 哈希类型或函数
-- `E` 错误类型，如 `Result[T, E]`
-
-值参数名称使用 lower_snake_case。它们应该具有描述性（`capacity`、`hasher`、`value`、`writer`、`tile_x`）。
-:::
-
-当你调用 `all_equal()` 时，编译器从调用站点推断 `T`：
+类型参数 `T` 在函数参数之前的方括号中声明。它表示两个列表的元素类型。当你调用 `all_equal()` 时，编译器会从调用点推断 `T`：
 
 ```mojo
 print("Int (Expect True):\t",
@@ -126,68 +92,95 @@ print("String (Expect False):\t",
     all_equal(["hello", "world"], ["goodbye", "world"])) # False
 ```
 
-编译器为你使用的每种类型生成一个具体的、特定类型的 `all_equal()` 版本。在这个例子中，它为 `Int` 创建一个，为 `String` 创建一个。
+编译器为你使用的每种类型生成一个具体的、特定类型的 `all_equal()` 版本：在这个例子中，一个用于 `Int`，一个用于 `String`。
 
 :::note
-在类型理论术语中，参数化 all_equal() 函数是*多态的*。生成的特定类型版本是*单态的*。
+在类型论中，参数化的 `all_equal()` 函数是*多态的*（polymorphic）。生成的特定类型版本是*单态的*（monomorphic）。
 :::
 
-### 类型要求
-
-`Equatable` 是这个算法所需的。`Copyable` 通常用于循环和容器元素。编译器强制执行两者，所以你不必猜测。
+### 选择约束
 
 保持要求最小化：
 
 ```mojo
-T: Equatable & Copyable
+T: Equatable & Copyable & Deinitable
 ```
 
-和号（`&`）组合特征。这意味着两个要求都适用。
-
-使用你的代码所需的最少约束。这使你的函数可用于更多类型。例如，如果你从 `all_equal()` 中移除 `Equatable`，代码将无法编译，因为编译器无法保证 `!=` 对所有 `T` 都存在。
+和号（`&`）用于组合 trait。请使用你的代码所需的最少约束。这能让你的函数适用于更多类型。如果你从 `all_equal()` 中移除 `Equatable`，代码将无法编译，因为编译器无法保证 `!=` 对所有 `T` 都存在。删除 `Deinitable` 失败的原因更隐蔽：`zip()` 以元组的形式产出每一对值，而循环只有在 `T` 可隐式销毁时才能销毁那个临时元组。
 
 :::note
 类型通过实现 `__ne__()` 来支持 `!=`。
 :::
 
-当你的代码使用约束未覆盖的操作时，编译器会报告错误。类型是*未充分指定的*。当前约束不保证所需的行为。
+当你的代码使用了约束未覆盖的操作时，编译器会报告错误：类型*未充分指定*。通过添加提供缺失行为的 trait 来修复此问题。在实践中，参数化错误意味着你的约束未包含代码所使用的行为。
 
-通过添加提供缺失行为的特征来修复此问题。使用特征组合来扩展约束。
+添加约束会限制你接受的类型，但会扩展你的代码能做的事情。每个 trait 都会添加有保证的操作，这让编译器能够检查正确性并推理生命周期和效果。
 
-添加约束会限制你接受的类型，但会扩展你的代码可以做的事情。每个特征都添加了保证的操作，这让编译器可以检查正确性并推理生命周期和效果。
+### 参数化类型
 
-在实践中，泛型错误意味着你的约束不包括你的代码使用的行为。添加缺失的特征。
-
-:::note
-约束使你的代码健全：你使用的每个操作都保证存在于满足它们的任何类型。
-:::
-
-### 泛型参数类型
-
-在这个例子中，两个参数都是使用相同元素类型的 `List`：
+在 `all_equal()` 示例中，两个参数使用了相同的元素类型：
 
 ```mojo
 lhs: List[T], rhs: List[T]
 ```
 
-对两个参数使用 `T` 确保你的循环进行同类比较并防止类型不匹配。
-
-前面的示例显示了包含类型 `T` 元素的列表。泛型类型也可以在不嵌入容器类型的情况下使用，如下所示：
+对两个参数都使用 `T` 可确保你的循环进行同类比较，并防止类型不匹配。你也可以直接使用参数化类型，而无需将其嵌入到容器中：
 
 ```mojo
-def my_generic_fn[T: AnyType](value: T):
+def my_parameterized_fn[T: AnyType](value: T):
 ```
 
-这个函数接受任何类型，因为它的唯一限制是 `AnyType`。`AnyType` 是特征层次结构的根。它是所有类型扩展的基线。使用 `AnyType` 意味着该值没有保证的析构函数或生命周期管理。除了[_反射_](/docs/manual/metaprogramming/reflection/)（类型内省）之外，这个函数实际上是没用的。
+这个函数接受任何类型，因为它的唯一限制是 `AnyType`，即所有类型都遵循的 trait 层次结构根。使用 `AnyType` 意味着该值没有保证的析构器或生命周期管理。除了[反射](/docs/manual/metaprogramming/reflection/)之外，这个函数无法对 `value` 做任何有意义的事情。
 
-## 泛型类型
+#### 打印未充分指定的参数化值
 
-到目前为止，你已经看到了应用于方法和函数的泛型。Mojo 还让你定义泛型类型。这些使用编译时参数来定义它们的字段和方法。
-
-泛型类型让你打包一个可重用的*形状*：存储的字段加上支持的操作。你不需要编写 `PairInt`、`PairString` 等，只需编写一个 `Pair[T]`，让编译器为你使用的每个具体 `T` 生成专用版本。
+`AnyType` 的一个常见问题是，编译器无法打印未指定类型的值。由于它无法确定 `T` 是否遵循 `Writable`，因此无法生成打印它所需的代码：
 
 ```mojo
-comptime ComparableValue = Equatable & ImplicitlyCopyable
+def function[Ts: AnyType](*args: Ts):
+    for arg in args:
+        print(arg) # Will error.
+        # The compiler can't verify `Writable` conformance
+
+
+def main():
+    function(1, 2, 3)
+```
+
+可以通过测试参数化类型参数是否遵循 `Writable` 并将其向下转型以暴露 `Writable` trait 来解决此问题：
+
+```mojo
+def represent[T: AnyType](v: T) -> String:
+    comptime if conforms_to(T, Writable):
+        return String(v)
+    else:
+        return String(t"{reflect[T].name()}")
+
+def function[Ts: AnyType](*args: Ts):
+    for arg in args:
+        print(represent(arg))
+
+@fieldwise_init
+struct SomeStruct:
+    var x: Int
+
+def main():
+    function(1, 2, 3) # prints each integer
+    function(SomeStruct(2), SomeStruct(3)) # each "(module-name).SomeStruct"
+```
+
+`Writable` 项的打印效果与显式转换为 `String` 相同。非 `Writable` 项使用其类型名，前面加上模块名（即不带扩展名的文件名）作为前缀。
+
+请参阅本页关于[安全向下转型](#downcasting-safely)的更多内容。
+
+## 参数化类型
+
+参数化声明不限于函数。你可以定义使用编译时参数来定义其字段和方法的参数化类型。
+
+参数化类型让你可以打包一种可重用的形状：存储字段加上支持的操作。你无需编写 `PairInt`、`PairString` 等，只需编写一个 `Pair[T]`，让编译器为你使用的每个具体 `T` 生成专用版本。
+
+```mojo
+comptime ComparableValue = Equatable & ImplicitlyCopyable & Deinitable
 
 @fieldwise_init
 struct Pair[T: ComparableValue](ComparableValue):
@@ -195,118 +188,195 @@ struct Pair[T: ComparableValue](ComparableValue):
     var right: Self.T
 
     def __eq__(self, other: Pair[Self.T]) -> Bool:
-        return self.left == other.left and
-               self.right == other.right
+        return self.left == other.left and self.right == other.right
 ```
 
-像泛型函数一样，泛型类型使用占位符参数。区别在于泛型类型在其存储和方法中都使用这些参数。这里，`Pair` 存储两个相同元素类型的值，并通过比较其字段来实现相等。
+与参数化函数一样，参数化类型使用占位符参数，但参数化类型在其存储和方法中都会使用这些参数。这里，`Pair` 存储两个相同元素类型的值，并通过比较其字段来实现相等。
 
-特征是使泛型类型实用的原因。这些约束描述了类型定义所依赖的要求。在这个例子中，`Pair` 需要比较值，所以 `T` 必须是可相等的。它还需要在常见操作中赋值和复制值，所以它对 `T` 应用了特征组合约束：
+`Pair` 需要比较值，因此 `T` 必须是可相等的。它还需要在常见操作中复制和清理值，因此它对 `T` 应用了 trait 组合：
 
 ```mojo
-comptime ComparableValue = Equatable & ImplicitlyCopyable
+comptime ComparableValue = Equatable & ImplicitlyCopyable & Deinitable
 ```
 
-`Pair` 定义在两个地方应用了这个约束：类型本身（在圆括号中）和类型参数（在方括号中），后者用于定义其字段。
+`Pair` 的定义在两个地方应用了这个遵循：
 
 ```mojo
 struct Pair[T: ComparableValue](ComparableValue):
 ```
 
-- 对于类型后的圆括号，你可以说结构体"遵循"或"实现"这个约束。这是一个承诺。`Pair` 类型在说，"我是一个 `ComparableValue`。"
-- 对于方括号，特征约束限制了调用者可以传递哪些值。这是一个要求："任何与 `Pair` 一起使用的值必须具有类型 `T`，而 `T` 必须是一个 `ComparableValue`。"
+- **方括号** —— 对调用者的要求：任何与 `Pair` 一起使用的值必须具有类型 `T`，且 `T` 必须是 `ComparableValue`。
+- **圆括号** —— 来自 `Pair` 自身的承诺："我是一个 `ComparableValue`。"
 
-这使得 `Pair[T]` 可以在任何需要 `ComparableValue` 的地方使用（因为有圆括号），并确保所有 `T` 值都遵循（因为有方括号）。
+这使得 `Pair[T]` 可在任何需要 `ComparableValue` 的地方使用，并确保所有 `T` 值都遵循。
 
-到目前为止，这些示例使用类型参数。泛型类型也可以接受非类型参数，你接下来会看到。
+## 混合类型参数和值参数
 
-## 混合类型和值参数
-
-泛型不限制你可以使用什么参数。添加定义行为所需的任何内容。
+参数化类型也可以接受非类型参数。添加定义行为所需的任何内容：
 
 ```mojo
 struct ExampleStruct:
     def example[
-        T: Writable & Copyable,   # 类型参数
-        count: Int,               # 值参数
+        T: Writable & Copyable,   # type parameter
+        count: Int,               # value parameter
     ](
         self,
-        data: String,             # 参数
-        init_value: T             # 泛型参数
+        data: String,             # argument
+        init_value: T             # parameterized argument
     ) -> String:
 ```
 
 按照约定，Mojo 对编译时值参数使用 lower_snake_case。这在视觉上将它们与类型参数区分开来。
 
-## 安全向下转型：`conforms_to` + `trait_downcast()`
+## 使用 `Some` 简化遵循语法
 
-有时泛型约束比你需要的更宽泛。你可能想要约束不保证的特定特征的操作。使用带有 `conforms_to()` 和 `trait_downcast()` 的受保护向下转型。
+你可以用简洁的 `Some[Trait(s)]` 和 `SomeTypeList[Trait(s)]` 语法来替代显式的类型参数和遵循。这些形式既支持单个 trait，也支持 trait 组合，并让你在使用类型的地方表达遵循，而不是在一个地方声明参数又在另一个地方使用它。
 
-仅当底层类型实现目标特征时才向下转型。首先检查遵循性。然后向下转型并通过该特征使用值。
-
-这种模式保持行为明确且安全：
+例如：
 
 ```mojo
-def process[T: AnyType](value: T):
-    comptime if conforms_to(T, Writable & ImplicitlyCopyable):
-        var w = trait_downcast[Writable & ImplicitlyCopyable](value)
-        print(w)
-    else:
-        print("<not writable>")
-        # 或使用 `comptime assert` 在编译时失败
+def my_parameterized_fn[T: Trait(s)](value: T):
 ```
 
-关键点：
+可以变为：
 
-- `conforms_to(T, Writable & ImplicitlyCopyable)` 检查 `T` 是否满足特征组合。
-- `trait_downcast()` 在编译时将值重新绑定到特征约束的视图。
+```mojo
+def my_parameterized_fn(value: Some[Trait(s)]):
+```
 
-只在受保护的分支内调用 `trait_downcast()`。在 `else` 分支中处理回退。如果你总是需要该特征，请将其添加为约束（例如，`T: Writable`）而不是向下转型。
+你可以在任何曾经使用类型参数的地方、在任何参数约定下，将 `Some` 与任何 trait 或 trait 组合一起使用。如果编译器无法推断出具体类型，它会报错并要求你改用显式的类型参数。
 
-当你无法将要求表示为约束时使用此模式。这在基于特征处理值的反射式代码中很常见。参见[反射](/docs/manual/metaprogramming/reflection/)。
+### 参数
 
-## 类型泛型与显式销毁
+`Some` 将 trait 要求直接放在参数上，从而消除了显式的类型参数：
 
-显式销毁的类型并不总是适用于泛型代码。问题不在于泛型，而在于生命周期管理。显式销毁让你可以控制拆卸。你可以定义接受参数、遵循不同路径或引发错误的析构函数。
+```mojo
+# Before
+def foo[T: Intable, //](x: T) -> Int:
+    return x.__int__()
 
-复制或移动值的泛型代码无法看到或遵守该逻辑。一旦值被复制或传输，你就失去了如何（或是否）清理它的控制，代码将无法编译。
+# After
+def foo(x: Some[Intable]) -> Int:
+    return x.__int__()
+```
 
-注意这些情况：
+### 函数类型
 
-- 管理生命周期的泛型代码
-- 复制或传输值的泛型代码
+`Some` 也适用于函数类型，将闭包参数的遵循移到参数上：
 
-这些最常出现在容器、集合和迭代器中。它们复制值或获取所有权并决定何时销毁。
+```mojo
+# Before
+def sync_parallelize[
+    FuncType: def(Int) -> None,
+](func: FuncType):
+    ...
 
-安全的情况：
+# After
+def sync_parallelize(func: Some[def(Int) -> None]):
+    ...
+```
 
-- 不影响生命周期的泛型操作
+### 可变参数
 
-比如比较、谓词和其他纯操作。
+使用 `*SomeTypeList` 来让可变参数包遵循，而不是使用单个类型参数：
 
-经验法则：如果你的泛型代码需要拥有、复制或控制值何时消亡，请避免显式销毁的类型。添加 `ImplicitlyDestructible` 约束以保持正常工作。
+```mojo
+# Before
+def show[*Ts: Writable](*pack: *Ts):
+    ...
 
-## 值泛型
+# After
+def show(*pack: *SomeTypeList[Writable]):
+    ...
+```
 
-值泛型对编译时常量而不是类型进行参数化代码。你在 `[]` 中与类型参数一起声明它们，但它们绑定到值。
+### 运算符重载
 
-### 何时使用值泛型
+运算符重载是 `Some` 的天然适用场景，使运算符生效的 trait 直接位于声明上：
 
-当值影响结构或行为且在编译时已知时，使用值泛型。常见情况：
+```mojo
+# Before
+def __getitem__[I: Indexer, //](self, idx: I) -> ref[self.x] Self.T:
+    ...
+
+# After
+def __getitem__(self, idx: Some[Indexer]) -> ref[self.x] Self.T:
+    ...
+```
+
+### `Some` 不适用的情况
+
+`Some` 并非在所有情况下都能替代类型参数。编译器无法为结构体字段推断出具体类型，并会报告错误，指出类型不具体，要求你使用 `[]` 来绑定缺失的参数：
+
+```mojo
+@fieldwise_init
+struct Struct(Writable):
+    # Error: a `Some` struct field has no concrete type to infer
+    var x: Some[Copyable & Deinitable & Writable]
+
+def main():
+    var s = Struct(1)
+    print(s)
+```
+
+将遵循移回参数化类型的参数上以修复此问题：
+
+```mojo
+@fieldwise_init
+struct Struct[T: Copyable & Deinitable & Writable](Writable):
+    var x: Self.T
+
+def main():
+    var s = Struct(1)
+    print(s)  # Struct[Int](x=1)
+```
+
+## 使用条件可用性
+
+有时遵循比你需要的更宽泛。例如，参数化类型在结构体中可能被约束为 `AnyType`，但你希望在某个方法中将其作为 `Writable` 使用。添加一个 `where` 子句来要求 `Writable`，使编译器在允许具体实例调用该方法之前证明遵循：
+
+```mojo
+def process(self, value: Self.T) where conforms_to(Self.T, Writable):
+    print(value)
+```
+
+调用 `conforms_to(T, Trait)` 来测试 `T` 是否满足某个 trait。用 `and` 或 `or` 组合多个检查以表达更复杂的条件。
+
+条件不限于 trait 检查。它们也可以约束编译时事实，例如数据长度是 2 的幂或容量为正。任何具有已知值的编译时表达式都可以出现在 `where` 子句中。
+
+编译器会拒绝不满足约束的调用。例如，用非 `Writable` 类型 `T` 构建的类型无法调用 `process()`：
+
+```mojo
+self.process(non_writable)   # Compile-time error, constraint violation
+```
+
+`where` 子句让编译器能够在构造类型、解析遵循、编译方法和函数，或实例化编译时声明之前证明条件。
+
+除了遵循之外，where 子句还可以对其参数测试谓词：某个 `DType` 是否为浮点或数值（`dtype.is_floating_point()`、`dtype.is_numeric()`），或某个整数参数是否为 2 的幂。
+
+它不能做的是将目标事实（如 `is_64bit()` 或 `is_nvidia_gpu()`）或任意编译时函数作为约束进行求值。编译器无法将这些作为证明携带。对于这些情况，请改用 `comptime if`，它会直接对其条件求值。
+
+## 参数化值
+
+值让代码基于编译时常量而非类型进行参数化。你在 `[]` 中与类型参数一起声明它们，但它们绑定到值。
+
+### 何时使用参数化值
+
+当某个值影响结构或行为且在编译时已知时，使用参数化值。常见场景：
 
 - *固定大小：* 缓冲区长度、数组维度、矩阵形状
 - *阈值和限制：* 容量上限、重试次数、精度级别
 - *功能选择：* 算法变体、调试标志、模式开关
-- *数值配置：* SIMD 宽度、步幅长度、展开因子
+- *数值配置：* SIMD 宽度、步长、展开因子
 
 编译器为每个不同的值特化代码。它可以移除死分支（`comptime if`）、展开循环（`comptime for`）、替换内联常量，并进行积极优化而无需运行时成本。
 
-### 基本示例
+### 基础示例
 
-这个函数创建一个用默认值初始化的固定大小列表：
+以下函数创建一个用默认值初始化的固定大小列表：
 
 ```mojo
-comptime MyCollectionElement = ImplicitlyCopyable & ImplicitlyDestructible
+comptime MyCollectionElement = ImplicitlyCopyable & Deinitable
 
 def make_filled[T: MyCollectionElement, size: Int](
     splat_value: T
@@ -317,7 +387,7 @@ def make_filled[T: MyCollectionElement, size: Int](
     return result^
 ```
 
-`size` 参数在编译时解析。每个具有不同值的调用站点都会获得自己的专用版本：
+`size` 参数在编译时解析。每个具有不同值的调用点都会获得自己的专用版本：
 
 ```mojo
 var three_zeros = make_filled[Int, 3](0)
@@ -333,53 +403,46 @@ print(five_hellos)  # [hello, hello, hello, hello, hello]
 问问自己：调用者在编写代码时是否知道这个值？如果是，使用参数。如果它依赖于输入、文件或运行时状态，使用参数。
 
 ```mojo
-# size 是编译时的：编译器特化
+# size is compile-time: the compiler specializes
 def fixed[size: Int]():
-    var buf = InlineArray[Int, size](fill=0)
+    var buf = Array[Int, size](fill=0)
 
-# size 是运行时的：不特化
+# size is runtime: no specialization
 def dynamic(size: Int):
     var buf = List[Int](capacity=size)
 ```
 
-## 当泛型变得更复杂时
+## 参数化类型与显式销毁
 
-本页的示例涵盖了最常见的情况。当你构建更大的 API 时，你会遇到一些额外的模式：
+显式销毁的类型并不总是适用于参数化代码。问题不在于参数化，而在于生命周期管理。显式销毁让你可以控制拆卸：你可以定义接受参数、遵循不同路径或引发错误的析构器。
 
-- *关联（依赖）类型：*
-  某些特征声明[关联类型](/docs/manual/traits/#comptime-members-for-generics)。
-  例如，集合和迭代特征使用关联元素类型（通常是 `Element`）来描述它们拥有的值。
-  关联类型也可以约束行为——例如，要求元素可哈希或可隐式销毁。
+复制或移动值的参数化代码无法看到或遵守该逻辑。一旦值被复制或传输，你就失去了如何（或是否）清理它的控制，代码将无法编译。
 
-- *非泛型类型中的泛型方法：*
-  类型不必是泛型的就可以使用泛型。当只有部分 API 需要时，单个方法可以声明自己的类型参数。
+注意这些情况：
 
-- *多个类型参数：*
-  某些算法使用多个类型参数。特征描述这些类型如何关联，而不仅仅是每个类型能做什么。常见示例包括字典（键和值）、缓存（键和值）、结果类型（值和错误），以及跨多种类型操作的算法。
+- 管理生命周期的参数化代码
+- 复制或传输值的参数化代码
 
-- *编译时计算：*
-  值参数启用 `comptime if`、`comptime for` 和编译时算术。这出现在 SIMD 代码、固定大小容器和性能关键循环中，编译器为不同的值生成不同的代码路径。
+这些最常出现在复制值或获取所有权并决定何时销毁的容器、集合和迭代器中。
 
-这些主题建立在相同的核心思想上：类型参数、约束和特化。你可以将约束应用于函数、方法、类型或 `comptime` 别名，以使要求接近它们重要的地方。
+安全的情况是不影响生命周期的参数化操作，如比较和谓词。
 
-简单情况下你不需要这些模式，但随着泛型代码的增长，它们很重要。
+如果你的参数化代码需要拥有、复制或控制值何时消亡，请避免显式销毁的类型。添加一个 `Deinitable` 约束以保持正常工作。
 
-## 条件特征遵循
+## 条件 trait 遵循
 
 :::caution
-条件特征遵循是新的且正在发展中。某些功能在推出期间可能不稳定或不可用。对 `Copyable`、`Movable`、`RegisterPassable`、`TrivialRegisterPassable` 和 `ImplicitlyDestructible` 使用时要小心。
+某些功能在推出期间可能不稳定或不可用。对 `RegisterPassable` 和 `TrivialRegisterPassable` 使用时要小心。
 :::
 
-*条件特征遵循*在允许类型采用特征之前使用检查。如果条件*满足*，类型就遵循。它必须通过提供必需方法和关联类型来满足特征的要求，并获得特征提供的任何默认实现。然后该类型可以在任何需要该特征的地方使用，例如将其传递给期望遵循类型的函数。
-
-当条件*不*满足时，Mojo 跳过遵循。你不能在需要该特征的上下文中使用完全具体的类型。
+*条件 trait 遵循*在允许类型采用 trait 之前使用检查。当条件满足时，类型就遵循。它必须满足 trait 的要求，并获得该 trait 提供的任何默认实现。当条件不满足时，Mojo 跳过遵循。
 
 ### 示例：派生遵循
 
-在以下声明中，当其参数 `T` 也是 `Writable` 时，Mojo 使 `Wrapper` 遵循 `Writable`：
+在以下声明中，当其参数 `T` 也是 `Writable` 时，Mojo 让 `Wrapper` 遵循 `Writable`：
 
 ```mojo
-comptime BaseTraits = Copyable & ImplicitlyDestructible
+comptime BaseTraits = Copyable & Deinitable & Writable
 @fieldwise_init
 struct Wrapper[T: BaseTraits](
     Writable where conforms_to(T, Writable)
@@ -387,9 +450,9 @@ struct Wrapper[T: BaseTraits](
     var value: Self.T
 ```
 
-当遵循 `Writable` 时，Wrapper 不需要实现任何方法来启用打印。该特征提供了 `write_to()` 方法的默认实现。
+遵循 `Writable` 时，`Wrapper` 不需要实现任何方法。该 trait 提供了 `write_to()` 的默认实现。
 
-现在考虑一个不是 `Writable` 的类型，你可能会将其添加到 `Wrapper` 中：
+现在考虑一个不是 `Writable` 的类型：
 
 ```mojo
 @fieldwise_init
@@ -397,34 +460,29 @@ struct NotWritable(BaseTraits):
     var data: Int
 ```
 
-当用 `Int` 或 `String`（两者都是 `Writable`）实例化时，`Wrapper` 获得 `Writable` 遵循性。对于 `NotWritable`，你可以构建结构体，但不能打印它：
+当用 `Int` 或 `String`（两者都是 `Writable`）实例化时，`Wrapper` 获得 `Writable` 遵循。对于 `NotWritable`，你可以构建结构体，但无法打印它：
 
 ```mojo
-var w_int = Wrapper[Int](42)  # Int 是 Writable
+var w_int = Wrapper[Int](42)  # Int is Writable
 print(w_int)  # Wrapper[Int](value=42)
 
-
-var w_str = Wrapper[String]("Hello")  # String 是 Writable
+var w_str = Wrapper[String]("Hello")  # String is Writable
 print(w_str)  # Wrapper[String](value=Hello)
 
-
-# OK：只有 `Writable` 遵循性不可用
+# OK: only `Writable` conformance is unavailable
 var w_not_writable = Wrapper[NotWritable](NotWritable(10))
-# print(w_not_writable)  # 编译时错误：
-# invalid call to 'print': could not convert element of 'values' with
-# type 'Wrapper[NotWritable]' to expected type 'Writable'
+# print(w_not_writable)  # Compile-time error:
+# Wrapper[NotWritable] doesn't conform to Writable
 ```
 
-由于 `NotWritable` 不遵循 `Writable`，条件遵循检查失败，`Wrapper[NotWritable]` 不采用 `Writable` 遵循性。相反，`Int` 和 `String` 是 `Writable`，它们的包装器获得遵循性。这允许它们的实例使用 `Writable` 提供的 `write_to()` 方法进行打印。
-
-这种模式对于像 `Optional[T]`、`Box[T]`、`Lazy[T]` 和 `List[T]` 这样的单类型容器是标准的。它说："如果其内部类型可以做 X，这个类型就可以做 X。"
+这种模式对于像 `Optional[T]`、`Box[T]`、`Lazy[T]` 和 `List[T]` 这样的单类型容器是标准的。它表示："如果其内部类型可以做 X，这个类型就可以做 X。"
 
 ### 示例：部分遵循
 
-条件遵循对于具有多个不同组件的类型有另一种标准模式：`Result[T, E]`、`Pair[L, R]`、`Dict[K, V]` 等。它说："如果其每个部分都可以做 X，这个类型就可以做 X"：
+对于具有多个不同组件的类型，这种模式可以自然扩展。`Result[T, E]`、`Pair[L, R]`、`Dict[K, V]` 等类型表示："如果其每个部分都可以做 X，这个类型就可以做 X"：
 
 ```mojo
-comptime BaseTraits = Copyable & ImplicitlyDestructible
+comptime BaseTraits = Copyable & Deinitable
 
 @fieldwise_init
 struct Pair[L: BaseTraits, R: BaseTraits](
@@ -439,60 +497,53 @@ struct NotHashable(BaseTraits):
     var data: Int
 ```
 
-在这个例子中，`Pair` 使用两个不同的类型参数。当两者都是 `Hashable` 时，具体的 `Pair` 类型变为 `Hashable`，从特征获得 `hash()` 方法：
+当 `L` 和 `R` 都是 `Hashable` 时，具体的 `Pair` 类型就变为 `Hashable`，从 trait 获得 `hash()` 方法：
 
 ```mojo
 var pair = Pair[Int, String](left=1, right="one")
 var hash = hash(pair)
-print(hash)  # 打印 pair 的哈希值
+print(hash)  # Prints the hash of the pair
 
-# OK：只有哈希不可用
-var pair2 = Pair[Int, NotHashable](left=1, right=NotHashable(10)) # 可构造
-# var hash2 = hash(pair2) # 编译时错误
+# OK: only hashing is unavailable
+var pair2 = Pair[Int, NotHashable](left=1, right=NotHashable(10))
+# var hash2 = hash(pair2) # Compile-time error
 ```
 
 ### 示例：条件方法访问
 
-当类型采用特征时，它必须满足特征的必需方法。确定类型是否可以有条件地遵循特征的相同条件通常也用于*门控*必需方法实现。
+当类型采用某个 trait 时，它必须满足该 trait 的必需方法。你用 `where` 子句对这些方法实现进行门控，这些子句与控制遵循是否适用的条件相同。
 
-你用 `where` 子句表达这些方法测试。如果为真，方法可用。如果不为真，该方法不能用于该特化类型。以下示例引导你完成此过程及其工作原理。
+你可以通过让 `Wrapper` 遵循 `Boolable` 来使其在 `if` 语句中可测试，这要求实现 `__bool__()`：
 
-你可以在 `if` 语句中使用 `Boolable` 实例。你通过遵循 `Boolable` 特征使你的 `Wrapper` 可测试。这个特征需要一个新方法 `__bool__()`：
-
-``` mojo
+```mojo
 @fieldwise_init
 struct Wrapper[T: BaseTraits](
     Writable where conforms_to(T, Writable),
-    Boolable where conforms_to(T, Boolable), # 新的条件遵循
+    Boolable where conforms_to(T, Boolable),
     ):
     var value: Self.T
 
-    # 新方法
     def __bool__(self) -> Bool where conforms_to(Self.T, Boolable):
-        return trait_downcast[Boolable](self.value).__bool__()
+        return self.value.__bool__()
 ```
 
-在这个例子中，`__bool__()` 上的条件与用于 `Boolable` 条件遵循的条件相同。`where` 子句门控该方法。如果条件为真，方法可用。如果不为真，则不可用。
-
-由于方法和遵循使用相同的条件，它们保持一致。你不会遇到包装类型遵循但方法不可用，或方法存在但没有相应遵循的情况。
-
-你在以下示例中看到这一点：
+`__bool__()` 上的条件与用于 `Boolable` 条件遵循的条件相同。由于方法和遵循使用相同的条件，它们保持对齐。你不会出现有遵循但没方法、或有方法但没有相应遵循的情况。
 
 ```mojo
 var w_str = Wrapper[String]("Hello")
-if w_str:  # 选择非空分支
+if w_str:  # Chooses the non-empty branch
     print(t"Non-empty string \"{w_str.value}\" is truthy")
 else:
     print(t"Empty string \"{w_str.value}\" is falsy")
 
 var w_empty_str = Wrapper[String]("")
-if w_empty_str:  # 选择空分支
+if w_empty_str:  # Chooses the empty branch
     print(t"Non-empty string \"{w_empty_str.value}\" is truthy")
 else:
     print(t"Empty string \"{w_empty_str.value}\" is falsy")
 ```
 
-本节前面的 `NotWritable` 类型除了基本的 `Copyable` 和 `ImplicitlyDestructible` 之外没有特征。因此它不是 `Boolable`，`__bool__()` 方法上的条件将失败：
+由于 `NotWritable` 不是 `Boolable`，`__bool__()` 上的条件失败，该方法不可用：
 
 ```mojo
 @fieldwise_init
@@ -501,30 +552,26 @@ struct NotWritable(BaseTraits):
 
 var w_not_writable = Wrapper[NotWritable](NotWritable(10))
 
-# 由于 `__bool__()` 的条件方法访问，该实例不能用作布尔值。
-
-# 编译器错误：方法条件为假
+# Compile-time error: the method condition is false
 if w_not_writable:
     print(t"NotWritable with data {w_not_writable.value.data} is truthy")
 else:
     print(t"NotWritable with data {w_not_writable.value.data} is falsy")
 ```
 
-方法上的这个条件不是条件特征遵循。它是条件方法*访问*。在这个例子中，方法和遵循使用相同的条件，所以它们保持一致。
+方法上的 `where` 子句在 trait 遵循之外也很有用。你可以对一个方法进行门控，使其只适用于非空列表、实数，或落在集合索引边界内的值。
 
-也就是说，方法上的 `where` 子句即使在你不处理特征遵循时也很有用。例如，你可能门控一个方法，使其只适用于非空列表、实数，或落在集合索引边界内的值。
+### 条件 trait 组合
 
-### 条件特征组合
+Mojo 支持灵活的条件组合：
 
-Mojo 支持灵活的条件组合，如下例所示：
-
-- 无条件：没有特殊子句。
+- **无条件** —— 没有特殊子句：
 
   ```mojo
-  struct Foo(Copyable, ImplicitlyDestructible):
+  struct Foo(Copyable, Deinitable):
   ```
 
-- 简单条件：如 `Wrapper` 所示。
+- **简单条件** —— 如 `Wrapper` 所示：
 
   ```mojo
   struct Wrapper[T: BaseTraits](
@@ -532,7 +579,7 @@ Mojo 支持灵活的条件组合，如下例所示：
   ):
   ```
 
-- 混合：混合无条件特征和条件特征。
+- **混合** —— 混合无条件 trait 和条件 trait：
 
   ```mojo
   struct Foo[T: AnyType](
@@ -540,7 +587,7 @@ Mojo 支持灵活的条件组合，如下例所示：
   )
   ```
 
-- 多个对齐条件：如 `Pair` 所示。
+- **多个对齐条件** —— 如 `Pair` 所示：
 
   ```mojo
   struct Pair[L: BaseTraits, R: BaseTraits](
@@ -548,7 +595,7 @@ Mojo 支持灵活的条件组合，如下例所示：
   ):
   ```
 
-- 多个独立条件：
+- **多个独立条件**：
 
   ```mojo
   struct Foo[T: AnyType](
@@ -561,10 +608,11 @@ Mojo 支持灵活的条件组合，如下例所示：
 
 条件遵循也适用于值参数。你可以在编译时值条件上门控遵循和方法。
 
-当类型的能力依赖于数值参数时，这很有用。例如，固定容量包装器可能只有在有容量且其元素可写时才是 `Writable`。`Sized` 遵循是无条件的。
+当类型的能力依赖于数值参数时，这很有用。例如，固定容量的包装器可能只有在有容量且其元素可写时才是 `Writable`。`Sized` 遵循是无条件的：
 
 ```mojo
-struct SizedListWrapper[capacity: Int, T: Copyable](
+comptime ElementTraits = Writable & Copyable & Deinitable
+struct SizedListWrapper[capacity: Int, T: ElementTraits](
     Sized, Writable where conforms_to(T, Writable) and capacity > 0
 ):
     var data: List[Self.T]
@@ -588,16 +636,16 @@ def first(self) -> Self.T where Self.capacity > 0:
     return self.data[0].copy()
 ```
 
-当容量为一个或更多时，类型遵循 `Writable`，`first()` 方法可用。当它为零或更少时，两者都不可用：
+当容量为 1 或更大时，类型遵循 `Writable` 且 `first()` 可用。当它为 0 或更小时，两者都不可用：
 
 ```mojo
 var s = SizedListWrapper[5, Int](42)
-print(s)          # List[Int]([Int(42), Int(42), Int(42), Int(42), Int(42)])
+print(s)          # List of 42s
 print(s.first())  # 42
 
 # var s = SizedListWrapper[0, Int](42)
-# print(s)          # 错误：Writable 不满足
-# print(s.first())  # 错误：约束为假
+# print(s)          # Error: Writable not satisfied
+# print(s.first())  # Error: constraint is false
 ```
 
 值条件遵循与类型条件相同的规则。你可以用 `and` 组合它们，并在同一个 `where` 子句中与 `conforms_to` 检查混合使用。

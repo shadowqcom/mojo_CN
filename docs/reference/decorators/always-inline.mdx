@@ -1,85 +1,52 @@
 ---
-title: '@always_inline 装饰器'
+title: '@always_inline'
 sidebar_label: '@always_inline'
 sidebar_position: 2
-description: >
-  @always_inline 装饰器参考。强制函数在调用点内联展开。
+description: 将函数体直接复制到调用函数体中。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+你可以在任何函数上添加 `@always_inline` 装饰器，让 Mojo 编译器将函数体（复制后）直接"内联"到调用函数的函数体中。
 
-`@always_inline` 装饰器强制函数在调用点内联展开。编译器会将函数体直接插入到调用位置，而不是生成函数调用指令。
+这消除了函数调用跳转到代码中新位置可能产生的性能开销。通常，编译器会在能够提升性能的地方自动执行此操作，但此装饰器会强制其执行。缺点是它会在每个调用点复制函数，从而增加二进制大小。
 
-## 语法
-
-```mojo
-@always_inline
-def function_name(...):
-    ...
-```
-
-## 用法
+例如：
 
 ```mojo
 @always_inline
 def add(a: Int, b: Int) -> Int:
     return a + b
 
-def main():
-    var result = add(1, 2)  # 编译器直接展开为 1 + 2
+print(add(1, 2))
 ```
 
-## 优点
-
-- **消除调用开销**：没有函数调用的栈操作开销
-- **启用进一步优化**：内联后的代码可以进行更多优化
-- **编译时求值**：内联函数更容易在编译时求值
-
-## 缺点
-
-- **代码膨胀**：频繁内联会增加二进制大小
-- **编译时间增加**：更多代码需要编译
-
-## 适用场景
-
-### 小型工具函数
+因为 `add()` 被装饰以 `@always_inline`，Mojo 编译此程序时不会将 `add()` 函数添加到调用栈，而是直接在 `print()` 调用点执行加法运算，就像它是这样编写的一样：
 
 ```mojo
-@always_inline
-def min(a: Int, b: Int) -> Int:
-    return a if a < b else b
-
-@always_inline
-def max(a: Int, b: Int) -> Int:
-    return a if a > b else b
+print(1 + 2)
 ```
 
-### 性能关键路径
+## `@always_inline("nodebug")`
 
-```mojo
-@always_inline
-def fast_abs(x: Int) -> Int:
-    return x if x >= 0 else -x
-```
+你还可以使用带有 `"nodebug"` 参数的装饰器，它具有相同的内联效果，但没有调试信息。这意味着你在调试时无法步入该函数。
 
-### SIMD 操作
+此装饰器旨在用于库中的低级函数，这些函数可能包装原语函数、MLIR 操作或内联汇编。将这些函数标记为 "nodebug" 可以防止用户在调试时意外步入低级非 Mojo 代码。
 
-```mojo
-@always_inline
-def simd_add[T: DType, N: Int](a: SIMD[T, N], b: SIMD[T, N]) -> SIMD[T, N]:
-    return a + b
-```
+## `@always_inline("builtin")`
 
-## 与 `@no_inline` 对比
+`"builtin"` 参数类似于 `"nodebug"`，但更为严格。此装饰器的 `"builtin"` 版本应仅用于包装编译器具有特殊编译时处理的单个 MLIR 操作的函数。它允许编译器在参数上下文中使用该函数时将其内联。
 
-| 装饰器         | 行为               |
-|----------------|--------------------|
-| `@always_inline` | 强制内联         |
-| `@no_inline`     | 禁止内联         |
-| 无装饰器         | 编译器决定       |
+:::caution
 
-## 注意事项
+使用此版本的装饰器需要对 Mojo 编译器的内部机制有所了解。不建议在标准库之外使用。请改用标准的 `@always_inline` 装饰器或 `"nodebug"` 版本。
 
-- 递归函数不能使用 `@always_inline`
-- 过度使用可能导致代码膨胀
-- 编译器可能会忽略某些情况下的内联请求
+:::
+
+此版本的装饰器会执行 `"nodebug"` 的所有操作，外加另外两种行为：
+
+- 它会检查函数体，验证其未使用 `@always_inline("builtin")` 无法处理的任何内容。这会检查是否存在控制流、对非 `@always_inline("builtin")` 函数的调用、不支持的 MLIR 操作的使用等。
+
+- 当函数在参数上下文中使用时，它会无条件内联。
+
+有关更多详细信息和背景，请参阅
+[`@always_inline("builtin")` 提案](https://github.com/modular/modular/blob/main/mojo/proposals/always_inline_builtin.md)。

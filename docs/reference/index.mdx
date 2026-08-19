@@ -7,9 +7,12 @@ description: 语法、关键字、装饰器等参考文档
 import ListingCard from '@site/src/components/Listing/ListingCard';
 import ListingCards from '@site/src/components/Listing/ListingCards';
 
-欢迎来到 Mojo 语言参考文档。本文档提供了 Mojo 语法的简明参考——包括标识符、关键字、字面量、表达式、运算符、语句、函数声明等。文档按语法结构组织，便于你在需要时快速查找特定语言元素的精确规则、优先级或形式。
+Mojo 语言参考文档提供了 Mojo 语法的简明指南，按语法结构组织，便于你在需要时快速查找某个语言元素的精确规则或形式。
 
 <ListingCards>
+  <ListingCard title="Mojo 速查表"
+    url="/docs/reference/cheat-sheets"
+    description="Mojo 语法和关键字的快速参考卡片" />
   <ListingCard title="标识符与关键字"
     url="/docs/reference/keywords"
     description="命名规则、保留字、转义标识符和参数约定" />
@@ -18,7 +21,7 @@ import ListingCards from '@site/src/components/Listing/ListingCards';
     description="整数、浮点数、字符串、t-string、布尔值、None 和 Self 字面量" />
   <ListingCard title="数值类型"
     url="/docs/reference/numeric-types"
-    description="SIMD、DType、Scalar、Int、UInt、整数、浮点数、Byte、字面量和类型转换" />
+    description="`SIMD`、`DType`、`Scalar`、`Int`、整数、浮点数、`Byte` 和类型转换" />
   <ListingCard title="运算符"
     url="/docs/reference/operators"
     description="运算符优先级、结合性，以及为自定义类型实现运算符" />
@@ -30,20 +33,29 @@ import ListingCards from '@site/src/components/Listing/ListingCards';
     description="导入、赋值、return、raise、break、continue 和编译时声明" />
   <ListingCard title="复合语句"
     url="/docs/reference/compound-statements"
-    description="if 语句、循环、try/except 错误处理、上下文管理器和编译时控制流" />
+    description="`if` 语句、循环、`try`/`except` 错误处理、上下文管理器和编译时控制流" />
   <ListingCard title="函数声明"
     url="/docs/reference/function-declarations"
-    description="签名、参数、参数、默认值、约束、效果和特殊方法" />
+    description="签名、参数、实参、默认值、约束、效果和特殊方法" />
   <ListingCard title="结构体声明"
     url="/docs/reference/struct-declarations"
     description="字段、方法、初始化器、析构器和结构体的 trait 一致性" />
   <ListingCard title="Trait 声明"
     url="/docs/reference/trait-declarations"
     description="必需方法和提供方法、关联类型、trait 继承、trait 组合和一致性" />
+  <ListingCard title="闭包声明"
+    url="/docs/reference/closure-declarations"
+    description="捕获列表、捕获约定、move 捕获、参数化闭包和效果" />
+  <ListingCard title="Lambda 表达式"
+    url="/docs/reference/lambda-expressions"
+    description="匿名单表达式函数、省略的捕获列表和轻量函数值" />
   <ListingCard title="内联 MLIR"
     url="/docs/reference/inline-mlir"
-    description="内联 MLIR 内置函数可以调用语言本身不直接暴露的操作。" />
+    description="内联 MLIR 内置函数可以调用语言本身不直接暴露的操作" />
+  <ListingCard title="文档字符串"
+    url="/docs/reference/docstrings"
+    description="章节、放置位置、格式、代码示例和编译器检查" />
   <ListingCard title="装饰器"
-    url="/docs/manual/decorators"
-    description="在编译时修改或扩展结构体、函数或其他声明的行为。" />
+    url="/docs/reference/decorators"
+    description="在编译时修改或扩展结构体、函数或其他声明的行为" />
 </ListingCards>

@@ -1,0 +1,407 @@
+---
+title: Mojo docstring 参考
+sidebar_label: docstring
+description: >
+  Mojo docstring 完整参考。涵盖位置、首句规则、结构化小节
+  （Parameters、Args、Returns、Raises、Constraints）、自由格式小节、
+  代码示例、%# 隐藏行指令、内联格式、数学公式和 @doc_hidden 装饰器。
+---
+
+{/*
+VERIFIED: KGEN/lib/MojoParser/DocString.cpp,
+  KGEN/lib/MojoTooling/ParserDriverREPL.cpp,
+  oss/modular/mojo/stdlib/docs/docstring-style-guide.md
+*/}
+
+Mojo 使用 docstring 字面量来生成 API 参考文档数据，这些数据可以被处理以生成页面内容，也可以直接从源代码中阅读。在声明之后立即放置 docstring。
+
+docstring 支持 Markdown、自由格式文本、带标签的小节和说明性代码示例：
+
+```mojo
+def greet(name: String) -> String:
+    """Returns a greeting string for the given name.
+
+    Produces a simple `"Hello, name!"` string suitable for
+    display or logging.
+
+    Args:
+        name: The name to include in the greeting.
+
+    Returns:
+        A greeting of the form `"Hello, name!"`.
+    """
+    return "Hello, " + name + "!"
+```
+
+Mojo docstring 遵循 [Python docstring](https://peps.python.org/pep-0257/) 和 [Google docstring 风格指南](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) 中使用的约定。
+
+## 位置
+
+docstring 让你可以在源文件中声明出现的位置对其进行文档化。
+
+| 声明                | 位置                                  |
+|---------------------|-------------------------------------------|
+| 函数或方法          | 在签名之后、主体之前      |
+| struct 或 trait     | 在开头一行之后、成员之前    |
+| 字段或 `comptime`   | 在声明之后，而不是之前      |
+| 模块或包            | 文件中的第一个字符串，在导入之后   |
+
+类型、trait 和函数的 docstring 使用与声明相同的缩进级别。字段和 `comptime` 的 docstring 使用与字段或 `comptime` 名称相同的缩进级别。
+
+```mojo
+struct Color:
+    """Represents an RGB color."""  # Struct docstring
+
+    var r: UInt8
+    """The red channel, in [0, 255]."""  # Field docstring
+
+    comptime MAX: UInt8 = 255
+    """The maximum value for any channel."""  # `comptime` docstring
+
+    def to_hex(self) -> String:
+        """Converts the color to a hex string."""  # Method docstring
+        ...
+```
+
+将模块 docstring 作为文件中的第一个字符串放置。它们描述模块的用途、概括其内容，并帮助文档工具生成模块级参考页面。
+
+将包 docstring 放置在 `__init__.mojo` 文件中。它们描述包的用途、概括其导出的模块，并提供包级文档。
+
+## 摘要行
+
+docstring 的第一句话是它的摘要。摘要出现在索引视图和搜索结果中。
+
+| 声明                | 模式                           | 示例                                              |
+|---------------------|-----------------------------------|-------------------------------------------------------|
+| 函数或方法          | 现在时动词                | `Clamps a value to the range [low, high].`            |
+|                     |                                   | `Converts a list of integers to a JSON array string.` |
+| struct 或 trait     | 名词短语或现在时动词 | `A fixed-capacity circular buffer.`                   |
+|                     |                                   | `Supports hashing to a fixed-size integer digest.`    |
+| 字段或 `comptime`   | 名词短语                       | `The red channel, in [0, 255].`                       |
+
+用空行将摘要与附加正文文本分开。以大写字母开始摘要，并避免重复声明名称。倾向于以句号结束摘要；编译器也接受 `!`、`?` 或结束的反引号（参见 [编译器检查](#compiler-checks)）。
+
+## 带标签的内容
+
+结构化小节包含一个带标签的标题，后跟缩进的 `name: Description.` 条目。
+
+文档生成器会自动包含类型信息，因此你不需要在描述中重复它。
+
+编译器会根据声明验证一些常见的结构化小节，并对不匹配和缺失的条目发出警告：
+
+| 标签           | 文档内容               |
+|----------------|-------------------------|
+| `Parameters:`  | 编译时形参 |
+| `Args:`        | 运行时参数       |
+| `Returns:`     | 返回值           |
+| `Raises:`      | 错误条件        |
+
+例如：
+
+```mojo
+def resize[dtype: DType](
+    data: List[Scalar[dtype]],
+    size: Int,
+    fill: Scalar[dtype] = 0,
+) raises -> List[Scalar[dtype]]:
+    """Resizes a list by truncating it or padding it with a fill value.
+
+    Parameters:
+        dtype: The element type of the list.
+
+    Args:
+        data: The source list to resize.
+        size: The target length.
+        fill: The value used to pad the list when growing it.
+
+    Returns:
+        A new list with length `size`.
+
+    Raises:
+        An error if `size` is less than or equal to zero.
+    """
+    ...
+```
+
+Mojo 没有定义一套规范的小节标签集合。任何 `Label:` 都会开始一个新的小节。
+
+### `Parameters` 和 `Constraints`
+
+当编译时形参的角色、行为或要求从声明中不明显时，使用 `Parameters:` 来文档化它们。
+
+对于简单的形参要求，使用内联的 `Constraints:` 子句：
+
+```mojo
+Parameters:
+    size: The static capacity. Constraints: Must be a power of two.
+    dtype: The element type. Constraints: Must be a floating-point type.
+```
+
+对于跨多个形参的要求、依赖于目标架构的要求，或对大多数用户来说并不显而易见的要求，使用独立的 `Constraints:` 小节：
+
+```mojo
+def dot[size: Int](
+    a: SIMD[DType.float32, size],
+    b: SIMD[DType.float32, size],
+) -> Float32:
+    """Computes the dot product of two SIMD vectors.
+
+    Constraints:
+        - `size` must be a power of two.
+        - The target must support AVX2 or NEON.
+    """
+    ...
+```
+
+### `Args`
+
+用名称和角色文档化每个参数。Mojo 使用 `Args` 而不是 `Arguments`。
+
+相对于参数名称缩进续行：
+
+```mojo
+Args:
+    stride: The step between sampled indices. A stride of 1 returns
+        all elements; a stride of 2 returns every other element.
+```
+
+### `Examples`
+
+`Examples:` 不经过编译器检查，但它在 Mojo 文档中被广泛使用。使用 `Examples:` 来展示如何在实践中使用 API。
+
+它通常是 docstring 中的最后一个小节。示例代码通常与标签左对齐。使用带 `mojo` 语言标签的围栏代码块以获得语法高亮。
+
+````text
+Examples for a hypothetical `find()` API:
+
+```mojo
+var names = ["alice", "bob", "carol"]
+print(names.find("bob").value())  # 1
+print(names.find("dave") is None) # True
+
+var numbers = [1, 2, 3, 4, 3, 9, 3]
+while idx := numbers.find(3):
+    _ = numbers.pop(idx.value())
+print(numbers)  # [1, 2, 4, 9]
+```
+````
+
+### 自定义标签
+
+Mojo 支持自定义小节标签。以下是推荐的约定：
+
+| 标签              | 文档内容                                    |
+|------------------|----------------------------------------------|
+| `Preconditions:` | 调用者必须满足的运行时条件   |
+| `Performance:`   | 性能特征和权衡    |
+| `Safety:`        | 安全要求和未定义行为   |
+| `See:`           | 相关 API、概念和引用       |
+
+对于调用者在调用之前必须满足的运行时条件，使用 `Preconditions:`，违反时会使程序中止（例如运行时断言），而不是引发可捕获的错误。
+
+根据条件的强制执行方式，在 `Preconditions:`、`Constraints:` 和 `Raises:` 之间选择：
+
+- `Preconditions:` 用于调用者上的运行时条件，违反时中止执行且无法被捕获。
+- `Constraints:` 用于编译时要求，违反时导致编译失败。
+- `Raises:` 用于引发可捕获错误的运行时条件。
+
+对于复杂度，以及仅从复杂度看不明显的运行时行为（例如分配行为、向量化、调度、延迟、I/O 成本或特定于架构的性能特征），使用 `Performance:`。
+
+对于在错误使用时可能导致未定义行为、内存安全问题、无效引用或其他不安全状态的要求、不变量和操作，使用 `Safety:`。
+
+使用 `See:` 链接到相关 API、标准文档、算法和外部引用。
+
+Mojo 也接受其他标签，例如 `Notes:`，但更倾向于将这些信息放在 docstring 主体中，而不是放在单独的 `Notes:` 小节中。
+
+### 小节顺序
+
+Mojo 不强制小节之间的顺序，但一致的顺序有助于读者快速浏览。推荐顺序：
+
+`Parameters:` → `Args:` → `Returns:` → `Raises:` → `Preconditions:` →
+`Constraints:` → `Safety:` → `Performance:` → `See:` → `Examples:`
+
+仅包含适用的小节，并将 `Examples:` 放在最后。
+
+## 隐藏元素
+
+### `@doc_hidden`
+
+`@doc_hidden` 装饰器将声明从生成的文档中排除。该声明仍然正常编译，但不产生文档输出。
+
+```mojo
+@doc_hidden
+def _internal_helper(data: Pointer[UInt8, MutAnyOrigin]) -> Int:
+    pass
+```
+
+常见用途包括：
+
+- 隐藏不打算直接使用的生命周期和 dunder 方法
+- 隐藏实现细节，例如私有方法和辅助函数
+- 隐藏为向后兼容而保留的已弃用内部组件。另请参见：`@deprecated`
+
+### 隐藏示例行
+
+在 docstring 示例中的行前加上 `%#` 前缀，可将其从生成的文档中隐藏。该行在源文件中仍然可见。
+
+`mojo doc` 会从生成的输出中移除 `%#` 行：
+
+```mojo
+"""
+...
+
+%# var result = format_result(0.857)
+print(result)  # 85.7%
+
+...
+"""
+```
+
+常见用途包括：
+
+- 隐藏设置代码，例如导入、辅助函数和临时变量
+- 在源示例中显示预期输出，而不在生成的文档中渲染它
+
+## 内联格式
+
+docstring 支持 Markdown、内联代码格式、转义序列、KaTeX 语法和 HTML 标签。
+
+例如：
+
+| 内容                                         | 语法                                            |
+|-------------------------------------------------|---------------------------------------------------|
+| API 名称（类型、函数、字段、参数） | `` `Int` ``, `` `append()` ``, `` `pop(index)` `` |
+| 代码块中的字面反斜杠               | `\\\\` （渲染为 `\\`）                          |
+| 内联数学                                     | `$$x^y$$`                                         |
+| 块级数学                                      | 独占一行的 `$$`、公式、`$$`               |
+| 文本中的字面 `$$`                            | `<span>$$</span>`                                 |
+
+字符串转义序列在任何地方都被遵循，包括在代码块内部。例如，`\n` 产生一个换行符，而 `\\t` 在代码示例中产生两字符序列 `\t`。
+
+KaTeX 语法支持 docstring 中的数学表示，包括算法、公式和复杂度标注：
+
+- 双 KaTeX 反斜杠：`\\frac`、`\\|`、`\\cdot`
+- 块级公式居中渲染；内联公式在文本流中渲染
+- 反引号和围栏代码块内的 `$$` 会被忽略
+
+## 编译器检查
+
+Mojo 在编译期间验证 docstring 并报告常见问题。
+
+例如：
+
+```sh
+$ mojo optionalref.mojo
+optionalref.mojo:5:8: warning: doc string summary should begin with a capital
+letter or non-alpha character, but this begins with 'a'
+    """an error type for when an empty `OptionalRef` is accessed"""
+       ^
+optionalref.mojo:5:8: warning: doc string summary should end with a period
+'.', exclamation mark '!', question mark '?', or backtick '`', but this ends
+with 'd'
+    """an error type for when an empty `OptionalRef` is accessed"""
+       ^
+```
+
+`mojo doc` 执行额外的完整性检查。使用 `--diagnose-missing-doc-strings` 来报告缺失的 docstring：
+
+```sh
+$ mojo doc --diagnose-missing-doc-strings optionalref.mojo
+optionalref.mojo:1:1: warning: public module 'OptionalRef' is missing a
+doc string
+@fieldwise_init
+^
+optionalref.mojo:2:8: warning: struct takes parameters, but has no
+'Parameters' in doc string
+struct EmptyOptionalRefError[T: Movable](
+       ^
+```
+
+### 验证模式
+
+Mojo 使用两种验证模式：
+
+- _严格_（_Strict_）用于公共 API
+- _普通_（_Normal_）用于私有和内部声明
+
+一个声明在以下情况下是公共的：
+
+- 不以 `_` 开头
+- 未被标记为 `@doc_hidden`
+- 不是合成的
+- 处于模块作用域，或是公共 `struct` 或 `trait` 的成员
+
+这些模式适用于 `mojo` 和 `mojo doc`。
+
+### 缺失的 docstring
+
+```sh
+mojo doc --diagnose-missing-doc-strings -Werror -o /dev/null stdlib/std/
+```
+
+报告没有 docstring 的公共声明。`-Werror` 将警告转换为错误。
+
+### 通用检查
+
+这些检查在编译期间应用：
+
+```sh
+mojo /path/to/file.mojo
+```
+
+**小节结构：**
+
+- 缩进过度的节标签
+- 重复的小节
+- 空的小节
+
+**`Args:` 和 `Parameters:` 条目：**
+
+- 条目命名了一个不存在的参数或形参
+- 重复的条目
+- 条目顺序与声明顺序不符
+- 缺少条目描述
+- 缺少被文档化的参数或形参
+
+**`Returns:` 和 `Raises:` 一致性：**
+
+- 在没有返回值的函数上的 `Returns:`
+- 在不是 `raises` 的函数上的 `Raises:`
+
+### 严格模式检查
+
+严格模式适用于公共声明。
+
+**摘要句子、描述和小节正文文本：**
+
+- 必须以大写字母或非字母字符开头
+- 必须以 `.`、`!`、`?` 或 `` ` `` 结尾
+
+这包括 `Constraints:`、`Returns:` 和 `Raises:` 等小节中的文本。
+
+### 带 `--diagnose-missing-doc-strings` 的严格模式
+
+此模式启用最严格的验证，例如在 CI 中。Mojo 将标记以下问题。
+
+**缺失的 docstring：**
+
+- 公共函数和方法
+- 公共 struct 和 trait
+- 公共字段和 `comptime` 声明
+- 公共模块
+
+**函数上缺失的必需小节：**
+
+- 带参数的函数的 `Args:`
+- 带必需形参的声明的 `Parameters:`
+- 带返回值的函数的 `Returns:`
+- `raises` 函数的 `Raises:`
+
+**非函数上缺失的必需小节：**
+
+- 带必需形参的声明的 `Parameters:`
+
+**不检查：**
+
+- `Constraints:`
+- 自定义标签，例如 `Notes:`、`Performance:` 和 `Safety:`

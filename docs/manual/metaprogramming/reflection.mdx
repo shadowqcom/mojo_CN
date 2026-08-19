@@ -1,29 +1,28 @@
 ---
 title: 反射
 description:
-  用于检查 Mojo 类型和函数的编译时反射工具
+  用于自省 Mojo 类型与函数的编译时反射工具
 ---
 
-{/* 
+{/*
 VERIFIED: std/reflection/__init__.mojo, std/reflection/reflect.mojo,
      std/reflection/type_info.mojo, std/reflection/location.mojo,
-     std/reflection/struct_fields.mojo, std/reflection/traits.mojo,
-     builtin/comparable.mojo
- */}
+     std/reflection/struct_fields.mojo, builtin/comparable.mojo
+*/}
 
-反射帮助您编写在编译时检查其自身结构并报告有关类型信息的代码。这使得构建结构验证、自动比较、序列化、更安全的断言和更丰富的错误消息等功能成为可能，而无需为特定类型实现硬编码细节。
+反射帮助你编写能在编译时自省自身结构并报告类型信息的代码。这使得构建诸如结构验证、自动比较、序列化、更安全的断言以及更丰富的错误消息等功能成为可能，而无需为特定类型实现硬编码细节。
 
 :::caution
-Mojo 反射是新引入的，目前不完整。某些反射功能有限、不稳定，或尚未通过语言接口完全暴露。本页面描述了该功能的方向以及今天可用的部分。
+Mojo 反射是近期引入的，目前尚不完整。部分反射能力受限、不稳定，或尚未通过语言接口完全暴露。本页面描述了该功能的方向，以及目前可用的部分。
 
-所有示例都反映此页面发布时的语言状态。随着反射支持的成熟，它们可能会发生变化。
+所有示例均反映本页面发布时语言的状态。随着反射支持的成熟，它们可能会发生变化。
 :::
 
-## 为什么要反射？
+## 为什么要使用反射？
 
-反射是 Mojo 的强大编译时功能之一。它让您能够检查类型、访问字段，并生成适应结构形状的代码。
+反射是 Mojo 强大的编译时特性之一。它让你能够自省类型、访问字段，并生成能够适配某个 struct 形状的代码。
 
-例如，定义一个结构体，使其符合 `Equatable`，`==` 运算符自动工作：
+例如，定义一个 struct，使其符合 `Equatable`，`==` 运算符就会自动可用：
 
 ```mojo
 @fieldwise_init
@@ -33,21 +32,21 @@ struct Sensor(Equatable, Hashable, Writable):
     var reading: Float64
 ```
 
-此代码不使用运算符重载或样板代码。
+这段代码不使用任何运算符重载，也没有样板代码。
 
-Mojo 在编译时检查结构体，验证每个字段支持相等性，并生成比较代码。这就是反射所做的。
+Mojo 在编译时自省该 struct，检查每个字段是否支持相等性比较，并生成比较代码。这就是反射所做的事情。
 
-反射没有运行时成本。编译器提前完成工作，并生成与手动编写的代码一样高效的代码。
+反射没有运行时开销。编译器在前期完成工作，生成的代码与手写代码一样高效。
 
 :::note
-在这个示例中，`Sensor` 也符合 `Hashable` 和 `Writable`。通过符合，实例可用作 `Dict` 键或 `Set` 元素，并且可以干净地打印，而无需额外代码。
+在这个示例中，`Sensor` 还符合 `Hashable` 和 `Writable`。通过符合这些 trait，其实例可用作 `Dict` 的键或 `Set` 的元素，并且能整洁地打印输出，无需额外代码。
 :::
 
-## 检查类型
+## 自省类型
 
-使用 `reflect[T]` 别名在编译时检查类型。内置于 Mojo 中，它解析为 `Reflected[T]`——一个具有用于查询类型的静态方法的句柄类型。
+使用 `reflect[T]` 别名在编译时自省类型。它内置于 Mojo，会被解析为 `Reflected[T]`——一个带有用于查询类型的静态方法的句柄类型。
 
-此代码使用 `reflect[T]` 检查类型的结构：
+以下代码使用 `reflect[T]` 自省类型的结构：
 
 ```mojo
 def show_type[T: AnyType]():
@@ -65,7 +64,7 @@ def show_type[T: AnyType]():
         print(intro, " var ", field_name, ": ", field_type, sep="")
 ```
 
-创建一些类型来测试：
+创建一些类型来测试它：
 
 ```mojo
 @fieldwise_init
@@ -89,7 +88,7 @@ def main():
     show_type[ParameterizedStruct[String, item_count=5]]()
 ```
 
-运行时，此代码打印每个结构体的名称和字段及其类型。对字段的 `comptime for` 循环在编译时解析。在运行时，只有生成的 `print()` 调用执行：
+运行时，这段代码会打印每个 struct 的名称、字段及其类型。对字段的 `comptime for` 循环在编译时解析。在运行时，只有结果性的 `print()` 调用会执行：
 
 ```text
 struct test.MyStruct
@@ -110,7 +109,7 @@ struct test.ParameterizedStruct[String, 5]
 └── var list: List[String]
 ```
 
-输出使用编译器解析的名称。类型完全带有应用的参数出现。如果您只需要基本类型名称，使用 `base_name()`：
+输出使用的是由编译器解析出的名称。类型会以应用参数后的完全限定形式呈现。如果你只需要基础类型名，可使用 `base_name()`：
 
 ```mojo
 print(reflect[List[Int]].base_name())          # List
@@ -118,21 +117,21 @@ print(reflect[Dict[String, Int]].base_name())  # Dict
 ```
 
 :::note
-当您需要一个字段时，通过名称访问它而不是迭代：
+当你需要某个字段时，可以直接通过名称访问它，而不是遍历：
 
 ```mojo
-comptime host_handle = reflect[Config].field_type["host"]
+comptime host_handle = reflect[Config].field["host"]
 var default_host: host_handle.T = "localhost"
 
 print(default_host)  # localhost
 ```
 
-基于名称的查找需要具体类型。如果 `T` 是泛型的，请使用基于索引的迭代代替。
+基于名称的查找需要一个具体的类型。如果 `T` 是参数化的，请改用基于索引的迭代。
 :::
 
-## 检测两个值之间的字段级别更改
+## 检测两个值之间在字段级别的差异
 
-比较两个值并列出哪些字段不同。这用于测试断言、审计日志、更改跟踪或调试。
+比较两个值并列出哪些字段不同。这可用于测试断言、审计日志、变更跟踪或调试。
 
 ```mojo
 def diff_fields[T: AnyType](a: T, b: T) -> List[String]:
@@ -145,7 +144,7 @@ def diff_fields[T: AnyType](a: T, b: T) -> List[String]:
             ref a_val = reflect[T].field_ref[idx](a)
             ref b_val = reflect[T].field_ref[idx](b)
             if a_val != b_val:
-                diffs.append(String(names[idx]))
+                diffs.append(String(comptime (names[idx])))
 
     return diffs^
 ```
@@ -161,7 +160,7 @@ struct Config(Equatable):
     var timeout: Float64
 ```
 
-`diff_fields()` 比较两个 `Config` 值并返回不同的字段名称：
+`diff_fields()` 比较两个 `Config` 值并返回存在差异的字段名：
 
 ```mojo
 def main():
@@ -175,11 +174,11 @@ def main():
     # changed: verbose
 ```
 
-## 使用特性编写一次，到处重用
+## 写一次，到处复用：配合 trait 使用
 
-在提供方法的特性中使用反射非常强大。该方法针对符合特性约束的任何结构体运行。
+在带有 provided method 的 trait 中使用反射尤为强大。该方法会对任何符合该 trait 要求的 struct 运行。
 
-`MakeCopyable` 从一个实例复制每个可复制的字段：
+`MakeCopyable` 会将一个实例中每个可拷贝的字段复制到另一个实例：
 
 ```mojo
 trait MakeCopyable:
@@ -187,7 +186,7 @@ trait MakeCopyable:
         comptime field_count = reflect[Self].field_count()
         comptime field_types = reflect[Self].field_types()
 
-        comptime Usable = Copyable & ImplicitlyDestructible
+        comptime Usable = Copyable & Deinitable
         comptime for idx in range(field_count):
             comptime field_type = field_types[idx]
             comptime if conforms_to(field_type, Usable):
@@ -196,7 +195,7 @@ trait MakeCopyable:
                 ](self).copy()
 ```
 
-符合的结构体接收 `copy_to()` 而无需编写实现。作为特性方法，`copy_to()` 直接访问 `Self`。您不需要类型参数。
+符合该 trait 的 struct 无需自行编写实现即可获得 `copy_to()`。作为 trait 方法，`copy_to()` 可直接访问 `Self`，你无需再传入类型参数。
 
 ```mojo
 @fieldwise_init
@@ -218,15 +217,15 @@ def main():
     print(target)  # [Hello, 1, True, 2.5]
 ```
 
-您定义一次行为。每个符合的结构体将其作为提供的方法接收。
+你只需定义一次行为，每个符合该 trait 的 struct 都会将其作为 provided method 获得。
 
-## 布局、源位置和类型工具
+## 布局、源位置与类型工具
 
-这些工具暴露低级细节，如布局、生命周期和源信息。
+这些工具暴露更低层级的细节，例如布局、生命周期和源信息。
 
-### 字段布局和字节偏移
+### 字段布局与字节偏移
 
-当您需要用于零复制序列化、C 互操作或对齐的字段布局时，使用 `field_offset()`：
+当你需要用于零拷贝序列化、C 互操作或对齐的字段布局时，可使用 `field_offset()`：
 
 ```mojo
 struct Packet:
@@ -235,28 +234,28 @@ struct Packet:
     var payload: UInt64
 
 def show_layout[T: AnyType]():
-    comptime names = reflect[T].field_names()
+    var names = materialize[reflect[T].field_names()]()
     comptime for i in range(reflect[T].field_count()):
         comptime off = reflect[T].field_offset[index=i]()
         print(names[i], "at byte", off)
 
 def main():
     show_layout[Packet]()
-    # flags 在字节 0
-    # id 在字节 4     （对齐填充：3 字节）
-    # payload 在字节 8
+    # flags at byte 0
+    # id at byte 4     (alignment padding: 3 bytes)
+    # payload at byte 8
 ```
 
-`field_offset` 接受 `name=` 或 `index=` 并考虑对齐填充。`flags`（1 字节）和 `id`（字节 4）之间的间隙显示编译器插入 3 字节填充，以便 `id` 与 4 字节边界对齐。
+`field_offset` 接受 `name=` 或 `index=`，并会考虑对齐填充。`flags`（1 字节）和 `id`（第 4 字节）之间的间隙表明编译器插入了 3 字节的填充，以让 `id` 对齐到 4 字节边界。
 
-### 类型和来源
+### 类型与来源
 
-两个函数提供来自表达式的类型和生命周期的编译时访问：
+有两个函数可提供对表达式类型与生命周期信息的编译时访问：
 
-**`type_of(x)`** 返回表达式的类型，用于参数位置：
+**`type_of(x)`** 返回表达式的类型，可用于参数位置：
 
 ```mojo
-def make_default[T: AnyType & Defaultable]() -> T:
+def make_default[T: Defaultable]() -> T:
     return T()
 
 def main():
@@ -265,18 +264,18 @@ def main():
     print(y)  # 0
 ```
 
-**`origin_of(x)`** 捕获引用的来源（生命周期和可变性）。
+**`origin_of(x)`** 捕获某个引用的来源（origin，即生命周期与可变性）。
 
-在 Mojo 中，每个引用都有一个_来源_，它跟踪它从哪个值借用以及它是否可以修改该值。`origin_of(x)` 在编译时捕获此信息，以便您可以将其传递到函数签名中。
+在 Mojo 中，每个引用都有一个 _origin_，用于追踪它从哪个值读取，以及它能否修改该值。`origin_of(x)` 在编译时捕获这一信息，使你能够将其传递到函数签名中。
 
-它出现在返回引用必须绑定到输入生命周期的签名中：
+它出现在那种返回的引用必须与某个输入的生命周期绑定的签名中：
 
 ```mojo
 from std.os import abort
 
 def first_ref[
     T: Copyable
-](ref list: List[T]) -> ref [origin_of(list)] T:
+](ref list: List[T]) -> ref[list[0]] T:
     if not list:
         abort("empty list")
     return list[0]
@@ -285,18 +284,18 @@ def main():
     var l = [1, 2, 3]
     ref x = first_ref(l)
     print(x)  # 1
-    x += 10   # 通过引用修改原始列表
+    x += 10   # modifies the original list through the reference
     print(l)  # [11, 2, 3]
 
     l = []
-    first_ref(l)  # 带有 "empty list" 中止
+    first_ref(l)  # aborts with "empty list"
 ```
 
-返回的引用与 `list` 共享其来源，因此编译器知道只要 `list` 存在，它就是有效的。两者都可以在不导入的情况下使用。
+返回的引用与 `list` 共享其 origin，因此编译器知道只要 `list` 有效它就有效。两者都无需 import 即可使用。
 
 ### 源位置
 
-**`call_location()`** 返回调用者的源位置，而不是 `call_location()` 调用本身的位置。在构建断言或验证器时，错误消息在指向调用点时更有用：
+**`call_location()`** 返回调用者的源位置，而非 `call_location()` 调用本身所在的位置。在构建断言或校验器时，错误消息若指向调用点会更有用：
 
 ```mojo
 from std.reflection import call_location
@@ -311,12 +310,12 @@ def require(
 def main() raises:
     var x = 5
     require(x > 10, "x must be > 10")
-    # 错误：在 /path/to/file.mojo:10:5: x must be > 10
+    # Error: At /path/to/file.mojo:10:5: x must be > 10
 ```
 
-封闭函数必须是 `@always_inline` 以捕获调用者的位置。没有此装饰器，位置将指向 `require()` 内部。`call_location()` 接受可选的 `inline_count` 参数。默认值（1）捕获直接调用者。更高的值跳过额外的内联调用级别。
+外层函数必须是 `@always_inline` 才能捕获调用者的位置。如果没有这一装饰器，位置会指向 `require()` 内部。`call_location()` 接受一个可选的 `inline_count` 参数。默认值（1）捕获直接调用者。更高的值会跳过更多层级的内联调用。
 
-**`source_location()`** 返回 `source_location()` 被调用的位置。这对于调试不太有用，因为它报告调用的位置，而不是调用者的位置：
+**`source_location()`** 返回 `source_location()` 被调用处的位置。这对调试而言不太有用，因为它报告的是该调用所在的位置，而不是调用者的位置：
 
 ```mojo
 from std.reflection import source_location
@@ -333,9 +332,9 @@ def main():
     # [/path/to/file.mojo:4:15] starting up
 ```
 
-### 函数名称
+### 函数名
 
-在编译时检索函数的源名称或链接器符号。这用于日志记录、跟踪或调度：
+在编译时检索函数的源名或链接器符号。这可用于日志、跟踪或分发：
 
 ```mojo
 from std.reflection import get_function_name, get_linkage_name
@@ -345,16 +344,17 @@ def process_data():
 
 def main():
     print(get_function_name[process_data]())  # process_data
-    print(get_linkage_name[process_data]())   # 混淆符号
+    print(get_linkage_name[process_data]())   # mangled symbol
 ```
 
-- **`get_function_name[func]()`** 返回源代码中写入的名称。
-- **`get_linkage_name[func]()`** 返回混淆的符号名称。
+- **`get_function_name[func]()`** 返回源代码中书写的名称。
+- **`get_linkage_name[func]()`** 返回 mangled 后的符号名。
 
-两者都将函数作为参数值。
+两者都把函数作为参数值传入。
 
 ## 了解更多
 
 - 访问反射
-  [包文档](/docs/std/reflection/) 以获取 API 详细信息。
-- 了解更多关于[特性](/docs/manual/traits/)的内容。
+  [包文档](/docs/std/reflection/)
+  以获取 API 详情。
+- 了解更多关于 [trait](/docs/manual/traits/) 的内容。

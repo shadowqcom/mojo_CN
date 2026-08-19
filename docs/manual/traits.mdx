@@ -1,596 +1,268 @@
 ---
 title: 特征
-description: 为类型定义共享行为。
+sidebar_label: 特征
+description: >-
+  什么是特征、Mojo 为什么需要它们，以及如何使用特征。
 ---
 
-*特征（trait）* 是一个类型必须实现的一组要求。你可以把它看作是一种契约：一个*遵循*（conforms to）特征的类型保证它实现了该特征的所有功能。
+特征（trait）定义了类型与使用该类型的代码之间的契约。这些契约描述了行为，比如类型必须提供的方法，以及相关的（*关联*）类型和常量。当一个类型遵循某个特征时，编译器会验证它满足了每一项要求，从而让代码可以*依赖*该特征的接口。
 
-特征类似于 Java 的*接口*、C++ 的*概念*、Swift 的*协议*和 Rust 的*特征*。如果你熟悉这些特性中的任何一个，Mojo 的特征解决的是同样的基本问题。
+特征是 Mojo 实现多态的途径。它们让你能够编写适用于多种类型的代码，而无需依赖契约之外的实现细节。对于参数化类型和函数来说，特征尤为重要——它们让你能够编写适用于多种具体类型的代码。通过将参数化类型约束到一个或多个特征，你可以为编译器提供推理类型所需的信息，并验证代码是安全且正确的。
 
-你可能已经在示例代码中见过一些特征，比如 `Copyable` 和 `Movable`。本节将描述特征的工作原理、如何使用现有特征，以及如何定义自己的特征。
+想象一下，你正在编写与多个品牌的传感器协同工作的代码。每个传感器都有自己的实现。它们都知道如何产生一个读数，即一个运行时值，比如偏转角。它们还会报告一个标准误差范围，这是该设备特有的编译时常量。
 
-## 背景
+每个传感器还声明了一个测量*类型*，它决定了读数如何被解释。有些传感器测量角度，有些测量距离或压力。你的代码不应该关心某个特定传感器是如何工作的，或者它如何表示其测量值。例如，角度测量可能使用度、弧度或梯度。它只需要知道每个传感器都提供了它所依赖的操作和信息。
 
-在 Python 这样的动态类型语言中，你不需要显式声明两个类是相似的。这最好通过示例来说明：
+特征将这些要求表达为单个契约。你不需要为每种传感器类型编写一个函数，而是针对特征编写一个函数，任何遵循该特征的类型都可以使用它。Mojo 会验证每个必需的方法、关联类型和编译时值都存在，这样你的代码就可以使用它们，而无需运行时开销或能力检查。
 
-```python title="🐍 Python"
-class Duck:
-    def quack(self):
-        print("Quack.")
+特征是 Mojo 代码复用的基础。你根据特征的要求编写代码，而不是枚举具体类型。这使你的代码保持灵活，同时保持编译时正确性。
 
-class StealthCow:
-    def quack(self):
-        print("Moo!")
+## 定义特征
 
-def make_it_quack(maybe_a_duck):
-    try:
-        maybe_a_duck.quack()
-    except:
-        print("Not a duck.")
-
-make_it_quack(Duck())
-make_it_quack(StealthCow())
-```
-
-`Duck` 和 `StealthCow` 类没有任何关联，但它们都定义了 `quack()` 方法，所以它们在 `make_it_quack()` 函数中的工作方式相同。这是因为 Python 使用动态分发——它在运行时识别要调用的方法。所以 `make_it_quack()` 不关心你传递给它的是什么类型，只关心它们实现了 `quack()` 方法这一事实。
-
-在静态类型环境中，这种方法行不通：Mojo 函数要求你指定每个参数的类型。如果你想在 Mojo 中编写这个示例*而不使用*特征，你需要为每种输入类型编写一个函数重载。
-
-```mojo title="🔥 Mojo"
-@fieldwise_init
-struct Duck(Copyable):
-    def quack(self):
-        print("Quack")
-
-@fieldwise_init
-struct StealthCow(Copyable):
-    def quack(self):
-        print("Moo!")
-
-def make_it_quack(definitely_a_duck: Duck):
-    definitely_a_duck.quack()
-
-def make_it_quack(not_a_duck: StealthCow):
-    not_a_duck.quack()
-
-make_it_quack(Duck())
-make_it_quack(StealthCow())
-```
-
-```output
-Quack
-Moo!
-```
-
-只有两种类型时这还不算太糟。但是你想要支持的类型越多，这种方法就越不实用。
-
-你可能会注意到 Mojo 版本的 `make_it_quack()` 没有包含 `try/except` 语句。我们不需要它，因为 Mojo 的静态类型检查确保你只能将 `Duck` 或 `StealthCow` 的实例传递给 `make_it_quack()` 函数。
-
-## 使用特征
-
-特征通过让你定义一组类型可以实现的共享*行为*来解决这个问题。然后你可以编写依赖于特征而不是单个类型的函数。作为一个例子，让我们使用特征更新 `make_it_quack()` 示例。这将涉及三个步骤：
-
-1. 定义一个新的 `Quackable` 特征。
-2. 将特征添加到 `Duck` 和 `StealthCow` 结构体中。
-3. 更新 `make_it_quack()` 函数以依赖于该特征。
-
-### 定义特征
-
-第一步是定义一个需要 `quack()` 方法的特征：
+特征让编译器能够推理一个类型的形状和能力：它的方法、关联类型和编译时值。使用 `trait` 关键字声明特征，后跟一个名称和一组要求：
 
 ```mojo
-trait Quackable:
-    def quack(self):
+trait DeflectionSensing:
+    def fetch_reading(self) -> Float64:
         ...
 ```
 
-特征看起来很像结构体，只是它由 `trait` 关键字引入。注意 `quack()` 方法签名后面跟着三个点（`...`）。这表示它没有在特征内实现。在这个例子中，`quack` 是一个*必需方法*，必须由任何遵循该特征的结构体实现。
+三个点将 `fetch_reading()` 标记为必需方法。`DeflectionSensing` 并不说明类型如何产生一个值，只说明遵循该特征的类型必须能够产生一个值。
 
-特征可以提供默认实现，这样遵循的结构体就不需要自己实现该方法。你可以提供完整的实现或使用 `pass` 关键字。使用 `pass` 会创建一个什么都不做的空操作方法。在你的遵循结构体中，你可以选择覆盖这个默认实现：
+### 领域特定行为
+
+特征可以基于它所知道的关于遵循类型的信息提供默认实现。默认实现可以调用其他必需方法，但不能调用不属于特征契约的方法。
+
+默认方法非常适合那些可以用特征要求来表达的领域特定行为。例如，`within_tolerance()` 验证传感器的当前读数：
 
 ```mojo
-trait Quackable:
-    def quack(self):
-        pass
+trait DeflectionSensing:
+    def fetch_reading(self) -> Float64:
+        ...
+
+    comptime absolute_tolerance: Float64 = 0.05  # This is made up for this example
+
+    def within_tolerance(self) -> Bool:
+        return abs(self.fetch_reading()) <= Self.absolute_tolerance
 ```
 
-更多信息请参阅[默认方法实现](#default-method-implementations)。
+遵循类型会继承默认实现，并可以覆盖它们。
 
-特征还可以包含 `comptime` 成员——必须由遵循结构体定义的编译时常量值。`comptime` 成员对于编写描述泛型类型的特征很有用。更多信息请参阅[泛型的 `comptime` 成员](#comptime-members-for-generics)。
+Mojo 不提供从覆盖实现中调用默认实现的方法。
 
-### 将特征添加到结构体
+### 细化其他特征
 
-接下来，我们需要一些遵循 `Quackable` 特征的结构体。由于上面的 `Duck` 和 `StealthCow` 结构体已经实现了 `quack()` 方法，我们需要做的就是将 `Quackable` 特征添加到它遵循的特征列表中（在结构体名称后的括号内）。
+特征可以细化另一个特征，这意味着它继承了被细化特征的所有要求，同时添加了新的要求。例如，`CalibratableDeflectionSensing` 做了 `DeflectionSensing` 所做的一切，但还要求一个 `calibrate()` 方法：
 
-（如果你熟悉 Python，这看起来就像 Python 的继承语法。）
+```mojo
+trait CalibratableDeflectionSensing(DeflectionSensing):
+    def calibrate(mut self):
+        ...
+
+struct EddyCurrentSensor(CalibratableDeflectionSensing):
+    def fetch_reading(self) -> Float64:
+        # its implementation
+
+    def calibrate(mut self):
+        # its implementation
+```
+
+遵循的 `EddyCurrentSensor` 必须实现 `calibrate()`，同时满足 `DeflectionSensing` 的每一项要求。它继承了 `within_tolerance()` 的默认实现，该实现调用了 `fetch_reading()` 并使用 `absolute_tolerance` 常量。
+
+## 特征契约
+
+特征契约由方法和三种编译时成员组成：关联类型、必需编译时值和共享编译时常量。
+
+方法可以是必需的或提供的。必需方法必须由每个遵循类型实现。提供方法包含一个默认实现，遵循类型可以覆盖它。
+
+编译时成员要么要求每个遵循类型提供自己的值，要么定义一个由所有遵循类型共享的值。
+
+- *必需方法* 在其方法体中使用 `...` 省略号。每个遵循类型都必须实现它们。
+
+  ```mojo
+  trait Loggable:
+      def log(self, message: String):
+          ...
+  ```
+
+- *提供方法* 在特征中实现。遵循类型可以覆盖它们。即使是默认的空操作实现也是有效的提供方法。
+
+  ```mojo
+  trait Pausable:
+      def pause(self):
+          pass
+  ```
+
+- *关联类型* 要求遵循类型声明一个从属类型。它们最常用于集合中，参数化集合在其中声明一个元素类型。
+
+  ```mojo
+  trait Container:
+      associatedtype Element: Movable
+  ```
+
+- *必需编译时值* 必须由每个遵循类型定义。它们通常用于在不同实现间变化的值。
+
+  ```mojo
+  trait Pausable:
+      comptime max_pause_seconds: Float64
+  ```
+
+- *共享编译时常量* 由特征定义，并被每个遵循类型共享。
+
+  ```mojo
+  trait DeflectionSensing:
+      comptime absolute_tolerance: Float64 = 0.05
+  ```
+
+不声明任何这些元素的特征称为*标记特征*（marker trait）。它不要求任何方法、关联类型或编译时值。相反，它将遵循类型标记为具有特定属性或能力。
+
+## 遵循特征
+
+结构体通过在结构体名称后的括号中列出特征并实现其必需方法来遵循该特征：
 
 ```mojo
 @fieldwise_init
-struct Duck(Copyable, Quackable):
-    def quack(self):
-        print("Quack")
+struct CapacitiveSensor(Copyable, DeflectionSensing):
+    def fetch_reading(self) -> Float64:
+        # Not a very good sensor, but a simple example.
+        return Float64(21.5)
+```
+
+如果一个结构体声称遵循 `DeflectionSensing` 但没有实现 `fetch_reading()`，它将无法编译。在编译时，Mojo 会验证 `CapacitiveSensor` 满足 `DeflectionSensing` 的每一项要求，包括其方法和 comptime 元素。
+
+特征不使用鸭子类型（duck typing）。实现了 `fetch_reading()` 但没有声明 `DeflectionSensing` 的结构体不是遵循类型。
+
+### 必需的 comptime 成员
+
+使用 `comptime name = value` 在遵循类型上直接定义必需的 comptime 值。例如，如果 `Pausable` 要求一个 `max_pause_seconds` 值，你可以这样声明它：
+
+```mojo
+@fieldwise_init
+struct Timer(Copyable, Pausable):
+    comptime max_pause_seconds: Float64 = 30.0
+
+    def pause(self):
+        print("Paused")
+```
+
+## 用特征参数化函数和类型
+
+使用 `DeflectionSensing` 特征，你可以为特定传感器构建类型，例如 `CapacitiveSensor` 或 `EddyCurrentSensor`。
+
+通过遵循该特征，每个类型实现了所有必需的方法和 comptime 成员。这个共享契约让你能够编写一个适用于它们中任何一个的函数：
+
+```mojo
+def averaged_poll[
+    SensorType: DeflectionSensing, //  # infer-only
+](sensor: SensorType, samples: Int) -> Float64:
+    var total: Float64 = 0.0
+    for _ in range(samples):
+        total += sensor.fetch_reading()
+    return total / Float64(samples)
+```
+
+由于每个传感器都遵循 `DeflectionSensing`，编译器知道 `fetch_reading()` 是可用的：
+
+```mojo
+var sensor = CapacitiveSensor()
+var average_reading = averaged_poll(sensor, 10)
+print("Average reading:", average_reading)  # Fixed to 21.5 for the example
+```
+
+调用处不使用方括号，因为编译器会从参数推断 `SensorType`。
+
+当你不需要命名类型时，使用 `Some[]` 简写形式：
+
+```mojo
+def averaged_poll_2(sensor: Some[DeflectionSensing], samples: Int) -> Float64:
+    var total: Float64 = 0.0
+    for _ in range(samples):
+        total += sensor.fetch_reading()
+    return total / Float64(samples)
+```
+
+当你需要再次引用该类型时，使用命名形式，例如要求两个参数是*相同*的遵循类型：
+
+```mojo
+def compare_readings[
+    SensorType: DeflectionSensing
+](a: SensorType, b: SensorType) -> Float64:
+    return a.fetch_reading() - b.fetch_reading()
+```
+
+## 组合特征
+
+一个参数可以要求多个特征。使用与号（`&`）来组合它们。传递给该参数的任何类型都必须遵循组合中的每个特征。
+
+例如，你可以定义一个 `Loggable` 特征，并要求一个传感器同时遵循 `DeflectionSensing` 和 `Loggable`：
+
+```mojo
+trait Loggable:
+    def log(self, message: String):
+        ...
+
+def poll_and_log[T: DeflectionSensing & Loggable](sensor: T):
+    print(sensor.fetch_reading())
+    sensor.log("Polling sensor")
+```
+
+细化和组合解决不同的问题。当一个特征自然地扩展另一个特征，且这种关系应该始终成立时，使用细化。当一个函数或类型需要多个独立的能力时，使用组合。
+
+### 复用特征组合
+
+如果你在多个地方复用相同的组合，可以使用 `comptime` 声明为它命名：
+
+```mojo
+comptime SensorLike = DeflectionSensing & Loggable
+
+struct SmartSensor(Copyable, SensorLike):
+    def fetch_reading(self) -> Float64:
+        return 18.2
+
+    def log(self, message: String):
+        print("reading logged")
+```
+
+`SensorLike` 不是一个新特征。它是 `DeflectionSensing & Loggable` 的简写。任何同时遵循这两个特征的类型都自动满足 `SensorLike`；无需额外声明任何内容。
+
+## 默认实现
+
+特征可以提供一个可用的实现，而不仅仅是要求一个：
+
+```mojo
+trait DefaultLoggable:
+    def log(self, message: String):
+        print("reading logged")
 
 @fieldwise_init
-struct StealthCow(Copyable, Quackable):
-    def quack(self):
-        print("Moo!")
-```
-
-结构体需要实现特征中声明的任何方法。编译器强制执行遵循性：如果一个结构体说它遵循某个特征，它必须实现该特征要求的所有内容，否则代码将无法编译。
-
-### 使用特征作为类型约束
-
-最后，你可以定义一个接受 `Quackable` 的函数，如下所示：
-
-```mojo
-def make_it_quack[DuckType: Quackable](maybe_a_duck: DuckType):
-    maybe_a_duck.quack()
-```
-
-或使用简写形式：
-
-```mojo
-def make_it_quack2(maybe_a_duck: Some[Quackable]):
-    maybe_a_duck.quack()
-```
-
-如果你之前没有接触过 Mojo [参数](/docs/manual/parameters/)，这个语法可能看起来有点陌生。第一个签名的意思是 `maybe_a_duck` 是 `DuckType` 类型的参数，其中 `DuckType` 是一个必须遵循 `Quackable` 特征的类型。`Quackable` 被称为 `DuckType` 的*类型约束*（type bound）。
-
-`Some[Quackable]` 形式表达了同样的想法：`maybe_a_duck` 的类型是某个遵循 `Quackable` 特征的具体类型。
-
-两种形式的工作方式相同，只是第一种形式显式命名了类型值。这可能很有用，例如，如果你想接受两个相同类型的值：
-
-```mojo
-def take_two_quackers[DuckType: Quackable](quacker1: DuckType, quacker2: DuckType):
+struct BasicSensor(Copyable, DefaultLoggable):
     pass
 ```
 
-### 整合在一起
+`BasicSensor` 在没有实现 `log()` 的情况下遵循了该特征。它继承了特征的实现，但任何遵循类型都可以通过提供自己的 `log()` 来覆盖它。
 
-使用该函数很简单：
-
-```mojo
-make_it_quack(Duck())
-make_it_quack(StealthCow())
-```
-
-```output
-Quack
-Moo!
-```
-
-注意调用 `make_it_quack()` 时不需要方括号：编译器会推断参数的类型，并确保该类型具有所需的特征。
-
-特征的一个限制是你不能向现有类型添加特征。例如，如果你定义了一个新的 `Numeric` 特征，你不能将它添加到标准库的 `Float64` 和 `Int` 类型中。但是，标准库已经包含了很多特征，我们将来会添加更多。
-
-### 特征可以要求静态方法
-
-除了常规实例方法外，特征还可以指定必需的静态方法。
+默认实现可能会冲突。如果一个类型遵循两个都提供相同方法的特征，Mojo 不会在它们之间做选择：
 
 ```mojo
-trait HasStaticMethod:
-    @staticmethod
-    def do_stuff(): ...
+trait PowerCycle:
+    def restart(self):
+        print("Restarting via power cycle")
 
-def fun_with_traits[type: HasStaticMethod]():
-    type.do_stuff()
-```
+trait Rebootable:
+    def restart(self):
+        print("Restarting via soft reboot")
 
-## 默认方法实现
-
-通常，遵循给定特征的部分或全部结构体可以为给定的必需方法使用相同的实现。在这种情况下，特征可以包含*默认实现*。遵循的结构体仍然可以定义自己的方法版本，覆盖默认实现。但如果结构体没有定义自己的版本，它会自动继承默认实现。
-
-为特征定义默认实现看起来与为结构体编写方法相同：
-
-```mojo
-trait DefaultQuackable:
-    def quack(self):
-        print("Quack")
-
-
-@fieldwise_init
-struct DefaultDuck(Copyable, DefaultQuackable):
+struct Gateway(PowerCycle, Rebootable):
     pass
+    # Error: conflicting default implementations for restart().
 ```
 
-在查看标准库特征的 API 文档时，你会看到*必须*实现的方法列为*必需方法*，有默认实现的方法列为*提供方法*。
+通过在 `Gateway` 上实现 `restart()` 来解决冲突。你的实现会覆盖两个默认实现。
 
-[`Equatable`](/docs/std/builtin/comparable/Equatable/) 特征是默认实现用例的一个好例子。该特征包含两个方法：`__eq__()`（对应 `==` 运算符）和 `__ne__()`（对应 `!=` 运算符）。每个遵循 `Equatable` 的类型都需要自己定义 `__eq__()` 方法，但该特征为 `__ne__()` 提供了默认实现。给定一个 `__eq__()` 方法，大多数类型的 `__ne__()` 定义都很简单：
+## 注意事项
 
-```mojo
-def __ne__(self, other: Self) -> Bool:
-    return not self.__eq__(other)
-```
+**你不能向现有类型添加特征。** 遵循性是在类型定义时声明的。你不能事后让 `Float64`、`Int` 或任何你不拥有的类型遵循一个新特征。
 
-## 特征组合
+**遵循是显式的。** 一个恰好实现了 `fetch_reading()` 的结构体不会遵循 `DeflectionSensing`，除非它声明了该特征。Mojo 检查的是声明的遵循性，而不仅仅是匹配方法名。
 
-你可以使用 `&` 符号组合特征。这让你可以定义简单组合其他特征的新特征。你可以在任何使用单个特征的地方使用特征组合：
-
-```mojo
-trait Flyable:
-    def fly(self): ...
-
-def quack_and_go[type: Quackable & Flyable](quacker: type):
-    quacker.quack()
-    quacker.fly()
-
-@fieldwise_init
-struct FlyingDuck(Copyable, Quackable, Flyable):
-    def quack(self):
-        print("Quack")
-
-    def fly(self):
-        print("Whoosh!")
-```
-
-你也可以使用 `comptime` 关键字为特征组合创建简写名称：
-
-```mojo
-comptime DuckLike = Quackable & Flyable
-
-struct ToyDuck(DuckLike):
-    # ... 实现省略
-```
-
-你还可以使用[细化](#trait-refinement)来组合特征，通过定义一个新的空特征，如下所示：
-
-```mojo
-trait DuckTrait(Quackable, Flyable):
-    pass
-```
-
-但是，这不如使用特征组合灵活，不推荐使用。区别在于使用 `trait` 关键字定义了一个新的命名特征。对于一个结构体要遵循这个特征，你需要在其签名中*显式*包含它。另一方面，`DuckLike` `comptime` 值表示两个独立特征 `Quackable` 和 `Flyable` 的组合，任何遵循这两个特征的事物都遵循 `DuckLike`。例如，考虑上面显示的 `FlyingDuck` 类型：
-
-```mojo
-struct FlyingDuck(Copyable, Quackable, Flyable):
-    # ... 等等
-```
-
-因为 `FlyingDuck` 同时遵循 `Quackable` 和 `Flyable`，它也遵循 `DuckLike` 特征组合。但它*不*遵循 `DuckTrait`，因为它的特征列表中没有包含 `DuckTrait`。
-
-<a id="trait-inheritance"></a>
-
-## 特征细化
-
-特征可以*细化*（refine）其他特征。一个细化另一个特征的特征包含原始特征声明的所有要求。例如：
-
-```mojo
-trait Animal:
-    def make_sound(self):
-        ...
-
-# Bird 细化了 Animal
-trait Bird(Animal):
-    def fly(self):
-        ...
-```
-
-由于 `Bird` 细化了 `Animal`，遵循 `Bird` 特征的结构体必须实现 `make_sound()` 和 `fly()` **两个**方法。而且由于每个 `Bird` 都遵循 `Animal`，遵循 `Bird` 的结构体可以传递给任何需要 `Animal` 的函数。
-
-你可以通过在括号中列出多个特征来定义一个细化多个特征的特征。这可以是逗号分隔的特征列表或特征组合。例如，你可能定义一个 NamedAnimal 特征，它结合了 Animal 特征和一个新的 Named 特征的要求：
-
-```mojo
-trait Named:
-    def get_name(self) -> String:
-        ...
-
-trait NamedAnimal(Animal, Named):
-    def emit_name_and_sound(self):
-        ...
-```
-
-当你创建一个添加额外要求的新特征时，细化很有用。如果你只是想表达两个或多个特征的并集，请使用简单的特征组合：
-
-```mojo
-comptime NamedAnimal = Animal & Named
-```
-
-## 特征与生命周期方法
-
-特征可以指定必需的[生命周期方法](/docs/manual/lifecycle/#lifecycles-and-lifetimes)，包括构造函数、拷贝构造函数和移动构造函数。
-
-例如，以下代码创建了一个 `MassProducible` 特征。一个 `MassProducible` 类型有一个默认（无参数）构造函数并且可以被移动。它使用两个内置特征：[`Defaultable`](/docs/std/builtin/value/Defaultable/)，它要求一个默认（无参数）构造函数，以及 [`Movable`](/docs/std/builtin/value/Movable/)，它要求该类型有一个[移动构造函数](/docs/manual/lifecycle/life#move-constructor)。
-
-`factory[]()` 函数返回一个新构造的 `MassProducible` 类型实例。以下示例在注释中显示了 `Defaultable` 和 `Movable` 特征的定义以供参考：
-
-```mojo
-# trait Defaultable
-#     def __init__(out self): ...
-
-# trait Movable
-#     def __init__(out self, *, deinit take: Self): ...
-
-comptime MassProducible = Defaultable & Movable
-
-def factory[type: MassProducible]() -> type:
-    return type()
-
-struct Thing(MassProducible):
-    var id: Int
-
-    def __init__(out self):
-        self.id = 0
-
-    def __init__(out self, *, deinit take: Self):
-        self.id = take.id
-
-var thing = factory[Thing]()
-```
-
-### 寄存器可传递类型与 RegisterPassable 特征
-
-"寄存器可传递"告诉 Mojo 一个类型应该在机器寄存器（如 CPU 寄存器）中传递。这意味着该类型总是按值传递。对于整数或浮点数等数据类型，这比将值存储在栈内存中效率更高。
-
-Mojo 支持两种形式的寄存器可传递类型。
-
-标准的*寄存器可传递类型*具有以下能力和限制：
-
-- 它们有正常的生命周期，可以实现或覆盖生命周期方法。
-- 每个字段必须是寄存器可传递的或平凡寄存器可传递的。
-- 该类型必须是 [`Movable`](/docs/manual/lifecycle/life/#move-constructor)。
-- 它们的 self 指针既不稳定也不可预测。它们可以随时在内存中移动，因此不适合依赖指针标识的类型。
-- 当用作参数或结果时，它们可以通过外部函数接口（FFI）直接暴露给 C 和 C++，不需要通过指针传递。
-- 它们不能覆盖默认的移动构造函数。这保证了移动总是无副作用的。
-
-你可以通过让类型遵循 `RegisterPassable` 特征来创建自定义的寄存器可传递类型。
-
-平凡寄存器类型通常是数据类型。它们包括：
-
-- *算术类型*。这包括 `Int`、`Int32`、`Bool`、`Float64` 等类型。
-- *指针*。地址值是平凡的，而不是被指向的数据。
-- *其他平凡类型的数组*。`SIMD` 是一个很好的例子。
-
-这些类型由 Mojo 的标准库提供。
-
-*平凡寄存器可传递类型*具有以下能力和限制：
-
-- 它们不使用生命周期方法。
-- 每个字段必须是平凡寄存器可传递的。
-- 该类型必须是 [`Copyable`](/docs/manual/lifecycle/life/#copy-constructor)。
-- 它们使用特殊的平凡（空操作）析构函数。它们是*平凡可移动的*（通过 `Copyable`，它细化了 `Movable`）、*平凡可复制的*和*平凡可析构的*。
-
-## 内置特征
-
-Mojo 标准库包含许多特征。它们由许多标准库类型实现，你也可以在自己的类型上实现这些特征。这些标准库特征包括：
-
-- [`Absable`](/docs/std/math/math/Absable/)
-- [`AnyType`](/docs/std/builtin/anytype/AnyType/)
-- [`Boolable`](/docs/std/builtin/bool/Boolable/)
-- [`Comparable`](/docs/std/builtin/comparable/Comparable/)
-- [`Copyable`](/docs/std/builtin/value/Copyable/)
-- [`Defaultable`](/docs/std/builtin/value/Defaultable/)
-- [`Hashable`](/docs/std/hashlib/hash/Hashable/)
-- [`ImplicitlyDestructible`](/docs/std/builtin/anytype/ImplicitlyDestructible/)
-- [`Indexer`](/docs/std/builtin/int/Indexer/)
-- [`Intable`](/docs/std/builtin/int/Intable/)
-- [`IntableRaising`](/docs/std/builtin/int/IntableRaising/)
-- [`KeyElement`](/docs/std/collections/dict/#keyelement)
-- [`Movable`](/docs/std/builtin/value/Movable/)
-- [`PathLike`](/docs/std/os/pathlike/PathLike/)
-- [`Powable`](/docs/std/math/math/Powable/)
-- [`Sized`](/docs/std/builtin/len/Sized/)
-- [`Roundable`](/docs/std/math/math/Roundable/)
-- [`Writable`](/docs/std/format/Writable/)
-- [`Writer`](/docs/std/format/Writer/)
-
-上面链接的 API 参考文档包含每个特征的使用示例。以下部分讨论其中一些特征。
-
-### `Sized` 特征
-
-[`Sized`](/docs/std/builtin/len/Sized/) 特征标识具有可测量长度的类型，如字符串和数组。
-
-具体来说，`Sized` 要求类型实现 `__len__()` 方法。这个特征被内置的 [`len()`](/docs/std/builtin/len/len/) 函数使用。例如，如果你正在编写一个自定义列表类型，你可以实现这个特征，使你的类型与 `len()` 一起工作：
-
-```mojo
-struct MyList(Copyable, Sized):
-    var size: Int
-    # ...
-
-    def __init__(out self):
-        self.size = 0
-
-    def __len__(self) -> Int:
-        return self.size
-
-print(len(MyList()))
-```
-
-```output
-0
-```
-
-### `Intable` 和 `IntableRaising` 特征
-
-[`Intable`](/docs/std/builtin/int/Intable/) 特征标识一个可以转换为 `Int` 的类型。[`IntableRaising`](/docs/std/builtin/int/IntableRaising/) 特征描述一个可以转换为 `Int` 的类型，但转换可能会引发错误。
-
-这两个特征都要求类型实现 `__int__()` 方法。例如：
-
-```mojo
-@fieldwise_init
-struct IntLike(Intable):
-    var i: Int
-
-    def __int__(self) -> Int:
-        return self.i
-
-value = IntLike(42)
-print(Int(value) == 42)
-```
-
-```output
-True
-```
-
-### `Writable` 特征
-
-任何遵循 [`Writable`](/docs/std/format/Writable/) 的类型都会获得一个默认实现，该实现使用反射格式化其字段。添加该特征，你就可以打印你的类型：
-
-```mojo
-struct SomeType(Writable):
-```
-
-[`print()`](/docs/std/io/io/print/) 要求其参数遵循 `Writable`。这使用基于流的写入，避免了不必要的 `String` 分配。
-
-覆盖 `write_to()` 以控制输出格式。编写一系列组成表示的 `Writable` 值：
-
-```mojo
-@fieldwise_init
-struct Point(Writable):
-    var x: Float64
-    var y: Float64
-
-    # 覆盖 Writable 遵循性的默认实现
-    def write_to(self, mut writer: Some[Writer]):
-        writer.write(t"Point({self.x}, {self.y})")
-
-...
-
-var p = Point(1.5, 2.7)
-print(p)  # Point(1.5, 2.7)
-```
-
-`Writer` 特征只接受有效的 UTF-8 文本。你不能写入任意字节。这保证了像 `String` 这样的类型可以实现 `Writer` 而不会有损坏的风险。
-
-`Writable` 提供了 [`write_repr_to()`](/docs/std/format/Writable/#write_repr_to)，它产生一个特定于调试的值的字符串表示。
-
-`write_repr_to()` 有一个基于反射的默认实现。只有当你的类型需要自定义调试表示时才覆盖它：
-
-```mojo
-# 另一个方法。覆盖 Writable 遵循性的默认实现
-def write_repr_to(self, mut writer: Some[Writer]):
-    writer.write(t"{self.x} : {self.y}")
-
-print(repr(p))  # 1.5 : 2.7
-```
-
-### 生命周期管理特征
-
-Mojo 提供了两个核心特征来管理值生命周期：
-
-- [`AnyType`](/docs/std/builtin/anytype/AnyType/)：所有类型扩展的基础特征。仅遵循 `AnyType` 的类型可能需要显式销毁。
-
-- [`ImplicitlyDestructible`](/docs/std/builtin/anytype/ImplicitlyDestructible/)：当生命周期结束时可以通过调用 `__del__()` 自动销毁的类型。
-
-有关值销毁、使用 `@explicit_destroy` 装饰器的显式销毁以及何时使用每种方法的详细信息，请参阅[值的消亡](/docs/manual/lifecycle/death)。
-
-## 带特征的泛型结构体
-
-在定义泛型容器时也可以使用特征。泛型容器是一个可以保存不同数据类型的容器（例如，数组或哈希表）。在 Python 这样的动态语言中，很容易向容器添加不同类型的项。但在静态类型环境中，编译器需要能够在编译时识别类型。例如，如果容器需要复制一个值，编译器需要验证该类型可以被复制。
-
-[`List`](/docs/std/collections/list/) 类型是泛型容器的一个例子。单个 `List` 只能保存单一类型的数据。列表元素必须遵循 `Copyable` 特征：
-
-```mojo
-struct List[T: Copyable]:
-```
-
-例如，你可以像这样创建一个整数值列表：
-
-```mojo
-var list: List[Int]
-list = [1, 2, 3, 4]
-for i in range(len(list)):
-    print(list[i], end=" ")
-```
-
-```output
-1 2 3 4
-```
-
-你可以使用特征来定义存储在容器中的元素的要求。例如，`List` 要求元素可以被移动和复制。要在 `List` 中存储结构体，该结构体需要遵循 `Copyable` 特征，这需要一个[拷贝构造函数](/docs/manual/lifecycle/life/#copy-constructor)和一个[移动构造函数](/docs/manual/lifecycle/life/#move-constructor)。
-
-构建泛型容器是一个高级主题。有关介绍，请参阅[参数化结构体](/docs/manual/parameters/#parameterized-structs)部分。
-
-### 泛型的 `comptime` 成员
-
-除了方法之外，特征还可以包含 `comptime` 成员，这些成员必须由任何遵循的结构体定义。例如：
-
-```mojo
-trait Repeater:
-    comptime count: Int
-```
-
-实现结构体必须为 `comptime` 成员定义一个具体的常量值，可以使用任何编译时参数值。例如，它可以使用字面量常量或编译时表达式，包括使用结构体参数的表达式。
-
-```mojo
-struct Doublespeak(Repeater):
-    comptime count: Int = 2
-
-struct Multispeak[verbosity: Int](Repeater):
-    comptime count: Int = Self.verbosity * 2 + 1
-```
-
-`Doublespeak` 结构体有一个 `count` 的常量值，但 `Multispeak` 结构体让用户使用参数设置该值：
-
-```mojo
-repeater = Multispeak[12]()
-```
-
-注意字段名为 `count`，而 `Multispeak` 参数名为 `verbosity`。参数和 `comptime` 成员在同一个命名空间中，所以参数不能与 `comptime` 成员同名。
-
-`comptime` 成员对于为泛型类型编写特征最有用。例如，假设你想编写一个描述存储遵循 `Copyable` 特征的元素的泛型栈数据结构的特征。
-
-通过将元素类型作为特征上的 `comptime` 成员添加，你可以在特征上指定泛型方法：
-
-```mojo
-trait Stacklike:
-    comptime EltType: Copyable
-
-    def push(mut self, var item: Self.EltType):
-        ...
-
-    def pop(mut self) -> Self.EltType:
-        ...
-```
-
-以下结构体使用 `List` 作为底层存储来实现 `Stacklike` 特征：
-
-```mojo
-struct MyStack[type: Copyable & ImplicitlyDestructible](Stacklike):
-    """一个使用 List 构建的简单栈。"""
-    comptime EltType = Self.type
-    comptime list_type = List[Self.EltType]
-
-    var list: Self.list_type
-
-    def __init__(out self):
-        self.list = Self.list_type()
-
-    def push(mut self, var item: Self.EltType):
-        self.list.append(item^)
-
-    def pop(mut self) -> Self.EltType:
-        return self.list.pop()
-
-    def dump[
-        WritableEltType: Writable & Copyable & ImplicitlyDestructible
-    ](self: MyStack[WritableEltType]):
-        print("[", end="")
-        for item in self.list:
-            print(item, end=", ")
-        print("]")
-```
-
-{/*  TODO:
-
-  - Maybe move this discussion to the generics chapter, the trait docs only
-     need to mention that you can define a `comptime` member.
-  - If we retain the example, update it to use real conditional conformance.
-  - Update the text below to point to the real conditional conformance doc,
-     if appropriate.
-*/}
-
-`MyStack` 类型添加了一个 `dump()` 方法，用于打印栈的内容。因为遵循 `Copyable` 的结构体不一定是可打印的，`MyStack` 使用条件遵循来定义一个 `dump()` 方法，只要元素类型是[可写的](/docs/std/format/Writable/)就可以工作。
-
-以下代码通过定义一个泛型方法 `add_to_stack()` 来练习这个新特征，该方法向任何 `Stacklike` 类型添加一个项。
-
-```mojo
-def add_to_stack[S: Stacklike](mut stack: S, var item: S.EltType):
-    stack.push(item^)
-
-def main():
-    s = MyStack[Int]()
-    add_to_stack(s, 12)
-    add_to_stack(s, 33)
-    s.dump()             # [12, 33, ]
-    print(s.pop())       # 33
-```
+**特征是全有或全无的。** 遵循类型必须满足每一项要求，要么直接实现，要么继承默认实现。没有部分遵循。

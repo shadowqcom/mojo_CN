@@ -9,15 +9,15 @@ description: Mojo 语言概览。
 
 如果你了解 Python，那么很多 Mojo 代码看起来会很熟悉。但是，Mojo 融合了静态类型检查、内存安全、下一代编译器技术等特性。因此，Mojo 与 C++ 和 Rust 等语言也有很多共同点。
 
-如果你更喜欢通过实践学习，请跟随 [Mojo 入门教程](/docs/manual/get-started)。
+如果你更喜欢通过实践学习，请跟随 [Mojo 入门](/docs/manual/get-started/)教程。
 
-在本页中，我们将介绍 Mojo 的基本语法，让你能够快速开始编码并理解遇到的其他 Mojo 代码。Mojo 手册的后续章节将深入探讨这些主题，并在下面提供相应链接。
+在本页中，我们将介绍 Mojo 的基本语法，让你能够快速开始编码并理解遇到的其他 Mojo 代码。Mojo 手册的后续章节将深入探讨这些主题，本页会在合适的地方给出相应链接。
 
 让我们开始吧！🔥
 
 :::note
 
-Mojo 是一门年轻的语言，还有许多[功能尚未实现](/docs/roadmap)。因此，Mojo 目前**不**适合初学者。即使是这个基础部分也假设你有一定的编程经验。不过，在整个 Mojo 手册中，我们尽量不假设你有任何特定语言的经验。
+Mojo 是一门年轻的语言，仍在不断[演进](/docs/roadmap/)中。因此，Mojo 目前**不**面向初学者。即使是这个基础部分也假设你有一定的编程经验。不过，在整个 Mojo 手册中，我们尽量不假设你掌握任何特定语言的经验。
 
 :::
 
@@ -32,26 +32,22 @@ def main():
 
 每个 Mojo 程序都必须包含一个名为 `main()` 的函数作为入口点。我们稍后会详细讨论函数，现在只需要知道你可以写 `def main():` 后跟缩进的函数体即可。
 
-`print()` 语句的作用如你所料，将其参数打印到标准输出。
+[`print()`](/docs/std/io/io/print/) 函数的作用如你所料，将其参数打印到标准输出。
+
+本页中很多简短示例省略了 `def main():`。要测试这些示例，请将它们放入一个 `main()` 函数中。
 
 ## 变量
 
-在 Mojo 中，你可以通过简单地给新命名变量赋值来声明变量：
+在 Mojo 中，你可以使用 `var` 关键字声明变量：
 
 ```mojo
 def main():
-    x = 10
-    y = x * x
+    var x = 10
+    var y = x * x
     print(y)
 ```
 
-你也可以使用 `var` 关键字_显式_声明变量：
-
-```mojo
-var x = 10
-```
-
-使用 `var` 声明变量时，你还可以声明变量类型，可以有也可以没有初始值：
+你也可以显式声明变量类型，可以带初始值也可以不带：
 
 ```mojo
 def main():
@@ -60,18 +56,18 @@ def main():
     sum = x + x
 ```
 
-隐式声明和显式声明的变量都是静态类型的：也就是说，类型在编译时确定，在运行时不会改变。如果你没有指定类型，Mojo 会使用第一次赋给变量的值的类型。
+Mojo 变量是静态类型的：也就是说，Mojo 在编译时确定变量的类型，并且该类型在运行时不会改变。如果你没有指定类型，Mojo 会使用第一次赋给变量的值的类型。
 
 ```mojo
-x = 10
-x = "Foo" # 错误：无法将 "StringLiteral" 值转换为 "Int"
+var x = 10
+x = "Foo" # Error: cannot implicitly convert 'StringLiteral["Foo"]' value to 'Int'
 ```
 
 更多详情请参阅[变量](/docs/manual/variables/)页面。
 
 ## 代码块和语句
 
-函数、条件和循环等代码块使用冒号后跟缩进行来定义。例如：
+使用冒号后跟缩进行来定义函数、条件和循环等代码块。例如：
 
 ```mojo
 def loop():
@@ -82,32 +78,36 @@ def loop():
 
 你可以使用任意数量的空格或制表符进行缩进（我们推荐使用 4 个空格）。
 
-Mojo 中所有代码语句都以换行符结束。但是，如果你缩进后续行，语句可以跨越多行。例如，这个长字符串跨越两行：
+Mojo 中所有代码语句都以换行符结束。Mojo 编译器对额外的换行相当宽容。作为经验法则，你总是可以在一对圆括号（`()`）、方括号（`[]`）或花括号（`{}`）之间断开语句：
 
 ```mojo
-def print_line():
-    long_text = "这是一段很长的文本，如果分成两行而不是一行，"
-                "会更容易阅读。"
-    print(long_text)
+matrix_multiply(
+    matrix_a,
+    matrix_b,
+    result_matrix
+)
 ```
 
-你也可以跨行链式调用函数：
+你可以添加括号来让语句跨行延续：
 
 ```mojo
-def print_hello():
-    text = ",".join("你好", " 世界！")
-    print(text)
+var long_text = (
+    "This is a long line of text that is a lot easier to read if"
+    " it is broken up across two lines instead of one long line."
+)
 ```
+
+Mojo 会合并相邻的字符串字面量，因此 `long_text` 最终是一个合并后的单一字符串。
 
 关于循环和条件语句的更多信息，请参阅[控制流](/docs/manual/control-flow/)。
 
 ## 函数
 
-使用 `def` 关键字定义 Mojo 函数。例如，以下代码使用 `def` 关键字定义了一个名为 `greet` 的函数，该函数需要一个 `String` 参数并返回一个 `String`：
+使用 `def` 关键字定义 Mojo 函数。例如，以下代码使用 `def` 关键字定义了一个名为 `greet()` 的函数，它需要一个 [`String`](/docs/std/collections/string/string/String/) 参数并返回一个 `String`：
 
 ```mojo
 def greet(name: String) -> String:
-    return "你好，" + name + "！"
+    return "Hello, " + name + "!"
 ```
 
 ## 代码注释
@@ -115,32 +115,32 @@ def greet(name: String) -> String:
 使用井号 `#` 创建单行注释：
 
 ```mojo
-# 这是注释。Mojo 编译器会忽略这一行。
+# This is a comment. The Mojo compiler ignores this line.
 ```
 
 注释也可以跟在代码后面：
 
 ```mojo
-var message = "你好，世界！" # 这也是有效的注释
+var message = "Hello, World!" # This is also a valid comment
 ```
 
 API 文档注释用三引号括起来。例如：
 
 ```mojo
 def print(x: String):
-    """打印字符串。
+    """Prints a string.
 
     Args:
-        x: 要打印的字符串。
+        x: The string to print.
     """
     ...
 ```
 
-使用这类注释（称为"文档字符串"）来记录你的代码是一个我们尚未完全规范的主题，但你可以使用 [`mojo doc` 命令](/docs/cli/doc/)从文档字符串生成 API 参考。
+使用这类注释（称为"docstring"）来记录你的代码是一个我们尚未完全规范的主题，但你可以使用 [`mojo doc` 命令](/docs/cli/doc/)从 docstring 生成 API 参考。
 
 :::note
 
-从技术上讲，文档字符串不是_注释_，而是 Mojo 多行字符串字面量语法的特殊用法。详情请参阅[类型](/docs/manual/types/)页面中的[字符串字面量](/docs/manual/types/#string-literals)。
+从技术上讲，docstring 并不是_注释_，而是 Mojo 多行字符串字面量语法的一种特殊用法。详情请参阅[类型](/docs/manual/types/)页面中的 [String literals](/docs/manual/types/#string-literals)。
 
 :::
 
@@ -148,7 +148,7 @@ def print(x: String):
 
 你可以将类型（或"对象"）的高级抽象构建为 `struct`。
 
-Mojo 中的 `struct` 类似于 Python 中的 `class`：它们都支持方法、字段、运算符重载、元编程装饰器等。但是，Mojo 结构体是完全静态的——它们在编译时绑定，因此不允许动态分发或对结构进行任何运行时修改。（Mojo 未来也将支持 Python 风格的类。）
+Mojo 中的 `struct` 类似于 Python 中的 `class`：它们都支持方法、字段、运算符重载、用于元编程的装饰器等。但是，Mojo 结构体是完全静态的——编译器在编译时绑定它们，因此它们不允许动态分发或对结构进行任何运行时修改。（Mojo 未来也将支持 Python 风格的 class。）
 
 例如，这是一个基本的结构体：
 
@@ -177,9 +177,9 @@ def use_mypair():
     mine.dump()
 ```
 
-`MyPair` 结构体包含两个特殊方法：`__init__()` 构造函数和 `__init__(out self, *, copy: Self)` 拷贝构造函数。像这样的_生命周期方法_控制结构体的创建、复制、移动和销毁。
+`MyPair` 结构体包含两个特殊方法：`__init__()`（初始化器）和 `__init__(out self, *, copy: Self)`（拷贝初始化器）。像这样的_生命周期方法_控制 Mojo 如何创建、复制、移动和销毁一个结构体。
 
-对于大多数简单类型，你不需要编写生命周期方法。你可以使用 `@fieldwise_init` 装饰器为你生成样板字段初始化器，如果你通过 trait 一致性请求，Mojo 会合成拷贝和移动构造函数。所以 `MyPair` 结构体可以简化为：
+对于大多数简单类型，你不需要编写生命周期方法。你可以使用 [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 装饰器为你生成样板化的逐字段初始化器，并且如果你通过 trait 一致性请求，Mojo 会合成拷贝和移动初始化器。因此你可以将 `MyPair` 结构体简化为：
 
 ```mojo
 @fieldwise_init
@@ -193,11 +193,11 @@ struct MyPair(Copyable):
 
 更多详情请参阅[结构体](/docs/manual/structs/)页面。
 
-### Trait（特征）
+### Trait
 
-trait 就像是结构体的特征模板。如果你想创建一个具有 trait中定义的特征的结构体，你必须实现每个特征（如每个方法）。trait 中的每个特征都是结构体的"要求"，当你的结构体实现了所有要求时，就说它"符合"该 trait。
+trait 就像是结构体特征的模板。如果你想创建一个具有某个 trait 中所定义特征的结构体，你必须实现每个特征（例如每个方法）。trait 中的每个特征都是对结构体的一个"要求"（requirement），当你的结构体实现了所有要求时，就说它"符合"（conform to）该 trait。
 
-使用 trait 可以让你编写泛型函数，接受任何符合 trait 的类型，而不是只接受特定类型。
+使用 trait 可以让你编写参数化函数，接受任何符合该 trait 的类型，而不是只接受特定类型。
 
 例如，创建 trait 的方式如下：
 
@@ -206,7 +206,7 @@ trait SomeTrait:
     def required_method(self, x: Int): ...
 ```
 
-方法签名后的三个点是 Mojo 语法，表示该方法未实现。
+方法签名后的三个点是 Mojo 语法，表示该方法没有实现。
 
 这是一个符合 `SomeTrait` 的结构体：
 
@@ -228,52 +228,52 @@ def use_trait_function():
     fun_with_traits(thing)
 ```
 
-你会看到 Mojo 标准库提供的很多 API 中都使用了 trait。例如，Mojo 的集合类型如 `List` 和 `Dict` 可以存储任何符合 `Copyable` trait 的类型。你可以在创建集合时指定类型：
+你会看到 Mojo 标准库提供的很多 API 中都使用了 trait。例如，Mojo 的集合类型如 [`List`](/docs/std/collections/list/List/) 和 [`Dict`](/docs/std/collections/dict/Dict/) 可以存储任何符合 [`Movable`](/docs/std/builtin/value/Movable/) trait 的类型（`Dict` 的键还必须符合 [`KeyElement`](/docs/std/collections/dict/#keyelement)）。你可以在创建集合时指定类型：
 
 ```mojo
-my_list = List[Float64]()
+var my_list = List[Float64]()
 ```
 
 :::note
 
-你可能想知道 `fun_with_traits()` 上的方括号。这些不是函数_参数_（参数放在圆括号中）；这些是函数_参数_，我们接下来会解释。
+你可能想知道 `fun_with_traits()` 上的方括号是什么。这些不是函数_实参_（实参放在圆括号中）；这些是编译时_parameter_，我们会在下一节解释。
 
 :::
 
-如果没有 trait，`fun_with_traits()` 中的 `x` 参数就必须声明一个实现了 `required_method()` 的特定类型，比如 `SomeStruct`（但那样函数就只接受那个类型）。有了 trait，函数可以接受任何符合（即"实现"）`SomeTrait` 的类型作为 `x`。因此，`fun_with_traits()` 被称为"泛型函数"，因为它接受_泛化_类型而不是特定类型。
+如果没有 trait，`fun_with_traits()` 中的 `x` 实参就必须声明一个实现了 `required_method()` 的具体类型，比如 `SomeStruct`（但那样函数就只能接受那一种类型）。有了 trait，函数就可以接受任何符合（即"实现"了）`SomeTrait` 的类型作为 `x`。因此，`fun_with_traits()` 是一个"参数化函数"，因为它接受一个_泛化_类型而不是具体类型。
 
 更多详情请参阅 [trait](/docs/manual/traits/) 页面。
 
 ## 参数化
 
-在 Mojo 中，parameter（参数）是一个编译时变量，它成为运行时常量，在函数或结构体的方括号中声明。参数允许编译时元编程，这意味着你可以在编译时生成或修改代码。
+在 Mojo 中，parameter 是一个编译时变量，它会成为运行时常量，你可以在函数或结构体的方括号中声明它。参数支持编译时元编程，这意味着你可以在编译时生成或修改代码。
 
-许多其他语言互换使用"parameter"和"argument"，所以请注意，当我们说"parameter"和"参数化函数"时，我们指的是这些编译时参数。而函数"argument"（实参）是在圆括号中声明的运行时值。
+许多其他语言将"parameter"和"argument"互换使用，所以请注意，当我们说"parameter"和"参数化函数"时，我们指的是这些编译时参数。而函数"argument"（实参）则是你在圆括号中声明的运行时值。
 
-参数化是一个复杂的话题，在[元编程](/docs/manual/parameters/)部分有更详细的介绍，但我们想在这里稍微介绍一下。作为入门，让我们看一个参数化函数：
+参数化是一个复杂的话题，[元编程](/docs/manual/metaprogramming/)章节中有更详细的介绍，但我们想在这里稍微揭开一点面纱。作为入门，让我们看一个参数化函数：
 
 ```mojo
 def repeat[count: Int](msg: String):
-    # 在编译时评估以下 for 循环
+    # evaluate the following for loop at compile time
     comptime for i in range(count):
         print(msg)
 ```
 
-这个函数有一个 `Int` 类型的参数和一个 `String` 类型的实参。要调用该函数，你需要同时指定参数和实参：
+这个函数有一个类型为 [`Int`](/docs/std/builtin/simd/#int) 的参数和一个类型为 `String` 的实参。要调用该函数，你需要同时指定参数和实参：
 
 ```mojo
 def call_repeat():
-    repeat[3]("你好")
-    # 打印 "你好" 3 次
+    repeat[3]("Hello")
+    # Prints "Hello" 3 times
 ```
 
-通过将 `count` 指定为参数，Mojo 编译器能够优化函数，因为这个值保证在运行时不会改变。代码中的 `comptime` 关键字告诉编译器在编译时而不是运行时评估 `for` 循环。
+通过将 `count` 指定为参数，Mojo 编译器能够优化该函数，因为这个值在运行时不会改变。代码中的 `comptime` 关键字告诉编译器在编译时而不是运行时评估 `for` 循环。
 
-编译器实际上生成了一个只重复消息 3 次的 `repeat()` 函数的唯一版本。这使得代码更高效，因为运行时需要计算的内容更少。
+编译器实际上生成了一个只重复该消息 3 次的 `repeat()` 函数的唯一版本。这使得代码性能更高，因为运行时需要计算的内容更少。
 
-同样，你可以定义带参数的结构体，这实际上允许你在编译时根据参数值定义该类型的变体。
+类似地，你可以定义带参数的结构体，这实际上允许你根据参数值在编译时定义该类型的变体。
 
-关于参数的更多详情，请参阅[元编程](/docs/manual/parameters/)部分。
+关于参数的更多详情，请参阅[元编程](/docs/manual/metaprogramming/)章节。
 
 ## Python 集成
 
@@ -291,28 +291,25 @@ def main() raises:
     print(ar.shape)
 ```
 
-你必须在使用 Mojo 的环境中安装 Python 模块（如 `numpy`）。
+你必须在使用 Mojo 的环境中安装相应的 Python 模块（例如 `numpy`）。
 
 更多详情请参阅 [Python 集成](/docs/manual/python/)页面。
 
 ## 下一步
 
-希望本页已经给你足够的信息来开始尝试 Mojo，但这只是 Mojo 可用功能的冰山一角。
+希望本页已经给你足够的信息来开始尝试 Mojo，但这只是触及了 Mojo 可用功能的表面。
 
 如果你想继续阅读，请继续阅读 Mojo 手册的每一页——从这里开始的下一页是[函数](/docs/manual/functions/)。
 
-否则，这里有一些其他资源可以查看：
+否则，这里还有一些其他资源可以查看：
 
-- 参阅 [Mojo 入门](/docs/manual/get-started/)获取实践教程，让你快速上手 Mojo。
+- 参阅 [Mojo 入门](/docs/manual/get-started/)获取一个动手实践教程，让你快速上手 Mojo。
 
-- 如果你想尝试一些代码，克隆[我们的 GitHub 仓库](https://github.com/modular/modular/)来尝试我们的代码示例：
+- 如果你想尝试一些代码，克隆[我们的 GitHub 仓库](https://github.com/modular/modular/)来试运行我们的代码示例：
 
   ```sh
   git clone https://github.com/modular/modular.git
+  cd modular/mojo/examples
   ```
 
-  ```sh
-  cd mojo/examples
-  ```
-
-- 要查看所有可用的 Mojo API，请查看 [Mojo 标准库参考](/docs/std)。
+- 要查看所有可用的 Mojo API，请查看 [Mojo 标准库参考](/docs/std/)。

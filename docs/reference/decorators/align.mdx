@@ -1,66 +1,280 @@
 ---
-title: '@align 装饰器'
+title: '@align'
 sidebar_label: '@align'
 sidebar_position: 1
-description: >
-  @align 装饰器参考。指定函数或结构体的内存对齐要求。
+description: 为 struct 指定最小对齐要求。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+`@align` 装饰器为某个 struct 类型的值指定最小内存对齐（memory alignment）。
 
-`@align` 装饰器指定函数或结构体的内存对齐要求。对齐确保数据在内存中按特定边界排列，这可以提高某些硬件操作的性能。
+如果你已经在使用底层内存、SIMD 或 GPU，可以将 `@align` 看作一种把对齐变成类型自身属性、并由编译器强制执行的方式。如果不熟悉，简短的解释是：对齐控制值在内存中的放置位置，而某些硬件要求或能从特定对齐中受益。
 
-## 语法
+大多数 Mojo 代码不需要显式对齐。仅当你的类型需要放置在特定边界时才需要 `@align`，例如与 GPU 缓冲区交互、使用 SIMD 指令，或在并发代码中避免缓存行竞争（cache-line contention）。
+
+如果没有 `@align`，对齐要求必须手动跟踪并在分配点强制执行。有了 `@align`，该要求就成为类型的一部分，编译器会确保在使用该类型的所有地方都得到遵守。
+
+## 对齐的含义
+
+内存中的每个字节都有一个地址。如果一个地址能被 N 整除，则称该地址为 N 字节对齐（N-byte aligned）。
+
+示例：
+
+- 8 字节对齐的地址：0、8、16、24 等。
+- 64 字节对齐的地址：0、64、128、192 等。
+
+硬件通常以固定大小的块（例如缓存行）加载内存。当一个值从对齐地址开始时，它可以干净地容纳在这些块中。如果不是，硬件可能需要额外的内存访问，或者可能完全拒绝该访问。
+
+对齐影响值在内存中的起始位置，而不影响值的大小。
+
+## 基本用法
+
+在你的 struct 定义中添加 `@align(N)`，其中 `N` 是 2 的正整数次幂，该数字表示以字节为单位的_最小_对齐要求：
 
 ```mojo
-@align(n)
+from std.sys import align_of
+
+@align(64)
+struct CacheAligned:
+    var data: Int
+
+def main():
+    print(align_of[CacheAligned]())  # Prints 64
 ```
 
-其中 `n` 是以字节为单位的对齐值，必须是 2 的幂。
+在此示例中，CacheAligned 被对齐到 64 字节，尽管 Int 通常只需要 8 字节对齐。
 
-## 用法
+## 确定对齐
 
-### 结构体对齐
+struct 的实际对齐取以下各项的最大值：
+
+- 由 @align(N) 指定的值（如果存在）。
+- struct 的自然对齐（其字段对齐的最大值）。
+- 任何嵌入式对齐字段的对齐要求。
+
+你不能将对齐降低到 struct 的自然对齐以下。`@align` 装饰器指定的是一个_最小值_，而不是覆盖：
 
 ```mojo
-@align(16)
-struct AlignedBuffer:
-    var data: SIMD[DType.float32, 4]
+from std.sys import align_of
+
+@align(4)
+struct TryToReduce:
+    var x: Int  # Int has 8-byte natural alignment
+
+def main():
+    print(align_of[TryToReduce]())  # Prints 8
 ```
 
-这确保 `AlignedBuffer` 的实例在 16 字节边界上对齐。
-
-### 函数对齐
+当一个 struct 包含一个对齐字段时，外层 struct 会继承该对齐：
 
 ```mojo
+from std.sys import align_of
+
+@align(64)
+struct CacheAligned:
+    var x: Int
+
+struct Container:
+    var aligned: CacheAligned
+    var other: Int
+
+def main():
+    print(align_of[Container]())  # Prints 64
+```
+
+## 栈和堆的行为
+
+栈分配和堆分配都遵守 `@align`：
+
+```mojo
+from std.sys import align_of
+from std.memory import alloc, dealloc
+
+@fieldwise_init
+@align(64)
+struct CacheAligned:
+    var data: Int
+
+def use_aligned():
+    # Stack allocation
+    var stack_value = CacheAligned(42)
+
+    # Heap allocation
+    var heap_alloc = alloc[CacheAligned]({count = 1})
+    dealloc(heap_alloc^)
+```
+
+在分配对齐类型的值时，你不需要手动请求对齐。
+
+## 对齐与数组
+
+`@align` 装饰器保证值基地址（包括数组的基地址指针）的对齐。它将 struct 的大小填充为对齐的整数倍。Mojo 使用 `size_of[T]()` 来排布数组元素，该函数会向上取整到 `align_of[T]()` 的整数倍：
+
+```mojo
+from std.sys import align_of, size_of
+from std.memory import alloc, dealloc
+
+@align(64)
+struct CacheAligned:
+    var data: Int  # 8 bytes
+
+def demonstrate_array_stride():
+    var allocation = alloc[CacheAligned]({count = 4})
+    var arr = allocation.unsafe_ptr()
+
+    print(align_of[CacheAligned]())  # 64
+    print(size_of[CacheAligned]())   # 64
+
+    # All elements of arr are guaranteed to be 64-byte aligned
+
+    dealloc(allocation^)
+```
+
+## 参数化 struct
+
+对齐也适用于参数化 struct。参数化类型的所有实例共享相同的对齐要求。正因如此，在某些情况下，你可能会发现对齐并没有按其类型进行调整：
+
+```mojo
+from std.sys import align_of
+
+@fieldwise_init
+@align(128)
+struct AlignedType[T: Copyable & Deinitable]:
+    var value: Self.T
+
+def main():
+    print(align_of[AlignedType[Int8]]())   # 128
+    print(align_of[AlignedType[Int64]]())  # 128
+```
+
+将其与对齐为 4 的情况对比，此时装饰器值（`N`）与类型自然对齐的最大值会产生不同的结果：
+
+```mojo
+from std.sys import align_of
+
+@fieldwise_init
+@align(4)
+struct AlignedType[T: Copyable & Deinitable]:
+    var value: Self.T
+
+def main():
+    print(align_of[AlignedType[Int8]]())   # 4
+    print(align_of[AlignedType[Int64]]())  # 8
+```
+
+## 与 RegisterPassable 的交互
+
+当存在 `@align` 时，单字段的寄存器可传递（register-passable）struct 不会被展平。这保留了对齐要求：
+
+```mojo
+from std.sys import align_of, size_of
+
 @align(32)
-def simd_operation():
-    ...
+struct AlignedTrivial(RegisterPassable):
+    var value: Int
+
+def main():
+    print(align_of[AlignedTrivial]())  # 32
+    print(size_of[AlignedTrivial]())  # 8
 ```
 
-## 常见对齐值
+## 要求与错误
 
-| 对齐值 | 用途                           |
-|--------|--------------------------------|
-| 16     | SSE/AVX 向量操作               |
-| 32     | AVX-256 向量操作               |
-| 64     | AVX-512 向量操作、缓存行对齐   |
+Mojo 的 `@align` 装饰器有以下要求：
 
-## 示例
+- 对齐值必须是 2 的正整数次幂。
+- 支持的最大对齐为 2^29 字节。
+- 该值必须在编译时已知。
+- 该装饰器只接受恰好一个参数。
+
+无效用法会产生编译时错误：
+
+```mojo
+@align(0)
+struct Bad1:
+    var x: Int
+
+@align(3)
+struct Bad2:
+    var x: Int
+
+@align(1073741824)
+struct Bad3:
+    var x: Int
+
+@align
+struct Bad4:
+    var x: Int
+
+@align(64, 128)
+struct Bad5:
+    var x: Int
+
+@align("64")
+struct Bad6:
+    var x: Int
+```
+
+## 特殊情况：@align(1)
+
+使用 @align(1) 是合法的，不会产生任何警告。它不会将对齐降低到 struct 的自然对齐以下。这在参数化代码中作为回退值非常有用：
+
+```mojo
+from std.sys import align_of
+
+@align(1)
+struct MinimalAlign:
+    var x: Int
+
+def main():
+    print(align_of[MinimalAlign]())  # Prints 8
+```
+
+## 真实示例：硬件描述符
+
+某些硬件加速器要求对齐的描述符以保证正确性。例如，NVIDIA 的 Tensor Memory Accelerator 要求 64 字节对齐的描述符。
+
+在 `@align` 出现之前，这需要显式的分配技巧：
+
+{/* Can't be docs-tested */}
+
+```mojo
+# Verbose and error-prone
+var tensormap = my_custom_stack_allocation[1, TensorMap, alignment=64]()[0]
+```
+
+有了 `@align`，类型本身就编码了对齐要求：
+
+{/* Can't be docs-tested */}
 
 ```mojo
 @align(64)
-struct CacheLineAligned:
-    var data: SIMD[DType.float64, 8]
+struct TensorMap:
+    # Descriptor fields
+    pass
 
-def main():
-    var buffer = CacheLineAligned()
-    # buffer 在 64 字节边界上对齐
-    print(t"Address alignment: {Int(address_of(buffer)) % 64}")
+var tensormap = TensorMap()
+var heap_tensormap = alloc[TensorMap]({count = 1})
 ```
 
-## 注意事项
+在使用该类型的所有地方，对齐都会被自动强制执行。
 
-- 对齐值必须是 2 的幂（1, 2, 4, 8, 16, 32, 64, ...）
-- 较大的对齐值可能增加内存使用
-- 某些硬件操作要求特定的对齐
+栈分配和堆分配都遵守 `@align`。
+
+## 参数化对齐
+
+对齐值也可以是 struct 参数，从而启用参数化的对齐类型：
+
+```mojo
+from std.sys import align_of
+
+@align(Self.alignment)
+struct AlignedBuffer[alignment: Int]:
+    var data: Int
+
+def main():
+    print(align_of[AlignedBuffer[64]]())   # Prints 64
+    print(align_of[AlignedBuffer[128]]())  # Prints 128
+```
+
+对齐在 struct 实例化时进行验证，因此像 `AlignedBuffer[3]` 这样的无效值会产生编译时错误。

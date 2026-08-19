@@ -1,275 +1,59 @@
 ---
-title: Mojo 装饰器参考
-sidebar_label: 装饰器
+title: Mojo 装饰器
+sidebar_label: 概览
 sidebar_position: 13
-description: >
-  Mojo 装饰器完整参考。涵盖函数、结构体和参数装饰器，
-  包括 @value、@staticmethod、@register_passable 等。
+description: Mojo 内置装饰器参考
+hide_table_of_contents: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp, ASTDecl.h,
-     ASTDecl.cpp  */}
-
-*装饰器*修改函数、结构体或参数的行为。它们以 `@` 开头，放在声明之前。
-
-## 概览
-
-| 装饰器               | 适用对象       | 用途                             |
-|----------------------|----------------|----------------------------------|
-| `@value`             | 结构体         | 自动生成生命周期方法             |
-| `@staticmethod`      | 方法           | 声明静态方法                     |
-| `@register_passable` | 结构体         | 声明寄存器可传递类型             |
-| `@always_inline`     | 函数           | 强制内联                         |
-| `@no_inline`         | 函数           | 禁止内联                         |
-| `@parameter`         | 函数           | 标记为参数函数                   |
-| `@deprecated`        | 函数、结构体   | 标记为已弃用                     |
-| `@doc_hidden`        | 函数、结构体   | 从文档中隐藏                     |
-| `@fieldwise_init`    | 结构体         | 生成字段初始化器                 |
-| `@implicit`          | 转换函数       | 标记为隐式转换                   |
-| `@export`            | 函数           | 导出为公共符号                   |
-| `@align`             | 函数、结构体   | 指定对齐要求                     |
-| `@copy_capture`      | 闭包           | 按值捕获变量                     |
-| `@compiler_register` | 参数           | 指定寄存器分配                   |
-| `@explicit_destroy`  | 结构体         | 要求显式销毁                     |
-
-## 结构体装饰器
-
-### `@value`
-
-`@value` 装饰器自动生成生命周期方法：
-
-```mojo
-@value
-struct Point:
-    var x: Float64
-    var y: Float64
-```
-
-生成的生命周期方法包括：
-
-- `__init__`：字段初始化器
-- `__copyinit__`：复制构造函数
-- `__moveinit__`：移动构造函数
-- `__del__`：析构函数（如果需要）
-
-你可以选择性生成：
-
-```mojo
-@value(new="none")      # 不生成 __init__
-@value(copy="none")     # 不生成 __copyinit__
-@value(move="none")     # 不生成 __moveinit__
-@value(destroy="none")  # 不生成 __del__
-```
-
-### `@register_passable`
-
-声明类型可以通过寄存器传递。寄存器可传递类型必须是平凡可复制和可移动的：
-
-```mojo
-@register_passable
-struct Color:
-    var r: UInt8
-    var g: UInt8
-    var b: UInt8
-```
-
-### `@fieldwise_init`
-
-自动生成一个初始化器，接受所有字段作为参数：
+Mojo 装饰器（decorator）在编译时修改或扩展 struct、函数（function）或其他声明的行为。你将装饰器放在它所修饰的声明上方那一行，并以 `@` 为前缀。
 
 ```mojo
 @fieldwise_init
 struct Point:
     var x: Float64
     var y: Float64
-
-def main():
-    var p = Point(1.0, 2.0)
 ```
 
-### `@explicit_destroy`
-
-要求显式销毁结构体实例：
+在 `@` 之后，装饰器后跟一个名称，括号中可带可选参数。每个装饰器单独占一行。你可以在单个声明上堆叠多个装饰器：
 
 ```mojo
-@explicit_destroy
-struct Resource:
-    var handle: Int
-
-    def __del__(deinit self):
-        _release(self.handle)
+@fieldwise_init
+@align(64)
+struct CacheLine:
+    var data: SIMD[DType.float32, 16]
 ```
 
-## 函数装饰器
+装饰器按自下而上的顺序应用：最靠近声明的装饰器最先被应用。
 
-### `@staticmethod`
+:::note 不支持自定义装饰器
+Mojo 不支持自定义装饰器。本节中的装饰器都是内置在编译器中的。
+:::
 
-声明静态方法。静态方法不接受 `self` 参数：
+## 装饰器
 
-```mojo
-struct Math:
-    @staticmethod
-    def square(x: Int) -> Int:
-        return x * x
+以下页面通过示例介绍了每个内置装饰器。
 
-def main():
-    print(Math.square(5))  # 25
-```
+import DocCardList from '@theme/DocCardList';
 
-### `@always_inline`
+<DocCardList />
 
-强制函数内联：
+## 装饰器目标
 
-```mojo
-@always_inline
-def add(a: Int, b: Int) -> Int:
-    return a + b
-```
+并非每个装饰器都能作用于每个声明。下表展示了哪些装饰器在哪些目标上有效。
 
-### `@no_inline`
-
-禁止函数内联：
-
-```mojo
-@no_inline
-def complex_operation(x: Int) -> Int:
-    ...
-```
-
-### `@parameter`
-
-标记函数为参数函数。参数函数在编译时求值：
-
-```mojo
-@parameter
-def factorial(n: Int) -> Int:
-    if n <= 1:
-        return 1
-    return n * factorial(n - 1)
-
-def main():
-    comptime result = factorial(5)  # 120
-```
-
-### `@deprecated`
-
-标记函数或结构体为已弃用：
-
-```mojo
-@deprecated("Use new_function() instead")
-def old_function():
-    pass
-
-@deprecated
-struct OldStruct:
-    pass
-```
-
-### `@doc_hidden`
-
-从生成的文档中隐藏函数或结构体：
-
-```mojo
-@doc_hidden
-def internal_helper():
-    pass
-```
-
-### `@export`
-
-导出函数为公共符号，可以从其他模块或共享库调用：
-
-```mojo
-@export
-def public_api():
-    pass
-```
-
-### `@implicit`
-
-标记转换函数为隐式转换：
-
-```mojo
-struct MyInt:
-    var value: Int
-
-    @implicit
-    def __init__(out self, value: Int):
-        self.value = value
-
-def process(x: MyInt):
-    pass
-
-def main():
-    process(42)  # 隐式转换 Int 到 MyInt
-```
-
-### `@align`
-
-指定函数或结构体的对齐要求：
-
-```mojo
-@align(16)
-struct AlignedBuffer:
-    var data: SIMD[DType.float32, 4]
-```
-
-## 闭包装饰器
-
-### `@copy_capture`
-
-按值捕获变量而不是按引用：
-
-```mojo
-def make_counter() -> def() -> Int:
-    var count = 0
-    @copy_capture
-    def increment() -> Int:
-        count += 1
-        return count
-    return increment
-```
-
-## 参数装饰器
-
-### `@compiler_register`
-
-指定参数的寄存器分配：
-
-```mojo
-def fast_add(@compiler_register("rax") a: Int, @compiler_register("rbx") b: Int) -> Int:
-    return a + b
-```
-
-## 组合装饰器
-
-多个装饰器可以组合使用：
-
-```mojo
-@value
-@register_passable
-struct Point:
-    var x: Float64
-    var y: Float64
-
-@always_inline
-@deprecated("Use fast_add() instead")
-def slow_add(a: Int, b: Int) -> Int:
-    return a + b
-```
-
-## 自定义装饰器
-
-Mojo 支持创建自定义装饰器。自定义装饰器是接受声明并返回修改后声明的函数：
-
-```mojo
-def logged(func):
-    def wrapper(*args, **kwargs):
-        print(t"Calling {func.__name__}")
-        return func(*args, **kwargs)
-    return wrapper
-
-@logged
-def process():
-    print("Processing...")
-```
+| 装饰器                   | `struct` | `def` | method | `trait` | `comptime` | `var` | field |
+|--------------------------|----------|-------|--------|---------|------------|-------|-------|
+| `@align`                 | yes      |       |        |         |            |       |       |
+| `@always_inline`         |          | yes   | yes    |         |            |       |       |
+| `@extensibility.register`| yes      |       |        |         |            |       |       |
+| `@__copy_capture`        |          |       | yes    |         |            |       |       |
+| `@deprecated`            | yes      | yes   | yes    | yes     | yes        |       |       |
+| `@doc_hidden`            | yes      | yes   | yes    |         | yes        |       | yes   |
+| `@export`                |          | yes   |        |         |            |       |       |
+| `@fieldwise_init`        | yes      |       |        |         |            |       |       |
+| `@implicit`              |          |       | yes    |         |            |       |       |
+| `@no_inline`             |          | yes   | yes    |         |            |       |       |
+| `@nonmaterializable`     | yes      |       |        |         |            |       |       |
+| `@__parameter`           |          |       | yes    |         |            |       |       |
+| `@staticmethod`          |          |       | yes    |         |            |       |       |

@@ -2,260 +2,214 @@
 title: Mojo 类型参考
 sidebar_label: 类型
 sidebar_position: 10
-description: >
-  Mojo 类型系统完整参考。涵盖基本类型、复合类型、
-  类型注解、泛型和类型推断。
+description: >-
+  Mojo 内置类型参考：每个程序无需导入即可使用的数值、字符串、
+  集合、内存及其他类型。
 ---
 
-{/*  VERIFIED: ASTType.h, ASTType.cpp, ParserTypes.cpp,
-     ExprNodes.h, ExprNodes.cpp  */}
+{/* VERIFIED: prelude/__init__.mojo (auto-import set; the compiler imports
+     std.prelude per MojoParser/SharedState.cpp). builtin/bool.mojo (1-bit
+     backing), builtin/type_aliases.mojo (Never), builtin/none.mojo
+     (NoneType is a struct), builtin/builtin_slice.mojo (Slice fields),
+     collections/string/string_span.mojo (StaticString, StringSpan),
+     memory/span.mojo (non-owning view), collections/optional.mojo
+     (value() aborts on empty), collections/array.mojo,
+     utils/variant.mojo, os/os.mojo (abort -> Never). Set and Variant are
+     NOT in the prelude. */}
 
-Mojo 是静态类型语言。每个值都有在编译时已知的类型。本页涵盖 Mojo 的类型系统，包括基本类型、复合类型和类型注解。
+Mojo 是静态类型语言。每个值都有在编译时已知的类型。本页编目了每个程序无需导入即可使用的内置类型。
 
-## 基本类型
+## 内置类型与 prelude
 
-### 数值类型
+内置类型来自标准库的 *prelude*（前奏），编译器会将其导入到每个程序中。prelude 由 `builtin` 包（`Int`、`Bool`、`Error` 和核心 trait）以及来自 `collections`、`memory` 和 `math` 的精选类型组成。
 
-Mojo 提供标准数值类型：
+尽管它们感觉像是语言本身的一部分，但内置类型是定义在标准库中的普通结构体，就像你自己编写的类型一样。
 
-| 类型      | 描述                       | 大小     |
-|-----------|----------------------------|----------|
-| `Int`     | 机器宽度有符号整数         | 64 位    |
-| `Int8`    | 8 位有符号整数             | 8 位     |
-| `Int16`   | 16 位有符号整数            | 16 位    |
-| `Int32`   | 32 位有符号整数            | 32 位    |
-| `Int64`   | 64 位有符号整数            | 64 位    |
-| `UInt8`   | 8 位无符号整数             | 8 位     |
-| `UInt16`  | 16 位无符号整数            | 16 位    |
-| `UInt32`  | 32 位无符号整数            | 32 位    |
-| `UInt64`  | 64 位无符号整数            | 64 位    |
-| `Float16` | 半精度浮点数               | 16 位    |
-| `Float32` | 单精度浮点数               | 32 位    |
-| `Float64` | 双精度浮点数               | 64 位    |
-
-### 布尔类型
+prelude 和编译器语法是分开的概念。某些语言构造有*语法*但作用域中没有对应的名称。例如，集合*字面量*（display）不需要导入，但 `Set` 类型需要：
 
 ```mojo
-var flag: Bool = True
+var primes = {2, 3, 5, 7}   # set display: compiler syntax, no import
+
+from std.collections import Set
+var empty = Set[Int]()      # the name Set must be imported
 ```
 
-### 字符串类型
+## 数值类型
+
+Mojo 的数值类型基于 `SIMD` 构建，`SIMD` 是原始值的固定大小同质向量。`Int`、有大小整数类型（`Int8` 到 `Int256` 和 `UInt8` 到 `UInt256`）以及浮点类型（`Float16` 到 `Float64`、`BFloat16` 和 `Float8_*` 格式）都可以通过 prelude 使用。
+
+有关大小、精度、溢出行为和转换的详细信息，请参阅[数值类型](/docs/reference/numeric-types/)。
+
+## 字符串类型
+
+所有字符串类型都保存 UTF-8 编码的文本。它们的字节保证是有效的 UTF-8。构造时会强制执行这一点。`String(from_utf8_lossy=...)` 会替换无效字节，而 `String(unsafe_from_utf8=...)` 要求调用者保证有效性。
+
+{/* markdownlint-disable MD013 */}
+
+| 类型                                                                     | 是什么                                      |
+|--------------------------------------------------------------------------|---------------------------------------------|
+| [`String`](/docs/std/collections/string/string/String/)                  | 拥有的、可变的、堆分配的 UTF-8 字符串。      |
+| [`StringSpan`](/docs/std/collections/string/string_span/StringSpan/)     | 对现有 UTF-8 数据的非拥有视图。              |
+| [`StaticString`](/docs/std/collections/string/string_span/#staticstring) | 对静态只读数据的 `StringSpan`。              |
+| [`StringLiteral`](/docs/std/builtin/string_literal/StringLiteral/)       | 来自源代码的编译时字符串常量。               |
+| [`Codepoint`](/docs/std/collections/string/codepoint/Codepoint/)         | 单个 Unicode 码点。                          |
+
+{/* markdownlint-enable MD013 */}
+
+源代码中的字符串字面量是 `StringLiteral`。它在运行时具体化为 `String`，或者当上下文需要视图时具体化为 `StringSpan`。`StringSlice` 仍作为 `StringSpan` 的兼容别名可用。详细信息请参阅[字符串字面量](/docs/reference/literals/#string-literals)。
+
+长度有三种度量方式，对于非 ASCII 文本它们会不一致：
 
 ```mojo
-var name: String = "Alice"
-var literal: StringLiteral = "hello"  # 编译时字符串
+var wave = String("👋🏽")          # waving hand + skin-tone modifier
+print(wave.byte_length())        # 8
+print(wave.count_codepoints())   # 2
+print(wave.count_graphemes())    # 1
 ```
 
-### 无类型
+`byte_length()` 计算 UTF-8 字节数，`count_codepoints()` 计算 Unicode 码点数，`count_graphemes()` 计算用户感知的字符数。请选择与所问问题相匹配的计数方式。
 
-`NoneType` 表示值的缺失：
+## 集合类型
+
+Mojo 包含一套灵活的集合类型。
+
+{/* markdownlint-disable MD013 */}
+
+| 类型                                                             | 是什么                                                     |
+|------------------------------------------------------------------|-------------------------------------------------------------|
+| [`List`](/docs/std/collections/list/List/)                       | 动态大小、可增长的序列。                                    |
+| [`Dict`](/docs/std/collections/dict/Dict/)                       | 键值映射。                                                  |
+| [`Set`](/docs/std/collections/set/Set/)                          | 唯一值的无序集合。需要导入。                                 |
+| [`Optional`](/docs/std/collections/optional/Optional/)           | 可能存在也可能不存在的值。                                   |
+| [`Tuple`](/docs/std/builtin/tuple/Tuple/)                        | 固定大小、异质的值组。                                      |
+| [`Array`](/docs/std/collections/array/Array/)                    | 内联存储的固定大小数组，无堆分配。                           |
+| [`Variant`](/docs/std/utils/variant/Variant/)                    | 保存来自固定类型集合中的一个值。需要导入。                   |
+
+{/* markdownlint-enable MD013 */}
+
+`List`、`Dict`、`Set` 和 `Tuple` 支持 display 语法，如[表达式](/docs/reference/expressions/#collection-displays)中所述。
+
+`Set` 和 `Variant` 不在 prelude 中。请从 `std.collections` 导入 `Set`，从 `std.utils` 导入 `Variant`。
+
+### Optional
+
+`Optional[T]` 保存一个 `T` 或什么也不保存。当存在值时它为真：
 
 ```mojo
-var nothing: NoneType = None
+var maybe: Optional[Int] = 5
+if maybe:
+    print(maybe.value())     # 5
 ```
 
-## 复合类型
-
-### 元组
-
-元组是固定大小的异质集合：
+`value()` 在空的 `Optional` 上会中止程序。用真值检查保护它，或调用 `or_else()` 来提供一个默认值：
 
 ```mojo
-var pair: Tuple[Int, String] = (42, "hello")
-var triple: (Int, Float64, Bool) = (1, 2.0, True)
+var empty: Optional[Int] = None
+# empty.value()              # aborts: the Optional is empty
+print(empty.or_else(0))      # 0
 ```
 
-### 列表
+### Variant
 
-列表是动态大小的同质集合：
+`Variant` 保存来自固定类型集合中的一个值，在运行时跟踪。用 `isa[T]()` 测试活动类型，并用该类型进行索引来读取它：
 
 ```mojo
-var numbers: List[Int] = [1, 2, 3]
-var names: List[String] = ["Alice", "Bob"]
+from std.utils import Variant
+
+var v = Variant[Int, String](5)
+print(v[Int])                # 5
+v.set[String]("text")
+print(v[String])             # text
 ```
 
-### 字典
+## 内存类型
 
-字典存储键值对：
+Mojo 内存类型是指针和视图，提供对内存的非拥有访问。单一的 `Pointer` 类型涵盖了安全和不安全的使用：Mojo 不是将保证拆分到两种类型中，而是将不安全性标记在单个*操作*上。解引用指针是安全的，而编译器无法为你检查其要求的操作（如未检查的偏移量、别名转换和覆盖内存）带有 `unsafe_` 前缀。每个 `Pointer` 都不可为空；使用 `Optional[Pointer]` 来建模可能不存在的指针。
+
+{/* markdownlint-disable MD013 */}
+
+| 类型                                                           | 是什么                                            |
+|----------------------------------------------------------------|---------------------------------------------------|
+| [`Pointer`](/docs/std/memory/pointer/Pointer/)                 | 指向一个或多个值的非空指针。                       |
+| [`Span`](/docs/std/collections/span/Span/)                     | 连续数据的非拥有视图。                             |
+| [`AddressSpace`](/docs/std/memory/address_space/AddressSpace/) | 标识内存所在位置，例如 CPU 或 GPU。                |
+
+{/* markdownlint-enable MD013 */}
+
+`OpaquePointer`、`OptionalPointer` 以及 `MutX` 和 `ImmX` 形式都是 `Pointer` 的别名。`UnsafePointer` 是 `Pointer` 的已弃用别名，保留它是为了兼容在两种类型统一之前编写的代码。
+
+有关指针类型的概述，请参阅[指针简介](/docs/manual/pointers/)。有关内存分配和指针使用，请参阅[使用指针](/docs/manual/pointers/using_pointers)。
+
+## 其他内置类型
+
+Mojo 包含一些不属于上述类别但仍然是语言基础的内置类型：
+
+{/* markdownlint-disable MD013 */}
+
+| 类型                                              | 是什么                                                    |
+|---------------------------------------------------|-----------------------------------------------------------|
+| [`Bool`](/docs/std/builtin/bool/Bool/)            | 布尔值，`True` 或 `False`。由 1 位类型支持。              |
+| [`Error`](/docs/std/builtin/error/Error/)         | 由 `raises` 函数引发的运行时错误。                         |
+| [`Never`](/docs/std/builtin/type_aliases/#never)  | 永不产生值的表达式的类型。                                 |
+| [`NoneType`](/docs/std/builtin/none/NoneType/)    | 唯一值为 `None` 的类型。                                   |
+| [`Slice`](/docs/std/builtin/builtin_slice/Slice/) | 下标产生的 `start:end:step` 描述符。                      |
+
+{/* markdownlint-enable MD013 */}
+
+### Bool
+
+`Bool` 结构体由 1 位值支持，而不是 `SIMD` 别名。它的字面量是 `True` 和 `False`。任何遵循 `Boolable` 的类型都提供可以用作条件的 `Bool` 表示：
 
 ```mojo
-var ages: Dict[String, Int] = {"Alice": 30, "Bob": 25}
+var flag = True
+if flag:
+    print("yes")             # yes
 ```
 
-### 集合
+### Error
 
-集合存储唯一值：
+`Error` 是 Mojo 的默认错误类型。标记为 `raises` 的函数除非声明了其他类型（`raises T`），否则会引发 `Error`：
 
 ```mojo
-var primes: Set[Int] = {2, 3, 5, 7}
+def parse(s: String) raises -> Int:
+    raise Error("invalid input")
 ```
 
-### 可选类型
+### Never
 
-`Optional` 表示可能存在或不存在的值：
+`Never` 是永不产生值的表达式的类型，例如总是中止的调用或永不终止的循环。`Never` 类型的值不可能存在。编译器将之后的任何代码视为不可达。`Never` 是编译器类型（`!kgen.never`），不是 `struct`。
 
 ```mojo
-var maybe: Optional[Int] = Some(42)
-var none: Optional[Int] = None
+from std.os import abort
+
+def fatal() -> Never:
+    abort()  # never returns
 ```
 
-### 变体类型
+### None
 
-`Variant` 表示多种可能类型之一：
+`None` 是 `NoneType` 类型的唯一值。没有声明返回类型的函数返回 `None`：
 
 ```mojo
-var value: Variant[Int, String] = 42
-value = "hello"  # 可以改变类型
+def implicit_greet(name: String):
+    print("hello", name)
+    # returns None implicitly
+
+def explicit_greet(name: String) -> None:
+    print("hello", name)
+    # returns None explicitly
 ```
 
-## 类型注解
+### Slice
 
-类型注解指定变量、参数和返回值的类型：
+`Slice` 保存 `start`、`end` 和 `step`，每个都是 `Optional[Int]`。它是带冒号的下标语法产生的描述符；它本身不携带数据。
+
+下标返回什么取决于被索引的类型。连续的 `List` 切片产生 `Span` 视图；带步长的切片产生新的 `List`。
 
 ```mojo
-var x: Int = 42
-
-def greet(name: String) -> String:
-    return "Hello, " + name
+var items = [0, 1, 2, 3, 4, 5]
+var middle = items[1:4]      # Span view, [1, 2, 3]
+var strided = items[::2]     # new List, [0, 2, 4]
 ```
 
-### 类型推断
-
-当类型可以从上下文推断时，类型注解是可选的：
-
-```mojo
-var x = 42           # 推断为 Int
-var name = "Alice"   # 推断为 String
-var items = [1, 2, 3]  # 推断为 List[Int]
-```
-
-## 泛型
-
-泛型允许编写适用于多种类型的代码：
-
-```mojo
-struct Box[T: AnyType]:
-    var value: T
-
-    def __init__(out self, value: T):
-        self.value = value
-
-def main():
-    var int_box = Box(42)
-    var str_box = Box("hello")
-```
-
-### 泛型约束
-
-使用 trait 约束泛型参数：
-
-```mojo
-def max[T: Comparable](a: T, b: T) -> T:
-    if a > b:
-        return a
-    return b
-```
-
-### 多个泛型参数
-
-```mojo
-struct Pair[K: AnyType, V: AnyType]:
-    var key: K
-    var value: V
-```
-
-## 类型别名
-
-使用 `comptime` 创建类型别名：
-
-```mojo
-comptime Vec3 = List[Float64]
-var position: Vec3 = [0.0, 0.0, 0.0]
-```
-
-## 函数类型
-
-函数类型描述函数签名：
-
-```mojo
-var callback: def(Int) -> String
-```
-
-### 带约束的函数类型
-
-```mojo
-var processor: def(Int) raises -> String
-```
-
-## SIMD 类型
-
-SIMD 类型表示向量操作：
-
-```mojo
-var vec: SIMD[DType.float32, 4] = [1.0, 2.0, 3.0, 4.0]
-```
-
-### DType 枚举
-
-`DType` 枚举指定数据类型：
-
-```mojo
-alias float32 = DType.float32
-alias int32 = DType.int32
-```
-
-## 指针类型
-
-指针类型表示内存地址：
-
-```mojo
-var ptr: Pointer[Int]
-var unsafe_ptr: UnsafePointer[Int]
-```
-
-## 引用类型
-
-引用类型表示对值的引用：
-
-```mojo
-def get_first[T: Copyable](ref data: List[T]) -> ref T:
-    return data[0]
-```
-
-## 类型检查
-
-### `type_of`
-
-`type_of` 返回表达式的类型：
-
-```mojo
-var x = 42
-comptime T = type_of(x)  # Int
-```
-
-### `conforms_to`
-
-`conforms_to` 检查类型是否符合 trait：
-
-```mojo
-comptime is_copyable = conforms_to(Int, Copyable)  # True
-```
-
-## 类型转换
-
-使用构造函数进行类型转换：
-
-```mojo
-var x: Float64 = Float64(42)  # Int 到 Float64
-var s: String = String(42)    # Int 到 String
-var n: Int = Int("42")        # String 到 Int
-```
-
-### 显式转换
-
-某些类型需要显式转换：
-
-```mojo
-var ptr = Pointer[Int].alloc(10)
-var unsafe_ptr = UnsafePointer[Int](ptr)
-```
+有关切片语法，请参阅[表达式](/docs/reference/expressions/#slices)。

@@ -1,0 +1,228 @@
+---
+title: Mojo 速查表
+sidebar_label: 速查表
+description: Mojo 要点快速参考卡片。
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+{/* markdownlint-disable MD033 */}
+
+import {useColorMode} from '@docusaurus/theme-common';
+
+export const basicsSheet = {
+  id: 'mojo-cheat-sheet-basics',
+  lightPng: require('./assets/basics/mojo-cheat-sheet-basics-light.png').default,
+  lightPdf: require('./assets/basics/mojo-cheat-sheet-basics-light.pdf').default,
+  darkPng: require('./assets/basics/mojo-cheat-sheet-basics-dark.png').default,
+  darkPdf: require('./assets/basics/mojo-cheat-sheet-basics-dark.pdf').default,
+};
+
+export const compiletimeSheet = {
+  id: 'mojo-cheat-sheet-compile-time',
+  lightPng: require('./assets/compile-time/mojo-cheat-sheet-compile-time-light.png').default,
+  lightPdf: require('./assets/compile-time/mojo-cheat-sheet-compile-time-light.pdf').default,
+  darkPng: require('./assets/compile-time/mojo-cheat-sheet-compile-time-dark.png').default,
+  darkPdf: require('./assets/compile-time/mojo-cheat-sheet-compile-time-dark.pdf').default,
+};
+
+export const traitsSheet = {
+  id: 'mojo-cheat-sheet-traits',
+  lightPng: require('./assets/traits/mojo-cheat-sheet-traits-light.png').default,
+  lightPdf: require('./assets/traits/mojo-cheat-sheet-traits-light.pdf').default,
+  darkPng: require('./assets/traits/mojo-cheat-sheet-traits-dark.png').default,
+  darkPdf: require('./assets/traits/mojo-cheat-sheet-traits-dark.pdf').default,
+};
+
+export const ownershipSheet = {
+  id: 'mojo-cheat-sheet-ownership',
+  lightPng: require('./assets/ownership/mojo-cheat-sheet-ownership-light.png').default,
+  lightPdf: require('./assets/ownership/mojo-cheat-sheet-ownership-light.pdf').default,
+  darkPng: require('./assets/ownership/mojo-cheat-sheet-ownership-dark.png').default,
+  darkPdf: require('./assets/ownership/mojo-cheat-sheet-ownership-dark.pdf').default,
+};
+
+export const typesSheet = {
+  id: 'mojo-cheat-sheet-types-and-literals',
+  lightPng: require('./assets/types-literals/mojo-cheat-sheet-types-and-literals-light.png').default,
+  lightPdf: require('./assets/types-literals/mojo-cheat-sheet-types-and-literals-light.pdf').default,
+  darkPng: require('./assets/types-literals/mojo-cheat-sheet-types-and-literals-dark.png').default,
+  darkPdf: require('./assets/types-literals/mojo-cheat-sheet-types-and-literals-dark.pdf').default,
+};
+
+export const convertSheet = {
+  id: 'mojo-cheat-sheet-conversions',
+  lightPng: require('./assets/conversions/mojo-cheat-sheet-conversions-light.png').default,
+  lightPdf: require('./assets/conversions/mojo-cheat-sheet-conversions-light.pdf').default,
+  darkPng: require('./assets/conversions/mojo-cheat-sheet-conversions-dark.png').default,
+  darkPdf: require('./assets/conversions/mojo-cheat-sheet-conversions-dark.pdf').default,
+};
+
+export const Preview = ({sheet, alt}) => {
+  const {colorMode} = useColorMode();
+  const img = colorMode === 'dark' ? sheet.darkPng : sheet.lightPng;
+  return (
+    <a
+      className="cheatsheet-preview"
+      href={img}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={alt}
+      title="在新标签页中打开完整尺寸的速查表"
+      style={{
+        position: 'relative',
+        display: 'block',
+        height: '190px',
+        overflow: 'hidden',
+        cursor: 'zoom-in',
+        marginTop: '0.75rem',
+        borderRadius: '10px',
+        backgroundImage: `url(${img})`,
+        backgroundSize: '130%',
+        backgroundPosition: 'top left',
+        backgroundRepeat: 'no-repeat',
+      }}>
+      <span
+        className="cheatsheet-badge"
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '0.5rem',
+          right: '0.5rem',
+          padding: '0.15rem 0.55rem',
+          borderRadius: '999px',
+          fontSize: '0.72rem',
+          fontWeight: 700,
+          color: '#fff',
+          background: 'rgba(0, 0, 0, 0.65)',
+        }}>
+        ⤢ 完整尺寸
+      </span>
+    </a>
+  );
+};
+
+export const DownloadRow = ({label, png, pdf, name}) => (
+  <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
+    <span
+      style={{
+        fontSize: '0.8rem',
+        fontWeight: 400,
+        minWidth: '2.75rem',
+        color: 'var(--ifm-color-emphasis-700)',
+      }}>
+      {label}
+    </span>
+    <div className="button-group">
+      <a className="button button--sm button--outline button--primary" href={useBaseUrl(`/img/cheatsheet-assets/${name}.svg`)} download={`${name}.svg`}>SVG</a>
+      <a className="button button--sm button--outline button--primary" href={png} download={`${name}.png`}>PNG</a>
+      <a className="button button--sm button--outline button--primary" href={pdf} download={`${name}.pdf`}>PDF</a>
+    </div>
+  </div>
+);
+
+export const Downloads = ({sheet}) => (
+  <div
+    style={{
+      marginTop: '1.1rem',
+      paddingTop: '1rem',
+      borderTop: '1px solid var(--ifm-color-emphasis-200)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.5rem',
+    }}>
+    <DownloadRow label="下载浅色版" png={sheet.lightPng} pdf={sheet.lightPdf} name={`${sheet.id}-light`} />
+    <DownloadRow label="下载深色版" png={sheet.darkPng} pdf={sheet.darkPdf} name={`${sheet.id}-dark`} />
+  </div>
+);
+
+export const CheatSheet = ({sheet, alt, children}) => (
+  <div
+    className="cheatsheet-card"
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      border: '1px solid var(--ifm-color-emphasis-300)',
+      borderRadius: '12px',
+      padding: '1.25rem',
+      background: 'var(--ifm-background-color)',
+    }}>
+    <div>{children}</div>
+    <Preview sheet={sheet} alt={alt} />
+    <Downloads sheet={sheet} />
+  </div>
+);
+
+Mojo 语法与类型的快速参考卡片。每个预览图都会匹配你的浅色或深色主题。点击预览图可查看完整尺寸，或下载 PNG/PDF 文件以留存。
+
+<style>{`
+  .cheatsheet-card { transition: border-color 0.15s ease; }
+  .cheatsheet-card:hover { border-color: var(--ifm-color-primary); }
+  .cheatsheet-card .button { border-width: 1px; font-weight: 400; }
+  .cheatsheet-card h2 { margin-top: 0; margin-bottom: 0.4rem; font-size: 1.25rem; }
+  .cheatsheet-card p { margin-bottom: 0; font-size: 0.9rem; line-height: 1.45; color: var(--ifm-color-emphasis-700); }
+  .cheatsheet-badge { opacity: 0; transition: opacity 0.15s ease; }
+  .cheatsheet-card:hover .cheatsheet-badge { opacity: 1; }
+  .cheatsheet-preview { transition: background-size 0.3s ease, border-color 0.15s ease; }
+  .cheatsheet-preview:hover { background-size: 138%; }
+`}</style>
+
+<div
+  style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+    gap: '1.5rem',
+    margin: '1.5rem 0',
+  }}>
+
+<CheatSheet sheet={basicsSheet} alt="Mojo 基础速查表">
+
+## Mojo 基础
+
+语法要点。你最常使用的核心内容。
+
+</CheatSheet>
+
+<CheatSheet sheet={compiletimeSheet} alt="Mojo 编译时速查表">
+
+## 编译时
+
+Mojo 的超能力。让运行时少做事。
+
+</CheatSheet>
+
+<CheatSheet sheet={traitsSheet} alt="Mojo Trait 速查表">
+
+## Trait
+
+共享的能力与要求。
+
+</CheatSheet>
+
+<CheatSheet sheet={ownershipSheet} alt="Mojo 所有权速查表">
+
+## 所有权
+
+谁在何时拥有什么？
+
+</CheatSheet>
+
+<CheatSheet sheet={typesSheet} alt="Mojo 类型与字面量速查表">
+
+## 类型与字面量
+
+类型、字面量以及其中的陷阱。写之前先了解。
+
+</CheatSheet>
+
+<CheatSheet sheet={convertSheet} alt="Mojo 类型转换速查表">
+
+## 类型转换
+
+创建或转换，然后回到正事。
+
+</CheatSheet>
+
+</div>
+
+{/* markdownlint-enable MD033 */}

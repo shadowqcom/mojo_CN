@@ -1,75 +1,107 @@
 ---
-title: '@doc_hidden 装饰器'
+title: '@doc_hidden'
 sidebar_label: '@doc_hidden'
 sidebar_position: 7
-description: >
-  @doc_hidden 装饰器参考。从生成的文档中隐藏函数或结构体。
+description: 将声明从生成的文档中隐藏。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+`@doc_hidden` [装饰器](/docs/reference/decorators/)将某个声明标记为在文档生成时隐藏。它允许你将内部实现细节、特殊方法或其他代码排除在已发布的 API 文档之外，同时保留它们在源代码中的可访问性。
 
-`@doc_hidden` 装饰器从生成的文档中隐藏函数或结构体。代码仍然可用，但不会出现在公共 API 文档中。
+当你需要维护内部 API、辅助方法或出于实现目的而存在的替代初始化器，但又不希望它们出现在库的公共文档中时，此装饰器尤其有用。
 
-## 语法
+名称以双下划线开头和结尾的 API 成员（"dunder" 成员）始终被视为 public，并会包含在文档中，除非用 `@doc_hidden` 修饰。
 
-```mojo
-@doc_hidden
-```
+Mojo 将任何其他以单下划线或双下划线（`_` 或 `__`）开头的 API 名称视为内部成员，并在生成的文档中省略它们——无需使用 `@doc_hidden`。
+
+`@doc_hidden` 装饰器只影响文档生成。隐藏的声明在源代码中完全可访问，可以像任何其他声明一样被访问。以单下划线开头的内部声明也是如此——它们_按约定_为内部成员，并没有任何访问限制。
+
+## 何时使用 `@doc_hidden`
+
+使用 `@doc_hidden` 来隐藏：
+
+- **替代初始化器和 dunder 方法**：隐藏替代的 `__init__()` 方法或其他用户无需直接调用的 dunder 方法。`@doc_hidden` 装饰器对 dunder 方法尤其有用，因为它们默认是 public 的，你无法通过重命名来隐藏它们。
+- **内部方法**：隐藏作为实现细节的私有或内部辅助方法。
+- **已弃用的内部内容**：隐藏为向后兼容而保留、但不应出现在新文档中的旧内部 API。另请参见 [`@deprecated`](/docs/reference/decorators/deprecated/)。
 
 ## 用法
 
-### 隐藏函数
+将 `@doc_hidden` 放置在你想要从生成的文档中排除的任何声明的正上方：
 
 ```mojo
-@doc_hidden
-def internal_helper():
-    pass
-```
+struct Calculator:
+    """A simple calculator struct demonstrating @doc_hidden."""
 
-### 隐藏结构体
+    var value: Int
 
-```mojo
-@doc_hidden
-struct InternalType:
-    pass
-```
+    def __init__(out self, initial_value: Int = 0):
+        """Creates a new Calculator with an initial value.
 
-## 示例
-
-```mojo
-struct PublicAPI:
-    def public_method(self):
-        pass
+        Args:
+            initial_value: The starting value for the calculator. Defaults to 0.
+        """
+        self.value = initial_value
 
     @doc_hidden
-    def _internal_helper(self):
-        pass
+    def __init__(out self):
+        """Internal initializer that should not appear in public documentation.
 
-@doc_hidden
-def _private_implementation():
-    pass
+        This initializer exists for implementation purposes but users should
+        prefer the initializer that takes an initial value.
+        """
+        self.value = 0
 
-def public_function():
-    _private_implementation()
+    def add(mut self, amount: Int):
+        """Adds a value to the calculator.
+
+        Args:
+            amount: The value to add.
+        """
+        self.value += amount
 ```
 
-## 适用场景
+此示例中的无参数 `__init__()` 初始化器使用了 `@doc_hidden`。它在代码中可用，但不会出现在生成的文档中。
 
-- 内部实现细节
-- 私有辅助函数
-- 实验性功能
-- 不稳定的 API
+## 可以隐藏的内容
 
-## 与私有成员对比
+你可以将 `@doc_hidden` 应用于大多数 API：
 
-| 特性         | `@doc_hidden` | 私有成员       |
-|--------------|---------------|----------------|
-| 可访问性     | 公开可访问    | 仅内部可访问   |
-| 文档可见性   | 隐藏          | 隐藏           |
-| 用途         | 隐藏实现细节  | 强制封装       |
+- **函数和方法**
 
-## 注意事项
+  隐藏任何函数或方法重载，包括初始化器（`__init__()`）和其他特殊方法：
 
-- `@doc_hidden` 不限制访问，只是隐藏文档
-- 代码仍然可以被调用
-- 与 `pub` 修饰符一起使用时，代码公开但文档隐藏
+  ```mojo
+  struct Point:
+      @doc_hidden
+      def __init__(out self):
+          pass
+  ```
+
+  `@doc_hidden` 装饰器只隐藏紧随该装饰器之后的那个重载。因此，同一个函数可以同时拥有已记录的重载和已隐藏的重载。
+
+- **整个 struct**
+
+  隐藏辅助或内部 struct。
+
+  ```mojo
+  @doc_hidden
+  struct InternalHelper:
+      pass
+  ```
+
+- <strong>`comptime` 值和成员</strong>
+
+  ```mojo
+  @doc_hidden
+  comptime INTERNAL_CONSTANT = 42
+  ```
+
+- **struct 字段**
+
+  ```mojo
+  struct PublicStruct:
+      @doc_hidden
+      var implementation_detail: Int
+
+      pass
+  ```

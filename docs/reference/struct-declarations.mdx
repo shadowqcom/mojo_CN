@@ -3,74 +3,457 @@ title: Mojo 结构体声明参考
 sidebar_label: 结构体声明
 sidebar_position: 8
 description: >
-  Mojo 结构体声明语法参考。涵盖字段、初始化器、方法、
-  trait 一致性、编译时参数和生命周期方法。
+  Mojo 结构体声明参考。涵盖字段、方法、参数、trait 一致性、
+  初始化器和生命周期方法。
 ---
 
-{/*  VERIFIED: ParserStmts.cpp parseStruct(), parseField(),
-     parseMethod(), TokenKinds.def, ASTDecl.h, ASTDecl.cpp  */}
+{/* Sources:
+ParserStmts.cpp (parseStructStmt, parseVarStmt, parseClassStmt, parseSuite,
+parseComptimeCompoundStmt, parseAliasDeclStmtBody), DeclResolution.cpp
+(resolveSignature(StructDeclOp), resolveBody(StructDeclOp),
+resolveSignature(StructFieldOp), parseOptionalInheritanceList,
+verifyDerivedAncestorImplication, defSigDecorators), DeclResolver.cpp
+(resolveSignature dispatch, resolveBody dispatch), Signatures.cpp
+(TypeCheckeddefSignature::verifyFunctionNameBinding, checkSelfArgument,
+synthesizeFieldwiseInit), Signatures.h (ParsedArgument conventions,
+KWArgHandling, ParsedParamList), StructEmitter.cpp
+(synthesizeFieldwiseInit, synthesizeEmptyDtor,
+synthesizeEmptyMoveOrCopyInit, populateMoveCopy), StructEmitter.h,
+Traits.cpp (verifyAndBuildConformance,
+signatureResolveDefaultTraitdefStubs, checkMethodConstraintStatus),
+Traits.h, ASTDecl.h (traitConformanceLineage, computeSelfTypeForStruct,
+doesNominalTypeConformTo), ASTType.h, TokenKinds.def, ExprNode.h,
+MojoDiags.h, ParserBase.h
+*/}
 
-*结构体声明*定义一个命名的复合类型。结构体将相关数据和方法组合成一个单元。在 Mojo 中，结构体是定义自定义类型的主要方式。
+结构体定义一个具有字段和方法的自定义类型。结构体是值类型：每个变量持有其独立的副本，而非对共享数据的引用。
+
+{/* VERIFIED: From ParserStmts.cpp parseStructStmt() */}
+
+```text
+struct Name:
+    body
+
+struct Name[parameter-list]:
+    body
+
+struct Name(TraitA, TraitB):
+    body
+
+struct Name[parameter-list](TraitA, TraitB):
+    body
+```
+
+按照约定，结构体名称使用 `PascalCase`。`Self`（大写 S）在结构体内部指代结构体自身的类型。`self`（小写）是实例的惯用参数名。
 
 ```mojo
-struct Point:
-    var x: Float64
-    var y: Float64
+from std.math import sqrt
 
-    def __init__(out self, x: Float64, y: Float64):
+struct Point:
+    var x: Int
+    var y: Int
+
+    def __init__(out self, x: Int, y: Int):
         self.x = x
         self.y = y
 
-    def magnitude(self) -> Float64:
-        return (self.x ** 2 + self.y ** 2).sqrt()
+    def distance(self) -> Float64:
+        return sqrt(
+            Float64(self.x * self.x + self.y * self.y)
+        )
+
+def main():
+    var p = Point(3, 4)
+    print(p.distance()) # 5.0
 ```
 
-## 结构体名称
+## 结构体主体元素
 
-结构体名称必须是有效的标识符。反引号转义标识符允许使用关键字作为结构体名称：
+结构体主体可以包含以下元素：
+
+{/* markdownlint-disable MD013 */}
+
+| 元素                 | 语法                          | 作用                       |
+|----------------------|-------------------------------|----------------------------|
+| 字段                 | `var name: Type`              | 实例数据                   |
+| 方法                 | `def name(self, ...)`         | 实例行为                   |
+| 静态方法             | `@staticmethod def name(...)` | 类型级行为                 |
+| 编译时常量           | `comptime name = value`       | 在编译时求值               |
+| 初始化器             | `def __init__(out self, ...)` | 构造实例                   |
+| 反初始化器            | `def __deinit__(deinit self)` | 生命周期结束时的清理       |
+
+{/* markdownlint-enable MD013 */}
+
+最简结构体使用 `pass` 作为空主体：
 
 ```mojo
-struct `class`:
+struct ValidationError:
     pass
+```
+
+结构体不能嵌套在其他结构体、trait 或函数中：
+
+```mojo
+struct Outer:
+    struct Inner:  # Error: nested struct not supported here
+        pass
 ```
 
 ## 字段
 
-*字段*是存储在结构体实例中的变量。每个字段都需要类型注解：
+用 `var` 和类型注解声明每个字段。字段不能有默认值。所有字段都必须在 `__init__()` 中初始化：
 
 ```mojo
-struct Person:
-    var name: String
-    var age: Int
+struct Color:
+    var r: UInt8
+    var g: UInt8
+    var b: UInt8
+
+    def __init__(out self, r: UInt8, g: UInt8, b: UInt8):
+        (self.r, self.g, self.b) = (r, g, b)
 ```
 
-字段默认不初始化。使用 `__init__` 方法初始化字段。
-
-### 字段默认值
-
-字段可以有默认值。当提供默认值时，调用者可以省略该参数：
+每个字段都需要类型注解：
 
 ```mojo
-struct Config:
-    var verbose: Bool = False
-    var retries: Int = 3
+struct Unsound:
+    var x  # Error: struct field declaration must have a type
 ```
 
-### 字段可见性
-
-字段默认为私有。使用 `pub` 使字段公开：
+字段类型必须是具体类型，不能是 trait。结构体参数在编译时确立具体类型：
 
 ```mojo
-struct Point:
-    pub var x: Float64
-    pub var y: Float64
+struct Unsound:
+    var item: Writable  # Error because dynamic traits not supported
+
+@fieldwise_init
+struct Sound[T: Writable & Copyable & Deinitable]:
+    var item: Self.T    # OK: concrete at compile time
+
+def main():
+    var g = Sound[Int](item=42)
+    print(g.item)       # 42
 ```
 
-公开字段可以从结构体外部直接访问。
+### 合成初始化器
 
-## 初始化器
+`@fieldwise_init` 装饰器根据结构体的字段合成一个 `__init__()`：
 
-`__init__` 方法初始化结构体实例。它必须有 `out self` 结果：
+```mojo
+@fieldwise_init
+struct Color:
+    var r: UInt8
+    var g: UInt8
+    var b: UInt8
+
+def main():
+    var color = Color(255, 0, 0)
+    print(color.r, color.g, color.b)  # 255, 0, 0
+```
+
+如果任何字段既不可复制又不可移动，合成会失败：
+
+```mojo
+@fieldwise_init
+struct Alpha:
+    var a: UInt8
+
+@fieldwise_init
+struct Color:
+    var r: UInt8
+    var g: UInt8
+    var b: UInt8
+    var alpha: Alpha
+
+    # Error: cannot synthesize fieldwise init because field
+    # 'alpha' has non-copyable and non-movable type 'Alpha'
+```
+
+### 递归引用
+
+结构体不能指向自身。Mojo 不允许你构建一个存储自身另一个实例的类型，即使嵌套在 Optional 中也不行：
+
+```mojo
+struct Node:
+    var value: String
+    var next: Optional[Node]  # Error about this being a recursive
+                              # reference
+```
+
+要构建链表和树等递归数据结构，必须使用不安全指针。
+
+## 参数
+
+结构体在方括号中接受编译时参数。在结构体主体内通过 `Self` 访问参数。`Self.T` 指代参数 `T`。在结构体主体中直接使用裸 `T` 无效：
+
+```mojo
+@fieldwise_init
+struct Pair[T: Copyable & Deinitable]:
+    var first: Self.T
+    var second: Self.T
+```
+
+## Trait 一致性
+
+在名称或参数列表之后的圆括号中声明一致性。用逗号分隔多个 trait，或用 `&` 组合它们：
+
+```mojo
+@fieldwise_init
+struct MyInt(Writable, Copyable):
+    var value: Int
+
+    def write_to[W: Writer](self, mut writer: W):
+        writer.write(self.value)
+
+def main():
+    var my_int = MyInt(42)
+    print(my_int)  # 42
+```
+
+一致性承诺结构体实现 trait 要求的每个方法和关联类型。缺失项会产生错误：
+
+```mojo
+@fieldwise_init
+struct Incomplete(Sized):
+    var value: Int
+    # Error: 'Incomplete' does not implement all requirements
+    # for 'Sized'
+    # Note: required function '__len__' is not implemented
+```
+
+### 一致性列表
+
+一致性列表接受 trait 和条件 `where` 子句：
+
+```mojo
+@fieldwise_init
+struct Pair[T: Copyable & Deinitable](
+    Equatable where conforms_to(T, Equatable)
+):
+    var first: Self.T
+    var second: Self.T
+```
+
+### 隐式一致性
+
+当所有成员都是 `Deinitable` 时，编译器会自动使每个结构体一致于 `AnyType` 和 `Deinitable`。对于参数化类型，参数的 trait 必须包含 `Deinitable` 才能应用这一点：
+
+```mojo
+@fieldwise_init
+struct Box[T: Copyable & Deinitable](
+    Equatable where conforms_to(T, Equatable)
+):
+    var item: Self.T
+
+def main():
+    var box = Box(42)
+    print(box.item)  # OK
+```
+
+没有 `Deinitable`，编译器无法验证结构体可以安全地使用内置的 `__deinit__()` 反初始化器销毁：
+
+```mojo
+@fieldwise_init
+struct Box[T: Copyable](
+    Equatable where conforms_to(T, Equatable)
+):
+    var item: Self.T
+
+def main():
+    var box = Box(42)
+    print(box.item)
+    # Error about the 'box' being abandoned without being destroyed.
+```
+
+### 合成的生命周期方法
+
+如果结构体一致于 `Movable` 但未定义 `__init__(move:)`，编译器会合成一个移动每个字段的方法。`Copyable` 和 `__init__(copy:)` 同理。如果任何字段无法支持该操作，合成会失败：
+
+```mojo
+struct Unsound(Copyable):
+    var item: SomeMoveOnlyType
+    # Error about synthesizing the copy initializer because
+    # field 'item' has non-copyable type SomeMoveOnlyType
+```
+
+### 默认方法冲突
+
+当两个 trait 为同一方法提供冲突的默认实现时，结构体必须手动实现它：
+
+```mojo
+trait A:
+    def foo(self) -> Int:
+        return 42
+
+trait B:
+    def foo(self) -> Int:
+        return 1024
+
+@fieldwise_init
+struct S(A & B):
+    pass
+
+# Error about conflicting default implementations in two traits
+# reminding you to implement the implementation manually
+```
+
+### 条件一致性
+
+条件一致性允许结构体在满足某些条件时一致于某个 trait。例如，以下结构体在其参数满足特定条件时一致于一组（多为假设的）trait：
+
+```mojo
+from std.sys import is_gpu
+
+@fieldwise_init
+struct Mathematical(
+    GPUComputable where is_gpu()
+):
+    # conforms only on GPU targets
+
+@fieldwise_init
+struct FixedBuffer[T: Copyable, N: Int](
+    Iterable where N > 0
+):
+    # conforms if N is one or more, but not if N is zero or negative
+
+@fieldwise_init
+struct Tensor[dtype: DType](
+    FloatMath where dtype.is_floating_point()
+):
+    # conforms when dtype is a floating point type
+
+@fieldwise_init
+struct Tagged[kind: StringLiteral](
+    Printable where kind == "debug"
+):
+    # only conforms in debug mode
+
+@fieldwise_init
+struct Box[T: Copyable](
+    Equatable where conforms_to(T, Equatable)
+):
+    # conforms to Equatable only when T does
+```
+
+### 条件一致性与编译时值
+
+条件一致性只能依赖于编译时已知的信息。虽然它经常使用 trait 来约束一致性，但条件一致性并不限于 trait。条件可以使用任何能以清晰、一致方式求值的编译时值。
+
+例如，一个类型可能仅在特定平台（如 NVIDIA GPU 或配备 Metal 的 Apple Silicon）上一致于某个 trait，或当某个编译时常量具有特定值时。如果条件能在编译时完全解析，它就可以限制一致性。
+
+话虽如此，一致性不能依赖于一个被计算的编译时成员。Trait 一致性是类型签名的一部分，而签名是解析成员所必需的。依赖一个被计算的成员会造成循环依赖。
+
+### 条件一致性与默认实现
+
+条件一致性和默认实现是相互独立的功能，但它们经常一起使用。
+
+`Writable` trait 提供了一个使用反射的默认实现，可自动写入结构体字段。在确保所有字段都是 `Writable` 之后声明该 trait 一致性：
+
+```mojo
+@fieldwise_init
+struct Point(Writable):
+    var x: Float64
+    var y: Float64
+```
+
+考虑这个 `Pair` 类型的参数化版本：
+
+```mojo
+@fieldwise_init
+struct Pair[T: Copyable & Deinitable]:
+    var first: Self.T
+    var second: Self.T
+```
+
+如果 `T` 不是 `Writable`，结构体仍可以通过提供自己的 `Writable` 所需方法实现来声明 `Writable` 一致性。但如果没有描述 `T` 实例的 API 表面，这是不切实际的。
+
+更好的解决方案是使用条件一致性。确保 `Pair` 仅在其字段为 `Writable` 时才一致于 `Writable`。在结构体一致性列表中的 `where` 子句里使用 `conforms_to()` 测试 `T` 类型：
+
+```mojo
+@fieldwise_init
+struct Pair[T: Copyable & Deinitable](
+    Writable where conforms_to(T, Writable)
+):
+    var first: Self.T
+    var second: Self.T
+```
+
+你可以打印 `Pair[Int]`，因为 `Int` 是 `Writable`，但不能打印 `Pair[NotWritable]`，因为它不一致于 `Writable`：
+
+```mojo
+@fieldwise_init
+struct NotWritable(ImplicitlyCopyable & Deinitable):
+    var item: Int
+
+def main():
+    var not_writable = NotWritable(42)
+    var pair = Pair(not_writable, not_writable)
+    print(pair) # Error regarding 'Writable' nonconformance
+```
+
+### 混合 trait 列表
+
+你可以在同一个一致性列表中组合条件和非条件 trait：
+
+```mojo
+@fieldwise_init
+struct Pair[T: Copyable & Deinitable](
+    Equatable where conforms_to(T, Equatable),
+    Writable where conforms_to(T, Writable),
+    Copyable
+):
+    var first: Self.T
+    var second: Self.T
+
+def main():
+    var pair1 = Pair(first=1, second=2)
+    var pair2 = Pair(first=1, second=2)
+    var pair3 = Pair(first=3, second=4)
+
+    print(pair1 == pair2)  # True
+    print(pair1 == pair3)  # False
+
+    var pair4 = pair1.copy() # OK: Copyable conformance doesn't depend on T
+    _ = pair4
+```
+
+## 方法
+
+实例方法以 `self` 作为第一个参数。`self` 上的约定决定访问方式：
+
+- 裸 `self`：不可变引用。
+- `mut self`：允许修改。
+- `out`、`deinit`：用于生命周期方法。
+- `out`：也用于指定命名结果槽。
+- `ref`：用于声明一个具有参数化可变性、并且无论其类型如何都必须在内存中传递的参数。
+
+没有 `self` 的方法是错误的，除非它被标记为 `@staticmethod`：
+
+```mojo
+struct Unsound:
+    def broken():
+        pass
+    # Error: self argument must be present in instance method
+
+struct OK:
+    @staticmethod
+    def utility():  # No self required
+        pass
+```
+
+`@staticmethod` 标记一个属于类型而非实例的方法。
+
+它可以访问类型参数和 comptime 成员，可以调用其他静态方法，没有 `self`，并且不能访问实例字段和实例方法。
+
+将静态方法用于与结构体的使命相关、但不需要实例即可工作的实用函数，例如工厂方法和通用辅助函数。
+
+### 双下方法
+
+*双下方法*（dunder methods，双下划线名称）让结构体与运算符、内置函数和生命周期事件协作：`__init__()`、`__add__()`、`__str__()` 等。
+
+## 用初始化器创建实例
+
+`__init__()` 使用 `out self` 约定来产生新初始化的值。每个字段都必须在 `__init__()` 返回之前被赋值：
 
 ```mojo
 struct Point:
@@ -78,217 +461,60 @@ struct Point:
     var y: Float64
 
     def __init__(out self, x: Float64, y: Float64):
-        self.x = x
-        self.y = y
-```
-
-### 默认初始化器
-
-当没有定义 `__init__` 时，Mojo 会生成默认初始化器。默认初始化器接受与结构体字段匹配的参数：
-
-```mojo
-struct Point:
-    var x: Float64
-    var y: Float64
-
-# 自动生成的初始化器：
-# def __init__(out self, x: Float64, y: Float64):
-#     self.x = x
-#     self.y = y
+        (self.x, self.y) = (x, y)
 
 def main():
-    var p = Point(1.0, 2.0)
+    var p = Point(3.0, 4.0)
+    print(p.x, p.y)  # 3.0 4.0
 ```
 
-### `@fieldwise_init` 装饰器
+省略 `out self` 是错误的：
 
-`@fieldwise_init` 装饰器自动生成一个初始化器，接受所有字段作为参数：
+```mojo
+struct Unsound:
+    var value: Int
+
+    def __init__(self):
+        pass
+    # Error: __init__ method must return Self type with
+    # 'out' argument
+```
+
+`__init__()` 是隐式静态的。结构体可以定义多个 `__init__()` 重载。
+
+## 用反初始化器拆解实例
+
+当编译器检测到不再访问实例时，`__deinit__()` 会运行。其 `self` 使用 `deinit` 约定：
+
+```mojo
+def __deinit__(deinit self):
+    print("cleaning up")
+```
+
+隐式可反初始化（deinitable）的结构体会获得默认的 `__deinit__()`。自定义的 `__deinit__()` 会覆盖默认实现。`__deinit__()` 不能被重载。
+
+:::note
+显式销毁的结构体编写自己的清理逻辑，使用带 `deinit self` 的消费方法。
+
+使用 `Deinitable where False` 可选择退出。
+:::
+
+## `comptime` 成员
+
+`comptime` 在结构体内部声明类型级成员。它们在编译时求值，不能在运行时修改。将它们用于常量、类型别名和被计算的成员：
 
 ```mojo
 @fieldwise_init
-struct Point:
-    var x: Float64
-    var y: Float64
+struct Matrix2D[dtype: DType, w: Int, h: Int]:
+    pass
+
+struct Test[dtype: DType]:
+    comptime default_size = 1024
+    comptime DefaultMatrixType = Matrix2D[Self.dtype, Self.default_size, Self.default_size]
+    comptime SquareMatrixType[size: Int] = Matrix2D[Self.dtype, size, size]
 
 def main():
-    var p = Point(1.0, 2.0)
+    print(Test[DType.int32].default_size) # 1024
 ```
 
-## 方法
-
-*方法*是在结构体内部定义的函数。它们可以访问结构体的字段和其他方法：
-
-```mojo
-struct Counter:
-    var count: Int
-
-    def increment(mut self):
-        self.count += 1
-
-    def get(self) -> Int:
-        return self.count
-```
-
-### `self` 参数
-
-实例方法的第一个参数是 `self`，它引用结构体的实例。`self` 的约定决定方法可以做什么：
-
-| 约定    | 含义                     |
-|---------|--------------------------|
-| 无      | 只读访问（不可变借用）   |
-| `mut`   | 读写访问（可变借用）     |
-| `out`   | 初始化（构造函数）       |
-| `deinit`| 销毁（析构函数）         |
-
-### 静态方法
-
-使用 `@staticmethod` 装饰器定义静态方法。静态方法不接受 `self` 参数：
-
-```mojo
-struct Math:
-    @staticmethod
-    def square(x: Int) -> Int:
-        return x * x
-
-def main():
-    print(Math.square(5))  # 25
-```
-
-## Trait 一致性
-
-结构体可以实现 trait。使用括号列出 trait：
-
-```mojo
-struct Point(Comparable, Stringable):
-    var x: Float64
-    var y: Float64
-
-    def __lt__(self, rhs: Point) -> Bool:
-        return (self.x ** 2 + self.y ** 2) < (rhs.x ** 2 + rhs.y ** 2)
-
-    def __str__(self) -> String:
-        return t"Point({self.x}, {self.y})"
-```
-
-## 编译时参数
-
-结构体可以接受编译时参数。这些参数在方括号中传递：
-
-```mojo
-struct Array[T: AnyType, size: Int]:
-    var data: SIMD[T, size]
-
-    def __init__(out self):
-        self.data = SIMD[T, size]()
-
-def main():
-    var arr = Array[DType.float32, 4]()
-```
-
-### 参数约束
-
-使用 `where` 子句约束编译时参数：
-
-```mojo
-struct Vector[T: AnyType, size: Int] where size > 0:
-    var data: SIMD[T, size]
-```
-
-## 生命周期方法
-
-### 复制构造函数
-
-复制构造函数创建结构体的副本：
-
-```mojo
-struct Buffer:
-    var data: Pointer[Int]
-
-    def __init__(out self, *, copy: Self):
-        # 深拷贝
-        self.data = allocate(copy.size)
-        memcpy(self.data, copy.data, copy.size)
-```
-
-### 移动构造函数
-
-移动构造函数转移资源所有权：
-
-```mojo
-struct Buffer:
-    var data: Pointer[Int]
-
-    def __init__(out self, *, deinit take: Self):
-        # 浅拷贝（所有权转移）
-        self.data = take.data
-        take.data = None
-```
-
-### 析构函数
-
-析构函数在结构体实例被销毁时运行：
-
-```mojo
-struct Buffer:
-    var data: Pointer[Int]
-
-    def __del__(deinit self):
-        if self.data:
-            free(self.data)
-```
-
-## 平凡类型
-
-*平凡类型*是没有自定义生命周期方法的类型。它们可以被平凡地复制、移动和销毁。使用 `@register_passable` 装饰器声明平凡类型：
-
-```mojo
-@register_passable
-struct Color:
-    var r: UInt8
-    var g: UInt8
-    var b: UInt8
-```
-
-平凡类型可以通过 CPU 寄存器传递，这可以提高性能。
-
-## 装饰器
-
-### `@register_passable`
-
-声明类型可以通过寄存器传递。寄存器可传递类型必须是平凡可复制和可移动的：
-
-```mojo
-@register_passable
-struct Point:
-    var x: Float64
-    var y: Float64
-```
-
-### `@value`
-
-`@value` 装饰器自动生成生命周期方法：
-
-```mojo
-@value
-struct Point:
-    var x: Float64
-    var y: Float64
-```
-
-这会生成：
-- `__init__`（字段初始化器）
-- `__copyinit__`（复制构造函数）
-- `__moveinit__`（移动构造函数）
-- `__del__`（析构函数，如果需要）
-
-## 嵌套结构体
-
-结构体可以嵌套在其他结构体中：
-
-```mojo
-struct Outer:
-    struct Inner:
-        var value: Int
-
-    var inner: Inner
-```
+在实例或类型上访问这些常量。例如，`Test[DType.int32]().default_size` 和 `Test[DType.int32].default_size`。

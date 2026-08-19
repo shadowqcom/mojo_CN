@@ -7,20 +7,24 @@ description: >
   布尔值、None、Self、丢弃和省略号字面量，包括词法规则和示例。
 ---
 
-{/*  VERIFIED: Lexer.cpp lexInteger(), lexFloat(), lexString(), lexTString(),
-     processEscapeSequences(), ExprNode.h, TokenKinds.def  */}
+{/* VERIFIED: Lexer.cpp lexInteger(), lexFloat(), lexString(), lexTString(),
+     processEscapeSequences(), ExprNode.h, TokenKinds.def */}
 
-*字面量*是直接在源代码中写入的值：`42`、`"hello"`、`True`。字面量产生值而无需读取变量或调用函数。以下各节涵盖每种字面量类型、其语法和词法分析器强制执行的任何规则。
+*字面量*是直接在源代码中写入的值：`42`、`"hello"`、`True`。字面量产生值而无需读取变量或调用函数。以下各节涵盖每种字面量类型、其语法以及词法分析器强制执行的任何规则。
+
+:::note
+具体化（materialization）使编译期值在运行时可用。整数字面量、浮点数字面量和字符串字面量会被隐式具体化为各自的运行时类型（Int、Float 和 String）。
+:::
 
 ## 整数字面量
 
 *整数字面量*以四种进制表示整数：
 
 ```mojo
-42        # 十进制
-0xFF      # 十六进制（0x 或 0X 前缀）
-0o52      # 八进制（0o 或 0O 前缀）
-0b101010  # 二进制（0b 或 0B 前缀）
+42        # Decimal
+0xFF      # Hexadecimal (0x or 0X prefix)
+0o52      # Octal (0o or 0O prefix)
+0b101010  # Binary (0b or 0B prefix)
 ```
 
 整数字面量遵循以下词法规则：
@@ -38,39 +42,39 @@ hexinteger  → "0" ("x" | "X") ("_" | hexdigit)+
 下划线可以出现在数字之间以提高可读性。Mojo 在这方面比 Python 更宽松。允许连续和尾随下划线：
 
 ```mojo
-1_000_000  # 可读的分组
-1__000_    # 也有效（连续和尾随下划线都可以）
+1_000_000  # Readable grouping
+1__000_    # Also valid (consecutive and trailing underscores OK)
 ```
 
 十进制字面量中不允许前导零。八进制请使用 `0o` 前缀：
 
 ```mojo
-0123   # 错误：十进制整数字面量中不允许前导零
-0o123  # OK：八进制
+0123   # Error: leading zeros in decimal integer literals are not permitted
+0o123  # OK: octal
 ```
 
 进制前缀后必须至少跟一个数字：
 
 ```mojo
-0x  # 错误：十六进制字面量未指定数字
-0b  # 错误：二进制字面量未指定数字
-0o  # 错误：八进制字面量未指定数字
+0x  # Error: no digits specified for hex literal
+0b  # Error: no digits specified for binary literal
+0o  # Error: no digits specified for octal literal
 ```
 
-## 浮点字面量
+## 浮点数字面量
 
-*浮点字面量*表示带有小数或指数部分的数字：
+*浮点数字面量*表示带有小数或指数部分的数字：
 
 ```mojo
 1.0
 3.14159
-.5       # 只有小数部分（无整数部分）
-2.       # 带小数点的整数部分
-2.5e-3   # 带指数
-1E10     # 大写 E 也可以
+.5       # Fraction only (no integer part)
+2.       # Integer part with decimal point
+2.5e-3   # With exponent
+1E10     # Capital E works too
 ```
 
-浮点字面量遵循以下词法规则：
+浮点数字面量遵循以下词法规则：
 
 ```text
 floatnumber   → pointfloat | exponentfloat
@@ -81,17 +85,17 @@ exponent      → ("e" | "E") ("+" | "-")? digitpart
 digitpart     → digit ("_" | digit)*
 ```
 
-浮点字面量总是非负的。`-3.14` 是一元取负运算符 `-` 应用于字面量 `3.14`。
+浮点数字面量总是非负的。`-3.14` 是一元取负运算符 `-` 应用于字面量 `3.14`。
 
-包含时，指数标记（`e` 或 `E`）后必须至少跟一个数字：
+当包含指数标记（`e` 或 `E`）时，其后必须至少跟一个数字：
 
 ```mojo
-2.5e    # 错误：指数后需要数字
-2.5e-   # 错误：指数后需要数字
+2.5e    # Error: expecting a digit after the exponent
+2.5e-   # Error: expecting a digit after the exponent
 2.5e-3  # OK
 ```
 
-浮点字面量中的下划线与整数中的工作方式相同。将它们放在任何提高可读性的地方：
+浮点数字面量中的下划线工作方式与整数中相同。可以将它们放在任何提高可读性的位置：
 
 ```mojo
 1_000.000_5
@@ -105,67 +109,97 @@ digitpart     → digit ("_" | digit)*
 "Hello"
 'world'
 """Multi-line
-string"""
+string
+"""                # Includes final newline
 '''Also
-multi-line'''
+    multi-line'''  # Includes 4 spaces at the start of the second line
 ```
 
-相邻行的字符串字面量连接成单个字符串。这在同一行或跨行（当续行缩进时）都有效：
+三引号字符串按字面包含任何换行符。行尾的反斜杠会抑制换行，直接连接下一行：
 
 ```mojo
-"Hello, " "World"        # "Hello, World"
-
-x = "line one "
-    "line two"           # "line one line two"（缩进续行）
+"""\
+This string has no leading newline."""
 ```
 
-使用 `r` 或 `R` 前缀创建*原始字符串*，禁用转义处理：
+相邻行的字符串字面量会连接成单个字符串。这在同一行或跨行（当续行缩进时）都有效：
 
 ```mojo
-r"C:\path\to\file"  # 反斜杠按字面处理
+var x = "Hello, " "World"  # "Hello, World"
+
+var y = "line one "
+    "line two"             # "line one line two" (indented continuation)
+```
+
+使用 `r` 或 `R` 前缀创建*原始字符串*（raw string），禁用转义处理：
+
+```mojo
+r"C:\path\to\file"  # Backslashes treated literally
 ```
 
 ### 转义序列
 
 Mojo 在非原始字符串字面量中识别这些转义序列：
 
-| 序列  | 含义           | 序列     | 含义                     |
-|-------|----------------|----------|--------------------------|
-| `\\`  | 反斜杠         | `\a`     | 响铃                     |
-| `\"`  | 双引号         | `\b`     | 退格                     |
-| `\'`  | 单引号         | `\f`     | 换页                     |
-| `\n`  | 换行           | `\v`     | 垂直制表符               |
-| `\r`  | 回车           | `\xHH`   | 十六进制值（恰好 2 位）   |
-| `\t`  | 制表符         | `\0`–`\377` | 八进制值（1-3 位）     |
+{/* markdownlint-disable MD013 */}
 
-三引号字符串内行尾的反斜杠抑制换行，直接连接下一行：
+| 序列      | 含义                             | 序列          | 含义                                |
+|----------|----------------------------------|--------------|-------------------------------------|
+| `\\`     | 反斜杠                           | `\a`         | 响铃                                |
+| `\"`     | 双引号                           | `\b`         | 退格                                |
+| `\'`     | 单引号                           | `\f`         | 换页                                |
+| `\n`     | 换行                             | `\v`         | 垂直制表符                          |
+| `\r`     | 回车                             | `\xHH`       | 十六进制值（恰好 2 位十六进制数字）   |
+| `\t`     | 制表符                           | `\0`–`\377`  | 八进制值（1-3 位八进制数字）         |
+| `\uHHHH` | Unicode 码点（4 位十六进制数字）  | `\UHHHHHHHH` | Unicode 码点（8 位十六进制数字）     |
+
+{/* markdownlint-enable MD013 */}
+
+Mojo 源文件是 UTF-8 编码。字符串字面量可以直接包含非 ASCII 字符。
 
 ```mojo
-x = """\
-    This string has no leading newline.\
-    """
+var wave = "👋"
 ```
+
+非 ASCII 字符也可以写成 Unicode 十六进制转义形式：
+
+```mojo
+var wave = "\U0001F44B"   # 8-digit hex escape, 👋
+var euro = "\u20AC"       # 4-digit hex escape, €
+```
+
+- `\uHHHH` 接受从 U+0000 到 U+FFFF 的码点
+- `\UHHHHHHHH` 接受完整的 Unicode 范围，即 U+0000 到 U+10FFFF
+
+两种形式都拒绝代理码点（U+D800 到 U+DFFF），这些码点保留给 UTF-16 编码使用。U+FFFF 以上的码点需要使用 `\U`，而不能使用 UTF-16 代理对。
 
 ## T-string 字面量
 
 *T-string 字面量*支持使用 `{}` 进行表达式插值：
 
 ```mojo
-name = "World"
-t"Hello, {name}!"   # "Hello, World!"
-t"1 + 1 = {1 + 1}"  # "1 + 1 = 2"
+var name = "World"
+var greeting_template = t"Hello, {name}!"   # "Hello, World!"
+var result_template = t"1 + 1 = {1 + 1}"    # "1 + 1 = 2"
 ```
 
-`{}` 内的表达式在运行时求值。相邻的 t-string 字面量会连接，就像常规字符串字面量一样。
+`{}` 内的表达式在运行时求值。相邻的 t-string 字面量会连接，就像常规字符串字面量一样。除了在 print 语句中使用外，要将其作为字符串使用，请将其转换为 `String`：
 
-T-string 可以三引号化并与原始前缀组合（`rt`、`tr`、`rT`、`tR`）：
+```mojo
+var name = "Alice"
+var greeting = t"Hello, {name}!"    # Type is T-string
+print(greeting)                     # Prints "Hello, Alice!"
+var greeting_str = String(greeting) # Convert to regular String
+```
+
+T-string 可以三引号化并与原始前缀组合（`r`/`R` 和 `t`/`T` 的任意大小写组合，顺序不限）：
 
 ```mojo
 t"""
 Hello, {name}!
 """
 
-rt"Path: {base}\subdir"  # 原始 t-string：反斜杠是字面量
+rt"Path: {base}\subdir"  # Raw t-string: backslashes are literal
 ```
 
 使用 `{{` 和 `}}` 在 t-string 中包含字面大括号：
@@ -174,7 +208,7 @@ rt"Path: {base}\subdir"  # 原始 t-string：反斜杠是字面量
 t"Use {{braces}} in t-strings"  # "Use {braces} in t-strings"
 ```
 
-T-string 可以嵌套。插值表达式本身可以包含 t-string，最多 20 层深度。
+T-string 可以嵌套。插值表达式本身可以包含 t-string，最多嵌套 20 层。
 
 ```mojo
 var name = "world"
@@ -187,8 +221,8 @@ print(greeting) # "Hello, dear world!"
 `True` 和 `False` 表示布尔真值。
 
 ```mojo
-x = True
-y = False
+var x = True
+var y = False
 ```
 
 ## None 字面量
@@ -196,7 +230,7 @@ y = False
 `None` 表示值的缺失。它是 `NoneType` 类型的唯一值。
 
 ```mojo
-x: NoneType = None
+var x: NoneType = None
 ```
 
 没有显式返回类型的函数返回 `None`。这两个声明是等价的：
@@ -214,34 +248,38 @@ def greet() -> None:
 `Self` 在结构体或 trait 定义内引用封闭类型：
 
 ```mojo
+from std.math import sqrt
+
+@fieldwise_init
 struct Point:
     var x: Float64
     var y: Float64
 
-    def create() -> Self:          # Self 引用 Point
+    @staticmethod
+    def create() -> Self:          # Self refers to Point
         return Self(0.0, 0.0)
 
-    def distance(self) -> Float64: # self 是参数名，不是 Self
-        return (self.x ** 2 + self.y ** 2).sqrt()
+    def distance(self) -> Float64: # self is an argument name, not Self
+        return sqrt(self.x ** 2 + self.y ** 2)
 ```
 
-`Self`（大写 S）是引用类型的关键字。`self`（小写）是实例的常规参数名。
+`Self`（大写 S）是引用该类型的关键字。`self`（小写）是实例的惯用参数名。
 
 ## 丢弃模式
 
-下划线 `_` 在赋值中丢弃值：
+下划线 `_` 在赋值中丢弃一个值：
 
 ```mojo
-_, y = get_pair()  # 忽略第一个元素
+_, var y = get_pair()  # Ignore the first element
 ```
 
 ## 省略号字面量
 
-`...` 将 trait 方法标记为必需。一致类型必须提供自己的实现。它只在 trait 定义内有效：
+`...` 将 trait 方法标记为必需的。一致类型必须提供自己的实现。它只在 trait 定义内有效：
 
 ```mojo
 trait Drawable:
-    def draw(self) -> None: ...   # 必需：一致类型必须实现
+    def draw(self) -> None: ...   # Required: conforming types must implement
 ```
 
 `...` 和 `pass` 不可互换。`pass` 是提供空主体的空操作语句。`...` 是表示"你必须实现这个"的要求标记。

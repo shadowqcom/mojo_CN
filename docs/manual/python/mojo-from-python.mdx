@@ -15,7 +15,7 @@ show_languages: true
 
 ## 在 Python 中导入 Mojo 模块
 
-为了说明从 Python 调用 Mojo 是什么样的，我们将从一个简单的示例开始，然后深入了解它的工作原理和目前支持的功能。
+为了说明从 Python 调用 Mojo 是什么样的，我们将从一个简单的示例开始，然后深入了解它的工作原理以及目前可以实现的功能。
 
 考虑一个具有以下结构的项目：
 
@@ -52,11 +52,11 @@ print(mojo_module.factorial(5))
 ```mojo title="mojo_module.mojo"
 from std.python import PythonObject
 from std.python.bindings import PythonModuleBuilder
-import std.math
+from std import math
 from std.os import abort
 
 @export
-def PyInit_mojo_module() -> PythonObject:
+def PyInit_mojo_module() abi("C") -> PythonObject:
     try:
         var m = PythonModuleBuilder("mojo_module")
         m.def_function[factorial]("factorial", docstring="Compute n!")
@@ -65,7 +65,7 @@ def PyInit_mojo_module() -> PythonObject:
         abort(String("error creating Python Mojo module:", e))
 
 def factorial(py_obj: PythonObject) raises -> PythonObject:
-    # 如果 `py_obj` 不能转换为 Mojo `Int`，则抛出异常
+    # Raises an exception if `py_obj` is not convertible to a Mojo `Int`.
     var n = Int(py=py_obj)
 
     return math.factorial(n)
@@ -108,9 +108,23 @@ project
 
 加载 `mojo.importer` 会加载我们的 Python Mojo [导入钩子（import hook）](https://docs.python.org/3/reference/import.html#import-hooks)，它在后台查找与导入模块名匹配的 `.mojo` 文件，如果找到，则使用 [`mojo build --emit shared-lib`](/docs/cli/build/#--emit-file_type) 编译它以生成动态库。生成的文件存储在 `__mojocache__` 中，只有在过期时（通常是当 Mojo 源文件发生变化时）才会重新构建。
 
-:::note[清除缓存的构建产物]
+:::note 清除缓存的构建产物
 `__mojocache__` 目录应仅包含派生产物。删除 `__mojocache__` 目录的内容始终是安全的。需要的产物会在下次导入 Mojo 模块时自动重建。
 :::
+
+### 导出函数的 `abi`
+
+[`@export`](/docs/reference/decorators/export/) 函数必须通过显式的 [`abi`](/docs/reference/function-declarations#abi-c) effect 声明它使用的调用约定。在 Python 扩展模块中，你唯一需要导出的函数是 `PyInit_<module>` 入口点，它必须使用 `abi("C")`：
+
+```mojo
+@export
+def PyInit_mojo_module() abi("C") -> PythonObject:
+    ...
+```
+
+这是因为 CPython 运行时直接跨 C 边界定位并调用 `PyInit_<module>`，因此它必须暴露 C 调用约定。`abi("C")` 函数不能标记为 `raises`，这就是为什么上面的示例在函数体内捕获任何错误并调用 `abort` 而不是传播它的原因。
+
+你通过模块构建器注册的函数、方法和初始化器（`def_function`、`def_method`、`def_py_init` 等）根本不需要 `@export`；你通过引用传递它们，Mojo 会生成 CPython 实际调用的 C 包装器。该包装器使用 Mojo 调用约定调用你的函数，并将任何抛出的错误转换为 Python 异常，因此像上面的 `factorial` 这样的已注册函数可以自由地标记为 `raises`。
 
 现在我们已经了解了 Mojo 从 Python 调用的基本原理，接下来深入了解可用功能以及如何利用它们用 Mojo 加速你的 Python 代码。
 
@@ -127,7 +141,7 @@ struct Person(Movable, Writable):
     var age: Int
 
 @export
-def PyInit_person_module() -> PythonObject:
+def PyInit_person_module() abi("C") -> PythonObject:
     try:
         var mb = PythonModuleBuilder("person_module")
         var person_type = mb.add_type[Person]("Person")
@@ -139,7 +153,7 @@ def PyInit_person_module() -> PythonObject:
 
 任何使用 `PythonTypeBuilder` 绑定的 Mojo 类型都会在全局注册生成的 Python 'type' 对象，从而启用两个功能：
 
-- 使用 `PythonObject(alloc=Person(..))` 构建包装 Mojo 值的 Python 对象，以供 Python 端使用。
+- 使用 `PythonObject(alloc=Person(..))` 构造包装 Mojo 值的 Python 对象，以供 Python 端使用。
 
 - 使用 `python_obj.downcast_value_ptr[Person]()` 进行向下转型。
 
@@ -153,11 +167,11 @@ Mojo 类型必须实现 [`Writable`](/docs/std/format/Writable/) 才能被绑定
 
 ### 在 Python 中构造 Mojo 对象
 
-Mojo 类型可以通过将 Mojo 构造函数声明为 Python 兼容的对象初始化器，使用 [`def_py_init()`](/docs/std/python/bindings/PythonTypeBuilder/#def_py_init) 在将类型添加到模块时，从 Python 进行构造。例如：
+Mojo 类型可以通过将 Mojo 初始化器函数声明为 Python 兼容的对象初始化器，在将类型添加到模块时使用 [`def_py_init()`](/docs/std/python/bindings/PythonTypeBuilder/#def_py_init) 从 Python 进行构造。例如：
 
 ```mojo
 @export
-def PyInit_person_module() -> PythonObject:
+def PyInit_person_module() abi("C") -> PythonObject:
     try:
         var mb = PythonModuleBuilder("person_module")
         # highlight-start
@@ -177,11 +191,11 @@ struct Person(Movable, Writable):
     def py_init(
         out self: Person, args: PythonObject, kwargs: PythonObject
     ) raises:
-        # 验证参数数量
+        # Validate argument count
         if len(args) != 2:
             raise Error("Person() takes exactly 2 arguments")
 
-        # 将 Python 参数转换为 Mojo 类型
+        # Convert Python arguments to Mojo types
         var name = String(args[0])
         var age = Int(args[1])
 
@@ -210,12 +224,12 @@ counter_type.def_init_defaultable[Counter]()
 这使得 Python 代码可以创建不带参数的实例：
 
 ```python
-counter = counter_module.Counter()  # 创建 Counter()
+counter = counter_module.Counter()  # Creates Counter()
 ```
 
-:::note["构造函数"与"初始化器"]
+:::note "构造函数"与"初始化器"
 
-在 Python 中，对象构造发生在 `__new__()` 和 `__init__()` 两个方法中，因此 `__init__()` 方法严格来说只是属性初始化器。然而，在 Mojo 结构体中没有 `__new__()` 方法，因此我们倾向于始终将 `__init__()` 称为构造函数。
+在 Python 中，对象构造发生在 `__new__()` 和 `__init__()` 两个方法中，因此 `__init__()` 方法严格来说只是属性初始化器。然而，在 Mojo struct 中没有 `__new__()` 方法，因此我们倾向于始终将 `__init__()` 称为初始化器。
 
 :::
 
@@ -254,12 +268,12 @@ def create_person() -> PythonObject:
 许多 Mojo 类型支持通过 [`ConvertibleFromPython`][ConvertibleFromPython] 特征直接从等效的 Python 类型转换：
 
 ```mojo
-# 给定一个人，克隆他并给他一个不同的名字
+# Given a person, clone them and give them a different name.
 def create_person(
     name_obj: PythonObject,
     age_obj: PythonObject
 ) raises -> PythonObject:
-    # 这些转换在失败时会抛出异常
+    # These conversions will raise an exception if they fail
     var name = String(name_obj)
     var age = Int(age_obj)
 
@@ -284,7 +298,7 @@ person = mojo_module.create_person(42)
 
 ```mojo
 def print_age(person_obj: PythonObject) raises:
-    # 如果 `obj` 不包含 Mojo `Person` 类型的实例，则抛出异常
+    # Raises if `obj` does not contain an instance of the Mojo `Person` type.
     var person = person_obj.downcast_value_ptr[Person]()
 
     print("Person is", person[].age, "years old")
@@ -308,17 +322,17 @@ def get_person(person_obj: PythonObject):
 
 不检查的向下转型可用于在优化紧凑内循环时消除开销，当你已经通过基准测试确认类型检查的向下转型是显著瓶颈时。
 
-{/*  TODO:
+{/*{/* TODO:
 Since `PythonObject` are reference counted, and Mojo `Pointer` is guaranteed
 to be either immutable or a unique pointer, safe object downcasting currently
 only works to immutable pointers.
- */}
+*/}*/}
 
 ### 方法
 
 在绑定 Mojo 对象供 Python 使用时，你也可以使用 [`PythonTypeBuilder.def_method()`](/docs/std/python/bindings/PythonTypeBuilder/#def_method) 将选定的方法暴露给 Python。
 
-目前，暴露给 Python 的 Mojo 方法与普通 Mojo 方法相比需要做一些修改：它们必须是 `@staticmethod`，接受 `py_self: PythonObject` 或 `self_ptr: UnsafePointer[Self]`：
+目前，暴露给 Python 的 Mojo 方法与普通 Mojo 方法相比需要做一些修改：它们必须是 `@staticmethod`，接受 `py_self: PythonObject` 或 `self_ptr: Pointer[Self]`：
 
 ```mojo
 from std.python import PythonObject
@@ -326,7 +340,7 @@ from std.python.bindings import PythonModuleBuilder
 from std.os import abort
 
 @export
-def PyInit_mojo_module() -> PythonObject:
+def PyInit_mojo_module() abi("C") -> PythonObject:
     try:
         var mb = PythonModuleBuilder("mojo_module")
         # highlight-start
@@ -350,7 +364,7 @@ struct Person(Writable):
 
     @staticmethod
     def set_age(
-        self_ptr: UnsafePointer[mut=True, Self],
+        self_ptr: Pointer[mut=True, Self],
         new_age: PythonObject,
     ) raises:
         self_ptr[].age = Int(new_age)
@@ -360,7 +374,7 @@ struct Person(Writable):
         t"Person({self.name}, {self.age})".write_to(writer)
 ```
 
-接受 `py_self: PythonObject` 可以访问 Mojo 对象实例存储在其中的完整 `PythonObject` 分配。不过，在方法仅需访问对象字段的常见情况下，接受 `py_self: UnsafePointer[Self]` 可以减少样板代码。
+接受 `py_self: PythonObject` 可以访问 Mojo 对象实例存储在其中的完整 `PythonObject` 分配。不过，在方法仅需访问对象字段的常见情况下，接受 `self_ptr: Pointer[Self]` 可以减少样板代码。
 
 从 Python 调用的 Mojo 方法目前需要使用非标准的 self 类型，这是因为 Python Mojo 绑定的未来版本将解除的限制。
 
@@ -374,7 +388,7 @@ from std.python.bindings import PythonModuleBuilder
 from std.os import abort
 
 @export
-def PyInit_mojo_module() -> PythonObject:
+def PyInit_mojo_module() abi("C") -> PythonObject:
     try:
         var mb = PythonModuleBuilder("mojo_module")
         # highlight-start
@@ -405,8 +419,8 @@ struct Person(Writable):
 ```python title="main.py"
 from mojo_module import Person
 
-print(Person.is_valid_age(45)) # 打印 'True'
-print(Person.is_valid_age(-1)) # 打印 'False'
+print(Person.is_valid_age(45)) # Prints 'True'
+print(Person.is_valid_age(-1)) # Prints 'False'
 ```
 
 ### 关键字参数
@@ -416,35 +430,35 @@ print(Person.is_valid_age(-1)) # 打印 'False'
 1. 仅关键字参数：`def foo(*, x: Int)`
    目前在 Python Mojo 绑定中不支持。
 2. [可变关键字参数](/docs/manual/functions/#variadic-keyword-arguments)：
-   `def foo(**kwargs: Int)` 在 Python Mojo 绑定中使用非语法糖形式时受支持：`def foo(kwargs: OwnedKwargsDict)`。（`**kwargs` 语法限制将在未来移除。）
+   `def foo(var **kwargs: Int)` 在 Python Mojo 绑定中使用非语法糖形式时受支持：`def foo(kwargs: StringDict)`。（`**kwargs` 语法限制将在未来移除。）
 
-你可以使用 [`OwnedKwargsDict[PythonObject]`](/docs/std/collections/dict/OwnedKwargsDict/) 作为最后一个参数来定义接受可变关键字参数的 Mojo 函数。一个简单的示例如下：
+你可以使用 [`StringDict[PythonObject]`](/docs/std/collections/dict/StringDict/) 作为最后一个参数来定义接受可变关键字参数的 Mojo 函数。一个简单的示例如下：
 
 ```python
 import mojo_module
 
-result = mojo_module.sum_kwargs_ints(a=10, b=20, c=30)  # 返回 60
+result = mojo_module.sum_kwargs_ints(a=10, b=20, c=30)  # returns 60
 ```
 
 ```mojo
-from std.collections import OwnedKwargsDict
+from std.collections import StringDict
 
-def sum_kwargs_ints(kwargs: OwnedKwargsDict[PythonObject]) raises -> PythonObject:
+def sum_kwargs_ints(kwargs: StringDict[PythonObject]) raises -> PythonObject:
     var total = 0
     for entry in kwargs.items():
         total += Int(entry.value)
     return PythonObject(total)
 ```
 
-关键字参数也支持在普通位置参数之后使用。此外，获取特定关键字参数是通过对 `OwnedKwargsDict` 进行字典查找：
+关键字参数也支持在普通位置参数之后使用。此外，获取特定关键字参数是通过对 `StringDict` 进行字典查找：
 
 ```mojo
-from std.collections import OwnedKwargsDict
+from std.collections import StringDict
 
 def duration_in_seconds(
     hours_obj: PythonObject,
     minutes_obj: PythonObject,
-    kwargs: OwnedKwargsDict[PythonObject]
+    kwargs: StringDict[PythonObject]
 ) raises -> PythonObject:
     var hours = Int(hours_obj)
     var minutes = Int(minutes_obj)
@@ -459,8 +473,8 @@ def duration_in_seconds(
 ```python title="main.py"
 from mojo_module import duration_in_seconds
 
-# 传递 hours 和 minutes，缺少 "seconds"
-duration_in_seconds(4, 5) # 错误：KeyError
+# Pass hours and minutes, missing "seconds"
+duration_in_seconds(4, 5) # ERROR: KeyError
 ```
 
 关键字参数在绑定顶层函数、方法和静态方法时均受支持。
@@ -480,7 +494,7 @@ def foo(*args: Int):
 
 ```mojo
 @export
-def PyInit_mojo_module() -> PythonObject:
+def PyInit_mojo_module() abi("C") -> PythonObject:
     try:
         var b = PythonModuleBuilder("mojo_module")
         b.def_py_function[count_args]("count_args")
@@ -558,7 +572,7 @@ def foo(x: PythonObject, y: PythonObject, z: PythonObject) -> PythonObject:
   `def(PythonObject, PythonObject, PythonObject, PythonObject, PythonObject, PythonObject)`。
 
 - **关键字参数语法。**
-  目前，从 Python 调用的 Mojo 函数仅在使用尾随的 `kwargs: OwnedKwargsDict[PythonObject]` 参数时才接受关键字参数。原生 `**kwargs` 语法的支持将在未来添加。
+  目前，从 Python 调用的 Mojo 函数仅在使用尾随的 `kwargs: StringDict[PythonObject]` 参数时才接受关键字参数。原生 `**kwargs` 语法的支持将在未来添加。
 
 - **Mojo 包依赖。**
   依赖于 Mojo 标准库以外的包的 Mojo 代码（例如[不断增长的 Modular Community](https://github.com/modular/modular-community) 包频道中的包），目前仅在手动构建 Mojo 扩展模块时受支持，因为 Mojo 导入钩子目前不支持指定 Mojo 包依赖的导入路径。

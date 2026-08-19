@@ -4,17 +4,15 @@ sidebar_position: 3
 description: 解释 Mojo 何时以及如何销毁值。
 ---
 
-一旦值/对象不再被使用，Mojo 就会销毁它。Mojo *不*等待代码块结束——甚至等待表达式结束——来销毁未使用的值。它使用"尽可能快"（ASAP）销毁策略在每次子表达式后运行来销毁值。即使在像 `a+b+c+d` 这样的表达式中，Mojo 也会在值不再需要时立即销毁中间值。
+一旦值/对象不再被使用，Mojo 就会销毁它。Mojo *不会*等到代码块结束——甚至不会等到表达式结束——才销毁未使用的值。它采用"尽快销毁"（ASAP）的销毁策略，在每个子表达式之后运行。即使在像 `a+b+c+d` 这样的表达式中，Mojo 也会在中间值不再需要时立即销毁它们。
 
-Mojo 在编译时使用静态分析来确定值的最后一次使用。在那时，它立即结束值的生命周期并调用*隐式* `__del__()` 析构函数。你可以在结构体中重写 `__del__()` 以执行任何必需的清理。
+Mojo 在编译时使用静态分析来确定值的最后一次使用。在那一刻，它会立即结束该值的生命周期并调用*隐式* `__deinit__()` 反初始化器（deinitializer）。你可以在结构体中重写 `__deinit__()` 来执行任何所需的清理。
 
 :::note
-
-对于需要更强保证的类型，Mojo 还支持*显式*编译器检查的析构函数，这提供了管理清理的额外安全层。有关详细信息，请阅读下面的[显式销毁](#explicitly-destroyed-types)。
-
+对于需要更强保证的类型，Mojo 还支持*显式*由编译器检查的反初始化器，它们为管理清理提供了额外的安全层。有关详细信息，请阅读下文关于[显式销毁](#explicitly-destroyed-types)的内容。
 :::
 
-例如，注意 `Balloon` 的每个实例何时调用 `__del__()` 析构函数：
+例如，请注意 `Balloon` 的每个实例在何时调用 `__deinit__()` 反初始化器：
 
 ```mojo
 @fieldwise_init
@@ -24,7 +22,7 @@ struct Balloon(Writable):
     def write_to(self, mut writer: Some[Writer]):
         writer.write(String("a ", self.color, " balloon"))
 
-    def __del__(deinit self):
+    def __deinit__(deinit self):
         print("Destroyed", String(self))
 
 
@@ -32,13 +30,13 @@ def main():
     var a = Balloon("red")
     var b = Balloon("blue")
     print(a)
-    # a.__del__() 在这里为 "red" Balloon 运行
+    # a.__deinit__() runs here for "red" Balloon
 
     a = Balloon("green")
-    # a.__del__() 立即运行，因为 "green" Balloon 从未使用
+    # a.__deinit__() runs immediately because "green" Balloon is never used
 
     print(b)
-    # b.__del__() 在这里运行
+    # b.__deinit__() runs here
 ```
 
 ```output
@@ -49,40 +47,41 @@ a blue balloon
 Destroyed a blue balloon
 ```
 
-请注意，每个值的初始化都匹配一个析构函数的调用，并且 `a` 实际上被销毁多次——每次它接收新值时一次。
+每个值的初始化都会与一次反初始化器调用配对，而 `a` 实际上会被销毁多次——每次它接收新值时都会被销毁一次。
 
-还要注意，这个 `__del__()` 实现实际上不执行任何操作。大多数结构体不需要自定义析构函数，如果你不定义一个，Mojo 会自动添加一个无操作析构函数。
+还请注意，这个 `__deinit__()` 实现实际上不做任何事情。大多数结构体不需要自定义反初始化器，如果你不定义，Mojo 会自动添加一个空操作的反初始化器。
 
-`__del__()` 方法使用 `deinit`[参数约定](/docs/manual/values/ownership#argument-conventions)接收其参数，这指示该值正在被反初始化。
+`__deinit__()` 方法使用 `deinit` [参数约定](/docs/manual/values/ownership/#argument-conventions)接收其参数，这表明该值正在被反初始化。
 
-## 默认销毁行为
+## 默认反初始化器行为
 
-你可能想知道 Mojo 如何在没有自定义析构函数的情况下销毁类型，或者为什么无操作析构函数有用。如果一个类型只是字段的集合，如 `Balloon` 示例，Mojo 只需要销毁字段：`Balloon` 不动态分配内存或不使用任何长寿命资源（如文件句柄）。当 `Balloon` 值被销毁时，没有特殊操作需要执行。
+你可能想知道 Mojo 如何在没有自定义反初始化器的情况下销毁一个类型，或者为什么空操作的反初始化器有用。如果一个类型只是字段的集合，就像 `Balloon` 示例那样，Mojo 只需要销毁这些字段：`Balloon` 不会动态分配内存，也不会使用任何长生命周期的资源（比如文件句柄）。当 `Balloon` 值被销毁时，不需要采取任何特殊操作。
 
-当 `Balloon` 值被销毁时，其 `color` 字段中的 `String` 值不再被使用，它也被立即销毁。
+当 `Balloon` 值被销毁时，其 `color` 字段中的 `String` 值不再被使用，因此也会立即被销毁。
 
-`String` 值稍微复杂一些。Mojo 字符串是可变的。`String` 对象有一个内部缓冲区——一个 [`List`](/docs/std/collections/list/List/) 字段，它保存组成字符串的字符。`List` 在堆上动态分配的内存中存储其内容，因此字符串可以增长或收缩。字符串本身没有任何特殊的析构函数逻辑，但当 Mojo 销毁字符串时，它调用 `List` 字段的析构函数，该析构函数释放内存。
+`String` 值要稍微复杂一些。Mojo 字符串是可变的。`String` 对象有一个内部缓冲区——一个 [`List`](/docs/std/collections/list/List/) 字段，用于保存组成字符串的字符。`List` 将其内容存储在堆上动态分配的内存中，因此字符串可以。字符串本身没有任何特殊的反初始化器逻辑，但当 Mojo 销毁一个字符串时，它会调用 `List` 字段的反初始化器，由它来释放内存。
 
-由于 `String` 不需要任何自定义析构函数逻辑，它有一个无操作析构函数：字面上，一个不执行任何操作的 `__del__()` 方法。这看起来可能毫无意义，但这意味着 Mojo 可以在任何值生命周期结束时调用析构函数。这使得编写泛型容器和算法更容易。
+由于 `String` 不需要任何自定义反初始化器逻辑，它有一个空操作的反初始化器：字面意义上就是一个不做任何事情的 `__deinit__()` 方法。这看似毫无意义，但它意味着 Mojo 可以在任何值的生命周期结束时调用其反初始化器。这使得编写类型泛型的容器和算法更加容易。
 
-### ASAP 销毁的好处
+### ASAP 销毁的益处
 
-与其他语言类似，Mojo 遵循对象/值在构造函数（`__init__()`）中获取资源并在析构函数（`__del__()`）中释放资源的原则。然而，Mojo 的 ASAP 销毁相比基于作用域的销毁（如 C++ [RAII 模式](https://en.cppreference.com/w/cpp/language/raii)，它等待代码作用域结束来销毁值）有一些优势：
+与其他语言类似，Mojo 遵循这样一个原则：对象/值在初始化器（`__init__()`）中获取资源，并在反初始化器（`__deinit__()`）中释放资源。然而，与基于作用域的销毁（例如 C++ 的 [RAII 模式](https://en.cppreference.com/w/cpp/language/raii)，它会等到代码作用域结束时才销毁值）相比，Mojo 的 ASAP 销毁具有一些优势：
 
-- 在最后一次使用时立即销毁值与"移动"优化配合良好，该优化将"复制+删除"对转换为"移动"操作。
+- 在最后一次使用时立即销毁值，可以很好地与"移动"优化配合，后者将"复制+del"对转换为一次"移动"操作。
 
-- 在 C++ 中在作用域结束时销毁值对于某些常见模式（如尾递归）来说是有问题的，因为析构函数调用发生在尾调用之后。对于某些函数式编程模式，这可能是性能和内存的重大问题，这在 Mojo 中不是问题，因为析构函数调用总是在尾调用之前。
+- 在 C++ 中，在作用域结束时销毁值对于尾递归等某些常见模式是有问题的，因为析构函数调用发生在尾调用之后。这对某些函数式编程模式可能构成重大的性能和内存问题，而在 Mojo 中这并不是问题，因为析构函数调用总是发生在尾调用之前。
 
-Mojo 销毁策略与 Rust 和 Swift 的工作方式更相似，因为它们都有强值所有权跟踪并提供内存安全。一个区别是 Rust 和 Swift 需要使用[动态"丢弃标志"](https://doc.rust-lang.org/nomicon/drop-flags.html)——它们维护隐藏的阴影变量来跟踪你的值的状态以提供安全。这些通常被优化掉，但 Mojo 方法完全消除了这种开销，使生成的代码更快并避免歧义。
+Mojo 的销毁策略更类似于 Rust 和 Swift 的工作方式，因为它们都具备强值所有权跟踪并提供内存安全。一个区别在于，Rust 和 Swift 需要使用[动态"drop flag"](https://doc.rust-lang.org/nomicon/drop-flags.html)——它们维护隐藏的影子变量来跟踪值的状态以提供安全性。这些变量通常会被优化掉，但 Mojo 的方法完全消除了这种开销，使生成的代码更快并避免了歧义。
 
-## 析构函数
-Mojo 在值的生命周期结束时调用值的析构函数（`__del__()` 方法）（通常是值最后一次使用的时间点）。如前所述，Mojo 为所有类型提供默认的无操作析构函数，因此在大多数情况下你不需要定义 `__del__()` 方法。
+## 隐式反初始化器
 
-你应该定义 `__del__()` 方法来执行类型所需的任何清理。通常，这包括为任何动态分配内存的字段释放内存（例如，通过 `UnsafePointer`）和关闭任何长寿命资源，如文件句柄。
+Mojo 会在值的最后一次使用之后调用该值的反初始化器，除非该类型通过 `Deinitable where False` 退出了 `Deinitable`。这个 trait 提供了一个默认的空操作反初始化器（`__deinit__()`），你可以重写它。
 
-然而，任何只是其他类型简单集合的结构体都不需要实现析构函数。
+对于隐式反初始化器，可以创建自定义的 `__deinit__()` 实现来执行任何所需的清理。这可能包括释放动态分配的内存（例如通过 `dealloc()`）或释放长生命周期的资源，比如文件句柄。
 
-例如，考虑这个简单结构体：
+对于只是其他类型简单集合的类型，通常不需要重写 `__deinit__()`。
+
+例如，考虑这个简单的结构体：
 
 ```mojo
 @fieldwise_init
@@ -91,35 +90,39 @@ struct Balloons:
     var count: Int
 ```
 
-不需要为此定义 `__del__()` 析构函数，因为它只是其他类型（`String` 和 `Int`）的简单集合，并且它不动态分配内存。
+这里不需要定义 `__deinit__()` 反初始化器，因为它只是其他类型（`String` 和 `Int`）的简单集合，并且它不会动态分配内存。
 
-相反，以下结构体必须定义 `__del__()` 方法来释放其 [`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/) 分配的内存：
+而下面的结构体分配了内存，因此它必须定义 `__deinit__()` 方法来释放该内存。此处使用的 [`ThinAllocation`](/docs/std/memory/alloc/ThinAllocation/) 类型是指向已分配内存的句柄。
 
 ```mojo
+from std.memory import alloc, dealloc, ThinAllocation
+
 struct HeapArray(Writable):
-    var data: UnsafePointer[Int, MutExternalOrigin]
+    var data: ThinAllocation[Int]
     var size: Int
 
     def __init__(out self, *values: Int):
         self.size = len(values)
-        self.data = alloc[Int](self.size)
+        self.data = alloc[Int]({count = self.size}).into_thin()
+        var ptr = self.data.unsafe_ptr()
         for i in range(self.size):
-            (self.data + i).init_pointee_copy(values[i])
+            ptr.unsafe_offset(i).unsafe_write(values[i])
 
     def write_to(self, mut writer: Some[Writer]):
         writer.write("[")
+        var ptr = self.data.unsafe_ptr()
         for i in range(self.size):
-            writer.write(self.data[i])
+            writer.write(ptr[unsafe_offset=i])
             if i < self.size - 1:
                 writer.write(", ")
         writer.write("]")
 
-    def __del__(deinit self):
+    def __deinit__(deinit self):
         print("Destroying", self.size, "elements")
+        var ptr = self.data.unsafe_ptr()
         for i in range(self.size):
-            (self.data + i).destroy_pointee()
-        self.data.free()
-
+            ptr.unsafe_offset(i).unsafe_deinit_pointee()
+        dealloc(self.data^.unsafe_with_layout({count = self.size}))
 
 def main():
     var a = HeapArray(10, 1, 3, 9)
@@ -131,19 +134,17 @@ def main():
 Destroying 4 elements
 ```
 
-析构函数使用 `deinit`[参数约定](/docs/manual/values/ownership#argument-conventions)接收其 `self` 参数，该约定授予值的独占所有权并在函数结束时将其标记为已销毁。（有关 `deinit` 约定的更多信息，请参阅[实例初始化](/docs/manual/lifecycle/initialization/)）。
+该反初始化器使用 `deinit` [参数约定](/docs/manual/values/ownership#argument-conventions)接收其 `self` 参数，该约定授予对该值的独占所有权，并在函数结束时将其标记为已销毁。（有关 `deinit` 约定的更多信息，请参阅[实例初始化](/docs/manual/lifecycle/initialization/)）。
 
-请注意，指针不*拥有*其指向的内存中的任何值，因此当指针被销毁时，Mojo 不会调用这些值上的析构函数。
+请注意，指针并不*拥有*它所指向内存中的任何值，因此当指针被销毁时，Mojo 不会调用这些值的反初始化器。同样，分配（allocation）是内存的句柄，但它并不拥有存储在该内存中的值。
 
-所以在上面的 `HeapArray` 示例中，在指针上调用 `free()` 释放内存，但不会调用存储值上的析构函数。要调用析构函数，请使用 `UnsafePointer` 类型提供的 `destroy_pointee()` 方法。
+因此，在上面的 `HeapArray` 示例中，调用 `dealloc()` 会释放内存，但不会调用已存储值的反初始化器。这就是为什么反初始化器先遍历这些元素，调用 `Pointer` 类型提供的 `unsafe_deinit_pointee()` 方法，然后再进行释放。
 
 :::note
-
-你不应该显式调用析构函数。如果你需要确保析构函数在特定点被调用，请使用[显式生命周期扩展](#explicit-lifetime-extension)中描述的丢弃模式。
-
+你不应该显式调用反初始化器。如果你需要确保在特定位置调用反初始化器，请使用[显式生命周期扩展](#explicit-lifetime-extension)中描述的丢弃（discard）模式。
 :::
 
-重要的是要注意，`__del__()` 方法是一个"额外"的清理事件，你的实现不会覆盖任何默认销毁行为。例如，即使你添加一个什么都不做的 `__del__()` 方法，Mojo 仍然会销毁 `Balloons` 中的所有字段：
+需要注意的是，`__deinit__()` 方法是一个"额外"的清理事件，你的实现并不会覆盖任何默认的反初始化行为。例如，即使你添加了一个什么都不做的 `__deinit__()` 方法，Mojo 仍然会销毁 `Balloons` 中的所有字段：
 
 ```mojo
 @fieldwise_init
@@ -151,41 +152,51 @@ struct Balloons:
     var color: String
     var count: Int
 
-    def __del__(deinit self):
-        # Mojo 在字段最后一次使用时销毁所有字段
+    def __deinit__(deinit self):
+        # Mojo destroys all the fields when they're last used
         pass
 ```
 
-然而，`__del__()` 析构函数中的 `self` 值仍然是完整的（因此所有字段仍然可用），直到析构函数返回，正如我们在下一节中讨论的更多内容。
+然而，`__deinit__()` 反初始化器内部的 `self` 值仍然是完整的（因此所有字段仍然可用），直到反初始化器返回。
 
 ## 显式销毁的类型
-Mojo 支持隐式和显式值销毁。每种方法在安全性、性能和开销方面平衡不同的需求。
 
-考虑显式销毁类型的一种方式是，它们创建了一个未来要求，一个行动承诺。创建实例会承诺你在值没有进一步用途时执行特定操作（例如，刷新、关闭、提交或丢弃）。
+Mojo 同时支持隐式和显式的值销毁。每种方式都在安全性、性能和开销之间平衡不同的需求：
 
-这种"控制未来"的能力是开发人员的一个强大工具。它允许将拆卸要求直接添加到类型系统中。它引导用户走向有效的清理路径，使跳过这些路径的程序无法编译，并将安全销毁提升为值生命周期的第一类部分。
+```mojo
+# All type are Deinitable by default
+struct MyType: # ...
 
-使用*隐式销毁*，编译器管理清理。它基于生命周期分析自动在值没有进一步用途时调用 `__del__()`。你不自己调用析构函数。
+# Explicitly declare the conformance
+struct MyType(Deinitable): # ...
 
-使用*显式销毁*，你接管清理责任。你必须定义并调用一个命名的清理方法（如 `cleanup()` 或 `save_and_close()`），并且必须在你的值所在的作用域结束之前调用该清理方法。编译器禁用自动销毁。它要求你消耗该值。未能这样做会导致编译错误。
+# Explicit destruction. Disables the default deinitializer `__deinit__()`
+struct MyType(Deinitable where False): # ...
 
-### 使用 `@explicit_destroy`
+# Use a message to explain other destruction paths
+struct MyType(Deinitable where(False, "Must call cleanup()")): # ...
+```
 
-大多数类型使用隐式销毁。当值的生命周期结束时，Mojo 自动调用 `__del__()` 来清理。这对大多数情况有效：内存被释放，简单资源被自动释放。
+理解显式销毁类型的一种方式是，它们创建了一个未来的需求，一个行动的承诺。创建一个实例就意味着你承诺在该值不再被使用时执行特定的操作（例如刷新、关闭、提交或丢弃）。
 
-某些类型需要更多控制。缓冲文件写入器必须在关闭前刷新。事务必须提交或回滚。锁必须使用适当的错误处理程序显式释放。这些操作可能会失败，需要特定的顺序，或取决于关于清理如何发生的深思熟虑的决定。
+这种"控制未来"的能力对开发者而言是一个强大的工具。它允许将拆卸要求直接添加到类型系统中。它引导用户走向有效的清理路径，使跳过这些路径的程序无法编译，并将安全销毁提升为值生命周期中一等公民的部分。
 
-`@explicit_destroy` 装饰器禁用自动销毁。相反，你定义必须有意调用的命名的析构函数方法。编译器强制执行此要求：未能销毁值会产生编译时错误。
+采用*隐式销毁*时，编译器负责管理清理。它会基于生命周期分析，在值不再被使用时自动调用 `__deinit__()`。你不需要自己调用反初始化器。
+
+采用*显式销毁*时，你接管清理职责。你必须定义并调用一个命名的清理方法（例如 `cleanup()` 或 `save_and_close()`），并且必须在该值所在作用域结束之前调用该清理方法。编译器会禁用自动反初始化器。它要求你消耗该值。如果不这样做，会导致编译错误。
 
 ### 构建显式销毁
 
-要构建显式销毁，定义一个接受 `deinit self` 参数的方法，并使用 `@explicit_destroy` 装饰类型。这为你的反初始化程序启用编译时检查，并为你提供空间来添加必须在销毁之前执行的操作。
+要将一个类型标记为显式销毁，需在该类型的声明中加入 `Deinitable where False` 一致性。这会禁用自动销毁，并要求你定义并调用一个命名的清理方法。
 
-与 `__del__()` 方法不同，命名的显式析构函数可以引发错误。这使你能够控制实例如何被释放。如果析构函数引发错误，调用堆栈可以返回到选择替代清理路径的逻辑，例如调用辅助析构函数。
+定义一个接收 `deinit self` 参数的方法。这会为你的反初始化器启用编译时检查，并为你提供空间来添加必须在销毁之前执行的操作。
+
+与 `__deinit__()` 方法不同，命名的反初始化器可以引发错误。这在处理清理失败时为调用方提供了支持。
+
+因为 `deinit self` 即使在错误路径上也会消耗该值，所以调用方不能再在同一实例上调用另一个反初始化器：
 
 ```mojo
-@explicit_destroy("Must call save_and_close() or discard()")
-struct FileBuffer:
+struct FileBuffer(Deinitable where False):
     var path: String
     var data: String
 
@@ -196,144 +207,133 @@ struct FileBuffer:
     def write(mut self, content: String):
         self.data += content
 
-    # 从这两个选项中选择一个清理路径
+    # Choose one cleanup path from these two options
     def save_and_close(deinit self) raises:
         write_to_disk(self.path, self.data)
 
     def discard(deinit self):
-        # 丢弃缓冲的数据而不写入
+        # Abandon buffered data without writing
         pass
 ```
 
-使用时，你必须调用其中一个析构函数：
+使用时，你必须调用其中一个反初始化器：
 
 ```mojo
 def write_log(path: String, message: String) raises:
     var buffer = FileBuffer(path)
     buffer.write(message)
-    buffer^.save_and_close()  # 必需：显式销毁
+    buffer^.save_and_close()  # Required: explicit destruction
 ```
 
-编译器验证每个显式销毁值是否调用了析构函数，如果找不到则发出错误。如果你为 `@explicit_destroy` 提供自定义消息，该消息将出现在错误输出中。
+编译器会验证每个显式销毁的值是否都调用了反初始化器，如果找不到，则会发出关于被放弃的值的错误。如果你提供了自定义消息，该消息会出现在错误输出中：
 
 ```mojo
-def broken_write(path: String, message: String):
-    var buffer = FileBuffer(path)
-    buffer.write(message)
-    # 错误：错误：'buffer' 被放弃而未显式销毁：
-    #                Must call save_and_close() or discard()
+struct CustomFileHandle(
+    Deinitable where(False, "Must call save_and_close() or discard()")
+):
+
+# ...
 ```
 
 ### 何时使用显式销毁
 
-当清理无法自动处理并且必须在代码中控制时，使用 `@explicit_destroy`。常见情况包括：
+当清理无法自动处理且必须在代码中加以控制时，请选择显式销毁。常见情形包括：
 
-- 清理可能会失败并需要错误处理。
-
-- 可能存在多个清理路径。
-
+- 清理可能失败并需要错误处理。
+- 可能存在多条清理路径。
 - 清理操作的顺序很重要。
-
-- 清理是昂贵的，应该是深思熟虑的。
+- 清理开销较大，应当是有意为之。
 
 示例：
 
 ```mojo
-# 多个清理路径
-@explicit_destroy("Use commit() or rollback()")
-struct Transaction:
-    def commit(deinit self) raises: # 需要错误处理
-        ...
+# Multiple cleanup paths
+struct Transaction(
+    Deinitable where(False, "Use commit() or rollback()")
+)
+    def commit(deinit self) raises:  # Offers error handling
+        # ...
+
     def rollback(deinit self):
-        ...
+        # ...
 
-# 顺序很重要
-@explicit_destroy("Use unlock()")
-struct MutexGuard:
-    # 必须调用以在其他操作之前释放锁
+# Order matters
+struct MutexGuard(Deinitable where False):
+    # Must be called to release the lock before other operations
     def unlock(deinit self):
-    ...
+        # ...
 
-# 清理是昂贵的
-@explicit_destroy("Use finalize() to commit expensive computation")
-struct BatchProcessor:
-    # 昂贵操作用户应该显式触发
+# Cleanup is expensive
+struct BatchProcessor(Deinitable where False):
+    # Expensive operation user should explicitly trigger
     def finalize(deinit self) raises:
-        ...
+        # ...
 ```
 
-### 泛型代码中的显式销毁
+### 参数化代码中的显式销毁
 
-参数化为 `AnyType` 的泛型代码可以接受隐式和显式可销毁的值。但是，它不能自动销毁需要显式销毁的值。
+以 `AnyType` 参数化的代码既可以接受 `Deinitable` 的值，也可以接受显式销毁的值。但是，它无法自动销毁需要显式销毁的值。
 
-由于显式析构函数是类型特定的，泛型代码无法命名或调用它们，除非对该类型进行约束：
+显式反初始化器是特定于其类型的。类型泛型代码无法命名或调用它们，除非该类型受到约束：
 
 ```mojo
-def generic_function_1[T: AnyType](var value: T):
-    # 错误：'value' 被放弃而未显式销毁：
-    #        Unhandled explicitly destroyed type AnyType
-    pass  # value 在这里被放弃
+def parameterized_function_1[T: AnyType](var value: T):
+    pass  # Error: value abandoned here
 
-def generic_function_2[T: ImplicitlyDestructible](var value: T):
-    # OK：T 可以被隐式销毁
-    pass  # value.__del__() 被自动调用
+def parameterized_function_2[T: Deinitable](var value: T):
+    # OK: T can be implicitly destroyed
+    pass  # value.__deinit__() called automatically
 ```
 
-如果泛型函数可能消耗其参数，它必须确保值可以在其生命周期结束时被安全销毁。泛型代码无法调用类型特定的显式析构函数，除非对该行为进行约束。选择以下方法之一：
+如果参数化函数可能会消耗其参数，那么它必须确保该值在其生命周期结束时能够被安全销毁。参数化代码无法调用类型特定的显式反初始化器，除非该行为受到约束。请从以下方式中选择一种：
 
-- 通过可变或不可变引用而不是通过所有权接受值，以便函数不消耗它。
-
-- 返回值或转移所有权而不是消耗它。
-
-- 使用 ImplicitlyDestructible trait 要求隐式销毁，它保证 `__del__()` 析构函数可用并被自动调用：
+- 通过可变或不可变引用而不是通过所有权来接受值，使函数不会消耗它。
+- 返回该值或转移所有权而不是消耗它。
+- 通过 `Deinitable` trait 要求隐式销毁，这保证 `__deinit__()` 反初始化器可用并能够被自动调用：
 
   ```mojo
-  def generic_function_3[T: ImplicitlyDestructible](var value: T):
-      pass  # value.__del__() 被自动调用
+  def parameterized_function_3[T: Deinitable](var value: T):
+      pass  # value.__deinit__() called automatically
   ```
 
 ## `deinit` 参数约定
 
-在方法中，向 `self` 添加 `deinit` 约定意味着方法在返回时完全消耗值。具体来说，`deinit self` 信号表示：
+在方法中，将 `deinit` 约定加到 `self` 上意味着该方法在返回时会完全消耗该值。具体而言，`deinit self` 表示：
 
 - 方法获取 `self` 的所有权。
-
-- 方法返回后不调用自动析构函数。
-
-- 字段可以在方法内部被转移或显式销毁。
-
+- 方法返回之后不会调用任何自动反初始化器。
+- 可以在方法内部转移或显式销毁字段。
 - 可能在方法内部进行额外的清理工作。
-
-- 当方法完成时，值被视为已销毁。
+- 当方法完成时，该值被视为已销毁。
 
 ```mojo
-@explicit_destroy
-struct Example:
+struct Example(Deinitable where False):
     var field: String
 
     def consume_example(deinit self, mut other: Self):
-        # 可以转移字段值
+        # Can transfer field values
         other.field = self.field^
-        # 不调用自动析构函数
-        # self 在方法返回时被视为已销毁
+        # No automatic deinitializer called
+        # self is considered destroyed when method returns
 ```
 
-使用 `deinit self` 标记的方法可以将 `self` 的所有权转移到其他 `deinit` 方法。链接反初始化方法允许将清理责任委托：
+用 `deinit self` 标记的方法可以将 `self` 的所有权转移给其他 `deinit` 方法。链式反初始化方法允许将清理职责进行委托和集中：
 
 ```mojo
 def cleanup_method1(deinit self):
-    self^.cleanup_method2()
+    # perform some cleanup tasks here
+    self^.cleanup_method2()  # delegate to specialized method
 
 def cleanup_method2(deinit self):
-    # 实际执行清理
+    # Perform shared cleanup duties
     pass
 ```
 
 ## 字段生命周期
 
-除了跟踪程序中所有对象的生命周期外，Mojo 还独立跟踪结构体的每个字段。也就是说，Mojo 跟踪"整个对象"是完全或部分初始化/销毁的，并且它使用其 ASAP 销毁策略独立销毁每个字段。
+除了跟踪程序中所有对象的生命周期之外，Mojo 还会独立跟踪结构体的每个字段。也就是说，Mojo 会跟踪"整个对象"是完全初始化/销毁还是部分初始化/销毁，并使用其 ASAP 销毁策略独立地销毁每个字段。
 
-例如，考虑此更改字段值的代码：
+例如，考虑这段更改字段值的代码：
 
 ```mojo
 @fieldwise_init
@@ -345,14 +345,15 @@ struct Balloons:
 def main():
     var balloons = Balloons("red", 5)
     print(balloons.color)
-    # balloons.color.__del__() 在这里运行，因为此实例不再被使用；它被替换为以下内容
+    # balloons.color.__deinit__() runs here, because this instance is
+    # no longer used; it's replaced below
 
-    balloons.color = "blue"  # 覆盖 balloons.color
+    balloons.color = "blue"  # Overwrite balloons.color
     print(balloons.color)
-    # balloons.__del__() 在这里运行
+    # balloons.__deinit__() runs here
 ```
 
-`balloons.color` 字段在第一个 `print()` 之后被销毁，因为 Mojo 知道它将在下面被覆盖。当你使用转移信号时也可以看到此行为：
+`balloons.color` 字段在第一个 `print()` 之后被销毁，因为 Mojo 知道它会在下面被覆盖。在使用转移符号（transfer sigil）时，你也可以看到这种行为：
 
 ```mojo
 def consume(var arg: String):
@@ -364,58 +365,56 @@ def use(arg: Balloons):
 def consume_and_use():
     var balloons = Balloons("blue", 8)
     consume(balloons.color^)
-    # String(take=) 在这里运行，这使 balloons.color 无效
-    # 现在 balloons 只是部分初始化
+    # String(take=) runs here, which invalidates balloons.color
+    # Now balloons is only partially initialized
 
-    # use(balloons)  # 这会失败，因为 balloons.color 未初始化
+    # use(balloons)  # This fails because balloons.color is uninitialized
 
-    balloons.color = String("orange")  # 现在全部在一起
-    use(balloons)  # 这没问题
-    # balloons.__del__() 在这里运行（并且只有在对象是完整的时）
+    balloons.color = String("orange")  # All together now
+    use(balloons)  # This is ok
+    # balloons.__deinit__() runs here (and only if the object is whole)
 ```
 
-请注意，代码将 `color` 字段的所有权转移到 `consume()`。在此之后的一段时间内，`color` 字段未初始化。然后 `color` 在传递给 `use()` 函数之前被重新初始化。如果你尝试在 `color` 被重新初始化之前调用 `use()`，Mojo 会拒绝代码并出现未初始化字段错误。
+请注意，代码将 `color` 字段的所有权转移给了 `consume()`。在此之后的一段时间内，`color` 字段处于未初始化状态。然后 `color` 在被传递给 `use()` 函数之前被重新初始化。如果你尝试在 `color` 被重新初始化之前调用 `use()`，Mojo 会以未初始化字段错误拒绝该代码。
 
-此外，如果你在 `balloons` 生命周期结束前没有重新初始化 `color`，编译器会抱怨，因为它无法销毁部分初始化的对象。
+此外，如果你没有在 `balloons` 生命周期结束之前重新初始化 `color`，编译器会报错，因为它无法销毁一个部分初始化的对象。
 
-Mojo 在这里的政策是强大且有意的：字段可以暂时转移，但"整个对象"必须使用聚合类型的初始化程序构造并使用聚合析构函数销毁。这意味着不可能通过仅初始化其字段来创建对象，同样也不可能通过仅销毁其字段来销毁对象。
+Mojo 在这里的策略强大且有意保持简洁：字段可以被暂时转移，但"整个对象"必须使用聚合类型的初始化器构造，并使用聚合反初始化器销毁。这意味着不可能仅通过初始化其字段来创建一个对象，同样也不可能仅通过销毁其字段来销毁一个对象。
 
 ### 移动和销毁期间的字段生命周期
 
-消耗移动构造函数和析构函数都使用 `deinit` 参数约定接收其操作数。这授予值的独占所有权并在函数结束时将其标记为已销毁。在函数体内，Mojo 的 ASAP 策略仍然适用于字段：每个字段在其最后一次使用后立即被销毁。
+消耗移动初始化器和反初始化器都使用 `deinit` 参数约定接收其操作数。这授予对该值的独占所有权，并在函数结束时将其标记为已销毁。在函数体内部，Mojo 的 ASAP 策略仍然适用于字段：每个字段在其最后一次使用之后立即被销毁。
 
 要了解更多关于 `deinit` 约定的信息，请参阅[实例初始化](/docs/manual/lifecycle/initialization/)。
 
 ## 显式生命周期扩展
 
-大多数情况下，Mojo 的 ASAP 销毁"正常工作"。非常罕见的是，你可能需要显式标记值的最后一次使用以控制其析构函数何时运行。将其视为生命周期检查器的显式最后使用标记，而不是通用模式。
+大多数时候，Mojo 的 ASAP 销毁"就能正常工作"。极少情况下，你可能需要显式标记一个值的最后一次使用，以控制其反初始化器何时运行。可以将其视为给生命周期检查器的显式最后使用标记，而不是一种通用模式。
 
-你可能这样做：
+你可能会在以下情况下这样做：
 
-- 在编写有意识地创建其他方式未使用值的测试时（以避免警告或死代码消除）。
+- 在编写有意创建原本未使用的值的测试时（以避免警告或死代码消除）。
 
 - 在编写不安全/高级代码时（例如，操作值的[来源](/docs/manual/values/lifetimes/)的代码）。
 
-- 当你需要相对于特定副作用确定析构函数计时时（例如，日志记录或分析）。
+- 当你需要相对于特定副作用（例如日志记录或性能分析）确定反初始化器的执行时机时。
 
-通过在可以销毁它的地方将值分配给 `_` 丢弃模式来标记最后一次使用。这在该行设置最后一次使用，因此析构函数在语句后立即运行：
+通过将该值赋给 `_` 丢弃模式来标记最后一次使用，赋值的位置就是可以销毁它的位置。这会在该行设置最后一次使用，因此反初始化器会在该语句之后立即运行：
 
 ```mojo
-# 没有显式扩展：s 在 print() 调用中最后一次使用，因此它
-# 在其后立即被销毁。
+# Without explicit extension: s is last used in the print() call, so it is
+# destroyed immediately afterwards.
 var s = "abc"
-print(s)  # s.__del__() 在此行之后运行
+print(s)  # s.__deinit__() runs after this line
 
-# 使用显式扩展：将最后一次使用推送到丢弃行。
+# With explicit extension: push last-use to the discard line.
 var t = "xyz"
 print(t)
 
-# ... 一段时间后
-_ = t  # t.__del__() 在此行之后运行
+# ... some time later
+_ = t  # t.__deinit__() runs after this line
 ```
 
 :::note
-
-Mojo 的早期版本在丢弃仅可移动类型时需要转移信号（`^`）。这不再需要，因为编译器实际上不会移动被丢弃的值。有关转移信号的更多信息，请参阅关于[所有权转移](/docs/manual/values/ownership/#transfer-arguments-var-and-)的部分。
-
+早期版本的 Mojo 在丢弃仅可移动类型时需要使用转移符号（`^`）。这已不再需要，因为编译器实际上并不会移动被丢弃的值。有关转移符号的更多信息，请参阅关于[所有权转移](/docs/manual/values/ownership/#transfer-arguments-var-and-)的部分。
 :::

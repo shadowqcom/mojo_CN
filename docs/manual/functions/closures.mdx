@@ -1,0 +1,381 @@
+---
+title: 闭包
+description: >
+  从其外围作用域捕获值的函数
+---
+
+:::caution Evolving feature
+闭包是 Mojo 长期存在的组成部分，在标准库和内核基础设施中广泛使用。
+
+Mojo 更新后的捕获列表语法现已可用。本页的代码示例反映了重新设计的编译器行为。
+:::
+
+*闭包*（closure）是与来自其外围作用域的值捆绑在一起的函数。你在一个地方定义它，然后将其传递到其他地方运行。闭包携带捕获的数据。编译器将其转换为兼具行为和存储的类型。执行闭包的代码不需要知道数据来自何处。
+
+这使得闭包能够将状态和配置携带到稍后或在他处执行的代码中。配置使用捕获约定来指定闭包如何与捕获的值交互，在只读引用、可变引用、副本或移动之间进行选择。
+
+Mojo 闭包看起来像嵌套函数，但使用特殊的语法。实参列表后面的花括号构成一个*捕获列表*（capture list），声明闭包捕获哪些外围值以及它如何与这些值交互。
+
+捕获列表是区分闭包与普通嵌套函数的关键。它向编译器提供安全地管理捕获值并消除歧义所需的信息。当你指定值的捕获方式时，编译器可以强制执行正确的用法：
+
+```mojo
+def main():
+    var multiplier = 3
+
+    def scale(x: Int) {imm multiplier} -> Int:
+        return x * multiplier
+
+    print(scale(5))  # 15
+```
+
+`scale` 是一个闭包。它使用其捕获列表（`{imm multiplier}`）从外围作用域捕获 `multiplier`。当你调用 `scale(5)` 时，闭包将 `5` 乘以捕获的 `multiplier` 值并返回 `15`。
+
+没有捕获列表，内部函数无法看到其自身实参之外的任何内容。
+
+## 为什么闭包很重要
+
+闭包将行为与该行为所需的数据打包在一起。你在一处定义工作，然后将该包传递以供稍后、在他处或在不同的硬件上执行。
+
+这种定义工作与执行工作之间的分离是 Mojo 表达计算方式的核心。
+
+## 捕获列表
+
+诸如 `{imm x, mut y}` 这样的捕获列表告诉编译器闭包如何捕获和使用来自外围作用域的值。
+
+在此列表中，`x` 作为不可变引用被捕获。闭包可以读取它但不能修改它。`y` 作为可变引用被捕获，因此闭包可以修改它，并且这些更改在外部作用域中可见。
+
+Mojo 要求捕获必须是显式的。在系统语言中，确切地知道闭包持有哪些值，以及它是读取、复制还是取得这些值的所有权，对性能和正确性都至关重要。
+
+## 通过不可变引用捕获：`imm`
+
+当闭包需要查看一个值但不修改它时，使用 `imm`：
+
+```mojo
+def main():
+    var threshold = 100
+
+    def is_over(x: Int) {imm threshold} -> Bool:
+        return x > threshold
+
+    print(is_over(50))   # False
+    print(is_over(200))  # True
+```
+
+闭包读取对 `threshold` 的不可变引用。它在每次调用时都看到当前值，包括在闭包创建后所做的更改：
+
+```mojo
+def main():
+    var limit = 10
+
+    def check(x: Int) {imm limit} -> Bool:
+        return x < limit
+
+    print(check(5))   # True
+    limit = 3
+    print(check(5))   # False  (sees updated limit)
+```
+
+由于 `imm` 捕获的是引用，闭包反映了原始值的实时状态。
+
+要按不可变引用捕获每个被使用的外部值而无需逐一命名，使用 `{imm}`：
+
+```mojo
+def main():
+    var a = 1
+    var b = 2
+
+    def sum_ab() {imm} -> Int:
+        return a + b
+
+    print(sum_ab())  # 3
+```
+
+## 通过可变引用捕获：`mut`
+
+当闭包需要修改一个捕获的值并使这些更改在外围作用域中可见时，使用 `mut`：
+
+```mojo
+def main():
+    var total = 0
+
+    def accumulate(x: Int) {mut total}:
+        total += x
+
+    accumulate(10)
+    accumulate(20)
+    print(total)  # 30
+```
+
+闭包内部对 `total` 的更改直接修改原始变量。这是可变引用，而不是副本。
+
+隐式形式 `{mut}` 以可变引用捕获每个被使用的外部值：
+
+```mojo
+def main():
+    var count = 0
+    var items = List[String]()
+
+    def record(name: String) {mut}:
+        items.append(name)
+        count += 1
+
+    record("alpha")
+    record("beta")
+    print(count)  # 2
+    print(items)  # ['alpha', 'beta']
+```
+
+## 通过副本捕获：`var`
+
+当闭包需要其自己的值的独立副本时，使用 `var`。对原始值的更改不会影响闭包，闭包内部的更改也不会影响原始值。
+
+```mojo
+def main():
+    var snapshot_val = 42
+
+    def frozen() {var snapshot_val} -> Int:
+        return snapshot_val
+
+    snapshot_val = 999
+    print(frozen())  # 42  (captured the value at definition time)
+```
+
+闭包在创建时复制了 `snapshot_val`。后来在外部作用域中对 `snapshot_val` 的更改不会影响闭包的副本。
+
+隐式形式 `{var}` 复制每个被使用的外部值：
+
+```mojo
+def main():
+    var x = 10
+    var y = 20
+
+    def snap() {var} -> Int:
+        return x + y
+
+    x = 0
+    y = 0
+    print(snap())  # 30  (uses copied values)
+```
+
+:::note
+副本捕获在定义闭包的位置调用值的复制初始化器。对于复制代价昂贵的类型（大型列表、带分配的字符串），在不需要独立副本时，优先使用 `imm` 或 `mut`。
+:::
+
+## 移动捕获：`var name^`
+
+使用 `var name^` 将值的所有权转移到闭包中。闭包消耗外部绑定，在创建闭包后不能再使用它：
+
+```mojo
+def main():
+    var data: List[Int] = [1, 2, 3]
+
+    def take_data() {var data^}:
+        print(data)
+
+    take_data()  # [1, 2, 3]
+    # data can't be used here: ownership transferred to the closure
+    # print(data)  # Uncomment for error: 'data' is uninitialized after move
+```
+
+移动捕获完全避免了副本。值移动到闭包的存储中。这对于复制代价昂贵的类型或对于转移唯一所有权非常有用。
+
+:::note
+`^` 转移运算符仅适用于捕获列表中的 `var` 或裸名称。`{mut name^}`、`{ref name^}` 和 `{imm name^}` 都是编译器错误。
+:::
+
+## 可复制的闭包：`var^`
+
+`{var^}` 捕获列表将所有引用的外部值移动到闭包中。当被捕获的类型是 `Copyable` 时，闭包值也变得可复制。
+
+这使得闭包本身可以分配给新变量或按值传递。
+
+```mojo
+def main():
+    var label = "sensor-1"
+
+    def tag() {var^} -> String:
+        return label
+
+    var also_tag = tag  # copies the closure (and its captures)
+    print(tag())        # sensor-1
+    print(also_tag())   # sensor-1
+```
+
+:::note
+当你复制使用 `{var^}` 创建的闭包时，每个捕获的值都通过其复制初始化器再次复制。对于捕获大型或昂贵值的闭包，请注意其代价。
+:::
+
+如果没有 `{var^}`，闭包无法分配给新变量或被复制。
+
+## 调用者决定的可变性：`ref`
+
+当闭包的可变性取决于调用者的上下文时，使用 `{ref name}`。如果调用者提供可变引用，闭包以可变方式捕获。如果不可变，闭包以不可变方式捕获。
+
+以下示例使用 `comptime if origin_of(items).mut` 来检查闭包在每个调用点如何捕获值：
+
+```mojo
+def show_mutability(ref items: List[Int]):
+    def report() {ref items}:
+        comptime if origin_of(items).mut:
+            print("mut")
+        else:
+            print("immut")
+    report()
+
+# Show immutability: `xs` uses the default `imm` argument convention
+def from_imm(xs: List[Int]):
+    show_mutability(xs)  # xs is an immutable reference here
+
+# Show mutability: `xs` uses the `mut` argument convention
+def from_mut(mut xs: List[Int]):
+    show_mutability(xs)  # xs is a mutable reference here
+
+def main():
+    var nums: List[Int] = [10, 20, 30]
+    from_imm(nums)    # immut
+    from_mut(nums)    # mut
+```
+
+`{ref name}` 不选择可变性。它共享被捕获的 `name` 的现有起源。可变性是该起源已经携带的，在 `name` 绑定的位置决定。这通常是函数自身的 `ref` 参数，最终在调用点解析。
+
+:::note
+`ref` 捕获是一项高级特性，用于编写跨可变性上下文工作的参数化代码。对于大多数闭包，`imm` 或 `mut` 是正确的选择。
+:::
+
+## 空捕获列表：`{}`
+
+空捕获列表意味着闭包不使用其外围作用域中的任何内容。它只是恰好定义在另一个函数内部的普通函数：
+
+```mojo
+def main():
+    def doubled(x: Int) {} -> Int:
+        return x * 2
+
+    print(doubled(5))  # 10
+```
+
+函数体只能使用其自身的实参。引用任何外部值都是编译错误：
+
+```mojo
+# This example doesn't compile
+
+def main():
+    var a = 42
+
+    def wrong() {}:
+        print(a)        # error: no capture convention for 'a'
+```
+
+## 混合捕获约定
+
+捕获列表是逗号分隔的独立条目序列。每个条目指定其自己的约定，约定不会从一个条目延续到下一个条目。
+
+```mojo
+def main():
+    var config = "prod"
+    var count = 0
+    var label = "run-1"
+
+    def process() {imm config, mut count, var label}:
+        count += 1
+        print(config, count, label)
+
+    process()  # prod 1 run-1
+    label = "run-2"
+    process()  # prod 2 run-1  (label was copied at definition time)
+```
+
+每个条目都是独立的：`imm config` 是只读引用，`mut count` 是可变引用，`var label` 是副本。没有约定关键字的裸名称默认为 `imm`：
+
+```mojo
+def main():
+    var x = 10
+
+    def show() {x}:  # same as {imm x}
+        print(x)
+
+    show()  # 10
+```
+
+### 设置默认约定
+
+约定列表可以混合隐式和显式条目，例如 `{imm, mut count, var label}`。每个捕获列表最多可以使用一个隐式条目，并且可以按任何顺序放置条目。`{mut count, var label, imm}` 等同于 `{var label, imm, mut count}`。
+
+例如：
+
+```mojo
+def main():
+    var a = 1
+    var b = 2
+    var z = "snapshot"
+
+    def mixed() {mut, var z}:
+        a += 10
+        b += 20
+        print(a, b, z)
+
+    mixed()   # 11 22 snapshot
+    z = "changed"
+    mixed()   # 21 42 snapshot
+              # z was copied at def-time
+              # Changes to outer z don't reach the closure
+```
+
+## 闭包实践
+
+### 可配置的行为
+
+闭包允许你从通用部件构建专门的行为。以下参数化函数接受任何具有预期签名的可调用对象。闭包携带配置：
+
+```mojo
+# `G` matches any `def(String) -> None` callable
+def greet_all[G: def(String) -> None](names: List[String], greet: G):
+    for n in names:
+        greet(n)
+
+def main():
+    var names: List[String] = ["Alice", "Bob"]
+    var greeting = "Hello"
+
+    def greeter(name: String) {imm greeting}:
+        print(greeting + ", " + name + "!")
+
+    greet_all(names, greeter)
+    # Hello, Alice!
+    # Hello, Bob!
+
+    greeting = "Hi"
+    greet_all(names, greeter)
+    # Hi, Alice!
+    # Hi, Bob!
+```
+
+内部函数 `greeter` 将 `greeting` 捕获为不可变的只读引用。
+
+`greet_all` 对问候本身一无所知。它只知道如何调用类型为 `def(String) -> None` 的函数。
+
+由于闭包按引用而不是按副本捕获 `greeting`，调用之间对 `greeting` 的更改在闭包内部可见。
+
+### 累积状态
+
+使用 `mut` 捕获的闭包可以在多次调用中累积结果。
+
+```mojo
+def main():
+    var log = List[String]()
+
+    def record(event: String) {mut log}:
+        log.append(event)
+
+    record("started")
+    record("processed item")
+    record("finished")
+
+    for entry in log:
+        print(entry)
+    # started
+    # processed item
+    # finished
+```
+
+闭包 `record` 在外部作用域中修改 `log`。每次调用都向同一个列表追加内容，而无需将其作为实参传递。

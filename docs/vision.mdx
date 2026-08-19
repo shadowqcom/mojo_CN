@@ -1,372 +1,169 @@
 ---
-title: Mojo vision
-sidebar_label: Vision
-description: Our motivations and the design decisions that define the Mojo programming language
+title: Mojo 愿景
+sidebar_label: 愿景
+description: 我们开发 Mojo 的动机和定义该语言的设计决策
 ---
 
-Our vision for Mojo is to be the one programming language developers need to
-target diverse hardware—CPUs, GPUs, and other accelerators—using Python's
-intuitive syntax combined with modern systems programming capabilities.
+我们对 Mojo 的愿景是成为开发者面向多样硬件——CPU、GPU 和其他加速器——所需的唯一编程语言，使用 Python 直观的语法结合现代系统编程能力。
 
-Although this vision focuses on the Mojo language, we recognize it's just one
-part of a larger Mojo ecosystem. When combined, the developer tools, the
-community, and the landscape of Mojo libraries are arguably more important at
-scale. However, the purpose of this document is to share more about our motives
-and aspirations for the language itself, because it supports everything else.
+虽然本愿景聚焦于 Mojo 语言，但我们认识到它只是更大的 Mojo 生态系统的一部分。当组合在一起时，开发者工具、社区和 Mojo 库的格局在大规模上可能更为重要。然而，本文档的目的是分享更多关于我们对语言本身的动机和愿景，因为它支撑着其他一切。
 
-This vision serves as a baseline to guide our decision-making as the language
-continues to evolve. This is a "directional" vision, not an engineering plan.
-For a look at some of the planned work, see the [Mojo roadmap](/docs/roadmap/).
+本愿景作为基线指导我们随着语言持续演进做出决策。这是一个"方向性"愿景，而非工程计划。要了解一些计划中的工作，请参阅 [Mojo 路线图](/docs/roadmap/)。
 
-## Mojo's role in Modular's mission
+## Mojo 在 Modular 使命中的角色
 
-Mojo plays a key role in Modular's mission to [democratize AI
-compute](https://www.modular.com/democratizing-ai-compute). Let's break down
-the mission into its component parts:
+Mojo 在 Modular [让 AI 计算大众化](https://www.modular.com/democratizing-ai-compute)的使命中扮演着关键角色。让我们将使命分解为组成部分：
 
-- **Democratize**: This is a social statement, saying that we want to free,
-unlock, and enable more people to participate.
+- **大众化**：这是一个社会声明，表示我们希望释放、解锁并使更多人能够参与。
 
-- **AI compute**: We have long passed the end of Moore's law, and are awash
-with a wide range of accelerators: GPUs, TPUs, and accelerated CPUs, spanning
-IoT, edge, client, datacenter, and supercomputer applications. (Our ambition is
-to eventually expand into "All Compute," but there are a few steps between here
-and there.)
+- **AI 计算**：我们早已过了摩尔定律的终结，正处于各种加速器的洪流中：GPU、TPU 和加速 CPU，涵盖物联网、边缘、客户端、数据中心和超级计算机应用。（我们的雄心是最终扩展到"所有计算"，但从这里到那里还有几步之遥。）
 
-Mojo is how we bring these two ideas together—democratization and AI
-compute—into a single, coherent solution. To achieve this we want to:
+Mojo 是我们将这两个理念——大众化和 AI 计算——结合为一个单一、连贯解决方案的方式。为实现这一目标，我们希望：
 
-- **Unite developers** across domains, skill levels, and backgrounds
-(enterprise engineers, academics, hobbyists, etc.). We aim to solve the
-complexity of juggling Python, C++, Rust, CUDA, and more (the "N language
-problem") by enabling developers to grow their skill-sets incrementally within
-a single language.
+- **统一开发者**，跨越领域、技能水平和背景（企业工程师、学者、爱好者等）。我们的目标是通过使开发者能够在单一语言内逐步扩展技能集，来解决同时使用 Python、C++、Rust、CUDA 等的复杂性（"N 语言问题"）。
 
-- **Unify hardware** by giving developers access to a wide range of
-hardware—CPUs, GPUs, TPUs, and emerging accelerators—with consistent tools and
-programming models.
+- **统一硬件**，通过为开发者提供对广泛硬件——CPU、GPU、TPU 和新兴加速器——的访问，使用一致的工具和编程模型。
 
-It should be easy to start using Mojo as a Python developer, and incrementally
-adopt new Mojo features to master CPU performance and scale your abilities into
-GPU programming and other accelerated hardware.
+作为 Python 开发者开始使用 Mojo 应该很容易，然后逐步采用新的 Mojo 功能来掌握 CPU 性能，并将你的能力扩展到 GPU 编程和其他加速硬件。
 
-This mission is vast and ambitious. Many have attempted to solve this and have
-fallen short. Achieving it will take years of focused development, but we feel
-it is worth doing. We believe Mojo can help unlock creativity, productivity,
-and applications we haven't yet imagined.
+这一使命宏大而雄心勃勃。许多人曾尝试解决这一问题但未能如愿。实现它需要多年的专注开发，但我们认为这是值得做的。我们相信 Mojo 可以帮助释放创造力、生产力和我们尚未想象到的应用。
 
-## Why Mojo was built from scratch
+## 为什么 Mojo 从零开始构建
 
-Modern accelerators are complex and very different from traditional CPUs. They
-have features like tensor cores, systolic arrays, dedicated convolutional
-units, explicit memory hierarchies, memory transfer accelerators (such as the
-Tensor Memory Accelerator on Hopper and Blackwell GPUs), and a variety of
-exotic and rapidly-evolving data types like float6. Achieving our mission to
-unify hardware development means Mojo must provide full programmability and
-deliver the full performance potential of any given accelerator chip.
+现代加速器非常复杂，与传统 CPU 大不相同。它们具有张量核心、脉动阵列、专用卷积单元、显式内存层次结构、内存传输加速器（如 Hopper 和 Blackwell GPU 上的 Tensor Memory Accelerator）以及各种奇特且快速演进的数据类型（如 float6）等特性。实现我们统一硬件开发的使命意味着 Mojo 必须提供完整的可编程性并发挥任何给定加速器芯片的全部性能潜力。
 
-There are only three ways to tackle the problems we are trying to solve. Let's
-briefly evaluate the pros and cons of each:
+解决我们试图解决的问题只有三种方法。让我们简要评估每种方法的优缺点：
 
-1. **Extend an existing language like C++, Rust, Julia, Swift**:
+1. **扩展现有语言如 C++、Rust、Julia、Swift**：
 
-   - **Pro**: You get an existing implementation and community.
+   - **优点**：你可以获得现有的实现和社区。
 
-   - **Con**: None of these languages support the hardware features we need—they
-     were designed for CPUs. They are also all 10+ years old, don't provide the
-     modern meta-programming features we need, and weren't designed to support
-     hardware features required for AI (such as float6).
+   - **缺点**：这些语言都不支持我们需要的硬件功能——它们是为 CPU 设计的。它们也都已有 10 年以上的历史，不提供我们需要的现代元编程功能，也不是为支持 AI 所需的硬件功能（如 float6）而设计的。
 
-2. **Create an embedded DSL for a language like Python or C++**:
+2. **为 Python 或 C++ 等语言创建嵌入式 DSL**：
 
-   - **Pro**: This is comparatively easy to implement.
+   - **优点**：实现起来相对容易。
 
-   - **Con**: The tooling, UX, and predictability of these systems are very
-     problematic and they are limited by the base language syntax. This is
-     particularly problematic if you're trying to introduce fundamental new
-     concepts because you can't change the grammar of Python or C++.
-     [More about eDSLs](https://www.modular.com/blog/democratizing-ai-compute-part-7-what-about-triton-and-python-edsls)
+   - **缺点**：这些系统的工具、用户体验和可预测性非常有问题，而且它们受限于基础语言的语法。如果你试图引入根本性的新概念，这尤其成问题，因为你无法改变 Python 或 C++ 的语法。[更多关于 eDSL](https://www.modular.com/blog/democratizing-ai-compute-part-7-what-about-triton-and-python-edsls)
 
-3. **Build an entirely new programming language from scratch**:
+3. **从零开始构建一种全新的编程语言**：
 
-   - **Pro**: You get full control to create the best quality result.
+   - **优点**：你可以完全控制以创建最佳质量的结果。
 
-   - **Con**: This is extremely expensive and difficult to do. There are many
-     ways to get this wrong and you must have a strong set of principles to
-     guide development. For comparison, CUDA is a C++ extension and
-     runtime—nothing as ambitious as a new programming language.
+   - **缺点**：这极其昂贵和困难。有很多方式可能出错，你必须有一套强有力的原则来指导开发。作为比较，CUDA 是一个 C++ 扩展和运行时——远不如一种新编程语言那么雄心勃勃。
 
-We ruled out the first two options because they're insufficient for achieving
-the full scope of our vision. Failure to understand the constraints of each
-approach and denial about the boundaries within them is a core reason many
-previous systems had a promising start but ultimately hit a ceiling for their
-generality and usability that prevents them from fully democratizing AI compute.
+我们排除了前两种选择，因为它们不足以实现我们愿景的全部范围。未能理解每种方法的约束并否认其中的边界，是许多以前的系统有一个有前途的开端但最终在通用性和可用性方面触及天花板、无法完全让 AI 计算大众化的核心原因。
 
-We believe GPUs, TPUs, and other accelerators are the natural evolution of
-compute going forward and demand high-quality software to achieve their full
-potential. Therefore, we believe it's worthwhile to bet big, rather than do
-something easier that might get near-term results but wither away over time as
-AI and accelerator hardware continues to rapidly evolve.
+我们相信 GPU、TPU 和其他加速器是计算未来的自然演进，需要高质量软件来实现其全部潜力。因此，我们相信值得下大赌注，而不是做一些更容易的事情，可能获得近期结果但随着 AI 和加速器硬件继续快速演进而逐渐衰退。
 
-## Overarching design principles
+## 总体设计原则
 
-Because Mojo will evolve over time, it's essential to prioritize
-deliberately—staying focused on our long-term goals while making pragmatic
-short-term decisions. The following are the high-level design principles that
-guide Mojo's development.
+因为 Mojo 会随时间演进，所以必须有目的地确定优先级——在做出务实的短期决策的同时，保持对长期目标的专注。以下是指导 Mojo 开发的高层设计原则。
 
-### Member of the Python family
+### Python 家族的成员
 
-Mojo adopts Python's syntax and should feel familiar to Python
-developers—Python is not only [one of the most popular programming languages in
-the world](https://www.tiobe.com/tiobe-index/), but it's also the dominant
-language in AI. Python is beloved for its clean and readable syntax, small core
-language (compared to many alternatives), powerful metaprogramming, and its
-role as a "universal superglue" for integrating complex systems across language
-boundaries.
+Mojo 采用 Python 的语法，应该让 Python 开发者感到熟悉——Python 不仅是[世界上最流行的编程语言之一](https://www.tiobe.com/tiobe-index/)，而且也是 AI 中的主导语言。Python 因其简洁可读的语法、小巧的核心语言（与许多替代方案相比）、强大的元编程以及作为跨语言边界集成复杂系统的"万能胶水"的角色而备受喜爱。
 
-That's why Mojo supports the core features Python programmers instinctively
-reach for—`if`/`for` statements, lists, dictionaries, etc.—so it's easy to
-migrate code. Mojo will support more Python features over time, but our primary
-focus is on building features that unlock high-performance, portable
-compute—not on quickly achieving surface-level Python compatibility.
+这就是为什么 Mojo 支持 Python 程序员本能地会使用的核心功能——`if`/`for` 语句、列表、字典等——以便轻松迁移代码。Mojo 将随着时间的推移支持更多 Python 功能，但我们的主要重点是构建解锁高性能、可移植计算的功能——而不是快速实现表面层面的 Python 兼容性。
 
-### Scalable AI kernel development
+### 可扩展的 AI 内核开发
 
-A key principle for Mojo is to overcome the fundamental scalability limitations
-that plague traditional kernel libraries and ML compilers, and become a unified
-language for kernel development.
+Mojo 的一个关键原则是克服困扰传统内核库和 ML 编译器的基本可扩展性限制，成为内核开发的统一语言。
 
-Kernel libraries, while initially useful, become
-[hard to manage as systems grow](https://www.modular.com/blog/democratizing-ai-compute-part-5-what-about-cuda-c-alternatives).
-ML compilers, despite their sophistication, often
-[lack the generality needed for diverse tasks](https://www.modular.com/blog/democratizing-ai-compute-part-6-what-about-ai-compilers)
-like data loading, pre-processing, dynamic shapes, and sparsity—they failed to
-provide an "it just works" experience. Even other
-[MLIR-based compiler systems](https://www.modular.com/blog/democratizing-ai-compute-part-8-what-about-the-mlir-compiler-infrastructure)
-failed to solve this due to a fragmented development process that couldn't scale
-to handle the constantly changing requirements in numerics, data types, AI
-modeling, and hardware.
+内核库虽然最初有用，但随着系统增长变得[难以管理](https://www.modular.com/blog/democratizing-ai-compute-part-5-what-about-cuda-c-alternatives)。ML 编译器尽管精密，但往往[缺乏处理多样任务所需的通用性](https://www.modular.com/blog/democratizing-ai-compute-part-6-what-about-ai-compilers)，如数据加载、预处理、动态形状和稀疏性——它们未能提供"开箱即用"的体验。甚至其他[基于 MLIR 的编译器系统](https://www.modular.com/blog/democratizing-ai-compute-part-8-what-about-the-mlir-compiler-infrastructure)也未能解决这一问题，原因是碎片化的开发过程无法扩展以处理数值、数据类型、AI 建模和硬件方面不断变化的需求。
 
-Thus, while building our inference engine for the Modular Platform, we wanted a
-new way to write kernels that could scale with the ever-evolving AI industry.
-We took inspiration from kernel programming systems (CUDA, CUTLASS, DSLs, etc),
-and built a way to express common kernel development patterns in MLIR. Then we
-took a step further and generalized those patterns into a new language that's
-suitable for high-performance kernel development. For example, Mojo includes
-zero-cost abstractions, knobs that can be tuned for optimal hardware
-performance, a library-first design, and metaprogramming to allow
-specialization for particular hardware.
+因此，在为 Modular 平台构建推理引擎时，我们想要一种新的方式来编写能够随不断演进的 AI 行业扩展的内核。我们从内核编程系统（CUDA、CUTLASS、DSL 等）中汲取灵感，构建了一种在 MLIR 中表达常见内核开发模式的方式。然后我们更进一步，将这些模式泛化为一种适合高性能内核开发的新语言。例如，Mojo 包括零成本抽象、可调节以获得最佳硬件性能的旋钮、库优先设计，以及允许针对特定硬件进行特化的元编程。
 
-### A modern systems programming language
+### 现代系统编程语言
 
-While Mojo builds on Python's syntax, it must address the realities of modern
-accelerators, which are essentially high-performance embedded systems. For
-example, you don't want to upload megabytes of code just to run a matrix
-multiplication, and you can't afford implicit performance overhead in inner
-loops. These requirements drive Mojo to go beyond Python with capabilities
-designed for low-level numerical and hardware-focused programming.
+虽然 Mojo 基于 Python 的语法构建，但它必须应对现代加速器的现实，这些加速器本质上是高性能嵌入式系统。例如，你不想上传兆字节的代码只是为了运行一次矩阵乘法，而且你无法承受内部循环中的隐式性能开销。这些需求驱使 Mojo 超越 Python，具备为低级数值和硬件聚焦编程而设计的功能。
 
-Mojo introduces systems programming constructs such as a static type system
-(dynamic typing will come later), memory management control, and predictable
-performance semantics. It draws on lessons from modern languages like Swift,
-C++, Rust, and Zig—and goes beyond them by embracing new ideas that target the
-breadth of exotic hardware AI developers now face.
+Mojo 引入了系统编程构造，如静态类型系统（动态类型将在稍后推出）、内存管理控制和可预测的性能语义。它借鉴了 Swift、C++、Rust 和 Zig 等现代语言的经验——并通过拥抱针对 AI 开发者现在面临的异构硬件范围的新思路超越了它们。
 
-For more details, see
-the [architectural bets for Mojo](#architectural-bets-for-mojo) below.
+更多细节，请参阅下面的 [Mojo 的架构押注](#architectural-bets-for-mojo)。
 
-### Managing language complexity
+### 管理语言复杂性
 
-The complexity of some systems programming languages (notably C++) has spiraled
-out of control by continually adding new features that don't quite fit
-together. This happens due to a ["tragedy of the
-commons"](https://en.wikipedia.org/wiki/Tragedy_of_the_commons) situation where
-every individual language feature is justified by some specific cohort or
-use-case, but all users of the language suffer from the aggregate complexity.
+一些系统编程语言（特别是 C++）的复杂性已经失控，原因是不断添加不太契合的新功能。这发生在一种["公地悲剧"](https://en.wikipedia.org/wiki/Tragedy_of_the_commons)情况下，每个单独的语言功能都被某个特定的群体或用例所证明合理，但语言的所有用户都承受着总复杂性的痛苦。
 
-Python isn't perfect, but it has retained a relative simplicity—notably evolving
-from Python 2 to 3 with care to improve its consistency and orthogonality. Other
-programming languages like [Go](https://go.dev/) pride themselves on maintaining
-simplicity and saying "no" to proposals that don't benefit long-term goals
-([example blog post explaining this](https://blog.kowalczyk.info/article/d-2025-06-26/go-is-8020-language.html)).
+Python 并不完美，但它保持了相对的简洁——特别是从 Python 2 到 3 的演进中注重提高其一致性和正交性。其他编程语言如 [Go](https://go.dev/) 以保持简洁和对不利于长期目标的提案说"不"而自豪（[解释这一点的示例博客文章](https://blog.kowalczyk.info/article/d-2025-06-26/go-is-8020-language.html)）。
 
-Mojo must go beyond Python by adding new systems programming features aligned
-with our mission—but in doing so, we face the same scope-creep pressures that
-every growing language confronts.
+Mojo 必须超越 Python，添加与我们的使命一致的新系统编程功能——但在这样做的同时，我们面临着每种成长中的语言都会遇到的范围蔓延压力。
 
-We aim to control complexity through a few specific strategies:
+我们旨在通过几个具体策略来控制复杂性：
 
-1. **Use Mojo heavily inside Modular:** Modular is Mojo's largest user and
-maintains the world's largest Mojo codebase (which is open source). This gives
-us direct insight into real-world usability and performance. We use our own
-experience, as well as feedback from our enthusiastic community, to guide
-prioritization.
+1. **在 Modular 内部大量使用 Mojo**：Modular 是 Mojo 最大的用户，维护着世界上最大的 Mojo 代码库（已开源）。这使我们对现实世界的可用性和性能有直接洞察。我们利用自己的经验以及热情社区的反馈来指导优先级排序。
 
-2. **Align with Python wherever possible:** If Python already supports a
-feature, we adopt its design rather than inventing something new. Any deviation
-from Python requires a strong, mission-driven justification.
+2. **尽可能与 Python 对齐**：如果 Python 已经支持某个功能，我们采用其设计而不是发明新东西。任何偏离 Python 的设计都需要强有力的、使命驱动的理由。
 
-3. **We adopt proven ideas from modern languages:** When new features are
-required (such as static types, traits, metaprogramming), we draw from languages
-like Rust, Swift, and Zig rather than create novel and untested solutions.
+3. **我们采用现代语言的成熟理念**：当需要新功能时（如静态类型、trait、元编程），我们从 Rust、Swift 和 Zig 等语言中汲取经验，而不是创建新颖且未经验证的解决方案。
 
-4. **Innovate only when necessary:** Where existing designs fall short—such
-as ergonomics in Rust or compile-time error messages in Zig—we aim beyond them
-to meet Mojo's goals.
+4. **仅在必要时创新**：当现有设计不足时——例如 Rust 的人体工程学或 Zig 的编译时错误消息——我们的目标是超越它们以满足 Mojo 的目标。
 
-5. **Emphasize composability and simplicity:** Every Mojo feature must work
-reliably in all situations and combine seamlessly with other features (compose
-orthogonally). We're not satisfied with features that work 80% of the time but
-fail in edge cases.
+5. **强调可组合性和简洁性**：每个 Mojo 功能必须在所有情况下可靠工作，并与其他功能无缝组合（正交组合）。我们对 80% 时间有效但在边缘情况下失败的功能不满意。
 
-6. **Defer syntactic sugar:** Language sugar is often tempting, but we
-prioritize core "big rocks" first. Only once the fundamentals are solid do we
-revisit syntactic enhancements.
+6. **推迟语法糖**：语言糖通常很诱人，但我们优先考虑核心的"大石头"。只有当基础稳固后，我们才会重新审视语法增强。
 
-These are guiding principles, not a rigid recipe—language design is
-fundamentally about balancing tradeoffs. The Mojo team draws on deep
-experience, learns through continuous implementation and iteration, and listens
-to feedback from the broader community.
+这些是指导原则，而非僵化的配方——语言设计本质上是关于平衡权衡。Mojo 团队凭借深厚的经验，通过持续的实现和迭代来学习，并倾听更广泛社区的反馈。
 
-## Architectural bets for Mojo
+## Mojo 的架构押注
 
-We believe building a new programming model for the future of AI and systems
-programming requires first-principles thinking, not incremental evolution.
-That's why our vision for Mojo is built upon a few specific architectural bets,
-as described in this section.
+我们相信为 AI 和系统编程的未来构建新的编程模型需要第一性原理思维，而非增量演进。这就是为什么我们对 Mojo 的愿景建立在几个具体的架构押注之上，如本节所述。
 
-From the start, our team made a foundational bet: By uniting three key
-technologies, we can build a new kind of systems programming architecture that
-scales across the full range of hardware targets while maximizing software
-reuse across heterogeneous hardware.
+从一开始，我们的团队就做了一个基础性押注：通过联合三项关键技术，我们可以构建一种新的系统编程架构，在跨所有硬件目标扩展的同时最大化异构硬件间的软件复用。
 
-Thus, Mojo's architecture is built upon the following technologies:
+因此，Mojo 的架构建立在以下技术之上：
 
-1. Powerful parametric meta-programming
+1. 强大的参数化元编程
 2. MLIR Core
-3. MAX framework integration
+3. MAX 框架集成
 
-This design is built on experience, not speculation. In 2022, we spent most of
-the year prototyping and validating this approach through deep compiler R&D.
-Eventually, we had the architectural conviction that the idea was viable, but
-only if we could improve and scale it. The next step was to make this power
-accessible to developers, not just compiler engineers. That's what led us to
-create Mojo.
+这一设计基于经验，而非推测。2022 年，我们花了大部分时间通过深入的编译器研发来原型化和验证这种方法。最终，我们有了架构上的信念，认为这个想法是可行的，但前提是我们能够改进和扩展它。下一步是让这种能力对开发者而非仅仅是编译器工程师可用。这就是我们创建 Mojo 的原因。
 
-Let's explore each of these architectural pillars in more detail.
+让我们更详细地探讨这些架构支柱。
 
-### Powerful parametric meta-programming
+### 强大的参数化元编程
 
-Accelerators are incredibly diverse, and they're constantly evolving. Our
-goal is to drastically reduce the time and effort required to bring up a
-software stack for a new chip. We believe the work should be proportional
-to *how different* that chip is, rather than starting from scratch for every
-architecture.
+加速器极其多样，而且它们在不断演进。我们的目标是大幅减少为新芯片搭建软件栈所需的时间和精力。我们认为工作量应该与芯片的_差异程度_成正比，而不是为每个架构从零开始。
 
-The core insight behind our approach is this: while no two accelerators are
-exactly alike, their target workloads and macro-architectures share deep
-structural similarities. For example, NVIDIA's Hopper architecture extends from
-Ampere. AMD's MI300 has meaningful overlap with both. And across the industry,
-the "tensor core" has become ubiquitous, showing up in CPUs, GPUs, and custom
-ASICs. These units may be quirky in their own ways, but their purpose is the
-same: efficiently run matrix multiplications.
+我们方法背后的核心洞察是：虽然没有两个加速器完全相同，但它们的目标工作负载和宏观架构共享深层的结构相似性。例如，NVIDIA 的 Hopper 架构从 Ampere 扩展而来。AMD 的 MI300 与两者都有有意义的重叠。在整个行业中，"张量核心"已经变得无处不在，出现在 CPU、GPU 和定制 ASIC 中。这些单元可能各有其奇特之处，但它们的目的是相同的：高效运行矩阵乘法。
 
-Previous attempts to democratize AI compute often failed to capitalize on this
-commonality. Many were built on fragmented, vendor-specific libraries like
-cuBLAS or rocBLAS, which prevented true cross-architecture unification. At
-Modular, we made a different bet: we could reimplement and unify these software
-stacks ourselves—for example, build a graph compiler and runtime stack (MAX)
-*without* CUDA—and use that as a basis to abstract across architectures.
+以前让 AI 计算大众化的尝试往往未能利用这种共性。许多尝试建立在碎片化的、特定供应商的库（如 cuBLAS 或 rocBLAS）之上，这阻止了真正的跨架构统一。在 Modular，我们做了一个不同的押注：我们可以自己重新实现和统一这些软件栈——例如，构建一个图编译器和运行时栈（MAX）_而不使用_ CUDA——并将其作为跨架构抽象的基础。
 
-Of course, this only works if it scales. The challenge is combinatorial: the
-cross-product of all data types, operators, and hardware targets is too large
-to implement by hand. That's why we leaned into powerful meta-programming. We
-took the ideas behind C++ templates (compile-time polymorphism and
-specialization) and built something dramatically more usable, with better error
-messages, faster compile times, more expressiveness, and a smoother
-developer experience.
+当然，这只有在可扩展时才有效。挑战是组合性的：所有数据类型、算子和硬件目标的叉积太大，无法手工实现。这就是为什么我们倾向于强大的元编程。我们借鉴了 C++ 模板背后的思想（编译时多态和特化），并构建了显著更可用的东西，具有更好的错误消息、更快的编译时间、更强的表达力和更流畅的开发者体验。
 
-In late 2022, we validated this approach with an early prototype of the Mojo
-parameter system. Even in its primitive form, it enabled us to implement matrix
-multiplication in a unified way and match or
-[exceed vendor BLAS libraries across a range of CPUs](https://www.modular.com/blog/the-worlds-fastest-unified-matrix-multiplication).
-This architectural bet has paid off many times over—it's what allows MAX to
-scale across hardware with high performance and maintainable code.
+2022 年底，我们用 Mojo 参数系统的早期原型验证了这种方法。即使在其原始形式中，它也使我们能够以统一的方式实现矩阵乘法，并在一系列 CPU 上匹配或[超越供应商 BLAS 库](https://www.modular.com/blog/the-worlds-fastest-unified-matrix-multiplication)。这一架构押注已经多次获得回报——正是它使 MAX 能够以高性能和可维护的代码跨硬件扩展。
 
 ### MLIR Core
 
-MLIR is a widely used compiler infrastructure for building domain-specific
-compilers—powering systems across AI accelerators, CPUs, hardware design,
-quantum computing, and more. Within it, you can think of *MLIR Core* as a
-flexible "compiler construction toolkit," providing the building blocks needed
-to create powerful custom compilers.
+MLIR 是一种广泛使用的编译器基础设施，用于构建领域特定编译器——为 AI 加速器、CPU、硬件设计、量子计算等领域的系统提供动力。在其中，你可以将 *MLIR Core* 视为一个灵活的"编译器构造工具包"，提供创建强大定制编译器所需的构建块。
 
 :::note
 
-The broader MLIR project includes many AI-related dialects, such as `linalg`,
-`affine`, and `scf`, but Mojo doesn't use any of these—Mojo is built purely on
-top of MLIR Core.
+更广泛的 MLIR 项目包括许多 AI 相关的方言，如 `linalg`、`affine` 和 `scf`，但 Mojo 不使用其中任何一个——Mojo 纯粹构建在 MLIR Core 之上。
 
 :::
 
-Mojo is powered by a novel compiler framework, historically code-named **KGEN**
-(for "kernel generator"). KGEN is built using MLIR Core and forms the
-backbone of Mojo's metaprogramming capabilities. It allows explicitly
-parametric code to be represented *before* instantiation, which enables a host
-of benefits: faster compile times, clearer error messages, and support for
-compiling the same source code to multiple target devices.
+Mojo 由一个新颖的编译器框架驱动，历史上代号为 **KGEN**（"内核生成器"）。KGEN 使用 MLIR Core 构建，构成了 Mojo 元编程能力的骨干。它允许显式参数化代码在实例化_之前_被表示，这带来了一系列好处：更快的编译时间、更清晰的错误消息，以及支持将相同源代码编译到多个目标设备。
 
-Another key design choice in Mojo is that it acts as syntactic sugar for MLIR.
-This means Mojo code can directly express MLIR dialect operations, without
-modifying the Mojo compiler itself. While not all MLIR dialects are supported,
-Mojo is designed to cover the most important ones needed for accelerator
-programming. Broader dialect support is possible in the future, but it's not a
-near-term priority.
+Mojo 的另一个关键设计选择是它充当 MLIR 的语法糖。这意味着 Mojo 代码可以直接表达 MLIR 方言操作，而无需修改 Mojo 编译器本身。虽然并非所有 MLIR 方言都受支持，但 Mojo 旨在覆盖加速器编程所需的最重要的方言。更广泛的方言支持在未来是可能的，但这不是近期的优先事项。
 
-For a deep dive into how Mojo uses MLIR and KGEN, see the video,
-[Modular Tech Talk: Kernel Programming and
-Mojo](https://www.youtube.com/watch?v=Invd_dxC2RU).
+要深入了解 Mojo 如何使用 MLIR 和 KGEN，请观看视频 [Modular 技术讲座：内核编程与 Mojo](https://www.youtube.com/watch?v=Invd_dxC2RU)。
 
-### MAX framework integration
+### MAX 框架集成
 
-Mojo's low-level programming model and MLIR-based foundation make it easy to
-write high-performance code, but raw kernel performance isn't the whole story.
-In AI and other advanced domains, some of the biggest gains come from
-graph-level optimizations like *kernel fusion*.
+Mojo 的低级编程模型和基于 MLIR 的基础使其易于编写高性能代码，但原始内核性能并不是全部。在 AI 和其他高级领域，一些最大的收益来自图级优化，如*内核融合*。
 
-That's why Mojo is designed to integrate seamlessly into the **MAX
-framework**—our graph compiler and runtime stack. This integration allows
-developers to directly extend MAX using Mojo (for example, write custom graph
-ops)—without modifying the graph compiler itself—and still benefit from
-advanced optimizations and code transformations. This is made possible by Mojo
-building an MLIR representation of the kernel code before instantiating it with
-parameters. This intermediate representation (IR) allows the graph compiler to
-reflect over the kernel to understand the inputs, outputs, as well as
-transforming the IR of custom kernels directly.
+这就是为什么 Mojo 被设计为与 **MAX 框架**无缝集成——我们的图编译器和运行时栈。这种集成允许开发者使用 Mojo 直接扩展 MAX（例如，编写自定义图操作）——而无需修改图编译器本身——并且仍然受益于高级优化和代码转换。这之所以可能，是因为 Mojo 在用参数实例化内核代码之前构建了 MLIR 表示。这种中间表示（IR）允许图编译器对内核进行反射以理解输入、输出，以及直接转换自定义内核的 IR。
 
-As Mojo evolves, a key goal remains enabling and enriching the MAX framework.
-We want to unlock new forms of optimization and fusion that only become
-possible when you reason across combinations of kernels—not just individual
-operators. These kinds of transformations can dramatically improve performance,
-reduce memory usage, and lower the cost of deploying high-performance AI
-systems at scale.
+随着 Mojo 的演进，一个关键目标仍然是启用和丰富 MAX 框架。我们希望解锁新的优化和融合形式，这些只有在跨内核组合推理时才成为可能——而不仅仅是单个算子。这些类型的转换可以显著提高性能、减少内存使用，并降低大规模部署高性能 AI 系统的成本。
 
-## Looking ahead
+## 展望未来
 
-Language design is expensive. It's difficult and ambiguous. But when done
-right, it creates leverage that compounds over time, enabling not just
-performance, but creativity, composability, and community growth.
+语言设计是昂贵的。它困难且充满歧义。但当做得正确时，它创造了随时间复利的杠杆，不仅实现性能，还实现创造力、可组合性和社区增长。
 
-Although Mojo is still early in its journey, it stands on a carefully
-engineered foundation—one designed to scale across devices, abstractions, and
-time. These investments are already paying off, and we believe they position
-Mojo to grow into a truly transformative technology for the AI era and beyond.
+虽然 Mojo 仍处于旅程的早期，但它站在一个精心工程化的基础之上——一个旨在跨设备、抽象和时间扩展的基础。这些投资已经在获得回报，我们相信它们使 Mojo 有望成长为 AI 时代及以后的真正变革性技术。
 
-We're building it together, and we're **building it to last**. We want to
-eventually create a vibrant ecosystem where people use Mojo to build and share
-a wide range of AI applications, large scale distributed systems, database
-connectors, and much more—putting the power of the world's compute hardware at
-your fingertips. That's when we'll feel like Mojo is truly on fire 🔥!
+我们正在一起构建它，而且我们**正在为持久而构建**。我们希望最终创建一个充满活力的生态系统，人们使用 Mojo 构建和分享广泛的 AI 应用、大规模分布式系统、数据库连接器等等——将世界计算硬件的力量置于你的指尖。那时我们才会觉得 Mojo 真正燃烧起来了 🔥！
 
-For more detail about what's left to do, see the [Mojo roadmap](/docs/roadmap/).
+关于还有哪些工作要做的更多细节，请参阅 [Mojo 路线图](/docs/roadmap/)。

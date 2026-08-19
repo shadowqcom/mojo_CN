@@ -4,7 +4,7 @@ sidebar_position: 3
 description: Mojo 变量介绍。
 ---
 
-变量是一个保存值或对象的名称。Mojo 中的所有变量都是可变的——它们的值可以被更改。（如果你想在运行时定义一个不能更改的常量值，请参阅 [`comptime` 关键字](/docs/manual/metaprogramming/comptime-evaluation/#comptime-values)。）
+变量是一个保存值或对象的名称。Mojo 中的所有变量默认都是可变的——它们的值可以改变。如果你想定义一个在运行时不能改变的常量值，请参阅 [`comptime` 关键字](/docs/manual/metaprogramming/comptime-evaluation/#comptime-values)，或者将该值作为不可变函数实参传递。
 
 在 Mojo 中声明变量时，你会分配一个逻辑存储位置，并将一个名称绑定到该存储位置。
 
@@ -12,216 +12,53 @@ description: Mojo 变量介绍。
 var greeting: String = "Hello World"
 ```
 
-上面的 `var` 语句做了三件事：
+`var` 声明做了三件事：
 
-- 它声明了一个逻辑存储位置（在本例中，是一个大小为容纳 `String` 结构体的存储位置）。
+- 它声明一个与特定类型关联的逻辑存储位置。在本例中，它保存 `String` 实例。
 - 它将名称 `greeting` 绑定到这个逻辑存储位置。
-- 它用新创建的 `String` 值初始化存储空间，文本为 "Hello World"。新值由变量**拥有**。除非我们有意转移它，否则没有其他变量可以拥有这个值。
+- 它使用 "Hello World" 用新创建的 `String` 值*初始化*该存储空间。新值由该变量*拥有*。除非你转移其所有权，否则没有其他变量可以拥有这个值。
 
 ## 变量声明
 
-Mojo 有两种声明变量的方式：
-
-- 显式声明的变量使用 `var` 关键字创建。
-
-  ```mojo {doctest="foo"}
-  var a = 5
-  var b: Float64 = 3.14
-  var c: String
-  ```
-
-- 隐式声明的变量在第一次使用变量时创建，可以是赋值语句或类型注解：
-
-  ```mojo
-  a = 5
-  b: Float64 = 3.14
-  c: String
-  ```
-
-这两种类型的变量都是强类型的——类型要么通过[类型注解](#type-annotations)显式设置，要么在变量首次用值初始化时隐式设置。
-
-无论如何，变量在创建时获得一个类型，并且类型永远不会改变。所以你不能为变量分配不同类型的值：
+要声明变量，请使用 `var` 加上一个名称。你可以给它一个值、一个类型标注，或两者都给。你标注得越多，代码就越明确，也越容易阅读和维护：
 
 ```mojo
-count = 8 # count 是 Int 类型
-count = "Nine?" # 错误：不能隐式将 'StringLiteral' 转换为 'Int'
+var a = 5  # Mojo infers that a is type Int
+var b: Float64 = 3.14  # Explicit declaration of Float64 type
+var c: String  # The name is created but uninitialized
 ```
 
-某些类型支持从其他类型的[*隐式转换*](#implicit-type-conversion)。例如，整数值可以隐式转换为浮点值：
+变量的类型永远不会改变。其存储空间在创建时就被强类型化，并且只能保存该类型的值：
 
 ```mojo
-var temperature: Float64 = 99
-print(temperature)
+var count = 8 # count is type Int
+count = "Nine?" # Error: can't implicitly convert 'StringLiteral' to 'Int'
 ```
 
-```output
-99.0
-```
+变量作用于声明它的代码块。其值在最后一次使用时被销毁。你可以从一个变量转移出一个值，使其不再存活于该变量或该作用域中。名称，也就是变量本身，在作用域结束时被销毁。
 
-在这个例子中，`temperature` 变量显式类型化为 `Float64`，但分配了一个整数值，因此该值被隐式转换为 `Float64`。
-
-## 隐式声明的变量
-
-你只需要一个名称和一个值就可以创建一个变量。例如：
-
-```mojo
-name = "Sam"
-user_id = 0
-```
-
-隐式声明的变量是强类型的：它们从分配给它们的第一个值中获取类型。例如，上面的 `user_id` 变量是 `Int` 类型，而 `name` 变量是 `String` 类型。你不能将字符串分配给 `user_id` 或将整数分配给 `name`。
-
-你也可以对隐式声明的变量使用类型注解，可以是赋值语句的一部分，也可以单独使用：
-
-```mojo
-name: String = "Sam"
-user_id: Int
-```
-
-在这里，`user_id` 变量有一个类型，但未初始化。
-
-隐式声明的变量在函数级别作用域。你在函数内部第一次为给定名称分配值时创建一个隐式声明的变量。函数内部对该名称的任何后续引用都指向同一个变量。有关更多信息，请参阅[变量作用域](#variable-scopes)，它描述了显式声明和隐式声明变量之间的作用域差异。
-
-## 显式声明的变量
-
-你可以使用 `var` 关键字声明一个变量。例如：
-
-```mojo
-var name = "Sam"
-var user_id: Int
-```
-
-`name` 变量初始化为字符串 "Sam"。`user_id` 变量未初始化，但它有一个声明的类型，`Int` 用于整数值。
-
-由于变量是强类型的，你不能为变量分配不同类型的值，除非这些类型可以[隐式转换](#implicit-type-conversion)。例如，这段代码不会编译：
-
-```mojo
-var user_id: Int = "Sam"
-```
-
-显式声明的变量具有块级[作用域](#variable-scopes)。
-
-## 类型注解
-
-虽然 Mojo 可以从分配给变量的第一个值中推断变量类型，但它也支持变量的静态类型注解。类型注解提供了更明确的方式来指定变量的类型。
-
-要为变量指定类型，添加一个冒号，后跟类型名称：
-
-```mojo
-var name: String = get_name()
-# 或者
-name: String = get_name()
-```
-
-这清楚地表明 `name` 是 `String` 类型，而不知道 `get_name()` 函数返回什么。`get_name()` 函数可能返回 `String`，或一个可以隐式转换为 `String` 的值。
-
-如果一个类型有一个只有一个参数的构造函数，你可以用两种方式初始化它：
-
-```mojo
-var name1: String = "Sam"
-var name2 = String("Sam")
-var name3 = "Sam"
-```
-
-所有这些行都调用同一个构造函数，从 `StringLiteral` 创建一个 `String`。
-
-### 延迟初始化
-
-使用类型注解允许延迟初始化。例如，请注意这里 `z` 变量首先只声明了类型，稍后分配值：
-
-```mojo
-def my_function(x: Int):
-    var z: Float32
-    if x != 0:
-        z = 1.0
-    else:
-        z = foo()
-    print(z)
-
-def foo() -> Float32:
-    return 3.14
-```
-
-如果你尝试将未初始化的变量传递给函数或在赋值语句的右侧使用它，编译会失败。
-
-```mojo
-var z: Float32
-var y = z # 错误：使用未初始化的值 'z'
-```
-
-:::note
-
-延迟初始化只有在变量声明了类型时才有效。
-
-:::
-
-### 隐式类型转换
-
-某些类型包含从一种类型到其自身类型的内置类型转换（类型转换）。例如，如果你将整数分配给具有浮点类型的变量，它会转换值而不是给出编译器错误：
-
-```mojo
-var number: Float64 = Int(1)
-print(number)
-```
-
-```output
-1.0
-```
-
-如上所示，如果目标类型有满足以下条件的构造函数，值赋值可以转换为构造函数调用：
-
-- 它用 `@implicit` 装饰器装饰。
-
-- 它接受一个与要赋值的值匹配的必需参数。
-
-因此，这段代码使用了接受整数的 `Float64` 构造函数：`__init__(out self, value: Int)`。
-
-一般来说，隐式转换应该只在转换是无损的情况下支持。
-
-隐式转换遵循[重载函数](/docs/manual/functions#overloaded-functions)的逻辑。如果目标类型有源类型的可行隐式转换构造函数，它可以在隐式转换时调用。
-
-因此，将整数分配给 `Float64` 变量与以下代码完全相同：
-
-```mojo
-var number = Float64(1)
-```
-
-同样，如果你调用一个需要特定类型参数的函数（如 `Float64`），只要该值类型可以隐式转换为所需类型（使用该类型的一个重载构造函数），你就可以传入任何值。
-
-例如，你可以将 `Int` 传递给期望 `Float64` 的函数，因为 `Float64` 包含一个接受 `Int` 的隐式转换构造函数：
-
-```mojo
-def take_float(value: Float64):
-    print(value)
-
-def pass_integer():
-    var value: Int = 1
-    take_float(value)
-```
-
-有关隐式转换的更多详细信息，请参阅[构造函数和隐式转换](/docs/manual/lifecycle/life/#constructors-and-implicit-conversion)。
+- 变量是保存值的名称。
+- 值是存在于内存中的数据。
 
 ## 变量作用域
 
-Mojo 中的变量使用*词法作用域*。变量的定义由它在源代码中出现的位置决定，而不是它在运行时执行的时间。具体的作用域级别取决于变量是如何声明的。
+Mojo 中的变量使用*词法作用域*（lexical scoping）。变量的定义由它在源代码中出现的位置决定，而不是由它在运行时执行的时间决定。具体的作用域级别取决于变量是如何声明的。
 
-嵌套代码可以读取和修改在外部作用域中定义的变量。外部作用域不能读取在内部作用域中定义的变量。
+变量具有**块级**作用域。嵌套代码可以读取和修改在外部作用域中定义的变量。外部作用域不能读取在内部作用域中定义的变量。
 
-使用 `var` 显式声明的变量具有**块级**作用域。
-
-例如，这里显示的 `if` 代码块创建了一个内部作用域，外部变量可以读写，但任何新变量都不会在 `if` 代码块的作用域之外存在：
+例如，这里所示的 `if` 代码块创建了一个内部作用域，其中外部变量可以被读写，但任何新变量都不会超出 `if` 代码块的作用域而存在：
 
 ```mojo
 def lexical_scopes():
     var num = 1
     var dig = 1
     if num == 1:
-        print("num:", num)  # 读取外部作用域的 "num"
-        var num = 2         # 创建新的内部作用域 "num"
-        print("num:", num)  # 读取内部作用域的 "num"
-        dig = 2             # 更新外部作用域的 "dig"
-    print("num:", num)      # 读取外部作用域的 "num"
-    print("dig:", dig)      # 读取外部作用域的 "dig"
+        print("num:", num)  # Reads the outer-scope "num"
+        var num = 2         # Creates new inner-scope "num"
+        print("num:", num)  # Reads the inner-scope "num"
+        dig = 2             # Updates the outer-scope "dig"
+    print("num:", num)      # Reads the outer-scope "num"
+    print("dig:", dig)      # Reads the outer-scope "dig"
 ```
 
 ```output
@@ -231,118 +68,99 @@ num: 1
 dig: 2
 ```
 
-请注意，`if` 内部的 `var` 语句创建了一个与外部变量同名的新变量。这防止了内部循环访问外部 `num` 变量。（这称为"变量遮蔽"，其中内部作用域变量隐藏或"遮蔽"了外部作用域的变量。）
+注意，`if` 内部的 `var` 语句创建了一个与外部变量同名的**新**变量。这阻止了内部 if 语句访问外部的 `num` 变量。这被称为"变量遮蔽"（variable shadowing），即内部作用域的变量隐藏或"遮蔽"了外部作用域中的变量。
 
-内部 `num` 的生命周期在 `if` 代码块结束时正好结束，因为那是定义变量的作用域。
-
-这与[隐式声明](#implicitly-declared-variables)的变量（没有 `var` 关键字的那些）形成对比，后者使用**函数级作用域**（与 Python 变量行为一致）。这意味着，当你在 `if` 代码块内部更改隐式声明的变量的值时，它实际上会更改整个函数的值。
-
-例如，这是相同的代码，但没有 `var` 声明：
-
-```mojo
-def function_scopes():
-    num = 1
-    if num == 1:
-        print(num)   # 读取函数作用域的 "num"
-        num = 2      # 更新函数作用域变量
-        print(num)   # 读取函数作用域的 "num"
-    print(num)       # 读取函数作用域的 "num"
-```
-
-```output
-1
-2
-2
-```
-
-现在，最后一个 `print()` 函数看到的是内部作用域中的更新后的 `num` 值，因为隐式声明的变量在函数级别作用域，就像 Python 一样，而不是在块级别。
+内部 `num` 的生命周期恰好在 `if` 代码块结束时结束，因为那是定义该变量的作用域。
 
 ## 复制和移动值
 
-记住，一个变量拥有它的值，并且同一时间只有一个变量可以拥有给定值。进一步来说，你可以将赋值语句视为将值的*所有权*分配给变量：
+对新创建值或字面量的赋值语句会建立所有权：
 
 ```mojo
-owning_variable = "Owned value"
+var owning_variable = "Owned value"
 ```
 
-这意味着赋值语句右侧的值必须可以转移到新变量。这里有一个失败的例子：
+对现有变量值的赋值会将该值或该值的副本的所有权转移给新变量：
 
 ```mojo
-first = [1, 2, 3]
-second = first  # 错误：'List[Int]' 不是隐式可复制的，因为它不符合 'ImplicitlyCopyable'
+var source = String("Hello")
+var copied = source   # A copy
+var moved = source^   # A transfer
 ```
 
-第一个赋值没有问题：表达式 `[1, 2, 3]` 创建了一个不属于任何变量的新 `List` 值，所以它的所有权可以直接转移到 `first` 变量。
+以这种方式赋值时，右侧变量必须是 `Copyable` 或 `Movable`。赋值之后，新变量拥有一个值，无论是复制的还是转移的。转移会让 `source` 处于未初始化状态，在为它赋新值之前你不能再次使用它。
 
-但第二个赋值导致错误。由于 `List` 由 `first` 变量拥有，如果没有来自用户的显式信号，就不能简单地将它转移到 `second` 变量。用户是想将值从 `first` 转移到 `second` 吗？还是创建原始值的副本？
+赋值语句右侧的值必须能够转移到新变量。下面是一个不奏效的例子：
 
-这些选择取决于涉及的值的类型的一些特性：具体来说，如果值是可移动的、可复制的或隐式可复制的。
+```mojo
+var first: List[Int] = [1, 2, 3]
+var second = first  # error: 'List[Int]' is not implicitly copyable because
+                    # it doesn't conform to 'ImplicitlyCopyable'
+```
 
-- *可复制类型*可以通过调用其复制初始化器或 `copy()` 方法显式复制。
+第一个赋值没有问题：表达式 `[1, 2, 3]` 创建了一个没有所有者的新 `List` 值，所以 `first` 成为它的所有者而没有任何歧义。第二个赋值报错，因为 `first` 不是隐式可复制的，并且该值也未被转移。
 
-  ```mojo
-  second = first.copy()
-  ```
+每种结果都取决于参与赋值的值所对应的类型特性。
 
-  这使 `first` 保持不变，并将 `second` 分配给它自己的、唯一拥有的列表副本。
-
-- *隐式可复制类型*可以在没有用户显式信号的情况下复制。
-
-  ```mojo
-  one_value = 15
-  another_value = one_value  # 隐式复制
-  ```
-
-  在这里，`one_value` 保持不变，`another_value` 获得值的副本。
-
-  隐式可复制类型通常是简单的值类型，如 `Int`、`Float64` 和 `Bool`，可以简单复制。
-
-- 值的所有权可以从一个变量显式转移到另一个变量，方法是将*转移符号*（`^`）附加到要转移的值之后：
+- `Copyable` 类型可以被显式复制，方法是调用其复制初始化器或 `copy()` 方法。
 
   ```mojo
-  second = first^
+  var second = first.copy()
   ```
 
-  这将值移动到 `second`，并使 `first` 未初始化。
+  复制后 `first` 保持不变。`second` 被赋予它自己独有的、由它拥有的列表副本。
 
-  在许多情况下，这种所有权转移还涉及将值从一个内存位置移动到另一个位置，这要求值要么是可移动的，要么是可复制的。
+- `ImplicitlyCopyable` 类型可以在没有显式信号的情况下被复制：
 
-你现在不需要消化所有这些细节：可复制性和可移动性在[使结构体可复制和可移动](/docs/manual/structs/#making-a-struct-copyable-and-movable)的章节和[值生命周期](/docs/manual/lifecycle/life/)的章节中有更详细的讨论。
+  ```mojo
+  var one_value = 15
+  var another_value = one_value  # implicit copy
+  ```
+
+  隐式可复制类型通常是像 `Int`、`Float64` 和 `Bool` 这样可以简单复制的简单值类型。
+
+- 值的所有权可以通过在要转移的值后面附加*转移符号*（`^`）从一个变量显式转移到另一个变量：
+
+  ```mojo
+  var second = first^
+  ```
+
+  这会将值移动到 `second`，并使 `first` 处于未初始化状态。
+
+  这种所有权转移可能会将值从一个内存位置移动到另一个内存位置。这要求该值是 `Movable` 的。
 
 ## 引用绑定
 
-某些 API 返回[引用](/docs/manual/values/lifetimes/#working-with-references)到在其他地方拥有的值。引用对于避免复制值很有用。例如，当你从集合中检索值时，集合返回一个引用，而不是副本。
+某些 API 会返回由其他地方所拥有值的[_引用_](/docs/manual/values/lifetimes/#working-with-references)。引用可以避免复制值。例如，当你从集合中检索一个值时，集合返回的是一个引用，而不是副本：
 
 ```mojo
-animals: List[String] = ["Cats", "Dogs", "Zebras"]
-print(animals[2])  # 打印 "Zebras"，不复制值。
+var animals: List[String] = ["Cats", "Dogs", "Zebras"]
+print(animals[2])  # Prints "Zebras", does not copy the value.
 ```
 
-但是，如果你将引用分配给*变量*，它会创建一个副本（如果值是隐式可复制的）或产生错误（如果不是）。
+如果你将一个引用赋值给一个*变量*，它会创建一个副本（如果该值是隐式可复制的）或产生一个错误（如果不是）：
 
 ```mojo
-items = [99, 77, 33, 12]
-item = items[1]  # item 是 items[1] 的副本
-item += 1  # 增加 item
-print(items[1])  # 打印 77
+var items: List[Int] = [99, 77, 33, 12]
+var item = items[1]  # item is a copy of items[1]
+item += 1  # increments item
+print(items[1])  # prints 77
 ```
 
-要保留引用，使用 `ref` 关键字创建引用绑定：
+要命名一个引用，请使用 `ref` 关键字创建一个引用绑定：
 
 ```mojo
-ref item_ref = items[1]  # item_ref 是 item[1] 的引用
-item_ref += 1  # 增加 items[1]
-print(items[1])  # 打印 78
+ref item_ref = items[1]  # item_ref is a reference to item[1]
+item_ref += 1  # increments items[1]
+print(items[1])  # prints 78
 ```
 
-在这里，名称 `item_ref` 绑定到 `items[1]` 的引用。对 `item_ref` 的所有读取和写入都指向被引用的项。
+名称 `item_ref` 绑定到 `items[1]`。对 `item_ref` 的所有读和写都作用于它所引用的项。
 
-引用绑定也可以在与[`for` 循环](/docs/manual/control-flow/#iterating-using-references)遍历集合时使用。
-
-一旦分配了引用绑定，它就不能重新绑定到不同的位置。例如：
+引用绑定不能被重新赋值：
 
 ```mojo
-ref item_ref = items[2]  # 错误：item_ref 的无效重新定义
+ref item_ref = items[2]  # error: invalid redefinition of item_ref
 ```
 
-有关引用的更多信息，请参阅[使用引用](/docs/manual/values/lifetimes/#working-with-references)。
+关于引用的更多信息，请参阅[使用引用](/docs/manual/values/lifetimes/#working-with-references)。

@@ -7,31 +7,31 @@ description: >
   with 上下文管理器，以及 comptime if/for 编译时控制流。
 ---
 
-{/*  VERIFIED: ParserStmts.cpp parseIfStmt(), parseWhileStmt(),
+{/* VERIFIED: ParserStmts.cpp parseIfStmt(), parseWhileStmt(),
      parseForStmt(), parseTryStmt(), parseWithStmt(),
      parseComptimeCompoundStmt(), parseParamIf(), parseParamFor(),
-     parseSuite()  */}
+     parseSuite(); Signatures.cpp parseCaptureList() */}
 
-*复合语句*由头部和主体组成。头部以 `:` 结尾，后面跟着缩进的主体块。
+*复合语句*由一个头部和一个主体组成。头部以 `:` 结尾，后面跟着一个缩进的主体块。
 
 主体可以包含简单语句、其他复合语句，或两者兼有。
 
 ```mojo
-if condition:       # 头部
-    do_something()  # 主体
+if condition:       # Header
+    do_something()  # Body
 ```
 
-主体的缩进必须比头部更深。第一个主体语句设定了其余主体的缩进级别：
+主体的缩进必须比头部更深。第一条主体语句为其余主体设定缩进级别：
 
 ```mojo
 if condition:
     do_something()
-      do_more()    # 错误：语句缩进过多
+      do_more()    # Error because statement has excess indentation
 ```
 
 ## If 语句
 
-`if` 语句根据条件执行代码块：
+`if` 语句根据条件执行一个代码块：
 
 ```mojo
 if x > 0:
@@ -44,21 +44,21 @@ else:
     print("you should never get here")
 ```
 
-条件按顺序求值。可以添加任意多个条件。第一个为真的条件执行其代码块，然后语句退出。如果没有条件为真，则执行 `else` 代码块。
+条件按顺序求值。可以按需添加任意多个。第一个为真的条件执行其代码块，然后整个语句退出。如果没有条件为真，则执行 `else` 代码块。
 
-当主体只有一条简单语句时，可以将其写在同一行，但这在许多编码规范中通常不推荐：
+当主体只有一条简单语句时，可以将其写在同一行，不过许多编码规范不推荐这种写法。
 
 ```mojo
 if x > 0: print("positive")
 ```
 
-其他语言中的常见快捷方式在 Mojo 中不起作用：
+其他语言中常见的简写方式在 Mojo 中不适用：
 
 ```mojo
-x > 0 and print("positive")  # 错误：'None' 未实现
-                              # '__bool__' 方法
+x > 0 and print("positive")  # Error because 'None' isn't truthy
 
-print("positive") if x > 0 else pass # 错误：表达式中出现意外的标记
+print("positive") if x > 0 else pass
+    # Error because 'pass' isn't an expression
 ```
 
 ## While 循环
@@ -78,10 +78,10 @@ while count < 10:
 while True:
     var item = get_next()
     if item is None:
-        break       # 如果没有更多项则退出循环
+        break       # Exit loop if no more items
     if not is_valid(item):
-        continue    # 跳过无效项
-    process(item)  # 只处理有效项
+        continue    # Skip invalid items
+    process(item)  # Only runs for valid items
 ```
 
 ## For 循环
@@ -98,16 +98,34 @@ for i in range(10):   # [0, 10)
 
 要支持迭代，序列必须实现 `__iter__()` 和 `__next__()`。`for` 循环会脱糖为使用这些方法的 `while` 循环。
 
-解构可以直接在循环目标中使用。这允许你在迭代时解包元组元素。在这个例子中，`pairs` 中的每个元素在每次迭代时都被解包为 `key` 和 `value`：
+解构可以直接在循环目标中进行。这允许你在迭代时解包元组元素。在下面的示例中，`pairs` 中的每一项在每次迭代时都被解包为 `key` 和 `value`：
 
 ```mojo
-for key, value in pairs:  # 例如，[("a", 1), ("b", 2), ...]
+for key, value in pairs:  # For example, [("a", 1), ("b", 2), ...]
     print(key, value)
 ```
 
-## 循环和 else 子句
+### 循环变量绑定
 
-可选的 `else` 子句在循环正常退出时运行，即条件变为假时。如果循环通过 `break` 退出，则不会运行：
+使用 `var` 和 `ref` 约定来控制循环变量的所有权、拷贝和可变性行为。默认情况下，循环变量是指向被迭代项的不可变引用（`imm`）。要创建可变拷贝，请使用 `var`。要保持对值本身的可变性，请使用 `ref`：
+
+```mojo
+var list: List[String] = ["a", "b", "c", "d"]
+
+for var item in list:
+    item = item + "x" # works. item is mutable copy of list element
+    print(item) # prints "ax", then "bx", "cx", and "dx"
+print(list) # unchanged
+
+for ref item in list:
+    item = item + "x" # mutability picked up in reference to list element
+    print(item) # prints "ax", then "bx", "cx", and "dx"
+print(list) # changed to ["ax", "bx", "cx", "dx"]
+```
+
+## 循环与 else 子句
+
+可选的 `else` 子句在循环正常退出时运行。如果循环通过 `break` 退出，则不会运行：
 
 ```mojo
 var found = False
@@ -116,7 +134,7 @@ for item in items:
         found = True
         break
 else:
-    print("not found")  # 只有在从未触发 break 时才运行
+    print("not found")  # Only runs if break was never hit
 ```
 
 `for` 和 `while` 循环都支持 `else`。
@@ -126,6 +144,7 @@ else:
 `try` 语句执行可能引发错误的代码。
 
 ```mojo
+var result: Bool
 try:
     result = risky()
 except e:
@@ -140,32 +159,32 @@ except e:
 try:
     operation()
 except e:
-    handle_error(e)   # 如果发生错误则运行
+    handle_error(e)   # Runs if an error occurs
 else:
-    on_success()      # 只有在没有错误时才运行
+    on_success()      # Runs only if no error occurred
 finally:
-    cleanup()         # 总是运行
+    cleanup()         # Always runs
 ```
 
-执行按固定顺序进行：
+执行按固定的顺序进行：
 
-1. 首先运行 `try` 代码块。
-2. 如果发生错误，运行匹配的 `except` 代码块。
-3. 如果没有错误发生，`else` 代码块（如果存在）在 `try` 代码块之后运行。
+1. `try` 代码块首先运行。
+2. 如果发生错误，则运行匹配的 `except` 代码块。
+3. 如果没有发生错误，`else` 代码块（如果存在）在 `try` 代码块之后运行。
 4. 如果包含 `finally` 代码块，它总是最后运行。
 
 ### 错误绑定
 
-使用 `except name` 将错误绑定到一个名称：
+使用 `except name` 将错误绑定到一个名称上：
 
 ```mojo
 try:
     risky()
 except e:
-    print(e)   # e 是捕获的错误
+    print(e)   # e is the caught error
 ```
 
-如果没有绑定，错误会被捕获但无法访问。没有默认的错误变量。当你想响应错误状态而不需要错误详情时，这很有用：
+如果没有绑定，错误会被捕获但无法访问。不存在默认的错误变量。当你只想对错误状态做出响应而不需要错误详情时，这很有用：
 
 ```mojo
 try:
@@ -176,7 +195,7 @@ except:
 
 ### 类型化错误
 
-当函数使用 `raises ErrorType` 声明特定错误类型时，绑定变量的类型会被推断：
+当函数使用 `raises ErrorType` 声明特定的错误类型时，绑定变量的类型会被推断出来：
 
 ```mojo
 @fieldwise_init
@@ -185,49 +204,82 @@ struct NetworkError:
     var code: Int
 
 def fetch() raises NetworkError -> String:
-    raise NetworkError("HTCPCP", 418)
+    raise NetworkError("HTCPCP", 418)   # See RFC 2324 *
 
 try:
-    result = fetch()
-except e:              # e 被推断为 `NetworkError`
-    print(e.message)   # 已知类型支持直接字段访问
-    print(e.code)
+    var result = fetch()
+except e:              # e is inferred as `NetworkError`
+    print(e.message)   # Known types support direct field access
+    print(e.code)      # `.code` and `.message` only work because `e`
+                        # is a known to be `NetworkError`
 ```
 
-一个 `try` 代码块处理一种错误类型。如果 `try` 代码块中的代码可能引发多种错误类型，编译器会报错。
+一个 `try` 代码块只能处理一种错误类型。如果 `try` 代码块中的代码可能引发多种错误类型，编译器会报错。
+
+:::note
+[RFC 2324](https://datatracker.ietf.org/doc/html/rfc2324) 将超文本咖啡壶控制协议（Hyper Text Coffee Pot Control Protocol，HTCPCP）定义为愚人节玩笑。
+:::
 
 ## 上下文管理器
 
-`with` 语句使用上下文管理器管理资源。*上下文管理器*定义设置（`__enter__`）和清理（`__exit__`）操作。无论是否发生错误，清理总是在代码块退出时运行：
+`with` 语句使用上下文管理器来管理资源。*上下文管理器*定义了设置（`__enter__`）和清理（`__exit__`）操作。当代码块退出时，清理操作总是会运行，即使发生了错误：
 
 ```mojo
 with open("file.txt") as f:
-    content = f.read()
-# 文件在这里关闭，即使发生了错误
+    var content = f.read()
+# File is closed here, even if an error occurred
 ```
 
-多个上下文管理器可以共享一个 `with` 语句：
+多个上下文管理器可以共享同一个 `with` 语句：
 
 ```mojo
 with open("input.txt") as f_in, open("output.txt", "w") as f_out:
     f_out.write(f_in.read())
 ```
 
-这等同于嵌套的 `with` 语句。
+这等价于嵌套的 `with` 语句。
 
 ### 上下文管理器的工作原理
 
-当进入 `with` 代码块时，会在上下文管理器表达式上调用 `__enter__()`。如果存在 `as` 目标，结果会绑定到它。当代码块退出时，调用 `__exit__()`。只定义 `__enter__()` 的上下文管理器是有效的——`__exit__()` 是可选的。
+当进入 `with` 代码块时，会在上下文管理器表达式上调用 `__enter__()`。如果存在 `as` 目标，则将结果绑定到该目标。仅定义 `__enter__()` 的上下文管理器是有效的；`__exit__()` 是可选的。当代码块退出时，如果 `__exit__()` 存在则会被调用，即使发生了错误也是如此。
+
+一个最小的自定义上下文管理器示例：
+
+```mojo
+struct Scope(ImplicitlyCopyable):
+    var label: String
+
+    def __init__(out self, label: String):
+        self.label = label
+
+    def __enter__(self) -> Self:
+        # perform setup tasks
+        print("entering", self.label)
+        return self
+
+    def __exit__(self):
+        # perform cleanup tasks
+        print("exiting", self.label)
+
+def main():
+    with Scope("setup") as s:
+        print("inside", s.label)
+    # entering setup
+    # inside setup
+    # exiting setup
+```
+
+`__enter__` 返回 `self`，以便 `as` 目标绑定到该管理器。`ImplicitlyCopyable` 一致性使编译器能够按值返回 `self`。
 
 ## 编译时控制流
 
-`comptime if` 和 `comptime for` 在编译时运行。条件或序列必须是编译时值或表达式。
+`comptime if` 和 `comptime for` 在编译时运行。条件或序列必须是编译时值或编译时表达式。
 
-使用它们根据编译时条件生成代码。你不能在 `comptime` 语句中使用运行时值。
+可以使用它们根据编译时条件来生成代码。你不能在 `comptime` 语句中使用运行时值。
 
 ### comptime if
 
-`comptime if` 在编译时选择一个分支，剪除未选择的分支。只有选中的分支出现在编译后的程序中：
+`comptime if` 在编译时选择一个分支，并剪除未选中的分支。只有选中的分支会出现在编译后的程序中。
 
 ```mojo
 from std.sys import size_of
@@ -238,52 +290,52 @@ else:
     print("Probably 32-bit")
 ```
 
-条件必须是编译时表达式。在这个例子中，`runtime_value` 在编译时不可用，所以代码在编译期间会报错：
+条件必须是编译时表达式。在下面的示例中，`runtime_value` 在编译时不可用，因此代码在编译期间会报错：
 
 ```mojo
-comptime if runtime_value > 0:   # 错误：'comptime if' 需要
-    pass                         # 参数表达式作为条件
+comptime if runtime_value > 0:   # Error because 'comptime if' requires
+    pass                         # compile-time evaluation
 ```
 
-`comptime if` 支持像普通 `if` 语句一样的 `elif` 和 `else`。
+`comptime if` 像普通的 `if` 语句一样支持 `elif` 和 `else`。
 
 ### comptime for
 
-`comptime for` 在编译时展开循环。每次迭代都编译为独立的代码。这会创建更大的二进制文件，但通过消除循环开销和启用进一步优化来提高运行时性能：
+`comptime for` 在编译时展开循环。每次迭代都会被编译为独立的代码。这会生成更大的二进制文件，但通过消除循环开销并启用进一步优化，可以提升运行时性能。
 
 ```mojo
 comptime for i in range(3):
-    print(i)   # 编译为：print(0); print(1); print(2)
+    print(i)   # Compiled as: print(0); print(1); print(2)
 ```
 
-使用 `comptime for` 生成重复的代码模式或遍历编译时序列。
+使用 `comptime for` 来生成重复的代码模式，或遍历编译时序列。
 
 ## 作用域
 
-每个复合语句的主体都会创建一个新的作用域。在主体内声明的变量在主体外不可见：
+每个复合语句的主体都会创建一个新的作用域。在主体内声明的变量在主体外部不可见：
 
 ```mojo
 if condition:
     var x = 10
-print(x)   # 错误：x 不在作用域内
+print(x)   # Error: x is not in scope
 ```
 
-使用 `as` 绑定的 `with` 语句变量作用域限于 `with` 代码块：
+使用 `as` 绑定的 `with` 语句变量，其作用域限定于 `with` 代码块：
 
 ```mojo
 with open("file.txt") as f:
-    data = f.read()
-# f 在这里不可访问
+    var data = f.read()
+# f is not accessible here
 ```
 
-嵌套函数创建自己的作用域，可以使用 `capturing` 关键字捕获外部函数的变量：
+嵌套函数会创建自己的作用域，并可以通过捕获列表从外层函数中捕获变量：
 
 ```mojo
 def outer():
-    count = 0
+    var count = 0
 
-    def inner() capturing:
-        count += 1   # 从 outer 捕获 count
+    def inner() {mut count}:  # Capture count by mutable reference
+        count += 1            # Updates captured count
 
     inner()
     print(count)     # 1

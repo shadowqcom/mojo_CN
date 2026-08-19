@@ -10,7 +10,7 @@ Mojo 包含几种传统的控制流结构，用于条件执行和重复执行代
 Mojo 支持 `if` 语句进行条件代码执行。使用它，当给定的[布尔](/docs/manual/types/#booleans)表达式求值为 `True` 时，可以有条件地执行一个缩进的代码块。
 
 ```mojo
-temp_celsius = Float64(25)
+var temp_celsius = Float64(25)
 if temp_celsius > 20:
     print("It is warm.")
     print("The temperature is", temp_celsius * 9 / 5 + 32, "Fahrenheit." )
@@ -24,8 +24,8 @@ The temperature is 77.0 Fahrenheit.
 如果你只需要有条件地执行一条简短的语句，可以将整个 `if` 语句写成一行。
 
 ```mojo
-temp_celsius = 22
-if temp_celsius < 15: print("It is cool.") # 跳过，因为条件为 False
+var temp_celsius = 22
+if temp_celsius < 15: print("It is cool.") # Skipped because condition is False
 if temp_celsius > 20: print("It is warm.")
 ```
 
@@ -38,7 +38,7 @@ It is warm.
 此外，`if` 语句可以包含一个可选的 `else` 子句，提供在所有条件求值为 `False` 时执行的代码块。
 
 ```mojo
-temp_celsius = 25
+var temp_celsius = 25
 if temp_celsius <= 0:
     print("It is freezing.")
 elif temp_celsius < 20:
@@ -53,9 +53,9 @@ else:
 It is warm.
 ```
 
-:::note[TODO]
+:::note TODO
 
-Mojo 目前不支持类似于 Python 的 `match` 或 C 的 `switch` 语句的模式匹配和条件执行。
+Mojo 目前不支持类似于 Python `match` 或 C `switch` 语句的模式匹配和条件执行。
 
 :::
 
@@ -102,8 +102,8 @@ Mojo 还支持条件表达式（有时被称为[*三元条件操作符*](https:/
 else <var>false_result</var></code>，与 Python 相同。这最常用于根据布尔条件简洁地将两个不同的值之一赋给变量。
 
 ```mojo
-temp_celsius = 15
-forecast = "warm" if temp_celsius > 20 else "cool"
+var temp_celsius = 15
+var forecast = "warm" if temp_celsius > 20 else "cool"
 print("The forecast for today is", forecast)
 ```
 
@@ -114,6 +114,7 @@ The forecast for today is cool
 替代方案是写成多行 `if` 语句，但更为冗长。
 
 ```mojo
+var forecast: String
 if temp_celsius > 20:
     forecast = "warm"
 else:
@@ -130,8 +131,8 @@ The forecast for today is cool
 `while` 循环在给定布尔表达式求值为 `True` 时重复执行代码块。例如，以下循环打印斐波那契数列中小于 50 的值。
 
 ```mojo
-fib_prev = 0
-fib_curr = 1
+var fib_prev = 0
+var fib_curr = 1
 
 print(fib_prev, end="")
 while fib_curr < 50:
@@ -146,7 +147,7 @@ while fib_curr < 50:
 `continue` 语句跳过代码块剩余部分的执行，并回到循环测试表达式。
 
 ```mojo
-n = 0
+var n = 0
 while n < 5:
     n += 1
     if n == 3:
@@ -161,7 +162,7 @@ while n < 5:
 `break` 语句终止循环的执行。
 
 ```mojo
-n = 0
+var n = 0
 while n < 5:
     n += 1
     if n == 3:
@@ -176,7 +177,7 @@ while n < 5:
 可选地，`while` 循环可以包含一个 `else` 子句。`else` 子句的主体在循环的布尔条件求值为 `False` 时执行，即使是在第一次测试时就为 `False`。
 
 ```mojo
-n = 5
+var n = 5
 
 while n < 4:
     print(n)
@@ -196,7 +197,7 @@ Loop completed
 :::
 
 ```mojo
-n = 0
+var n = 0
 while n < 5:
     n += 1
     if n == 3:
@@ -223,7 +224,7 @@ Mojo 的 `for` 循环可以遍历任何实现了 `__iter__()` 方法且该方法
 以下展示了遍历 Mojo [`List`](/docs/std/collections/list/List/) 的示例。
 
 ```mojo
-states = ["California", "Hawaii", "Oregon"]
+var states = ["California", "Hawaii", "Oregon"]
 for state in states:
     print(state)
 ```
@@ -239,7 +240,7 @@ Oregon
 ```mojo
 from std.collections import Set
 
-values = {42, 0}
+var values = {42, 0}
 for item in values:
     print(item)
 ```
@@ -259,7 +260,7 @@ var capitals: Dict[String, String] = {
 }
 
 for var state in capitals:
-    print(capitals[state] + ", " + state)
+    print(t"{capitals[state]}, {state}")
 ```
 
 ```output
@@ -272,7 +273,7 @@ Salem, Oregon
 
 ```mojo
 for item in capitals.items():
-    print(item.value + ", " + item.key)
+    print(t"{item.value}, {item.key}")
 ```
 
 ```output
@@ -379,7 +380,7 @@ Finished executing 'for' loop
 ```mojo
 from std.collections import List
 
-animals = ["cat", "aardvark", "hippopotamus", "dog"]
+var animals = ["cat", "aardvark", "hippopotamus", "dog"]
 for animal in animals:
     if animal == "dog":
         print("Found a dog")
@@ -402,9 +403,9 @@ Mojo 的 `for` 循环支持遍历 Python 集合类型。循环检索到的每个
 from std.python import Python
 
 def main() raises:
-    # 创建一个混合类型的 Python 列表
-    py_list = Python.list(42, "cat", 3.14159)
-    for py_obj in py_list:  # 每个元素的类型为 "PythonObject"
+    # Create a mixed-type Python list
+    var py_list = Python.list(42, "cat", 3.14159)
+    for py_obj in py_list:  # Each element is of type "PythonObject"
         print(py_obj)
 ```
 
@@ -420,9 +421,9 @@ cat
 from std.python import Python
 
 def main() raises:
-    # 创建一个混合类型的 Python 字典
-    py_dict = Python.evaluate("{'a': 1, 'b': 2.71828, 'c': 'sushi'}")
-    for py_key in py_dict:  # 每个键的类型为 "PythonObject"
+    # Create a mixed-type Python dictionary
+    var py_dict = Python.evaluate("{'a': 1, 'b': 2.71828, 'c': 'sushi'}")
+    for py_key in py_dict:  # Each key is of type "PythonObject"
         print(py_key, py_dict[py_key])
 ```
 
@@ -438,9 +439,9 @@ c sushi
 from std.python import Python
 
 def main() raises:
-    # 创建一个混合类型的 Python 字典
-    py_dict = Python.evaluate("{'a': 1, 'b': 2.71828, 'c': 'sushi'}")
-    for py_tuple in py_dict.items():  # 每个二元组的类型为 "PythonObject"
+    # Create a mixed-type Python dictionary
+    var py_dict = Python.evaluate("{'a': 1, 'b': 2.71828, 'c': 'sushi'}")
+    for py_tuple in py_dict.items():  # Each 2-tuple is of type "PythonObject"
         print(py_tuple[0], py_tuple[1])
 ```
 

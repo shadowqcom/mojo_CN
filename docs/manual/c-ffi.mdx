@@ -1,0 +1,589 @@
+---
+title: 使用 Mojo 的 C 外部函数接口调用 C 库
+sidebar_label: 从 Mojo 调用 C
+description: >
+  从 Mojo 调用 C 库。安全地跨 FFI 边界传递值、指针、字符串和结构体。
+---
+
+当你需要使用 C 库中已有的功能时，可以直接从 Mojo 代码中调用它。
+许多用于图形、数据库、硬件控制、信号处理和科学计算的库都提供了 C API。
+
+Mojo 发出的是直接的原生调用，没有翻译层或额外的运行时开销。从 Mojo
+发出的 C 调用与手写 C 一样快。
+
+## C 数字类型
+
+C 整数类型没有固定大小。它们的大小取决于目标平台及其 C
+*ABI*。例如，`int` 通常是 32 位，而 `long` 在 Linux 和 macOS 上是
+64 位，在 Windows 上则是 32 位。
+
+ABI（application binary interface，应用二进制接口）定义了机器代码如何传递参数、返回值以及在内存中布局数据。
+
+使用 C API 时，请使用 `std.ffi` 模块中的类型别名。它们与目标平台的 C ABI
+匹配，因此你无需担心平台特定的大小差异。
+
+关于 `std.ffi` 类型别名及其等价 Mojo 类型的列表，请参阅本页末尾的 [C 类型参考](#c-type-reference)。
+
+## 调用 libc 函数
+
+`libc` 是 C 标准库。它提供了用于内存分配、字符串操作、文件 I/O
+和其他常见任务的函数。Mojo 通过 `external_call()` 调用 libc
+函数。Mojo 会为你解析符号，因此你无需向构建中添加任何内容。
+
+从 `std.ffi` 导入 `external_call`。用函数名和返回类型对其进行参数化，然后在圆括号中传递函数参数。Mojo
+会根据你传入的值推断参数类型，因此无需声明其他内容：
+
+```mojo
+def external_call[
+    callee: StaticString,
+    return_type: RegisterPassable,
+    *types: AnyType,
+    num_fixed_args: OptionalReg[Int] = None,
+](*args: *types) -> return_type
+```
+
+以下示例调用了 C 的 `abs()` 函数，该函数返回整数的绝对值：
+
+```mojo
+from std.ffi import external_call, c_int
+
+def main():
+    # int abs(int n);
+    var n = external_call["abs", c_int](c_int(-42))
+    print(t"Absolute value is 42: {n == 42}")  # True
+```
+
+`c_int` 是 `std.ffi` 中 C `int` 的别名。它在 Mojo 支持的每个平台上都是 32 位。它对应的 Mojo 类型是 `Int32`。
+
+### 调用可变参数 C 函数
+
+*可变参数（variadic）*C 函数接受可变数量的参数，如 `printf()` 和 `snprintf()`。传递 `num_fixed_args`，其值为 `...` 之前声明的参数数量：
+
+```mojo
+from std.ffi import external_call, c_char, c_int, c_size_t
+
+def main():
+    # int snprintf(char *buf, size_t size, const char *fmt, ...);
+    # Three fixed arguments, so num_fixed_args=3.
+    var buf = Array[c_char, 64](uninitialized=True)
+    var written = external_call["snprintf", c_int, num_fixed_args=3](
+        buf.unsafe_ptr(),
+        c_size_t(64),
+        "score: %d/%d".as_c_string_slice(),
+        c_int(7),
+        c_int(10),
+    )
+    print(t"wrote {written}: {String(unsafe_from_utf8_ptr=buf.unsafe_ptr())}")
+```
+
+如果不指定 `num_fixed_args`，Mojo 会把每个参数都当作固定参数。某些 ABI
+传递可变参数的方式与固定参数不同，因此调用可能在一个目标上正常工作，但在另一个目标上出错。
+
+## 使用共享库
+
+`OwnedDLHandle` 以 RAII 语义拥有动态链接库的句柄。你可以使用它加载共享库并以
+Mojo 可调用对象的形式检索函数，从而可以使用诸如 SQLite、libcurl、相机
+SDK、GPU 厂商库和其他原生库等库。
+
+库名称因平台而异，因此请使用 `platform_map()` 在编译时选择正确的库：
+
+```mojo
+from std.ffi import OwnedDLHandle, c_double
+from std.sys.info import platform_map
+
+comptime LIBM = platform_map["libm", linux="libm.so.6", macos="libm.dylib"]()
+
+def main() raises:
+    var lib = OwnedDLHandle(LIBM)
+    var sqrt = lib.get_function[c_double]("sqrt")
+    print(sqrt(c_double(4.0)))  # Prints: 2.0
+    # Library automatically closed when lib goes out of scope
+```
+
+如果 `platform_map()` 没有目标平台的值，会引发编译错误。它不会回退到其他平台的库名。
+
+### 库名称
+
+将库作为任何 `os.PathLike` 传递，例如 `String` 或 `Path`。Mojo 在运行时解析名称。当库位于系统搜索路径上时使用裸名称（`libm.dylib`），不在搜索路径上时使用完整路径（`path/to/libm.dylib`）。
+
+在 Linux 上，请使用 ABI 版本化的运行时名称，例如 `libm.so.6`，而不是未版本化的 `libm.so`。ABI 版本不一定与库的发布版本匹配。例如，libcurl 8.21 仍然使用 `libcurl.so.4`。
+
+未版本化的名称属于开发包，由静态链接器为 `-lm` 等选项使用。它通常是一个链接器脚本而非库，因此将其传递给 `dlopen` 可能会因 `invalid ELF header` 错误而失败。可以用以下命令查看动态链接器知道的共享库：
+
+```bash
+ldconfig -p | grep libcurl
+```
+
+macOS 对两种用途都使用同一个名称。`libcurl.dylib` 既是链接的对象，也是加载的对象。
+
+如果省略库名称，`OwnedDLHandle()` 会打开当前进程。这是调用 libc 函数和已链接到程序中的其他符号的另一种方式。
+
+### 可用性检查
+
+`OwnedDLHandle` 在运行时加载库，因此库必须在程序运行时可用。如果找不到库，加载会失败：
+
+```mojo
+comptime LIBCURL = platform_map[
+    "libcurl", linux="libcurl.so.4", macos="libcurl.dylib"
+]()
+
+try:
+    var lib = OwnedDLHandle(LIBCURL)
+    # use the optional feature
+except:
+    # fall back
+```
+
+你可以使用 `check_symbol()` 防范缺失的函数。使用它来测试可选、版本化或平台特定的功能。该检查对函数和导出的全局变量都适用：
+
+```mojo
+comptime LIBM = platform_map[
+    "libm", linux="libm.so.6", macos="libm.dylib"
+]()
+
+var lib = OwnedDLHandle(LIBM)
+if lib.check_symbol("exp10"):
+    var exp10 = lib.get_function[c_double]("exp10")
+    print(exp10(c_double(2.0)))  # 100.0
+else:
+    print("exp10 not found in libm")
+```
+
+### 按名称检索函数
+
+`get_function()` 按名称查找库函数并返回一个可调用对象。用 C 函数的返回类型对它进行参数化。以下是一个 curses 示例：
+
+```mojo
+# WinPtr is a pointer to a curses window struct
+var wgetch = lib.get_function[c_int]("wgetch")
+
+# ... later
+
+_ = wgetch(win)  # blocks until a key is pressed.
+```
+
+你无需声明参数类型。Mojo 会根据你每次调用时传入的值进行推断，并使用
+C 调用约定转发这些值。
+
+缺失的符号会引发错误。
+
+## 传递指针
+
+许多 C API 使用指针。Mojo 用 `Pointer[T]` 表示原始指针，其中
+`T` 是被指向的类型。当 C API 期望 `void*` 时，使用 `.unsafe_bitcast[NoneType]()` 生成一个 `OpaquePointer`。
+
+- 使用 `Pointer(to=value)` 获取指向 Mojo 值的指针。
+- 使用 `.unsafe_bitcast[U]()` 将指针重新解释为另一种指针类型。
+
+例如：
+
+```mojo
+var value: c_int = 42
+var p = Pointer(to=value)  # Pointer to a C int
+var opaque: OpaquePointer[origin_of(value)] = p.unsafe_bitcast[NoneType]()
+```
+
+### 带类型的指针
+
+C 函数通常通过你提供的指针写入结果，而不是返回结果。传递 `Pointer(to=value)`，由 C 填入值。`imm` 函数参数不起作用，更糟的是它会静默失败，让值保持不变。请使用 `mut` 约定，或在调用之前将值拷贝到局部 `var` 中。
+
+以下示例将 Mojo 浮点数传递给 C 的 `frexp`，该函数将其拆分为尾数和指数：
+
+```mojo
+from std.ffi import external_call, c_double, c_int
+
+def main():
+    # double frexp(double x, int *exp);
+    # Returns the mantissa and writes the exponent through the pointer.
+    var exponent: c_int = 0
+    var mantissa = external_call["frexp", c_double](
+        c_double(12.0), Pointer(to=exponent)
+    )
+    print(t"12.0 = {mantissa} * 2^{exponent}")  # 0.75 * 2^4
+```
+
+### 不透明指针
+
+C 标准库提供了 `qsort`，一个通用排序函数。
+
+`qsort` 对数组进行原地排序。你向它提供一个指向该数组的指针、元素数量、元素大小和一个比较函数。每当 `qsort` 比较两个元素时，它就会调用你的 Mojo 原生比较函数。
+
+比较函数必须是*精简的（thin）*。也就是说，它不能作为闭包捕获任何 Mojo 状态。你必须用 `abi("C")` 标记它，以便 `qsort` 可以跨 FFI 边界调用它。
+
+以下示例对一组 C 整数进行排序。`compare()` 函数接收两个 `void*` 指针，将它们转回 `c_int*`，并返回比较结果：
+
+```mojo
+from std.ffi import external_call, c_int, c_size_t
+from std.sys import size_of
+
+def compare(
+    a: OpaquePointer[mut=False, _],
+    b: OpaquePointer[mut=False, _],
+) abi("C") -> c_int:
+    var a_value = a.unsafe_bitcast[c_int]()[]
+    var b_value = b.unsafe_bitcast[c_int]()[]
+    # `qsort` only needs to know which value is larger. Compare the values
+    # instead of subtracting them. Large differences can overflow, producing
+    # the wrong comparison result and sorting the values incorrectly.
+    if a_value < b_value:
+        return c_int(-1)
+    return c_int(a_value > b_value)
+
+def main() raises:
+    var numbers: List[c_int] = [5, 2, 9, 1, 5, 6]
+    var count = c_size_t(len(numbers))
+    var size = c_size_t(size_of[c_int]())
+    external_call["qsort", NoneType](
+        numbers.unsafe_ptr(),
+        count,
+        size,
+        compare,
+    )
+    print("Sorted numbers:", numbers)  # [1, 2, 5, 5, 6, 9]
+```
+
+## 传递结构体
+
+结构体指针允许 Mojo 和 C API 交换超出简单值的结构化数据。例如，`clock_gettime()` 会将系统的单调时间写入 C 的 `struct timespec`。
+
+要从 Mojo 读取该数据，请定义一个具有 C 兼容布局的 struct，并向其传递指针：
+
+```mojo
+from std.ffi import external_call, c_int, c_long
+from std.sys.info import platform_map
+
+@fieldwise_init
+struct CTimeSpec(RegisterPassable):  # Matches C's struct timespec.
+    # CLOCK_MONOTONIC differs by platform
+    comptime monotonic = c_int(
+        platform_map["CLOCK_MONOTONIC", linux=1, macos=6]()
+    )
+
+    var tv_sec: c_long
+    var tv_nsec: c_long
+
+    @staticmethod
+    def monotonic_nanos() raises -> c_long:
+        var time_spec = Self(0, 0)
+        if (
+            external_call["clock_gettime", c_int](
+                Self.monotonic,
+                Pointer(to=time_spec),
+            )
+            != 0
+        ):
+            raise Error("clock_gettime failed")
+        return time_spec.tv_sec * 1_000_000_000 + time_spec.tv_nsec
+
+def main() raises:
+    print(t"Monotonic time: {CTimeSpec.monotonic_nanos()} ns")
+```
+
+### C 兼容结构体
+
+C 兼容类型是普通 struct，有两个要求：
+
+- 它们必须符合 `RegisterPassable`。
+- 它们只包含 C 兼容字段。
+
+字段顺序很重要。请按照你所映射的 C struct 的相同顺序声明字段。Mojo 使用相应的 C 布局，包括[字段对齐](/docs/reference/decorators/align/)所需的填充：
+
+```mojo
+# Mirrors C `div_t`: two ints, 8 bytes total.
+@fieldwise_init
+struct DivT(RegisterPassable):
+    var quot: c_int
+    var rem: c_int
+
+def main() raises:
+    var proc = OwnedDLHandle()  # No path: opens the current process
+
+    var div = proc.get_function[DivT]("div")
+    var d = div(c_int(7), c_int(3))
+    print(t"div(7, 3): quot {d.quot} rem {d.rem}")  # 2 1
+```
+
+### 传递列表、数组和跨度
+
+Mojo 的 `List[T]` 将元素在内存中连续存储，就像 C 数组一样。你将列表作为指针加长度传递给 C，如 [`qsort` 示例](#opaque-pointers)所示。
+
+Mojo 列表指针很脆弱。使列表增长的操作（如 `append()`）可能会移动其存储，从而使先前的指针失效。因此，请在使用指针之前，在对列表做任何更改之后，重新获取指针。
+
+`Span[T]` 是 Mojo 内置的指针加长度对。它包装一个指向连续内存的指针并存储一个长度。这为你提供了内置的边界检查和安全迭代。
+
+`Array[T, length]` 是 Mojo 的固定大小数组。它内联拥有其元素，因此 Mojo 会清理它，C 也可以通过指针加长度填充它。
+
+`Span` 和 `Array` 都可以通过指针安全地与 C 相互传递。在 C 需要长度时为调用添加长度。
+
+以下示例分配一个 256 字节的 `Array`，将其传递给 C 的 `getcwd()`，用 `Span` 包装填充的字节，并将它们转换为 Mojo 的 `String`：
+
+```mojo
+from std.ffi import external_call, c_char, c_size_t
+
+def main() raises:
+    # char *getcwd(char *buf, size_t size); C fills a buffer that Mojo owns.
+    comptime CAPACITY = 256
+    var buf = Array[c_char, CAPACITY](uninitialized=True)
+
+    var filled = external_call[
+        "getcwd", Optional[Pointer[c_char, origin_of(buf)]]
+    ](buf.unsafe_ptr(), c_size_t(CAPACITY))
+    if not filled:
+        raise Error("getcwd failed")
+
+    # C reports no length, so ask for it, then wrap the bytes in a `Span`.
+    var length = external_call["strlen", c_size_t](buf.unsafe_ptr())
+    var span = Span(
+        unsafe_ptr=buf.unsafe_ptr().unsafe_bitcast[Byte](), length=Int(length)
+    )
+    print(t"{len(span)} bytes: {String(from_utf8=span)}")
+```
+
+`Span` 既可以与 Mojo 内存一起使用，也可以与 C 内存一起使用：
+
+- 如果你包装的是 Mojo 拥有的缓冲区，`Span` 会使它保持存活。
+- 如果你包装的是 C 拥有的缓冲区（例如来自 `malloc()` 的内存），`Span` 不会释放它。你必须用 C 释放 C 拥有的内存。
+
+## 传递字符串
+
+C 字符串是以 null 结尾的字节数组（`char*`）。Mojo 字符串是带长度前缀的 UTF-8。
+
+### 将 Mojo 字符串转换为 C 字符串
+
+在 `String` 上调用 `as_c_string_slice()` 以确保以 null 结尾，并返回类型安全的 `CStringSlice`。
+
+```mojo
+name.as_c_string_slice()
+```
+
+源字符串必须是可变的，因为 `as_c_string_slice()` 可能会追加一个终止零字节。它还可能移动字符串的缓冲区，因此请调用它一次并重用结果。
+
+### 将 C 字符串转换为 Mojo 字符串
+
+使用 `String(unsafe_from_utf8_ptr=...)` 将以 null 结尾的 C 字符串拷贝到 Mojo 字符串中：
+
+```mojo
+# Copies the bytes; uses `strlen()`.
+String(unsafe_from_utf8_ptr=c_string_ptr)
+```
+
+当你已经知道长度时，可以将 C 字节包装在不拷贝、不拥有的 `Span[Byte]` 中，并将其转换为 Mojo `String`。
+
+例如，C 的 `strdup()` 分配并返回字符串的副本。你可以将其结果包装在 `Span` 中，把字节转换为 Mojo 字符串，然后释放 C 拥有的内存：
+
+```mojo
+var name: String = "Echo"
+var cptr = external_call[
+    "strdup", Optional[Pointer[c_char, MutUntrackedOrigin]]
+](name.as_c_string_slice())
+if cptr:
+    var ptr = cptr.value()
+    # Ask C for the length. A Mojo string's `byte_length()` measures the
+    # Mojo side, which says nothing about the buffer C returned.
+    var length = external_call["strlen", c_size_t](ptr)
+    var span = Span(unsafe_ptr=ptr.unsafe_bitcast[Byte](), length=Int(length))
+    print(String(from_utf8=span))  # or from_utf8_lossy or unsafe_from_utf8
+    external_call["free", NoneType](ptr.unsafe_bitcast[NoneType]())  # free it
+```
+
+### 将 Mojo 字符串字面量转换为 C 字符串
+
+字符串字面量可以传递给期望以 null 结尾的 `char*` 的 C API。调用 `as_c_string_slice()` 以访问 C 字符串：
+
+```mojo
+"libm.so.6".as_c_string_slice()
+```
+
+Mojo 在编译时执行转换，并将以 null 结尾的字符串嵌入编译后的程序中。
+
+## 内存管理
+
+Mojo 跟踪自身内存的生命周期。C 内存背后没有 Mojo 值，因此 Mojo 没有什么可跟踪的。跨边界的每个分配仍然属于其中一方，那一方仍然负责释放它：
+
+- 用 C 的 `free()` 释放 C 内存。
+- 让 Mojo 处理自己的内存，不安全的分配除外。
+
+### 分配 C 内存
+
+C 分配器（如 `malloc`）返回 C 拥有的内存。当分配失败时，`malloc` 返回 null。将返回类型包装在 `Optional` 中：
+
+```mojo
+from std.ffi import external_call, c_size_t
+
+def create_buffer(
+    n: c_size_t,
+) -> Optional[Pointer[UInt8, MutUntrackedOrigin]]:
+    return external_call[
+        "malloc", Optional[Pointer[UInt8, MutUntrackedOrigin]]
+    ](n)
+
+def main() raises:
+    var buf = create_buffer(c_size_t(16))
+    if not buf:
+        raise Error("malloc failed")
+    var ptr = buf.value()
+    ptr[unsafe_offset=0] = 42
+    print(ptr[unsafe_offset=0])  # 42
+    external_call["free", NoneType](ptr.unsafe_bitcast[NoneType]())
+```
+
+`MutUntrackedOrigin` 告诉 Mojo 不要推论此指针的生命周期。它与本页上的所有其他 origin 相反。它不是把指针与某个所有者绑定，而是说明没有 Mojo 值拥有*这*块内存。你负责保持它有效并释放它。你必须用 C 的内存管理函数（例如 `free`）释放它。
+
+### 自动释放 C 内存
+
+手动为每个 `malloc()` 配对相应的 `free()` 很容易出错。上下文管理器可以管理分配并为你释放它。当以下块退出时，`__exit__()` 会调用 `free()`，即使发生了已引发的错误：
+
+```mojo
+from std.ffi import external_call, c_size_t
+
+struct CBuffer:
+    var ptr: Pointer[UInt8, MutUntrackedOrigin]
+    var size: c_size_t
+
+    def __init__(out self, n: c_size_t) raises:
+        self.size = n
+        var allocated = external_call[
+            "malloc", Optional[Pointer[UInt8, MutUntrackedOrigin]]
+        ](n)
+        if not allocated:
+            raise Error("malloc failed")
+        self.ptr = allocated.value()
+
+    def __enter__(self) -> Pointer[UInt8, MutUntrackedOrigin]:
+        return self.ptr
+
+    def __exit__(self):
+        external_call["free", NoneType](self.ptr.unsafe_bitcast[NoneType]())
+
+def main() raises:
+    with CBuffer(c_size_t(1024)) as buf:
+        buf[unsafe_offset=0] = 42
+        print(buf[unsafe_offset=0])  # 42
+    # The buffer is freed here.
+```
+
+### null 返回值
+
+C 使用 null 指针来表示"无"或"失败"。Mojo 的 `Pointer` 不能为 null，因此请将任何"可能为 null"的返回值包装在 `Optional` 中。你刚才看到的 `malloc` 示例展示了这种模式。
+
+`Optional` 的空情形不会为调用增加任何内容，也不会产生任何传递成本：
+
+```mojo
+from std.ffi import external_call, c_char
+
+def main() raises:
+    var name: String = "PATH"
+    var found = external_call[
+        "getenv", Optional[Pointer[c_char, MutUntrackedOrigin]]
+    ](name.as_c_string_slice())
+    if found:
+        print(String(unsafe_from_utf8_ptr=found.value()))
+    else:
+        print(t"{name} is not set")
+```
+
+声明未包装的、非可选的 `Pointer` 可以编译通过。但它也会把 C 的 null 当作有效指针。解引用会导致未定义行为，通常会使程序崩溃。
+
+### 让 Mojo 值保持存活
+
+指向 Mojo 内存的指针带有跟踪值生命周期的 origin。当你从变量派生指针时，Mojo 在指针存活期间会保持该变量存活。它会拒绝让变量先于指针死去的代码：
+
+```mojo
+from std.ffi import OwnedDLHandle, c_size_t
+
+def main() raises:
+    var proc = OwnedDLHandle()  # No path: opens the current process.
+    var c_strlen = proc.get_function[c_size_t]("strlen")
+
+    # The pointer carries `line`'s origin, so `line` outlives the call.
+    var line = String("Hello")
+    var n = c_strlen(line.as_c_string_slice())
+    print(t"length of '{line}': {n}")  # 5
+
+    # Refill the same variable and call again. The origin still holds.
+    line = "Hello, Mojo!"
+    n = c_strlen(line.as_c_string_slice())
+    print(t"length of '{line}': {n}")  # 12
+```
+
+指针的 origin 将其生命周期绑定到 `line`。当 C 使用指针时，Mojo 会保持 `line` 存活。因此，你不需要变通方法来延长它的生命周期。
+
+## 安全性
+
+在 Mojo 内部，编译器会检查类型、通过 origin 跟踪生命周期，并拒绝在值死亡后使用它的代码。这些都不会跨越 C 边界。C 没有 origin、没有所有权，也没有 Mojo 可以读取的类型信息，因此编译器只会发出你所描述的调用，并相信你描述得正确。
+
+这意味着你就是类型检查器。C 头文件是契约，匹配它是你的工作：
+
+- **声明 C 所声明的类型。** 使用 `std.ffi` 别名，让你的类型跟踪目标的 C ABI。不匹配不是编译错误，而是错误答案。
+- **在分配内存的一方释放内存。** C 内存需要 C 的 `free()`。Mojo 内存必须比每次 C 使用存活得更久，包括调用返回后继续的使用。
+- **假定未定义行为，而不是异常。** 不匹配的声明通常会产生看似合理的结果而不是崩溃，因此通过测试只能作为声明正确的弱证据。
+
+## 不安全操作
+
+Mojo 用 `unsafe_` 前缀标记它无法为你检查的操作，这与标准库中通篇使用的约定相同。本页使用了四个：`unsafe_ptr()` 用于将原始指针交给 C，`unsafe_bitcast()` 用于重新解释指针，`unsafe_offset=` 用于越过第一个元素进行索引，以及 `String(unsafe_from_utf8_ptr=)` 用于信任 C 给你的字节。
+
+每个 `unsafe_` 操作都标记了你从编译器手中接管的一项保证和责任。
+
+只要指针停留在 Mojo 视野之内，origin 仍然有所帮助。从变量派生指针（如 `line.as_c_string_slice()`）会使该变量在指针存活的整个期间保持存活。当 C 将指针存储在 Mojo 看不到的地方时，这种保护就结束了。
+
+`external_call()` 和 `OwnedDLHandle` 是有意设计为低层的。两者都不会验证 C 签名，也不会保护你免受 ABI 不匹配之害。小的声明错误可能会产生看似合理但不正确的结果，而其他错误只在构建时或移到不同平台时才会失败。
+
+每个条目都标注了它适用的 API。
+
+### 在运行时静默出错
+
+- **类型匹配**（两者）：没有任何东西会根据你调用的函数的 C 声明来验证你的参数或返回类型。
+- **返回类型宽度**（两者）：声明的返回类型比 C 实际返回的窄时，只保留低位。把 `strchr` 的 `char*` 返回声明为 `c_int`，一个真实值为 6199428535 的指针会返回为 1904461239。这是截断而不是噪声，因此错误的值仍然看起来合理。两个被截断的指针相减，误差会相互抵消，让你出于错误的原因得到正确的偏移量。
+- **参数类型宽度和符号性**（两者）：你写的任何内容都会逐字成为声明。当 C 声明为 `int` 而你传递 `c_char` 时，被调用方读取的是调用方从未完全设置的寄存器。
+- **未声明的参数类型**（`OwnedDLHandle`）：`get_function()` 只接受返回类型，因此没有任何东西将参数连接到 C 函数的真实签名。用 `c_int` 调用 `get_function[c_double]("sqrt")` 会返回 `0.0`，而不是失败。
+- **原始 `String` 参数**（`OwnedDLHandle`）：`external_call()` 在编译时拒绝 `String`，但来自 `get_function()` 的可调用对象会接受它，并读取该 struct 的字节恰好是什么。将 53 字节的 `String` 传递给 `strlen` 会返回 5。请始终传递 `as_c_string_slice()`。
+- **返回到库中的指针**（`OwnedDLHandle`）：当 C 函数返回指向其自身库的指针时，返回类型必须从句柄借用，如 `Pointer[c_char, lib_origin]`，其中 `comptime lib_origin = ImmOrigin(origin_of(lib))`。声明为 `ImmStaticOrigin` 可以编译通过，但句柄一旦关闭库，就会读取已释放的内存。
+- **没有 `num_fixed_args` 的可变参数被调用方**（`external_call()`）：为每个 C 可变参数函数传递 `num_fixed_args`。没有它，每个参数默认为非可变参数被调用方的固定参数，这对 `open()` 或 `snprintf()` 而言是错误的 ABI。ARM64 macOS 上的 AAPCS 与固定参数不同地传递可变参数，因此这种错误可能在 x86-64 Linux 上正常工作，但在 Apple silicon 上出错。
+- **平台差异化的 C 类型**（两者）：`c_long` 和 `c_ulong` 按目标解析，而不是解析为一个固定宽度。Mojo 今天支持的每个平台都是 LP64，所以为 C `long` 写 `Int64` 恰好可以工作。别名说出你的意思，并且在支持的目标变化时仍然如此。
+- **C 在调用后保留的指针**（两者）：只要 Mojo 能看到，origin 就保护指针。Mojo 看不到 C 将指针存储起来供以后使用，因此调用返回并不表示 C 已完成对你所传递内容的使用。请查阅 C 文档了解函数是否保留指针。
+- **非 null 结尾的缓冲区**（两者）：指向没有终止符的缓冲区的裸 `Pointer[c_char]` 会让 C 字符串函数读取到末尾之外。`CStringSlice` 是这方面的护栏，确保存在 null 终止符。
+
+### 在构建时被捕获
+
+这些会让构建失败，但并不总是在你期望的地方。
+
+- **一个模块中一个符号的两个签名**（`external_call()`）：在同一文件中用不同的参数类型声明 `strchr` 两次会导致构建失败。诊断信息会指向 `std.ffi`，而不是你的任何一个调用点。当包装器和内联调用不一致时很容易遇到这种情况。`get_function()` 转换的是运行时指针，因此它没有可在模块级冲突的声明。
+- **字符串参数**（`external_call()`）：传递 `String` 在编译时被拒绝，错误信息将 `as_c_string_slice()` 作为修复方法。这是 API 为你捕获的唯一一个签名错误。请小心，因为检查范围很窄，而 `OwnedDLHandle` 不重复这种检查。
+- **返回类型必须是 `RegisterPassable`**（两者）：`return_type` 绑定到 `RegisterPassable`，因此编译器会拒绝任何更大的类型。按值返回大型 struct 的 C 函数不能直接调用。C ABI 通过一个隐藏的指针参数返回这些内容，因此请在 Mojo 中分配该 struct，向其传递指针，并将返回类型声明为 `NoneType`。
+
+### 限制
+
+- **`external_call()` 无法加载动态库**：它按名称调用 C 函数，将名称留给 Mojo 解析。请使用 `OwnedDLHandle` 在运行时加载动态库并检索其函数。
+- **函数解析按 C 符号名进行**（两者）：C++ 函数需要 `extern "C"` 才可被调用。
+- **`OwnedDLHandle` 在运行时解析一切**：错误的库名或缺失的符号会在程序运行时失败，而不是在构建时失败，并且库必须存在于运行程序的机器上，而不是构建它的机器上。`check_symbol()` 测试符号是否存在，但不会验证其签名。
+- **`mojo run` 与 `mojo build` 解析符号的方式不同**（`external_call()`）：`mojo run` 在已加载的进程映像中查找符号。`mojo build` 通过 C 编译器驱动程序进行链接。libc 两种方式都可用，因此运行的调用并不证明相同的调用将链接成功。来自另一个系统库的符号可能在 `mojo run` 下解析，然后在 `mojo build` 下因 `DSO missing from command line` 而失败。发生这种情况时请在 `MODULAR_MOJO_MAX_SYSTEM_LIBS` 中指定库名。
+
+### API 确实检查的内容
+
+`OwnedDLHandle` 提供而 `external_call()` 没有的两个保证：
+
+- 缺失的符号会引发错误而不是中止进程，因此你可以探测可选符号。
+- 来自 `get_function()` 的可调用对象从句柄借用，因此在查找和调用之间不会关闭库。
+
+## C 类型参考
+
+{/* markdownlint-disable MD013 */}
+
+| C 类型           | `std.ffi` 别名 | 等价 Mojo 类型         | 备注                                                |
+|------------------|-----------------|----------------------|-----------------------------------------------------|
+| `int`            | `c_int`         | `Int32`              | 迄今最常见的类型                                     |
+| `short`          | `c_short`       | `Int16`              |                                                     |
+| `long`           | `c_long`        | 取决于目标           | 在 Linux 和 macOS 上为 64 位                        |
+| `long long`      | `c_long_long`   | `Int64`              | 始终为 64 位。                                       |
+| `unsigned char`  | `c_uchar`       | `UInt8`              |                                                     |
+| `char`           | `c_char`        | `Int8`               | 有符号；你大多会看到它作为 `char*` 出现              |
+| `unsigned short` | `c_ushort`      | `UInt16`             |                                                     |
+| `unsigned int`   | `c_uint`        | `UInt32`             |                                                     |
+| `unsigned long`  | `c_ulong`       | 取决于目标           | 与 `c_long` 匹配                                    |
+| `float`          | `c_float`       | `Float32`            |                                                     |
+| `double`         | `c_double`      | `Float64`            |                                                     |
+| `size_t`         | `c_size_t`      | `UInt`               | 用于大小和计数                                       |
+| `ssize_t`        | `c_ssize_t`     | `Int`                | 用于可以为负的大小                                   |
+| `void*`          | `OpaquePointer` | `Pointer[NoneType]`  | 参见[指针小节](#pointers)，使用 origin               |
+
+{/* markdownlint-enable MD013 */}

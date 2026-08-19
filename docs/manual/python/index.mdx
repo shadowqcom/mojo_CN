@@ -10,7 +10,7 @@ Mojo 不仅使用了 Python 风格的语法，我们的计划是提供与 Python
 
 - [从 Mojo 调用 Python](/docs/manual/python/python-from-mojo/)：
 
-  你可以导入现有的 Python 模块并在 Mojo 程序中使用它们。这是 100% 兼容的，因为我们使用未经修改的 CPython 运行时，以完全兼容现有的 Python 库。你可以直接从 Mojo 构建 Python 对象并调用 Python 函数，使用 CPython 解释器作为动态库（在图 1 中显示为 `libpython.dylib`）。
+  你可以导入现有的 Python 模块并在 Mojo 程序中使用它们。这是 100% 兼容的，因为我们使用未经修改的 CPython 运行时，以完全兼容现有的 Python 库。你可以直接从 Mojo 构造 Python 对象并调用 Python 函数，将 CPython 解释器作为动态库使用（在图 1 中显示为 `libpython.dylib`）。
 
 - [从 Python 调用 Mojo](/docs/manual/python/mojo-from-python/)：
 
@@ -21,12 +21,18 @@ Mojo 不仅使用了 Python 风格的语法，我们的计划是提供与 Python
        className="light" alt="" />
   <img src={require('../images/python/python-interop-dark.png').default}
        className="dark" alt="" />
-  <figcaption><b>图 1.</b> Mojo 程序调用 Python 以及 Python 程序调用 Mojo 模块的简化示意图</figcaption>
+  <figcaption><b>图 1.</b> Mojo 程序调用 Python 以及 Python 程序调用 Mojo 模块的简化示意图。</figcaption>
 </figure>
 
 通过拥抱双向的语言互操作，你可以选择最适合你用例的 Mojo 与 Python 协作方式。
 
-**要了解更多关于 Python ↔ Mojo 桥接的内容，请继续阅读**：
+:::note Python 要求
+
+Mojo 本身不要求 Python。要使用本节中所述的 Mojo ↔ Python 互操作特性，你需要 Python 3.10–3.14。
+
+:::
+
+**要了解更多关于桥接 Python ↔ Mojo 的内容，请继续阅读**：
 
 import ListingCard from '@site/src/components/Listing/ListingCard';
 import ListingCards from '@site/src/components/Listing/ListingCards';
@@ -34,8 +40,8 @@ import ListingCards from '@site/src/components/Listing/ListingCards';
 <ListingCards>
   <ListingCard title="从 Mojo 调用 Python"
     url="/docs/manual/python/python-from-mojo"
-    description="如何在 Mojo 代码中导入 Python 模块并使用它们" />
+    description="如何导入 Python 模块并在 Mojo 代码中使用它们" />
   <ListingCard title="从 Python 调用 Mojo"
     url="/docs/manual/python/mojo-from-python"
-    description="如何在 Python 代码中导入 Mojo 模块并使用它们" />
+    description="如何导入 Mojo 模块并在 Python 代码中使用它们" />
 </ListingCards>

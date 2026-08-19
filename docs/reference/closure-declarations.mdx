@@ -1,0 +1,470 @@
+---
+title: Mojo 闭包声明参考
+sidebar_label: 闭包声明
+sidebar_position: 9
+description: >
+  Mojo 闭包声明语法参考。涵盖捕获列表、捕获约定、移动操作符、
+  参数化闭包、声明级效果、嵌套，以及常见的捕获列表错误。
+---
+
+{/* VERIFIED: Signatures.cpp (parseCaptureList, ParsedCaptureList),
+     Signatures.h (CaptureConvention, ParsedCaptureList),
+     DeclResolution.cpp (isNonlegacyClosure classification,
+     createCaptureValues, setDefaultCaptureForScope),
+     unified_closures.mojo, unified_closures_mem.mojo,
+     unified_closures_params.mojo,
+     unified_closure_captured_param.mojo,
+     unified_closure_structs.mojo, unified_closure_inline.mojo.
+     Consulted: StructEmitter.cpp, ASTDecl.h, MojoDiags.h */}
+
+*闭包*（closure）是带有*捕获列表*（capture list）的嵌套函数，捕获列表控制闭包如何访问其嵌套作用域中的值：
+
+```mojo
+def main():
+    var multiplier = 3
+
+    def scale(x: Int) {imm multiplier} -> Int:
+        return x * multiplier
+
+    print(scale(5))  # 15
+```
+
+`{imm multiplier}` 以不可变引用的方式引用外层作用域中的 `multiplier`。如果没有捕获列表，引用任何外部值都是编译错误。
+
+闭包不能超出其声明所在的作用域存活。Mojo 不支持逃逸闭包（escaping closure）或异步执行。
+
+:::note
+当闭包捕获的每个值都是 `Copyable` 时，闭包也是 `Copyable` 的。闭包可以手动复制到堆分配的内存中，但 Mojo 不提供堆分配或存在式闭包的内置机制。
+:::
+
+## 闭包语法
+
+{/* VERIFIED: From parseCaptureList in Signatures.cpp:1327-1424 */}
+
+```text
+def name(argument-list) {capture-list} -> ReturnType:
+    body
+
+def name[parameter-list](argument-list) {capture-list}
+    -> ReturnType:
+    body
+
+def name(argument-list) raises {capture-list} -> ReturnType:
+    body
+```
+
+效果（例如 `raises`）位于参数列表和捕获列表之间。捕获列表紧接在返回箭头之前。捕获列表可以为空（`{}`）或完全省略；这两种形式都禁止引用外部值。
+
+参数列表、形参列表、效果、返回类型和 `where` 子句遵循与顶层函数相同的规则。参见[函数声明](./function-declarations.mdx)。
+
+## 捕获列表语法
+
+{/* VERIFIED: parseCaptureList, Signatures.cpp:1327-1424 */}
+
+捕获列表是由花括号包围、以逗号分隔的*条目*序列：
+
+{/* markdownlint-disable MD013 */}
+
+| 形式           | 含义                                          |
+|----------------|-----------------------------------------------|
+| `<conv> name`  | 以约定 `<conv>` 捕获 `name`                   |
+| `<conv>`       | 所有自由变量的默认约定                        |
+| `name`         | 以 `imm` 约定捕获 `name`                      |
+| `<conv> name^` | 移动捕获（仅与 `var` 或无 `<conv>` 一起使用） |
+
+{/* markdownlint-enable MD013 */}
+
+`<conv>` 是 `imm`、`mut`、`var` 或 `ref` 中的一种。在列表中的位置无关紧要：`{mut, var z}` 和 `{var z, mut}` 等价。允许末尾逗号。
+
+最多只能有一个条目省略名称（默认约定条目）。第二个未命名条目会产生错误，指出默认捕获约定重复。
+
+只能在 `var` 条目或没有约定关键字的条目上使用 `^` 标记。
+
+## 捕获约定
+
+{/* markdownlint-disable MD013 */}
+
+| 约定       | 形式                     | 闭包中的存储               | 与外层的生命周期关系 |
+|------------|--------------------------|----------------------------|----------------------|
+| `imm`      | `{imm name}` / `{imm}`   | 不可变引用                 | 同生命周期           |
+| `mut`      | `{mut name}` / `{mut}`   | 可变引用                   | 同生命周期           |
+| `ref`      | `{ref name}` / `{ref}`   | 引用，可变性来自源         | 同生命周期           |
+| `var`      | `{var name}` / `{var}`   | 拥有的副本                 | 独立                 |
+| 移动       | `{var name^}`            | 拥有，从外层消费           | 消费外层             |
+| 可复制     | `{var^}`                 | 拥有，闭包为 `Copyable`    | 独立                 |
+
+{/* markdownlint-enable MD013 */}
+
+## `imm`
+
+{/* VERIFIED: unified_closures_mem.mojo:72-80,
+     unified_closure_captured_param.mojo:98 */}
+
+不可变引用。这是默认约定。闭包在每次调用时读取外部值，而不是捕获一个副本：
+
+```mojo
+def main():
+    var limit = 10
+
+    def check(x: Int) {imm limit} -> Bool:
+        return x < limit
+
+    print(check(5))   # True
+    limit = 3
+    print(check(5))   # False
+```
+
+不带变量名的 `{imm}` 将 `imm` 应用于函数体中的每个自由变量。不带约定关键字的裸名称也默认为 `imm`：`{x}` 等价于 `{imm x}`。
+
+## `mut`
+
+{/* VERIFIED: unified_closures.mojo:384,
+     unified_closures_mem.mojo:61 */}
+
+可变引用。在闭包内向捕获值写入会修改其在外层作用域中的绑定：
+
+```mojo
+def main():
+    var total = 0
+
+    def accumulate(x: Int) {mut total}:
+        total += x
+
+    accumulate(10)
+    accumulate(20)
+    print(total)  # 30
+```
+
+不带变量名的 `{mut}` 将 `mut` 应用于函数体中的每个自由变量，以可变引用方式捕获每一个。
+
+{/*
+Removed for now:
+
+The outer binding must be mutable. Capturing an immutable
+register-passable name (like an `imm` parameter of type `Int`)
+with `mut` or `ref` produces the same diagnostic, with the
+offending convention substituted into the message:
+
+```text
+error: register passible value 'x' can not be captured by
+       'mut'. Do you mean 'imm'?
+
+error: register passible value 'x' can not be captured by
+       'ref'. Do you mean 'imm'?
+```
+*/}
+
+## `var`
+
+{/* VERIFIED: unified_closures_mem.mojo:50-57 */}
+
+拥有的副本。闭包在声明时获得自己的值副本。之后对外层绑定的更改不会影响闭包的副本，反之亦然：
+
+```mojo
+def main():
+    var snapshot = 42
+
+    def frozen() {var snapshot} -> Int:
+        return snapshot
+
+    snapshot = 999
+    print(frozen())  # 42
+```
+
+不带变量名的 `{var}` 复制闭包函数体中引用的每个自由变量。复制初始化器在每个闭包声明上运行一次。
+
+以 `var` 方式捕获大型 `List` 或 `String` 会在该处进行分配。当不需要独立副本时，请使用 `imm` 或 `mut`。
+
+## 移动捕获：`var name^`
+
+{/* VERIFIED: unified_closures.mojo:260,
+     Signatures.cpp:1371-1386 */}
+
+将 `name` 的所有权转移给闭包。外层绑定被消费；在闭包声明之后使用它是编译错误：
+
+```mojo
+def main():
+    var data: List[Int] = [1, 2, 3]
+
+    def take_data() {var data^}:
+        print(data)
+
+    take_data()      # [1, 2, 3]
+    # print(data)    # error: 'data' is uninitialized
+                     #        after move
+```
+
+移动捕获跳过 `var name` 会执行的复制，是按值捕获仅可移动类型的唯一方式。
+
+约束：
+
+- 只在 `var` 之后或没有约定的裸名称之后合法。
+- `{imm name^}`、`{mut name^}` 和 `{ref name^}` 会被拒绝。
+- 裸 `name^` 等价于 `var name^`。
+
+## 可复制闭包：`var^`
+
+{/* VERIFIED: unified_closures_mem.mojo:94-103,
+     unified_closures.mojo:185, Signatures.cpp:1391-1406 */}
+
+不带变量名的 `{var^}` 将移动捕获作为函数体中每个自由变量的默认方式。当每个捕获类型都是 `Copyable` 时，所得的闭包值也是 `Copyable` 的：
+
+```mojo
+def main():
+    var label = "sensor-1"
+
+    def tag() {var^} -> String:
+        return label
+
+    var clone = tag           # closure value copied
+    print(tag())              # sensor-1
+    print(clone())            # sensor-1
+```
+
+复制闭包会调用每个捕获值的复制初始化器。复制发生在赋值时，而不是在闭包声明时。
+
+约束：
+
+- `{var^}` 是一个默认约定条目。一个捕获列表最多只能包含一个默认约定条目。
+- 如果任何捕获类型是仅可移动的，则闭包是 `Movable` 但不是 `Copyable`。
+
+与 `{var name^}` 的对比：
+
+{/* markdownlint-disable MD013 */}
+
+| 形式          | 捕获的名称                | 闭包值                                |
+|---------------|---------------------------|---------------------------------------|
+| `{var name^}` | 仅 `name`，按移动         | 默认不是 `Copyable`                   |
+| `{var^}`      | 所有引用的名称，按移动     | 如果捕获是 `Copyable` 则为 `Copyable` |
+
+{/* markdownlint-enable MD013 */}
+
+## `ref`
+
+{/* VERIFIED: unified_closures.mojo:239-254,
+     MutOrigin/origin_of usage */}
+
+可变性来自外层绑定源的引用。闭包不选择 `imm` 或 `mut`；它保留该源的可变性：
+
+```mojo
+def show_mutability(ref items: List[Int]):
+    def report() {ref items}:
+        comptime if origin_of(items).mut:
+            print("mut")
+        else:
+            print("immut")
+    report()
+
+# `xs` uses default `imm` convention, immutable reference
+def from_imm(xs: List[Int]):
+    show_mutability(xs)
+
+# `xs` uses `mut` convention, mutable reference
+def from_mut(mut xs: List[Int]):
+    show_mutability(xs)
+
+def main():
+    var nums: List[Int] = [10, 20, 30]
+    from_imm(nums)    # immut
+    from_mut(nums)    # mut
+```
+
+`ref` 是唯一能原样转发源信息的约定。`imm` 和 `mut` 创建具有固定可变性的引用；`var` 完全移除源关系。
+
+`ref` 捕获用于必须在不同可变性上下文中工作的参数化代码。在普通闭包中，`imm` 和 `mut` 产生更清晰的签名。
+
+## 空的和省略的捕获列表
+
+{/* VERIFIED: parseCaptureList early return,
+     Signatures.cpp:1330-1331 */}
+
+空捕获列表（`{}`）与省略捕获列表的结果相同：任何对外部值的引用都会被拒绝，并报关于推断捕获约定的错误。
+
+这两种形式都允许函数体只使用其参数和局部声明的值。该函数表现为不带捕获的普通嵌套函数。
+
+当有意不捕获时，优先使用 `{}`。显式的花括号使约束在声明处可见。
+
+## 混合约定
+
+{/* VERIFIED: parseCaptureList loop, Signatures.cpp:1412-1423 */}
+
+每个捕获值可以使用自己的约定：
+
+```mojo
+def main():
+    var config = "prod"
+    var count = 0
+    var label = "run-1"
+
+    def process() {imm config, mut count, var label}:
+        count += 1
+        print(config, count, label)
+
+    process()   # prod 1 run-1
+    label = "run-2"
+    process()   # prod 2 run-1
+                # (label was copied at declaration time)
+```
+
+混合列表中的裸名称使用 `imm`，而不是周围条目的约定：
+
+```mojo
+# y is captured as 'imm', not 'mut'
+def f() {var z, mut x, y}:
+    # ...
+```
+
+## 默认约定
+
+{/* VERIFIED: captureAllByConvention path,
+     Signatures.cpp:1393-1406 */}
+
+不带名称的约定关键字为每个未显式命名的自由变量设置默认值：
+
+```mojo
+def main():
+    var a = 1
+    var b = 2
+    var z = "snapshot"
+
+    def mixed() {mut, var z}:
+        a += 10           # 'a' uses default: mut
+        b += 20           # 'b' uses default: mut
+        print(a, b, z)
+
+    mixed()               # 11 22 snapshot
+    z = "changed"
+    mixed()               # 21 42 snapshot
+                          # ('z' was copied at declaration)
+```
+
+规则：
+
+- 一个捕获列表最多只能包含一个默认约定条目。
+- 在列表中的位置无关紧要。
+- 允许末尾逗号。
+- 默认值不适用于由显式条目覆盖的名称。在 `{mut, var z}` 中，`var z` 覆盖 `z` 的默认值。
+
+## 参数化闭包
+
+{/* VERIFIED: unified_closure_captured_param.mojo,
+     unified_closures_params.mojo:90-102 */}
+
+闭包可以声明自己的编译时形参列表：
+
+```mojo
+def main():
+    # The `Intable` trait supports `Int` conversion
+    def double[T: Intable](x: T) {} -> Int:
+        return Int(x) * 2
+
+    print(double[Int](5))         # 10
+    print(double[Float64](3.4))   # 6
+```
+
+形参列表、捕获列表、效果和返回类型的出现顺序与顶层函数相同：`name[parameters](arguments) effects {captures} -> ReturnType`。
+
+形参与捕获独立工作。形参在每个调用点提供，而捕获列表控制闭包与外层作用域的关系。也支持可变形参（`def closure[*Ts: Coord](*args: *Ts)`）。
+
+## 效果
+
+{/* VERIFIED: unified_closures.mojo:50-56, 408-412, 432-438 */}
+
+效果出现在参数列表和捕获列表之间。
+
+{/* markdownlint-disable MD013 */}
+
+| 效果           | 形式                            | 类型示例                              |
+|----------------|---------------------------------|---------------------------------------|
+| `raises`        | `(args) raises {captures} -> T` | def (String) raises -> Int            |
+| `thin`          | `(args) thin -> T`              | def (T) thin -> U                     |
+| `abi(language)` | `(args) abi(language) -> T`     | def (Float64) thin abi("C") -> Float64 |
+
+{/* markdownlint-enable MD013 */}
+
+:::caution
+
+不能将非 Mojo 的 `abi()` 效果与引发函数组合。引发函数以不明显的方式更改调用约定。Mojo 编译器：
+
+- 接受 `def (String) abi("Mojo") raises`
+- 拒绝 `def (String) abi("C") raises`
+
+:::
+
+`raises` 示例：
+
+```mojo
+def main() raises:
+    var y = 2
+
+    def divide(x: Int) raises {var y} -> Int:
+        if y == 0:
+            raise Error("divide by zero")
+        return x // y
+
+    print(divide(10))   # 5
+```
+
+`thin` 效果适用于函数*类型*，而不适用于闭包声明。`thin` 描述的是不捕获的函数类型，因此它无法表示带捕获的闭包。`thin` 函数类型也是唯一允许末尾 `where` 子句的类型。参见[函数声明](./function-declarations.mdx)。
+
+## 嵌套
+
+{/* VERIFIED: unified_closures.mojo:309-329 */}
+
+闭包可以嵌套在闭包内。每一层都有自己的捕获列表。内层闭包可以捕获其外层闭包已经捕获的名称：
+
+```mojo
+def main():
+    var y = 4
+
+    def outer() {var y} -> Int:
+        def inner() {var y} -> Int:
+            return y
+        return inner() + y
+
+    print(outer())   # 8
+```
+
+内层闭包可以按名称捕获外层闭包。这是嵌套回调组合的方式：
+
+```mojo
+def main():
+    def make_adder(n: Int):
+        def add(x: Int) {var n} -> Int:
+            return x + n
+
+        def twice(x: Int) {var add} -> Int:
+            return add(add(x))
+
+        print(twice(5))   # ((5 + 3) + 3) = 11
+                          # add(add(5)) = add(8) = 11
+
+    make_adder(3)
+```
+
+闭包是值，可以在捕获列表中使用。内层闭包可以通过 `var`、`imm`、`mut` 或 `ref` 捕获外层闭包，就像任何其他值一样。
+
+## 捕获列表错误
+
+{/* VERIFIED: parseCaptureList diagnostics,
+     Signatures.cpp:1355-1423 */}
+
+{/* markdownlint-disable MD013 */}
+
+| 编译器报错                                                   | 触发条件                                                     |
+|--------------------------------------------------------------|--------------------------------------------------------------|
+| 转移标记 `^` 没有伴随 `var` 约定                            | `^` 跟在 `mut`、`imm` 或 `ref` 之后                          |
+| 重复的默认约定                                               | 一个列表中有两个裸约定关键字                                 |
+| 捕获位置中出现无法识别的标记                                 | 既不是约定关键字也不是名称的标记                             |
+| 条目之间缺少逗号                                             | 标识符后跟一个无法识别的标记                                 |
+| 未终止的捕获列表                                             | 缺少右花括号 `}`                                            |
+| 捕获列表未覆盖的外层名称                                     | 函数体引用了捕获列表未覆盖的外层名称                         |
+| 移动捕获后使用                                               | 在 `{var name^}` 消费名称后引用该名称                         |
+
+{/* markdownlint-enable MD013 */}
+
+## 限制
+
+- **不可逃逸。** 闭包不能超出其外层作用域存活。不支持从声明函数中返回闭包，或将闭包存储到超出外层作用域结束之后。
+- **声明上不可使用 `thin`。** 这些适用于函数类型，而不适用于闭包声明。带捕获的声明不能是 `thin` 的。
+- **带有闭包字段的 trait 一致性。** 结构体可以包含闭包类型的字段并遵循 trait，但在捕获效果被移除之前，该 trait 的每个方法都必须声明为 `capturing`（参见 `unified_closure_structs.mojo`）。

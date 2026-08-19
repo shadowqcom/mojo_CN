@@ -1,0 +1,290 @@
+---
+title: Lambda 表达式
+description: >
+  Lambda 表达式是一种小型匿名函数，允许你为在其他语句和函数中使用而编写
+  即时的自定义行为。
+---
+
+**Lambda 函数**是一种小型的匿名函数。与命名函数一样，它可以接受实参、返回值，并可以从周围作用域中捕获值。区别在于，你可以在使用 lambda 的位置直接编写它，而无需为其单独声明。
+
+当算法保持不变但其中一小部分行为发生变化时，lambda 最为有用。一个转换操作需要知道如何转换值。一个排序操作需要知道如何比较值。一个验证器需要判断某个值是否满足规则。一个回调需要知道程序其他部分调用它时应该做什么。
+
+你可以为这些需求分别编写单独的命名函数，但当行为简短且仅在一处使用时，lambda 将其放在使用它的算法旁边。算法保持易于阅读，且行为不需要永久名称。
+
+## 创建 lambda
+
+lambda 表达式看起来像一个没有名称的函数声明：
+
+```mojo
+lambda (x: Int) -> Int: x + 1
+```
+
+其函数体始终是单个表达式。当你调用该 lambda 时，表达式被求值并返回其结果：
+
+```mojo
+var inc = lambda (x: Int) -> Int: x + 1
+
+print(inc(4))  # 5
+```
+
+它们与你期望的命名函数行为相同，但仪式更少：
+
+```mojo
+def inc(x: Int) -> Int:
+    return x + 1
+
+print(inc(4))  # 5
+```
+
+### 内联 lambda
+
+lambda 不必赋值给变量。当函数需要一小段自定义行为时，你可以将其直接作为实参写入：
+
+```mojo
+transform(
+    lambda (x: Int) -> Int: x + 1,
+    values
+)
+```
+
+当行为简短且显而易见时，内联 lambda 效果最佳。随着它们变长，将其赋值给局部变量通常会使周围代码更易于阅读。
+
+将 lambda 传递给其他函数时，你会将 lambda 绑定为实参。这使函数可以在需要该行为的任何地方调用它。它也可以将 lambda 传递给其他函数或在递归调用中使用。例如，搜索算法可以通过递归携带 lambda 以提供轻量级、可定制的模式匹配。
+
+### 使用 lambda 产生副作用
+
+你可以使用 lambda 为集合中的每个元素调用一个函数，而不产生结果。这对于副作用（例如更新状态）很有用。Lambda 返回类型是可选的。省略时，它们默认为 `None`：
+
+```mojo
+# `histogram`，在后面的示例中定义，是一个计数字典
+var collector = lambda (n: Int) {mut histogram}: increment(histogram, n)
+apply(collector, counts)
+```
+
+## 高阶函数
+
+高阶函数将算法与调用者提供的自定义逻辑分离开来。在搭建算法时，你可以将变化的部分委托给调用者。Lambda 表达式是定义该行为的完美方式。
+
+想象你正在将一组值转换为新类型。算法知道如何访问每个元素、构建新集合并返回结果。它不知道每个值应该如何转换。使用 lambda 使你可以在调用点自定义行为，而无需更改转换函数。只要 lambda 的形状匹配，你可以选择任何效果：
+
+```mojo
+# Convert an Int to c_int
+lambda (value: Int) -> c_int: c_int(value)
+
+# Double an Int value
+lambda (value: Int) -> Int: value * 2
+```
+
+Mojo 中所有高阶函数都有一个共同点：它们使用 infer-only 类型将函数作为实参（而非参数）接受。
+
+### 冒泡排序
+
+Lambda 使包装比较器变得容易。考虑这个冒泡排序实现。`F` 描述了用户提供的比较函数的形状：
+
+```mojo
+def bubble_sort[
+    T: ImplicitlyCopyable & Deinitable, F: def(T, T) -> Bool, //
+](compare_fn: F, mut values: List[T]):
+    for end in reversed(range(len(values))):
+        for i in range(end):
+            if compare_fn(values[i], values[i + 1]):
+                values[i], values[i + 1] = values[i + 1], values[i]
+```
+
+你可以定义一个自由函数来比较值，并将其传递给 `bubble_sort`：
+
+```mojo
+def ascending(x: Int, y: Int) -> Bool:
+    return x > y
+
+def main():
+    var values: List[Int] = [3, 1, 4, 1, 5, 9]
+    bubble_sort(ascending, values)  # [1, 1, 3, 4, 5, 9]
+```
+
+或者，你可以使用 lambda 内联编写比较：
+
+```mojo
+bubble_sort(lambda (a: Int, b: Int) -> Bool: a > b, values)
+```
+
+结果相同，但没有函数声明。这是 lambda 的一个关键特性。你可以编写行为而无需为其命名或通过永久 API 暴露它，并且你的算法可以立即使用它。
+
+将比较从大于翻转为小于即可按相反顺序排序。
+
+## 瘦 lambda 和参数
+
+瘦 lambda 不携带状态。这意味着它不会从周围作用域捕获值，也不声明带有未绑定值的编译时参数列表。它只是一个内联编写的单表达式函数。
+
+考虑这个转换函数。它使用瘦函数指针参数来转换列表的每个元素：
+
+```mojo
+def inplace_transform[
+    T: ImplicitlyCopyable & Deinitable, //, f: def(T) thin -> T
+](mut list: List[T]):
+    for index in range(len(list)):
+        list[index] = f(list[index])
+```
+
+注意函数指针如何作为参数传递，并使用 `thin` effect 声明。
+
+你可以使用一个简单的算法调用 `inplace_transform` 来将每个值翻倍：
+
+```mojo
+def main():
+    var numbers: List[Int] = [1, 2, 3, 4, 5]
+    inplace_transform[lambda (x: Int) -> Int: x * 2](numbers)
+    print(t"transformed numbers: {numbers}")  # [2, 4, 6, 8, 10]
+```
+
+此示例有效是因为 lambda 不捕获状态，所以它不是 *closure*。与下一个无法编译的示例对比：
+
+```mojo
+var factor = 3
+inplace_transform[lambda (x: Int) -> Int: x ** factor](numbers)
+```
+
+`factor` 在与 lambda 相同的作用域中声明，lambda 捕获了它。这一点使 lambda 成为一个 closure，无法在编译时用作 `inplace_transform()` 所需的函数指针参数。
+
+## Lambda 和闭包
+
+从周围作用域捕获值的 lambda 是闭包。闭包无需将值传入 lambda，而是从周围上下文中检索它们，使你能够编写更简洁的代码。
+
+你可以在 lambda 表达式中指定用于捕获和操作值的约定。未指定时，默认为不可变引用（`imm`）。关于闭包约定的更多信息，请参阅 [Mojo 语言参考](/docs/reference/closure-declarations/#capture-conventions)。
+
+使用 lambda 闭包有两种方式：直接调用和运行时实参。
+
+### 通过直接调用使用闭包
+
+在此示例中，lambda 闭包从周围作用域捕获 `x` 和 `y`。该 lambda 立即被调用并返回结果。更新 `x` 和 `y` 的值并再次调用 lambda 会返回新结果：
+
+```mojo
+var x, y = 3.0, 4.5
+var magnitude = (
+    lambda -> Float64: (x**2 + y**2) ** 0.5
+)
+var distance = magnitude()
+print(t"distance of ({x}, {y}): {distance}")  # 5.408326913175031
+
+x, y = -2.5, 1.5
+distance = magnitude()
+print(t"distance of ({x}, {y}): {distance}")  # 2.9154759474226504
+```
+
+### 运行时实参
+
+运行时实参可以同时接受瘦 lambda 和闭包。以下是一个使用运行时实参和 infer-only 函数类型的 `transform()` 函数：
+
+```mojo
+def transform[
+    T: Copyable, U: Copyable,
+    F: def(T) -> U, //
+](f: F, list: List[T]) -> List[U]:
+    return [f(item) for item in list]
+```
+
+在上一节中，以下 lambda 闭包无法编译，因为它在编译时传递给了一个不接受闭包的参数。`transform()` 使用运行时函数实参。现在，代码可以编译并运行：
+
+```mojo
+var numbers: List[Int] = [2, 4, 6, 8, 10]
+
+var factor = 3
+var transformed = transform(lambda (x: Int) -> Int: x**factor, numbers)
+print(t"transformed numbers: {transformed}")  # [8, 64, 216, 512, 1000]
+
+factor = 2
+transformed = transform(lambda (x: Int) -> Int: x**factor, numbers)
+print(t"transformed numbers: {transformed}")  # [4, 16, 36, 64, 100]
+```
+
+## 捕获和修改状态
+
+闭包可以在不提及所捕获值的情况下更新这些值。下一个示例展示了使用 lambda 创建单词长度直方图。
+
+代码以 `apply()` 函数开始。它为列表的每个成员调用一个函数。从其函数类型（`F`）可以看出，它接受不返回值的 lambda。调用该 lambda 是为了其副作用，而不是为了其表达式的值：
+
+```mojo
+def apply[T: Copyable, F: def(T) -> None, //](f: F, i: List[T]):
+    for item in i:
+        f(item)
+```
+
+在此示例中，闭包将更新捕获的直方图字典。它通过调用 `increment[]()` 实现此操作。此函数通过将给定键的值增加一来更新字典：
+
+```mojo
+def increment[
+    Key: ImplicitlyCopyable & Hashable & Equatable & Deinitable
+](mut d: Dict[Key, Int], key: Key):
+    d[key] = d.get(key, 0) + 1
+```
+
+此示例给定一个单词字符串。它去除标点符号并将字符串拆分为单词列表。然后，使用 lambda 计算每个单词的长度：
+
+```mojo
+var words = String(
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+    "Sed fringilla nons sapien quis pharetra."
+).replace(",", "").replace(".", "")
+var word_list = [String(w) for w in words.split(" ")]
+print(t"word_list: {word_list}")
+
+# Count each word
+var counter = lambda (x: String) -> Int: x.count_codepoints()
+var counts = transform(counter, word_list)
+print(t"Initial counts: {counts}")
+# [5, 5, 5, 3, 4, 11, 10, 4, 3, 9, 4, 6, 4, 8]
+```
+
+要构建直方图，下一个 lambda 捕获直方图字典并使用 `increment[]()` 来更新每个单词长度的计数：
+
+```mojo
+# Create a histogram of the counts
+var histogram: Dict[Int, Int] = {}
+var collector = lambda (n: Int) {mut histogram}: increment(histogram, n)
+apply(collector, counts)
+print(t"Histogram: {histogram}")
+# {5: 3, 3: 2, 4: 4, 11: 1, 10: 1, 9: 1, 6: 1, 8: 1}
+```
+
+`mut` 捕获确立了 lambda 可以修改捕获的变量。`apply()` 为每个单词长度调用此 lambda，并在过程中更新直方图字典。
+
+最后一个 lambda 将每个计数转换为星号。正是这种毫不费力的转换使 lambda 如此有用：
+
+```mojo
+var stars = lambda (n: Int) -> String: "*" * n
+for key in histogram.keys():
+    print(t"{key}: {stars(histogram.get(key, 0))}")
+```
+
+## Lambda 和 FFI 互操作
+
+瘦 lambda 与 C FFI 配合良好。最后一个示例使用 lambda 通过 C 标准库的 `qsort()` 函数对整数列表进行排序。该 lambda 作为比较器传递给 `qsort()` 以按升序排序列表：
+
+```mojo
+from std.ffi import external_call, c_int, c_size_t
+from std.sys import size_of
+
+def main():
+    var values: List[Int] = [5, 3, 11, 10, 9, 6, 4]
+
+    # Transform is defined earlier on this page
+    var c_values: List[c_int] = transform(
+        lambda (v: Int) -> c_int: c_int(v), values
+    )
+
+    external_call["qsort", NoneType](
+        c_values.unsafe_ptr(),  # values are passed as an opaque pointer
+        c_size_t(len(c_values)),
+        c_size_t(size_of[c_int]()),
+        lambda (
+            a: MutOpaquePointer[MutUntrackedOrigin],
+            b: MutOpaquePointer[MutUntrackedOrigin],
+        ) abi("C") -> c_int: a.unsafe_bitcast[c_int]()[]
+        - b.unsafe_bitcast[c_int]()[]
+    )
+    # Bitcasting retrieves the `c_int` values from the opaque pointer
+
+    print(t"Sorted keys: {c_values}")  # [3, 4, 5, 6, 9, 10, 11]
+```
+
+不要错过此示例中显示的第一个 lambda 调用。它在将整数列表传递给 "qsort" 之前，使用 `transform()` 将其转换为 `c_int` 值列表。

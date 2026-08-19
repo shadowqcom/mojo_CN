@@ -1,15 +1,17 @@
 ---
 title: "Mojo 入门"
-description: "安装 Mojo 并通过构建完整的 Mojo 程序学习语言基础"
+description: "安装 Mojo 并通过构建完整的 Mojo 程序来学习语言基础"
 github_url: https://github.com/modular/modular/tree/main/mojo/examples/life
 image: /images/artwork/mojo-get-started.jpg
 ---
 
-准备好学习 Mojo！本教程通过构建一个完整的程序来带你了解 Mojo，这个程序不仅仅是打印"Hello, world!"
+{/* markdownlint-disable MD033 */}
+
+准备好学习 Mojo！本教程通过构建一个完整的程序来带你了解 Mojo，这个程序的功能远不止简单地打印"Hello, world!"
 
 我们将构建一个 [Conway 生命游戏](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)的版本，这是一个自复制系统的模拟。如果你以前没听说过它，不用担心——当你看到它运行时就会明白了。让我们开始吧，这样你就可以学习 Mojo 编程基础，包括以下内容：
 
-- 使用基本内置类型如 `Int` 和 `String`
+- 使用 `Int` 和 `String` 等基本内置类型
 - 使用 `List` 管理值序列
 - 以结构体（数据结构）的形式创建自定义类型
 - 创建和导入 Mojo 模块
@@ -17,11 +19,11 @@ image: /images/artwork/mojo-get-started.jpg
 
 有很多内容要学习，但我们尽量保持解释简单。如果你只想看完成的代码，可以在 [GitHub 上获取](https://github.com/modular/modular/tree/main/mojo/examples/life)。
 
-:::tip[开始之前]
+:::tip 开始之前
 
 你可以使用 Mac、Linux 或 Windows（WSL）。详情请参阅[系统要求](/docs/requirements/)。
 
-如果你在跟随本教程时使用 AI 编程助手，请先安装 [Mojo 智能体技能](/docs/tools/skills)。模型可能会落后于当前语言。技能会定期更新最新的语法和语言特性。
+如果你在跟随本教程时使用 AI 编程助手，请先安装 [Mojo agent skills](/docs/tools/skills)。模型可能会落后于当前语言。这些技能会定期更新最新的语法和语言特性。
 
 ```bash
 npx skills add modular/skills
@@ -49,7 +51,7 @@ npx skills add modular/skills
 
    这会创建一个名为 `life` 的项目目录，添加 Modular conda 包通道，并进入该目录。
    :::tip
-   如果你[将这些通道添加为默认值](/pixi#create-a-project-and-virtual-environment)，可以跳过 `-c` 选项。
+   如果你[将这些通道添加为默认值](https://pixi.prefix.dev/latest/reference/pixi_configuration/#default-channels)，可以跳过 `-c` 选项。
    :::
 
 3. 安装 `mojo` 包：
@@ -101,16 +103,14 @@ pixi run mojo --version
 在项目目录中，创建一个名为 `life.mojo` 的文件，包含以下代码行：
 
 ```mojo title="life.mojo"
-# 我的第一个 Mojo 程序！
+# My first Mojo program!
 def main():
     print("Hello, World!")
 ```
 
-{/*  markdownlint-disable MD013  */}
 :::note
 你可以使用任何你喜欢的编辑器或 IDE。如果你使用 [Visual Studio Code](https://code.visualstudio.com/)，你可以利用 [Mojo for Visual Studio Code 扩展](https://marketplace.visualstudio.com/items?itemName=modular-mojotools.vscode-mojo)，它提供语法高亮、代码补全和调试支持等功能。对于 [Cursor](https://cursor.com/) 和其他支持 VS Code 扩展的编辑器，你可以从 [Open VSX Registry](https://open-vsx.org/) 安装 [Mojo for Visual Studio Code 扩展](https://open-vsx.org/extension/modular-mojotools/vscode-mojo)。
 :::
-{/*  markdownlint-enable MD013  */}
 
 如果你以前用 Python 编程过，这应该看起来很熟悉。
 
@@ -164,8 +164,8 @@ Hello, World!
 
 ```mojo title="life.mojo"
 def main() raises:
-    var name: String = input("你是谁？")
-    var greeting: String = "你好，" + name + "！"
+    var name: String = input("Who are you? ")
+    var greeting: String = "Hi, " + name + "!"
     print(greeting)
 ```
 
@@ -176,91 +176,72 @@ mojo life.mojo
 ```
 
 ```output
-你是谁？Edna
-你好，Edna！
+Who are you? Edna
+Hi, Edna!
 ```
 
 注意这段代码使用了 `String` 类型注解，指示变量可以包含的值的类型。Mojo 编译器执行[静态类型检查](https://en.wikipedia.org/wiki/Type_system#Static_type_checking)，这意味着如果你的代码试图将一种类型的值赋给不同类型的变量，你会遇到编译时错误。
 
-Mojo 还支持隐式声明变量，你只需将值赋给新变量，而不使用 `var` 关键字或指示其类型。我们可以用以下代码替换刚才输入的代码，它的工作方式完全相同。
-
-```mojo title="life.mojo"
-def main() raises:
-    name = input("你是谁？")
-    greeting = "你好，" + name + "！"
-    print(greeting)
-```
-
-但是，隐式声明的变量仍然有固定类型，Mojo 会从初始值赋值自动推断类型。在这个例子中，`name` 和 `greeting` 都被推断为 `String` 类型变量。如果你随后尝试将整数值如 42 赋给 `name` 变量，你会因为类型不匹配而得到编译时错误。你可以在 Mojo 手册的[变量](/docs/manual/variables/)部分了解更多关于 Mojo 变量的内容。
+如果你随后尝试将整数值如 42 赋给 `name` 变量，你会因为类型不匹配而得到编译时错误。你可以在 Mojo 手册的[变量](/docs/manual/variables/)部分了解更多关于 Mojo 变量的内容。
 
 ## 4. 使用 Mojo `Int` 和 `List` 类型表示游戏状态
 
 正如 John Conway 最初设想的那样，游戏的"世界"是一个无限的二维方形单元网格，但对于我们的实现，我们将网格限制为有限大小。将网格边缘设为硬边界的一个缺点是边缘周围的相邻单元比内部少，这往往导致死亡。因此，我们将世界建模为一个环面（甜甜圈形状），其中顶行被视为与底行相邻，左列被视为与右列相邻。这将在稍后实现计算每个后续代的算法时发挥作用。
 
-为了跟踪网格的高度和宽度，我们将使用 [`Int`](/docs/std/builtin/int/Int/)，它表示 CPU [字长](https://en.wikipedia.org/wiki/Word_(computer_architecture))的有符号整数，通常是 32 或 64 位。
+为了跟踪网格的高度和宽度，我们将使用 [`Int`](/docs/std/builtin/simd/#int)，它表示 CPU [字长](https://en.wikipedia.org/wiki/Word_(computer_architecture))的有符号整数，通常是 32 或 64 位。
 
 为了表示单个单元的状态，我们将使用 `Int` 值 1（已填充）或 0（未填充）。稍后，当我们需要确定单元周围已填充邻居的数量时，我们可以简单地添加相邻单元的值。
 
 为了表示整个网格的状态，我们需要一个[集合类型](/docs/manual/types#collection-types)。最适合这种情况的是 [`List`](/docs/std/collections/list/List/)，它是一个动态大小的值序列。
 
-Mojo `List` 中的所有值必须是相同类型，以便 Mojo 编译器确保类型安全。（例如，当我们从 `List[Int]` 检索值时，编译器知道该值是 `Int` 并可以验证我们正确使用它。）Mojo 集合实现为[泛型类型](https://en.wikipedia.org/wiki/Generic_programming)，所以我们可以通过在方括号中指定[类型参数](/docs/manual/parameters/#parameterized-structs)来指示特定集合将保存的值类型：
+Mojo `List` 中的所有值必须是相同类型，以便 Mojo 编译器确保类型安全。（例如，当我们从 `List[Int]` 检索值时，编译器知道该值是 `Int` 并可以验证我们正确使用它。）Mojo 集合实现为[参数化类型](https://en.wikipedia.org/wiki/Generic_programming)，所以我们可以通过在方括号中指定[类型参数](/docs/manual/parameters/#parameterized-structs)来指示特定集合将保存的值类型：
 
 ```mojo
-# row 中的 List 只能包含 Int 值
-row = List[Int]()
+# The List in row can contain only Int values
+var row = List[Int]()
 
-# names 中的 List 只能包含 String 值
-names = List[String]()
-```
-
-我们也可以使用一组初始值创建 `List` 并让编译器推断类型。使用*列表字面量*语法，只需将值括在方括号（`[]`）中：
-
-```mojo
-# 使用列表字面量语法创建 List[Int]，推断类型
-nums2 = [12, -7, 64]
-
-# 等同于
-nums2: List[Int] = [12, -7, 64]
+# The List in names can contain only String values
+var names = List[String]()
 ```
 
 Mojo `List` 类型包括追加到列表、从列表弹出值以及使用下标符号访问列表项的能力。以下是这些操作的一些示例：
 
 ```mojo
-nums = [12, -7, 64]
+var nums: List[Int] = [12, -7, 64]
 nums.append(-937)
-print("列表中的元素数量:", len(nums))
-print("从列表中弹出最后一个元素:", nums.pop())
-print("列表的第一个元素:", nums[0])
-print("列表的第二个元素:", nums[1])
-print("列表的最后一个元素:", nums[len(nums) - 1])
+print("Number of elements in the list:", len(nums))
+print("Popping last element off the list:", nums.pop())
+print("First element of the list:", nums[0])
+print("Second element of the list:", nums[1])
+print("Last element of the list:", nums[len(nums) - 1])
 ```
 
 ```output
-列表中的元素数量: 4
-从列表中弹出最后一个元素: -937
-列表的第一个元素: 12
-列表的第二个元素: -7
-列表的最后一个元素: 64
+Number of elements in the list: 4
+Popping last element off the list: -937
+First element of the list: 12
+Second element of the list: -7
+Last element of the list: 64
 ```
 
 我们也可以嵌套 `List`：
 
 ```mojo
-grid = [
+var grid: List[List[Int]] = [
     [11, 22],
     [33, 44]
 ]
-print("第 0 行，第 0 列:", grid[0][0])
-print("第 0 行，第 1 列:", grid[0][1])
-print("第 1 行，第 0 列:", grid[1][0])
-print("第 1 行，第 1 列:", grid[1][1])
+print("Row 0, Column 0:", grid[0][0])
+print("Row 0, Column 1:", grid[0][1])
+print("Row 1, Column 0:", grid[1][0])
+print("Row 1, Column 1:", grid[1][1])
 ```
 
 ```output
-第 0 行，第 0 列: 11
-第 0 行，第 1 列: 22
-第 1 行，第 0 列: 33
-第 1 行，第 1 列: 44
+Row 0, Column 0: 11
+Row 0, Column 1: 22
+Row 1, Column 0: 33
+Row 1, Column 1: 44
 ```
 
 这看起来像是表示程序网格状态的好方法。让我们用以下代码更新 `main()` 函数，定义一个包含"[滑翔机](https://en.wikipedia.org/wiki/Glider_(Conway%27s_Game_of_Life))"模式初始状态的 8×8 网格。
@@ -269,9 +250,9 @@ print("第 1 行，第 1 列:", grid[1][1])
 
 ```mojo title="life.mojo"
 def main():
-    num_rows = 8
-    num_cols = 8
-    glider = [
+    var num_rows = 8
+    var num_cols = 8
+    var glider: List[List[Int]] = [
         [0, 1, 0, 0, 0, 0, 0, 0],
         [0, 0, 1, 0, 0, 0, 0, 0],
         [1, 1, 1, 0, 0, 0, 0, 0],
@@ -287,20 +268,20 @@ def main():
 
 在继续之前，让我们花点时间讨论 Mojo 如何处理复制值。在 Mojo 中，复制简单类型（如 `Int` 和 `String`）与复制更复杂类型（如 `List`）之间有一个重要区别：
 
-- *显式可复制*类型可以通过调用其复制初始化器或 `copy()` 来复制。`List` 是显式可复制的，所以如果 `first` 是一个 `List`，你可以这样复制它：
+- *显式可复制*（explicitly copyable）类型可以通过调用其复制初始化器或 `copy()` 来复制。`List` 是显式可复制的，所以如果 `first` 是一个 `List`，你可以这样复制它：
 
   ```mojo
-  first = [1, 2, 3]
-  second = first.copy()  # 显式复制
+  var first: List[Int] = [1, 2, 3]
+  var second = first.copy()  # explicit copy
   ```
 
   这使 `first` 保持不变，并为 `second` 分配其自己的、唯一拥有的列表副本。
 
-- *隐式可复制*类型可以在不显式调用 `copy()` 或复制初始化器的情况下复制。`Int` 和 `String` 是隐式可复制类型，所以如果 `one_value` 是一个 `Int`，你可以这样复制它：
+- *隐式可复制*（implicitly copyable）类型可以在不显式调用 `copy()` 或复制初始化器的情况下复制。`Int` 和 `String` 是隐式可复制类型，所以如果 `one_value` 是一个 `Int`，你可以这样复制它：
 
   ```mojo
-  one_value = 15
-  another_value = one_value  # 隐式复制
+  var one_value = 15
+  var another_value = one_value  # implicit copy
   ```
 
   这里，`one_value` 保持不变，`another_value` 获得值的副本。
@@ -325,23 +306,23 @@ def main():
 
 ```mojo title="life.mojo"
 def grid_str(rows: Int, cols: Int, grid: List[List[Int]]) -> String:
-    # 创建一个空 String
-    str = String()
+    # Create an empty String
+    var str = String()
 
-    # 遍历第 0 行到 rows-1 行
+    # Iterate through rows 0 through rows-1
     for row in range(rows):
-        # 遍历第 0 列到 cols-1 列
+        # Iterate through columns 0 through cols-1
         for col in range(cols):
             if grid[row][col] == 1:
-                str += "*"  # 如果单元已填充，追加星号
+                str += "*"  # If cell is populated, append an asterisk
             else:
-                str += " "  # 如果单元未填充，追加空格
+                str += " "  # If cell is not populated, append a space
         if row != rows-1:
-            str += "\n"     # 在行之间添加换行符，但不在末尾
+            str += "\n"     # Add a newline between rows, but not at the end
     return str
 ```
 
-当我们向 Mojo 函数传递值时，默认行为是参数被视为值的*只读引用*。这对于像 `List` 这样的值特别有用，因为复制它们可能很昂贵。正如我们稍后将看到的，我们可以通过包含显式[参数约定](/docs/manual/values/ownership#argument-conventions)来指定不同的行为。
+当我们向 Mojo 函数传递值时，默认行为是参数被视为值的不可变引用。这对于像 `List` 这样的值特别有用，因为复制它们可能很昂贵。正如我们稍后将看到的，我们可以通过包含显式[参数约定](/docs/manual/values/ownership#argument-conventions)来指定不同的行为。
 
 每个参数名后跟一个类型注解，指示可以传递给参数的值的类型。就像给变量赋值一样，如果你的代码试图将一种类型的值传递给不同类型的参数，你会遇到编译时错误。最后，参数列表后的 `-> String` 表示此函数有一个 `String` 类型返回值。
 
@@ -352,9 +333,9 @@ def grid_str(rows: Int, cols: Int, grid: List[List[Int]]) -> String:
 如 Mojo 手册的 [`for` 语句](/docs/manual/control-flow#the-for-statement)部分所述，可以直接迭代 `List` 的元素，而不是迭代 `range()` 的值然后通过数字索引访问 `List` 元素。
 
 ```mojo
-nums = [12, -7, 64]
+var nums: List[Int] = [12, -7, 64]
 for value in nums:
-    print("值:", value)
+    print("Value:", value)
 ```
 
 :::
@@ -364,7 +345,7 @@ for value in nums:
 ```mojo title="life.mojo"
 def main():
     ...
-    result = grid_str(num_rows, num_cols, glider)
+    var result = grid_str(num_rows, num_cols, glider)
     print(result)
 ```
 
@@ -388,12 +369,12 @@ mojo life.mojo
 
 ## 6. 创建模块并定义自定义类型
 
-我们目前向 `grid_str()` 传递三个参数来描述要打印的网格的大小和状态。更好的方法是定义我们自己的自定义类型，封装关于网格的所有信息。然后任何需要操作网格的函数都可以接受单个参数。我们可以通过定义 Mojo *结构体*来实现这一点，它是一个自定义数据结构。
+我们目前向 `grid_str()` 传递三个参数来描述要打印的网格的大小和状态。更好的方法是定义我们自己的自定义类型，封装关于网格的所有信息。然后任何需要操作网格的函数都可以接受单个参数。我们可以通过定义 Mojo *结构体*（struct）来实现这一点，它是一个自定义数据结构。
 
 [Mojo 结构体](/docs/manual/structs/)是一个自定义类型，由以下组成：
 
-- *字段*，包含与结构关联的数据的变量
-- *方法*，我们可以选择定义的函数，用于操作我们创建的结构体实例
+- *字段*（field），包含与结构关联的数据的变量
+- *方法*（method），我们可以选择定义的函数，用于操作我们创建的结构体实例
 - 可选地，结构体符合的一组 trait
 
 :::note
@@ -402,7 +383,7 @@ Mojo 结构体类似于类。但是，Mojo 结构体*不*支持继承。Mojo 目
 
 :::
 
-我们可以在现有的 `life.mojo` 源文件中定义结构体，但让我们为结构体创建一个单独的*模块*。模块只是一个包含结构和函数定义的 Mojo 源文件，可以导入到其他 Mojo 源文件中。要了解更多关于创建和导入模块的信息，请参阅 Mojo 手册的[模块和包](/docs/manual/packages/)部分。
+我们可以在现有的 `life.mojo` 源文件中定义结构体，但让我们为结构体创建一个单独的*模块*（module）。模块只是一个包含结构体和函数定义的 Mojo 源文件，可以导入到其他 Mojo 源文件中。要了解更多关于创建和导入模块的信息，请参阅 Mojo 手册的[模块和包](/docs/manual/packages/)部分。
 
 在项目目录中创建一个名为 `gridv1.mojo` 的新源文件，包含以下名为 `Grid` 的结构体定义，有三个字段：
 
@@ -416,7 +397,7 @@ struct Grid(Copyable):
 
 Mojo 要求你在结构体定义中声明所有字段。你不能在运行时动态添加字段。你必须声明每个字段的类型，但不能在字段声明中赋值。
 
-[构造函数](/docs/manual/lifecycle/life/#constructor)负责初始化所有字段的值，以及分配额外资源和执行结构体新实例所需的任何其他配置。你通过在结构体定义中定义一个名为 `__init__()` 的方法来实现构造函数。以下是我们*可以*如何为 `Grid` 实现构造函数的示例：
+[初始化器](/docs/manual/lifecycle/life/#constructor)负责初始化所有字段的值，以及分配额外资源和执行结构体新实例所需的任何其他配置。你通过在结构体定义中定义一个名为 `__init__()` 的方法来实现初始化器。以下是我们*可以*如何为 `Grid` 实现初始化器的示例：
 
 ```mojo
     def __init__(out self, rows: Int, cols: Int, var data: List[List[Int]]):
@@ -425,27 +406,27 @@ Mojo 要求你在结构体定义中声明所有字段。你不能在运行时动
         self.data = data^
 ```
 
-构造函数的第一个参数是结构体新创建的实例，按惯例命名为 `self`。当你创建结构体的新实例时，Mojo 编译器会自动将实例传递给构造函数。注意在构造函数中，你必须为 `self` 参数包含 `out` [参数约定](/docs/manual/values/ownership#argument-conventions)。其余参数的值被分配给新实例的相应字段。（暂时不用担心 `var` 关键字和 `^` 字符。我们稍后会详细讨论它们。）
+初始化器的第一个参数是结构体新创建的实例，按惯例命名为 `self`。当你创建结构体的新实例时，Mojo 编译器会自动将实例传递给初始化器。注意在初始化器中，你必须为 `self` 参数包含 `out` [参数约定](/docs/manual/values/ownership#argument-conventions)。其余参数的值被分配给新实例的相应字段。（暂时不用担心 `var` 关键字和 `^` 字符。我们稍后会详细讨论它们。）
 
-为了减少你需要编写的样板代码量，Mojo 提供了一个名为 [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 的装饰器，它会自动为你生成一个执行"字段级"初始化的构造函数。构造函数的参数与结构体的字段具有相同的名称和类型，并以相同的顺序出现。这意味着给定我们最初的 `Grid` 定义，我们可以像这样创建 `Grid` 的实例：
+为了减少你需要编写的样板代码量，Mojo 提供了一个名为 [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 的装饰器，它会自动为你生成一个执行"字段级"初始化的初始化器。初始化器的参数与结构体的字段具有相同的名称和类型，并以相同的顺序出现。这意味着给定我们最初的 `Grid` 定义，我们可以像这样创建 `Grid` 的实例：
 
 ```mojo
-my_grid = Grid(2, 2, [[0, 1], [1, 1]])
+var my_grid = Grid(2, 2, [[0, 1], [1, 1]])
 ```
 
 然后我们可以用"点"语法访问字段值：
 
 ```mojo
-print("行数:", my_grid.rows)
+print("Rows:", my_grid.rows)
 ```
 
 ```output
-行数: 2
+Rows: 2
 ```
 
 但是，我们还需要能够复制和移动 `Grid` 实例——例如，当我们把 `Grid` 实例传递给函数或方法时。Mojo 结构体支持几种不同的[生命周期方法](/docs/manual/lifecycle/)，定义结构体实例被创建、移动、复制和销毁时的行为。
 
-符合 [`Movable`](/docs/std/builtin/value/Movable/) [trait](/docs/manual/traits/) 的结构体表示其值可以移动的类型，符合 [`Copyable`](/docs/std/builtin/value/Copyable/) trait 的结构体表示其值可以*显式*复制和/或移动的类型。然后你可以实现自定义的移动和复制构造函数，执行移动或复制实例所需的操作。
+符合 [`Movable`](/docs/std/builtin/value/Movable/) [trait](/docs/manual/traits/) 的结构体表示其值可以移动的类型，符合 [`Copyable`](/docs/std/builtin/value/Copyable/) trait 的结构体表示其值可以*显式*复制和/或移动的类型。然后你可以实现自定义的移动和复制初始化器，执行移动或复制实例所需的操作。
 
 作为简单聚合其他类型且不需要自定义资源管理或生命周期行为的结构体的便利，你可以简单地指示结构体符合 `Movable` 或 `Copyable` trait，而无需实现相应的生命周期方法。在这种情况下，Mojo 编译器会自动为你生成缺失的方法。对于我们简单的 `Grid` 结构体，指示它符合 `Copyable` trait 就足以让 Mojo 编译器自动为我们生成缺失的方法。`Copyable` trait 还提供了复制初始化器和 `copy()` 的默认实现，所以你不需要自己实现。
 
@@ -465,23 +446,23 @@ print("行数:", my_grid.rows)
 from gridv1 import Grid
 
 def grid_str(grid: Grid) -> String:
-    # 创建一个空 String
-    str = String()
+    # Create an empty String
+    var str = String()
 
-    # 遍历第 0 行到 rows-1 行
+    # Iterate through rows 0 through rows-1
     for row in range(grid.rows):
-        # 遍历第 0 列到 cols-1 列
+        # Iterate through columns 0 through cols-1
         for col in range(grid.cols):
             if grid.data[row][col] == 1:
-                str += "*"  # 如果单元已填充，追加星号
+                str += "*"  # If cell is populated, append an asterisk
             else:
-                str += " "  # 如果单元未填充，追加空格
+                str += " "  # If cell is not populated, append a space
         if row != grid.rows - 1:
-            str += "\n"     # 在行之间添加换行符，但不在末尾
+            str += "\n"     # Add a newline between rows, but not at the end
     return str
 
 def main():
-    glider = [
+    var glider: List[List[Int]] = [
         [0, 1, 0, 0, 0, 0, 0, 0],
         [0, 0, 1, 0, 0, 0, 0, 0],
         [1, 1, 1, 0, 0, 0, 0, 0],
@@ -491,20 +472,20 @@ def main():
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
-    start = Grid(8, 8, glider^)
-    result = grid_str(start)
+    var start = Grid(8, 8, glider^)
+    var result = grid_str(start)
     print(result)
 ```
 
 所有这些更改都很直接，除了我们创建 `Grid` 实例的那一行。我们的新 `Grid` 需要*获取*表示网格状态的 `List[List[Int]]` 的所有权。（技术上讲，`Grid` 的 `data` 字段将拥有该值。）但是，`glider` 变量目前拥有该列表。
 
-一种替代方案——如果我们计划稍后在 `main()` 中再次使用 `glider` 变量的值——是创建 `glider` 列表的副本传递给 `Grid` 构造函数，像这样：
+一种替代方案——如果我们计划稍后在 `main()` 中再次使用 `glider` 变量的值——是创建 `glider` 列表的副本传递给 `Grid` 初始化器，像这样：
 
 ```mojo
-    start = Grid(8, 8, glider.copy())
+    var start = Grid(8, 8, glider.copy())
 ```
 
-在我们的情况下，我们不需要稍后再次使用 `glider` 变量，所以我们可以使用 `^` 转移符号将列表的*所有权转移*给 `Grid` 构造函数的相应参数。转移后，`glider` 变量未初始化。如果你想再次使用该变量，需要为其分配新值。有关所有权和 `^` 转移符号的更多信息，请参阅 Mojo 手册的[所有权](/docs/manual/values/ownership/)部分。
+在我们的情况下，我们不需要稍后再次使用 `glider` 变量，所以我们可以使用 `^` 转移符号将列表的*所有权转移*给 `Grid` 初始化器的相应参数。转移后，`glider` 变量未初始化。如果你想再次使用该变量，需要为其分配新值。有关所有权和 `^` 转移符号的更多信息，请参阅 Mojo 手册的[所有权](/docs/manual/values/ownership/)部分。
 
 此时，我们做了几项改进程序结构的更改，但输出应该保持不变。
 
@@ -536,21 +517,21 @@ struct Grid(Copyable):
     var data: List[List[Int]]
 
     def grid_str(self) -> String:
-        # 创建一个空 String
-        writer = String()
+        # Create an empty String
+        var writer = String()
 
-        # 遍历第 0 行到 rows-1 行
+        # Iterate through rows 0 through rows-1
         for row in range(self.rows):
-            # 遍历第 0 列到 cols-1 列
+            # Iterate through columns 0 through cols-1
             for col in range(self.cols):
                 if self.data[row][col] == 1:
-                    # 如果单元已填充，写入星号
+                    # If cell is populated, write an asterisk
                     writer.write_string("*")
                 else:
-                    # 如果单元未填充，追加空格
+                    # If cell is not populated, append a space
                     writer.write_string(" ")
             if row != self.rows - 1:
-                # 在行之间添加换行符，但不在末尾
+                # Add a newline between rows, but not at the end
                 writer.write_string("\n")
         return writer
 ```
@@ -569,7 +550,7 @@ struct Grid(Copyable):
 from gridv1 import Grid
 
 def main():
-    glider = [
+    var glider: List[List[Int]] = [
         [0, 1, 0, 0, 0, 0, 0, 0],
         [0, 0, 1, 0, 0, 0, 0, 0],
         [1, 1, 1, 0, 0, 0, 0, 0],
@@ -579,7 +560,7 @@ def main():
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
-    start = Grid(8, 8, glider^)
+    var start = Grid(8, 8, glider^)
     print(start.grid_str())
 ```
 
@@ -589,11 +570,11 @@ def main():
 
 你可以使用 `String(my_val)` 将大多数 Mojo 类型转换为 `String`，以生成该实例的 `String` 表示。但是，如果你尝试对我们当前的 `Grid` 实现这样做，你会得到错误。让我们修复它。
 
-因为 Mojo 编译器执行静态类型检查，`String` 构造函数只有在值的类型实现了某些所需行为时才能接受该值——在这种情况下，它只接受可以生成 `String` 表示的类型。
+因为 Mojo 编译器执行静态类型检查，`String` 初始化器只有在值的类型实现了某些所需行为时才能接受该值——在这种情况下，它只接受可以生成 `String` 表示的类型。
 
-为了强制执行这一点，`String()` 构造函数要求类型符合 [`Writable`](/docs/std/format/Writable/) trait。（这种类型的函数有时被称为[*泛型*函数](/docs/manual/parameters/#parameters-and-generics)。）每个 trait 都要求符合的类型实现一个 `write_to()` 方法，写入其 `String` 表示。（要了解更多信息，请阅读 [`Writable` trait](/docs/manual/traits/#the-writable-trait)。）
+为了强制执行这一点，`String()` 初始化器要求类型符合 [`Writable`](/docs/std/format/Writable/) trait。（这种类型的函数有时被称为[*参数化*函数](/docs/manual/parameters/#parameters-and-generics)。）每个 trait 都要求符合的类型实现一个 `write_to()` 方法，写入其 `String` 表示。（要了解更多信息，请阅读 [`Writable` trait](/docs/manual/traits/#the-writable-trait)。）
 
-注意 `write_to()` 接受一个 `mut writer: Some[Writer]` 参数。`Writer` trait 表示任何可以写入的东西——`String` 缓冲区、文件、网络流等。通过写入泛型 `Writer` 而不是构建并返回 `String`，你的类型可以与任何输出目标一起工作。
+注意 `write_to()` 接受一个 `mut writer: Some[Writer]` 参数。`Writer` trait 表示任何可以写入的东西——`String` 缓冲区、文件、网络流等。通过写入参数化 `Writer` 而不是构建并返回 `String`，你的类型可以与任何输出目标一起工作。
 
 我们的 `grid_str()` 方法已经写入了我们的 `String` 表示，所以看起来我们需要将其重命名为 `write_to()` 并向函数添加 `Writer` 参数，并删除 `String` 返回值。我们还需要指示 `Grid` 符合哪个 trait。在我们的情况下，它必须是 `Writable`。
 
@@ -605,18 +586,18 @@ struct Grid(Copyable, Writable):
     ...
 
     def write_to(self, mut writer: Some[Writer]):
-      # 遍历第 0 行到 rows-1 行
+      # Iterate through rows 0 through rows-1
       for row in range(self.rows):
-          # 遍历第 0 列到 cols-1 列
+          # Iterate through columns 0 through cols-1
           for col in range(self.cols):
               if self.data[row][col] == 1:
-                  # 如果单元已填充，写入星号
+                  # If cell is populated, write an asterisk
                   writer.write_string("*")
               else:
-                  # 如果单元未填充，写入空格
+                  # If cell is not populated, write a space
                   writer.write_string(" ")
           if row != self.rows - 1:
-              # 在行之间添加换行符，但不在末尾
+              # Add a newline between rows, but not at the end
               writer.write_string("\n")
 ```
 
@@ -625,7 +606,7 @@ struct Grid(Copyable, Writable):
 ```mojo title="life.mojo"
 def main():
     ...
-    start = Grid(8, 8, glider^)
+    var start = Grid(8, 8, glider^)
     print(String(start))
 ```
 
@@ -666,7 +647,7 @@ struct Grid(Copyable, Writable):
 
 `__getitem__()` 的实现很简单。对于给定的 `row` 和 `col` 值，我们只需要从实例的 `data` 字段中存储的嵌套 `List[List[Int]]` 中检索并返回相应的值。
 
-`__setitem__()` 的主体同样简单。我们只需获取给定的 `value` 并将其存储在 `data` 中相应的 `row` 和 `col` 中。声明中的一个新内容是我们将返回类型设置为 `None` 以指示方法没有返回值。更值得注意的是我们为 `self` 参数添加了 `mut` [参数约定](/docs/manual/values/ownership/#argument-conventions)，以明确告诉 Mojo 编译器我们要修改当前实例的状态。如果我们省略 `mut`，我们会得到错误，因为编译器会默认为参数的只读访问。
+`__setitem__()` 的主体同样简单。我们只需获取给定的 `value` 并将其存储在 `data` 中相应的 `row` 和 `col` 中。声明中的一个新内容是我们将返回类型设置为 `None` 以指示方法没有返回值。更值得注意的是我们为 `self` 参数添加了 `mut` [参数约定](/docs/manual/values/ownership/#argument-conventions)，以明确告诉 Mojo 编译器我们要修改当前实例的状态。如果我们省略 `mut`，我们会得到错误，因为编译器会默认为参数的不可变访问。
 
 现在我们已经实现了这些方法，我们可以更新 `write_to()` 以使用索引语法访问单元值。
 
@@ -676,16 +657,14 @@ struct Grid(Copyable, Writable):
     ...
     def write_to(self, mut writer: Some[Writer]):
         ...
-            # 遍历第 0 列到 cols-1 列
+            # Iterate through columns 0 through cols-1
             for col in range(self.cols):
                 if self[row, col] == 1:
                     ...
 ```
 
-{/*  markdownlint-disable MD033  */}
 <details>
   <summary>点击此处查看到目前为止完整的 `gridv1.mojo`：</summary>
-{/*  markdownlint-enable MD033  */}
 
 ```mojo title="gridv1.mojo"
 @fieldwise_init
@@ -695,18 +674,18 @@ struct Grid(Copyable, Writable):
     var data: List[List[Int]]
 
     def write_to(self, mut writer: Some[Writer]):
-        # 遍历第 0 行到 rows-1 行
+        # Iterate through rows 0 through rows-1
         for row in range(self.rows):
-            # 遍历第 0 列到 cols-1 列
+            # Iterate through columns 0 through cols-1
             for col in range(self.cols):
                 if self[row, col] == 1:
-                    # 如果单元已填充，写入星号
+                    # If cell is populated, write an asterisk
                     writer.write_string("*")
                 else:
-                    # 如果单元未填充，写入空格
+                    # If cell is not populated, write a space
                     writer.write_string(" ")
             if row != self.rows - 1:
-                # 在行之间写入换行符，但不在末尾
+                # Write a newline between rows, but not at the end
                 writer.write_string("\n")
 
     def __getitem__(self, row: Int, col: Int) -> Int:
@@ -716,9 +695,7 @@ struct Grid(Copyable, Writable):
         self.data[row][col] = value
 ```
 
-{/*  markdownlint-disable MD033  */}
 </details>
-{/*  markdownlint-enable MD033  */}
 
 我们的重构没有改变程序的行为，但运行它以确保代码中没有任何错误仍然是个好主意。
 
@@ -736,7 +713,7 @@ struct Grid(Copyable, Writable):
     ...
     @staticmethod
     def random(rows: Int, cols: Int) -> Self:
-        # 使用当前时间为随机数生成器设置种子。
+        # Seed the random number generator using the current time.
         random.seed()
 
         var data: List[List[Int]] = []
@@ -744,7 +721,7 @@ struct Grid(Copyable, Writable):
         for _ in range(rows):
             var row_data: List[Int] = []
             for _ in range(cols):
-                # 生成随机 0 或 1 并追加到行。
+                # Generate a random 0 or 1 and append it to the row.
                 row_data.append(Int(random.random_si64(0, 1)))
             data.append(row_data^)
 
@@ -755,11 +732,11 @@ struct Grid(Copyable, Writable):
 
 默认情况下，Mojo 标准库使用的[伪随机数生成器](https://en.wikipedia.org/wiki/Pseudorandom_number_generator)目前使用固定种子。这意味着除非你提供不同的种子，否则它会生成相同的数字序列，这对于测试目的很有用。但是，对于此应用程序，我们要调用 `random.seed()` 以基于当前时间设置种子值，这每次都给我们一个唯一值。
 
-然后我们创建 `data` 作为空 `List[List[Int]]`，我们将用随机初始状态填充它。对于每个单元，我们调用 [`random.random_si64()`](/docs/std/random/random/random_si64/)，它返回提供的最小值和最大值 0 和 1 之间的随机整数值。此函数实际上返回 `Int64` 类型的值，它是有符号 64 位整数值。如[数值类型](/docs/manual/types#numeric-types)所述，这与 `Int` 类型不同，`Int` 的精度取决于系统的本机字长。因此，我们将此值传递给 [`Int()`](/docs/std/builtin/int/Int/#__init__) 构造函数，它将数值显式转换为 `Int`。
+然后我们创建 `data` 作为空 `List[List[Int]]`，我们将用随机初始状态填充它。对于每个单元，我们调用 [`random.random_si64()`](/docs/std/random/random/random_si64/)，它返回提供的最小值和最大值 0 和 1 之间的随机整数值。此函数实际上返回 `Int64` 类型的值，它是有符号 64 位整数值。如[数值类型](/docs/manual/types#numeric-types)所述，这与 `Int` 类型不同，`Int` 的精度取决于系统的本机字长。因此，我们将此值传递给 [`Int()`](/docs/std/builtin/simd/SIMD/#__init__) 初始化器，它将数值显式转换为 `Int`。
 
 创建完整的随机值行后，我们将其追加到 `data`。`data` 中的 `List` *拥有*其所有元素，所以当我们调用 `append()` 时，我们需要决定是转移新行的所有权还是提供其副本。在这种情况下，我们不需要再次使用该行，所以我们使用 `^` 转移符号将行的所有权转移给 `data` 中的 `List`。（追加 `Int` 值时我们不需要使用 `^` 符号，因为它们是*隐式*可复制的。）
 
-方法的返回类型是 `Self`，它是结构体类型的别名。如果结构体的实际名称很长或包含参数，这是一个方便的快捷方式。最后一行使用 `Self()` 调用结构体的构造函数并返回一个新创建的具有随机数据的实例。再次，我们使用 `^` 转移符号将新创建的 `List[List[Int]]` 的所有权转移给新实例，而不是制作其副本。
+方法的返回类型是 `Self`，它是结构体类型的别名。如果结构体的实际名称很长或包含参数，这是一个方便的快捷方式。最后一行使用 `Self()` 调用结构体的初始化器并返回一个新创建的具有随机数据的实例。再次，我们使用 `^` 转移符号将新创建的 `List[List[Int]]` 的所有权转移给新实例，而不是制作其副本。
 
 :::note
 
@@ -773,7 +750,7 @@ struct Grid(Copyable, Writable):
 ...
 
 def main():
-    start = Grid.random(8, 16)
+    var start = Grid.random(8, 16)
     print(String(start))
 ```
 
@@ -803,22 +780,22 @@ mojo life.mojo
 struct Grid(Copyable, Writable):
     ...
     def evolve(self) -> Self:
-        next_generation = List[List[Int]]()
+        var next_generation = List[List[Int]]()
 
         for row in range(self.rows):
-            row_data = List[Int]()
+            var row_data = List[Int]()
 
-            # 计算相邻行索引，处理"环绕"
-            row_above = (row - 1) % self.rows
-            row_below = (row + 1) % self.rows
+            # Calculate neighboring row indices, handling "wrap-around"
+            var row_above = (row - 1) % self.rows
+            var row_below = (row + 1) % self.rows
 
             for col in range(self.cols):
-                # 计算相邻列索引，处理"环绕"
-                col_left = (col - 1) % self.cols
-                col_right = (col + 1) % self.cols
+                # Calculate neighboring column indices, handling "wrap-around"
+                var col_left = (col - 1) % self.cols
+                var col_right = (col + 1) % self.cols
 
-                # 确定当前单元周围的已填充单元数量
-                num_neighbors = (
+                # Determine number of populated cells around the current cell
+                var num_neighbors = (
                     self[row_above, col_left]
                     + self[row_above, col]
                     + self[row_above, col_right]
@@ -829,8 +806,8 @@ struct Grid(Copyable, Writable):
                     + self[row_below, col_right]
                 )
 
-                # 确定下一代当前单元的状态
-                new_state = 0
+                # Determine the state of the current cell for the next generation
+                var new_state = 0
                 if self[row, col] == 1 and (
                     num_neighbors == 2 or num_neighbors == 3
                 ):
@@ -865,7 +842,7 @@ struct Grid(Copyable, Writable):
 
 注意 `run_display()` 声明了 `raises`，因为它调用了可能抛出错误的 `input()`。由于 `main()` 调用 `run_display()` 而不处理错误，它也需要 `raises`。
 
-还要注意 `run_display()` 使用 `var` 参数约定声明 `grid` 参数以获取 `Grid` 实例的所有权。如果我们使用默认的 `read` 参数约定，`grid` 将是绑定到原始 `Grid` 实例的不可变引用。在这种情况下，当我们尝试将 `grid.evolve()` 的结果赋给 `grid` 时，我们会得到编译时错误，因为 Mojo 不允许你将引用重新绑定到不同的值。有关更多信息，请参阅[引用绑定](/docs/manual/variables/#reference-bindings)。
+还要注意 `run_display()` 使用 `var` 参数约定声明 `grid` 参数以获取 `Grid` 实例的所有权。如果我们使用默认的参数约定，`grid` 将是绑定到原始 `Grid` 实例的不可变引用。在这种情况下，当我们尝试将 `grid.evolve()` 的结果赋给 `grid` 时，我们会得到编译时错误，因为 Mojo 不允许你将引用重新绑定到不同的值。有关更多信息，请参阅[引用绑定](/docs/manual/variables/#reference-bindings)。
 
 然后我们将更新 `main()` 以创建随机初始 `Grid` 并将其传递给 `run_display()`，使用 `^` 符号转移所有权。以下是 `life.mojo` 的更新版本：
 
@@ -876,12 +853,12 @@ def run_display(var grid: Grid) raises -> None:
     while True:
         print(String(grid))
         print()
-        if input("输入 'q' 退出或按 <Enter> 继续: ") == "q":
+        if input("Enter 'q' to quit or press <Enter> to continue: ") == "q":
             break
         grid = grid.evolve()
 
 def main() raises:
-    start = Grid.random(16, 16)
+    var start = Grid.random(16, 16)
     run_display(start^)
 ```
 
@@ -912,10 +889,10 @@ pixi add --pypi "pygame-ce>=2.5.6,<3"
 from std.python import Python
 
 def run_display() raises:
-    # 这大致等同于 Python 的 `import pygame`
-    pygame = Python.import_module("pygame")
+    # This is roughly equivalent to Python's `import pygame`
+    var pygame = Python.import_module("pygame")
 
-    # 初始化 pygame 模块
+    # Initialize pygame modules
     pygame.init()
 ```
 
@@ -944,66 +921,68 @@ def run_display(
     cell_color: String = "green",
     pause: Float64 = 0.1,
 ) raises -> None:
-    # 导入 pygame Python 包
-    pygame = Python.import_module("pygame")
+    # Import the pygame Python package
+    var pygame = Python.import_module("pygame")
 
-    # 初始化 pygame 模块
+    # Initialize pygame modules
     pygame.init()
 
-    # 创建窗口并设置其标题
-    window = pygame.display.set_mode(Python.tuple(window_width, window_height))
-    pygame.display.set_caption("Conway 生命游戏")
+    # Create a window and set its title
+    var window = pygame.display.set_mode(
+        Python.tuple(window_width, window_height)
+    )
+    pygame.display.set_caption("Conway's Game of Life")
 
-    cell_height = Float64(window_height) / Float64(grid.rows)
-    cell_width = Float64(window_width) / Float64(grid.cols)
-    border_size = 1
-    cell_fill_color = pygame.Color(cell_color)
-    background_fill_color = pygame.Color(background_color)
+    var cell_height = Float64(window_height) / Float64(grid.rows)
+    var cell_width = Float64(window_width) / Float64(grid.cols)
+    var border_size = 1
+    var cell_fill_color = pygame.Color(cell_color)
+    var background_fill_color = pygame.Color(background_color)
 
-    running = True
+    var running = True
     while running:
-        # 轮询事件
+        # Poll for events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                # 如果窗口关闭则退出
+                # Quit if the window is closed
                 running = False
             elif event.type == pygame.KEYDOWN:
-                # 如果用户按 <Escape> 或 'q' 也退出
+                # Also quit if the user presses <Escape> or 'q'
                 if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
                     running = False
 
-        # 通过用背景色绘制来清除窗口
+        # Clear the window by painting with the background color
         window.fill(background_fill_color)
 
-        # 绘制网格中的每个活单元
+        # Draw each live cell in the grid
         for row in range(grid.rows):
             for col in range(grid.cols):
                 if grid[row, col]:
-                    x = Float64(col) * cell_width + Float64(border_size)
-                    y = Float64(row) * cell_height + Float64(border_size)
-                    width = cell_width - Float64(border_size)
-                    height = cell_height - Float64(border_size)
+                    var x = Float64(col) * cell_width + Float64(border_size)
+                    var y = Float64(row) * cell_height + Float64(border_size)
+                    var width = cell_width - Float64(border_size)
+                    var height = cell_height - Float64(border_size)
                     pygame.draw.rect(
                         window,
                         cell_fill_color,
                         Python.tuple(x, y, width, height),
                     )
 
-        # 更新显示
+        # Update the display
         pygame.display.flip()
 
-        # 暂停让用户欣赏场景
+        # Pause to let the user appreciate the scene
         time.sleep(pause)
 
-        # 下一代
+        # Next generation
         grid = grid.evolve()
 
-    # 干净地关闭 pygame
+    # Shut down pygame cleanly
     pygame.quit()
 
 
 def main() raises:
-    start = Grid.random(128, 128)
+    var start = Grid.random(128, 128)
     run_display(start^)
 ```
 
@@ -1055,11 +1034,10 @@ exit
 import ListingCard from '@site/src/components/Listing/ListingCard';
 import ListingCards from '@site/src/components/Listing/ListingCards';
 
-{/*  markdownlint-disable MD033  */}
 <ListingCards>
   <ListingCard
     title="GPU 入门"
-    url="/docs/manual/gpu/intro-tutorial"
+    url="https://max.modular.com/gpu/intro-tutorial"
     description="使用 Mojo 学习 GPU 编程基础"
   />
 
@@ -1075,10 +1053,11 @@ import ListingCards from '@site/src/components/Listing/ListingCards';
     description="在 GitHub 上浏览各种 Mojo 代码示例"
   />
 </ListingCards>
-{/*  markdownlint-enable MD033  */}
 
 :::tip
 
 要在 Mojo 中使用 AI 编程助手，请参阅我们的[使用 Mojo AI 技能指南](/docs/tools/skills/)。
 
 :::
+
+{/* markdownlint-enable MD033 */}

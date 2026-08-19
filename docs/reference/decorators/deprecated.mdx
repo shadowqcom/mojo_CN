@@ -1,72 +1,126 @@
 ---
-title: '@deprecated 装饰器'
+title: '@deprecated'
 sidebar_label: '@deprecated'
 sidebar_position: 6
-description: >
-  @deprecated 装饰器参考。标记函数或结构体为已弃用。
+description: Mojo 的 `@deprecated` 装饰器将过时的 API 标记为已弃用并安排其移除。与 `use` 参数一起使用时，它还会提供迁移建议。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+`@deprecated` [装饰器](/docs/reference/decorators/)将某个声明标记为已过时并计划移除。它主动向调用方发出信号：某个 API 今天仍然可用，但不会一直保留下去。
 
-`@deprecated` 装饰器标记函数或结构体为已弃用。当用户使用已弃用的代码时，编译器会发出警告。
+弃用让你能够安全地重塑代码库。借助它，你可以改进设计、替换旧模式、引入更好的工具，而不会强制做出突然的变更。
 
-## 语法
+当你将某项标记为已弃用时，你为用户提供了所需的时间和信息，使他们能在旧 API 消失之前迁移到更新的 API，或针对即将到来的功能缺失重构代码。
+
+## 弃用信息
+
+弃用并不会阻止使用符号。相反，它以编译器警告的形式呈现指导信息。
+
+Mojo 提供了两种风格的 `@deprecated` 装饰器：
+
+- **`@deprecated(use=symbol)`**：
+
+  _当某个先前符号有明确的继任者时使用此风格。_
+
+  编译器会在调用方使用已弃用项时发出警告，并将他们引向你推荐的符号。这是一种温和的提醒，意思是：“这次调用仍然可用，但你真的应该开始使用另一个了。”
+  - `use` 的参数是实际的符号。不要加引号。
+  - 该符号必须有效，否则编译器会报错。
+
+- **`@deprecated("message")`**：
+
+  _当你想用自己的话解释这一变更时使用此版本。_
+
+  如果没有直接替代项，消息风格让你可以解释弃用的影响。编译器会在使用已弃用项的地方将你提供的字符串显示在警告中。消息便于引导调用方、提供上下文，或指出该功能将完全消失。
+
+:::note 弃用实践
+在弃用某个 API 时，请考虑：
+
+- **清晰性**：当弃用原因能为用户提供可操作的上下文时，对其进行解释。
+- **可操作性**：尽可能指向具体的替代项（`use`）或下一步操作（message）。
+- **一致性**：在相关 API 中使用相同的措辞。
+- **精确性**：尽可能弃用单个函数或方法，而不是整个类型。
+
+当弃用契合清晰、可预测的升级路径时最为有效。
+:::
+
+## 如何弃用
+
+下面的示例演示了如何使用这两种内置风格应用弃用：
 
 ```mojo
-@deprecated
-@deprecated("message")
-```
-
-## 用法
-
-### 无消息
-
-```mojo
-@deprecated
-def old_function():
+# Mark function `a` as deprecated with a custom message
+@deprecated("Sunsetting a")
+def a():
     pass
 
-@deprecated
-struct OldStruct:
-    pass
-```
-
-### 带消息
-
-```mojo
-@deprecated("Use new_function() instead")
-def old_function():
+# Mark function `b` as deprecated with alternative
+@deprecated(use=c)
+def b():
     pass
 
-@deprecated("Use NewStruct instead")
-struct OldStruct:
+# `c` is `b`'s recommended replacement after deprecation
+def c():
     pass
-```
-
-## 示例
-
-```mojo
-struct Calculator:
-    @deprecated("Use add() instead")
-    def sum(self, a: Int, b: Int) -> Int:
-        return a + b
-
-    def add(self, a: Int, b: Int) -> Int:
-        return a + b
 
 def main():
-    var calc = Calculator()
-    # 警告：'sum' is deprecated: Use add() instead
-    var result = calc.sum(1, 2)
+    a() # custom warning
+    b() # warning with recommended replacement
+    c() # no warning
+
+    # Demonstrate that only warnings are issued
+    print("This is a functioning app")
 ```
 
-## 弃用级别
+输出：
 
-编译器会对已弃用的代码发出警告，但不会阻止编译。这允许现有代码继续工作，同时鼓励迁移到新 API。
+```text
+deprecation.mojo:16:6: warning: Sunsetting a
+    a() # custom warning
+    ~^~
+deprecation.mojo:3:4: note: 'a' declared here
+def a():
+   ^
+deprecation.mojo:17:6: warning: 'b' is deprecated, use 'c' instead
+    b() # warning with recommended replacement
+    ~^~
+deprecation.mojo:8:4: note: 'b' declared here
+def b():
+   ^
+This is a functioning app
+```
 
-## 最佳实践
+### 可以弃用的项
 
-- 提供清晰的迁移说明
-- 指向替代 API
-- 在主要版本更新前弃用
-- 保持已弃用的代码正常工作
+在 Mojo 中，你可以弃用以下任何项：
+
+- **struct**：
+
+  ```mojo
+  @deprecated(use=PerformantStruct)
+  struct LegacyStruct:
+      # ...
+  ```
+
+- **函数**：
+
+  ```mojo
+  @deprecated("This function is being phased out")
+  def legacy_function(self):
+      pass
+  ```
+
+- **trait**：
+
+  ```mojo
+  @deprecated(use=Honkable)
+  trait Quackable:
+      def quack(self):
+          ...
+  ```
+
+- **`comptime` 值**：
+
+  ```mojo
+  @deprecated("Use tau instead")
+  comptime pi = 3.141592
+  ```

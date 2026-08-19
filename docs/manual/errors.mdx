@@ -12,7 +12,7 @@ Mojo 将错误表示为值——具体来说，是函数的替代返回值。与
 - [**类型化错误**](#typed-errors) — 将自定义错误类型定义为结构体，用于结构化错误数据和编译时类型检查。
 - [**表示多种错误条件**](#representing-multiple-error-conditions) — 使用枚举错误类型或 `Variant` 类型进行模式匹配。
 - [**`Never` 类型**](#the-never-type) — 标记总是引发或从不引发错误。
-- [**参数化引发**](#parametric-raises) — 编写将错误类型从参数传播到调用者的泛型函数。
+- [**参数化引发**](#parametric-raises) — 编写将错误类型从参数传播到调用者的参数化函数。
 - [**类型化错误和 `Error` 交互**](#typed-errors-and-error-interaction) — 处理同时使用两种错误风格的代码。
 - [**堆栈跟踪**](#enable-stack-trace-generation-for-errors) — 启用堆栈跟踪收集以进行调试。
 - [**上下文管理器**](#use-a-context-manager) — 使用 `with` 语句安全地管理资源。
@@ -30,7 +30,7 @@ Unhandled exception caught during execution: record not found
 您可以使用构造函数或字符串字面量简写来引发 `Error`：
 
 ```mojo
-# 这些是等价的
+# These are equivalent
 raise Error("file not found")
 raise "file not found"
 ```
@@ -58,13 +58,13 @@ Mojo 使用 `try`/`except` 来检测和处理错误。完整语法如下：
 
 ```mojo
 try:
-    # 可能引发错误的代码
+    # Code that might raise an error
 except e:
-    # 如果发生错误则运行
+    # Runs if an error occurs
 else:
-    # 如果没有错误则运行
+    # Runs if no error occurs
 finally:
-    # 无论结果如何都运行
+    # Always runs, regardless of outcome
 ```
 
 您必须包含 `except` 和 `finally` 中的一个或两个。`else` 子句是可选的。
@@ -105,7 +105,7 @@ def main() raises:
             except e:
                 if "invalid" in String(e):
                     print("except  => fatal:", e)
-                    raise e^
+                    raise e
                 print("except  => handled:", e)
             else:
                 print("else    => success:", result)
@@ -140,21 +140,23 @@ re-raised error: invalid record ID: must be non-negative
 - 当 `id` 为 5 时：`process_record()` 成功，所以 `else` 运行，然后 `finally`。
 - 当 `id` 为 0 时：`continue` 退出 `try` 代码块，跳过 `except` 和 `else`。只有 `finally` 运行。
 - 当 `id` 为 1001 时：`process_record()` 引发错误。`except` 子句处理它，执行继续进行下一次迭代。
-- 当 `id` 为 -3 时：`process_record()` 引发"无效"错误。`except` 子句使用 `raise e^` 重新引发它，将错误的所有权转移到外部的 `try`/`except`。`finally` 子句在错误传播之前仍然运行。由于重新引发退出了循环，`id` 42 永远不会被处理。
+- 当 `id` 为 -3 时：`process_record()` 引发"invalid"错误。`except` 子句重新引发它，所以它传播到外部的 `try`/`except`。`finally` 子句在错误传播之前仍然运行。由于重新引发退出了循环，`id` 42 永远不会被处理。
 
 ### 重新引发错误
 
-要重新引发已捕获的错误，请使用带有 [转移符号](/docs/manual/values/ownership/#transfer-arguments-var-and/)（`^`）的 `raise` 来转移错误值的所有权：
+要重新引发已捕获的错误，请将其传递给 `raise`：
 
 ```mojo
 try:
-    result = process_record(-1)
+    var result = process_record(-1)
 except e:
     print("Logging error:", e)
-    raise e^  # 带所有权转移重新引发
+    raise e  # re-raise
 ```
 
 您还可以从 `except` 子句中引发不同的错误。
+
+重新引发会复制错误，这很廉价，因为其消息和可选的堆栈跟踪都是引用计数的。为了避免复制，请使用[转移符号](/docs/manual/values/ownership/#transfer-arguments-var-and-)转移错误：`raise e^`。不符合 [`ImplicitlyCopyable`](/docs/std/builtin/value/ImplicitlyCopyable/) 的[自定义错误类型](#typed-errors)需要使用转移符号来重新引发。
 
 ## 类型化错误
 
@@ -178,7 +180,7 @@ struct ValidationError(Copyable, Writable):
 
 :::note
 
-只要避免使用像 `String` 这样的堆分配类型，类型化错误就可以在 GPU 和嵌入式目标上工作。有关更多关于 GPU 编程的信息，请参阅 [GPU 基础](/docs/manual/gpu/fundamentals/)。
+只要避免使用像 `String` 这样的堆分配类型，类型化错误就可以在 GPU 和嵌入式目标上工作。有关 GPU 编程的更多信息，请参阅 [GPU 基础](https://max.modular.com/gpu/fundamentals/)。
 
 :::
 
@@ -202,11 +204,11 @@ Mojo 函数默认是非引发函数。包含 `raises`（无论是否有类型）
 如果非引发函数调用了引发函数，它必须在本地处理错误：
 
 ```mojo
-# 这不会编译 — validate_username() 可以引发
+# This doesn't compile — validate_username() can raise
 def process_name(name: String):
     print(validate_username(name))
 
-# 这会编译 — 错误已处理
+# This compiles — the error is handled
 def process_name_safe(name: String):
     try:
         print(validate_username(name))
@@ -222,7 +224,7 @@ def process_name_safe(name: String):
 try:
     var name = validate_username("")
 except e:
-    # e 是一个 ValidationError — 直接访问字段
+    # e is a ValidationError — access fields directly
     print("Error in field '" + e.field + "': " + e.reason)
 ```
 
@@ -237,17 +239,17 @@ Error in field 'username': cannot be empty
 如果您需要处理引发不同错误类型的调用，请使用单独的 `try` 代码块：
 
 ```mojo
-# 每个 try 代码块处理一种错误类型
+# Each try block handles one error type
 try:
     var name = validate_username(input)
 except e:
-    # e 是一个 ValidationError — 直接访问字段
+    # e is a ValidationError — access fields directly
     print("Validation failed:", e.field, e.reason)
 
 try:
     var file = open_file(path)
 except e:
-    # e 是一个 FileError — 在变体上匹配
+    # e is a FileError — match on variant
     if e == FileError.not_found:
         print("Missing:", path)
 ```
@@ -258,7 +260,7 @@ except e:
 
 ```mojo
 except e:
-    print(e)  # 调用 ValidationError.write_to()
+    print(e)  # calls ValidationError.write_to()
 ```
 
 这会产生以下输出：
@@ -285,7 +287,7 @@ ValidationError(username): cannot be empty
 struct FileError(Equatable, ImplicitlyCopyable, Writable):
     var _variant: Int
 
-    # 编译时常量变体
+    # Compile-time constant variants
     comptime not_found = FileError(_variant=1)
     comptime permission_denied = FileError(_variant=2)
     comptime already_exists = FileError(_variant=3)
@@ -397,7 +399,7 @@ Access denied: permission denied on /secret (requires admin)
 
 ## `Never` 类型
 
-`Never` 是一个没有构造函数的类型——它无法实例化。这使得它在错误处理签名中用于表达两个相反的保证很有用：
+`Never` 是一个没有构造函数的类型。它无法实例化。这使得它在错误处理签名中用于表达两个相反的保证很有用：
 
 - `raises YourErrorType -> Never` — 函数*总是*引发，从不返回值。这对于像 `panic()` 这样的函数很有用，它们无条件地发出错误信号。
 - `raises Never -> ReturnType` — 函数*从不*引发，总是返回值。这相当于完全省略 `raises`。
@@ -407,14 +409,14 @@ Access denied: permission denied on /secret (requires admin)
 返回类型为 `-> Never` 的函数必须永远不会以 `return` 语句终止——它必须在每个代码路径上引发（或无限循环）。由于 `Never` 可以替代任何类型，编译器允许用这样的函数代替返回值：
 
 ```mojo
-# 总是引发，从不返回
+# Always raises, never returns
 def panic(msg: String) raises -> Never:
     raise Error(msg)
 
 def get_value_or_panic(maybe: Optional[Int]) raises -> Int:
     if maybe:
         return maybe.value()
-    # Never 在此分支中替代 Int
+    # Never substitutes for Int in this branch
     panic("value is missing")
 ```
 
@@ -423,7 +425,7 @@ def get_value_or_panic(maybe: Optional[Int]) raises -> Int:
 具有 `raises Never` 的函数在编译时保证从不引发。这相当于编写一个普通的非引发函数：
 
 ```mojo
-# 这两个签名是等价的：
+# These two signatures are equivalent:
 def safe_add(a: Int, b: Int) raises Never -> Int:
     return a + b
 
@@ -435,7 +437,7 @@ def safe_add(a: Int, b: Int) -> Int:
 
 ## 参数化引发
 
-您可以编写 [泛型函数](/docs/manual/parameters/#parameters-and-generics) 将错误类型从函数参数传播到调用者。这使用错误类型的编译时参数：
+您可以编写 [参数化函数](/docs/manual/parameters/#parameters-and-generics) 将错误类型从函数参数传播到调用者。这使用错误类型的编译时参数：
 
 ```mojo
 def run_action[
@@ -457,13 +459,13 @@ def parse_config() raises ParseError -> Int:
 
 # ...
 
-# ErrorType 推断为 NetworkError
+# ErrorType inferred as NetworkError
 try:
     _ = run_action(fetch_data)
 except e:
     print("Network failure:", e)
 
-# ErrorType 推断为 ParseError
+# ErrorType inferred as ParseError
 try:
     _ = run_action(parse_config)
 except e:
@@ -478,7 +480,7 @@ def get_value() -> Int:
 
 # ...
 
-# ErrorType 推断为 Never — 不需要 try 代码块
+# ErrorType inferred as Never — no try block needed
 var result = run_action(get_value)
 print("Got value:", result)
 ```
@@ -515,7 +517,7 @@ def wrapped_validate(value: Int) raises ValidationError -> Int:
 在调用类型化错误函数的函数上使用裸 `raises`（不带类型）会导致*类型擦除*——编译器忘记特定的错误类型，即使运行时保留错误的身份：
 
 ```mojo
-# 反模式：裸 raises 在编译时擦除类型信息
+# Anti-pattern: bare raises erases type info at compile time
 def validate_bare_raises(value: Int) raises -> Int:
     return validate_typed(value)
 ```
@@ -526,8 +528,8 @@ def validate_bare_raises(value: Int) raises -> Int:
 try:
     _ = validate_bare_raises(-5)
 except e:
-    # e 被类型化为 Error — 没有字段访问可用
-    # e.field 在这里不会编译
+    # e is typed as Error — no field access available
+    # e.field would not compile here
     print(e)
 ```
 
@@ -544,7 +546,7 @@ def error_caller():
     try:
         _ = validate_typed(-5)
     except e:
-        # e 是一个 ValidationError — 字段访问有效
+        # e is a ValidationError — field access works
         print("Field:", e.field, "Reason:", e.reason)
 ```
 
@@ -563,11 +565,11 @@ def error_func() raises -> Int:
 def typed_func() raises ValidationError -> Int:
     raise ValidationError(field="x", reason="invalid")
 
-# 这不会编译
+# This doesn't compile
 def mixed() raises ValidationError:
     try:
-        _ = error_func()   # 引发 Error
-        _ = typed_func()    # 引发 ValidationError
+        _ = error_func()   # raises Error
+        _ = typed_func()    # raises ValidationError
     except e:
         print(e)
 ```
@@ -600,7 +602,7 @@ supports an error type of 'ValidationError'
 
 :::important
 
-堆栈跟踪是内置 `Error` 类型的功能。类型化错误目前不捕获堆栈跟踪，因为跟踪是在 `Error.__init__()` 内部收集的，而自定义错误结构体没有等效的钩子。本节中的所有示例都故意使用 `Error`。
+堆栈跟踪是内置 `Error` 类型独有的功能。类型化错误目前不捕获堆栈跟踪，因为跟踪是在 `Error.__init__()` 内部收集的，而自定义错误结构体没有等效的钩子。本节中的所有示例都故意使用 `Error`。
 
 :::
 
@@ -731,7 +733,7 @@ No stack trace available
 
 ## 使用上下文管理器
 
-*上下文管理器* 是一个管理资源（如文件、网络连接和数据库连接）的对象。它提供了一种分配资源并在不再需要时自动释放它们的方法，确保正确清理并在发生错误时防止资源泄漏。
+*上下文管理器*是一个管理资源（如文件、网络连接和数据库连接）的对象。它提供了一种分配资源并在不再需要时自动释放它们的方法，确保正确清理并在发生错误时防止资源泄漏。
 
 :::note
 
@@ -742,11 +744,11 @@ No stack trace available
 作为示例，考虑从文件读取数据。一种朴素的方法可能看起来像这样：
 
 ```mojo
-# 获取文件句柄以从存储读取
-f = open(input_file, "r")
-content = f.read()
-# 按需处理内容
-# 关闭文件句柄
+# Obtain a file handle to read from storage
+var f = open(input_file, "r")
+var content = f.read()
+# Process the content as needed
+# Close the file handle
 f.close()
 ```
 
@@ -755,14 +757,14 @@ f.close()
 上面的示例包含了对 `close()` 的调用，但它忽略了 [`read()`](/docs/std/io/file/FileHandle/#read) 可能引发错误的可能性，这将阻止 `close()` 执行。要处理这种情况，您可以重写代码以使用 `try`，如下所示：
 
 ```mojo
-# 获取文件句柄以从存储读取
-f = open(input_file, "r")
+# Obtain a file handle to read from storage
+var f = open(input_file, "r")
 
 try:
-    content = f.read()
-    # 按需处理内容
+    var content = f.read()
+    # Process the content as needed
 finally:
-    # 确保即使 read() 引发错误，文件句柄也会关闭
+    # Ensure that the file handle is closed even if read() raises an error
     f.close()
 ```
 
@@ -770,16 +772,16 @@ finally:
 
 ```mojo
 with open(input_file, "r") as f:
-    content = f.read()
-    # 按需处理内容
+    var content = f.read()
+    # Process the content as needed
 ```
 
 `with` 语句还允许您在同一个代码块中使用多个上下文管理器。作为示例，以下代码打开一个文本文件，读取其全部内容，将其转换为大写，然后将结果写入不同的文件：
 
 ```mojo
 with open(input_file, "r") as f_in, open(output_file, "w") as f_out:
-    input_text = f_in.read()
-    output_text = input_text.upper()
+    var input_text = f_in.read()
+    var output_text = input_text.upper()
     f_out.write(output_text)
 ```
 
@@ -815,9 +817,9 @@ struct Timer(ImplicitlyCopyable):
         return self
 
     def __exit__(mut self):
-        end_time = time.perf_counter_ns()
-        elapsed_time_ms = round(
-            Float64(end_time - UInt(self.start_time)) / 1e6, 3
+        var end_time = time.perf_counter_ns()
+        var elapsed_time_ms = round(
+            Float64(end_time - self.start_time) / 1e6, 3
         )
         print("Elapsed time:", elapsed_time_ms, "milliseconds")
 
@@ -884,9 +886,9 @@ struct ConditionalTimer(ImplicitlyCopyable):
         return self
 
     def __exit__(mut self):
-        end_time = time.perf_counter_ns()
-        elapsed_time_ms = round(
-            Float64(end_time - UInt(self.start_time)) / 1e6, 3
+        var end_time = time.perf_counter_ns()
+        var elapsed_time_ms = round(
+            Float64(end_time - self.start_time) / 1e6, 3
         )
         print("Elapsed time:", elapsed_time_ms, "milliseconds")
 
@@ -920,7 +922,7 @@ def main() raises:
                 print("continue executed")
                 continue
 
-            j = flaky_identity(i)
+            var j = flaky_identity(i)
             print("j =", j)
 
             print("Ending execution")
@@ -955,7 +957,7 @@ Unhandled exception caught during execution: really bad
 
 ### 在 `__exit__()` 中处理类型化错误
 
-`__exit__(self, error: Error)` 重载只处理 `Error` 值。要处理类型化错误，请实现一个带有编译时错误类型参数的通用 `__exit__()` 方法：
+`__exit__(self, error: Error)` 重载只处理 `Error` 值。要处理类型化错误，请实现一个带有编译时错误类型参数的参数化 `__exit__()` 方法：
 
 ```mojo
 def __exit__[ErrType: AnyType](self, err: ErrType) -> Bool
@@ -964,8 +966,7 @@ def __exit__[ErrType: AnyType](self, err: ErrType) -> Bool
 此方法直接接收类型化错误，保留其完整的类型信息。您可以使用 [反射](/docs/manual/metaprogramming/reflection/) 在编译时检查错误类型。例如，您可以：
 
 - `reflect[ErrType].name()` — 获取错误类型的名称作为字符串。
-- `comptime if conforms_to(ErrType, Writable)` — 检查错误是否实现了 `Writable`。
-- `trait_downcast[Writable](err)` — 通过其 `Writable` 接口访问错误。
+- `comptime if conforms_to(ErrType, Writable)` — 检查错误是否实现了 `Writable`，如果是，则通过其 `Writable` 接口访问错误。
 
 以下 `ResourceGuard` 示例演示了此模式：
 
@@ -1001,7 +1002,7 @@ struct ResourceGuard(ImplicitlyCopyable):
         print("  Error type:", type_name)
 
         comptime if conforms_to(ErrType, Writable):
-            print("  Message:", trait_downcast[Writable](err))
+            print("  Message:", err)
 
         return self.suppress_errors
 ```
@@ -1009,13 +1010,13 @@ struct ResourceGuard(ImplicitlyCopyable):
 当没有错误发生时，`__exit__(self)` 按照正常方式运行。当发生类型化错误时，`__exit__[ErrType]()` 运行，让您访问错误类型及其数据：
 
 ```mojo
-# 没有错误 — 调用 __exit__(self)
+# No error — calls __exit__(self)
 with ResourceGuard("database"):
     print("Working...")
 
-# 类型化错误，已抑制 — __exit__[ErrType] 返回 True
+# Typed error, suppressed — __exit__[ErrType] returns True
 with ResourceGuard("cache", suppress_errors=True):
-    use_connection()  # 引发 ConnectionError
+    use_connection()  # raises ConnectionError
 print("Continued after suppressed error")
 ```
 

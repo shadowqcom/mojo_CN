@@ -2,7 +2,6 @@
 title: GPU 线程块和线程束操作与同步
 sidebar_label: 线程块和线程束操作与同步
 description: 介绍 GPU 线程块和线程束操作与同步机制。
-github_url: https://github.com/modular/modular/tree/main/mojo/examples/gpu-block-and-warp
 ---
 
 当多个 GPU 线程在没有定义执行顺序的情况下写入同一内存位置时，就会发生*竞态条件*。计算的最终结果变得不确定，取决于 GPU 硬件对线程的调度和执行时序。这类 bug 以难以调试而闻名，因为它们可能不会在每次运行中一致地出现。

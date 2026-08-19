@@ -7,20 +7,26 @@ description: >
   转义标识符、参数和变量约定，以及签名子句。
 ---
 
-{/*  VERIFIED: TokenKinds.def, Lexer.cpp, Signatures.h, Signatures.cpp,
-     ExprNode.h, ParserExprs.cpp, ParserStmts.cpp, ParserBase.h  */}
+{/* VERIFIED: TokenKinds.def, Lexer.cpp, Signatures.h, Signatures.cpp,
+     ExprNode.h, ParserExprs.cpp, ParserStmts.cpp, ParserBase.h */}
 
-每个 Mojo 源文件都由标记构建。本页涵盖你选择的标记（标识符）、语言保留的标记（关键字），以及控制值如何传递和绑定的上下文相关标记（约定）。
+{/* In TokenKinds.def, `_` is declared with TOK_KEYWORD rather than
+     TOK_PUNCTUATION. This is an internal classification used by the
+     lexer; for the language surface, `_` is a regular identifier
+     character (see the identifier grammar below). Do not document `_`
+     as a keyword. */}
+
+每个 Mojo 源文件都由标记构建而成。本页涵盖你选择的标记（标识符）、语言保留的标记（关键字），以及控制值如何传递和绑定的上下文相关标记（约定）。
 
 ## 标识符
 
-每次声明变量、定义函数或创建结构体时，你都要给它一个名称。这个名称就是*标识符*。标识符是你在代码中引用事物的方式：`var count = 0` 中的 `count`，`struct Point` 中的 `Point`，`def greet()` 中的 `greet`。
+每次声明变量、定义函数或创建结构体时，你都要给它一个名称。这个名称就是*标识符*。标识符是你在代码中引用事物的方式：`var count = 0` 中的 `count`、`struct Point` 中的 `Point`、`def greet()` 中的 `greet`。
 
-本节介绍什么是有效的标识符。
+本节介绍什么才是合法的标识符。
 
 ### 常规标识符
 
-常规标识符以字母或下划线开头，后跟任意字母、数字和下划线的组合：
+常规标识符以字母或下划线开头，后面可以跟任意字母、数字和下划线的组合：
 
 ```text
 identifier → [a-zA-Z_][a-zA-Z0-9_]*
@@ -35,19 +41,26 @@ MyStruct
 basic_value
 ```
 
-标识符区分大小写。`MyStruct` 和 `mystruct` 是不同的名称。
+标识符区分大小写。`MyStruct` 和 `mystruct` 是不同的名称：
+
+```mojo
+var MyStruct = 1
+var mystruct = 2
+assert_equal(MyStruct, 1)  # passes
+assert_equal(mystruct, 2)  # passes
+```
 
 ### 转义标识符
 
-*转义标识符*用反引号括起来。反引号允许除垂直空白和反引号本身之外的任何字符：
+*转义标识符*用反引号括起来。反引号内允许除垂直空白和反引号本身以外的任意字符：
 
 ```mojo
-`struct`        # 使用关键字作为名称
-`日本語の変数`    # 非 ASCII 标识符
-`my value`      # 名称中包含空格
+`struct`        # Use a keyword as a name
+`日本語の変数`    # Non-ASCII identifier
+`my value`      # Spaces in a name
 ```
 
-转义标识符在调用使用 Mojo 关键字作为名称的外部代码时很有用，或者在用自然语言编写标识符时也很有用。不允许空反引号标识符。
+当需要调用那些把 Mojo 关键字用作名称的外部代码时，或想用自然语言编写标识符时，转义标识符会很有用。空的反引号标识符是不允许的。
 
 ## 关键字
 
@@ -57,77 +70,78 @@ basic_value
 
 这些关键字控制哪些代码运行以及以什么顺序运行。
 
-| 关键字     | 用途                         |
-|------------|------------------------------|
-| `if`       | 条件执行                     |
-| `elif`     | `if` 链中的附加条件          |
-| `else`     | 条件或循环中的默认分支       |
-| `for`      | 迭代循环                     |
-| `while`    | 条件循环                     |
-| `break`    | 退出最内层循环               |
-| `continue` | 跳到下一次循环迭代           |
-| `pass`     | 空操作占位语句               |
-| `return`   | 从函数返回                   |
-| `with`     | 上下文管理器语句             |
+| Keyword    | Purpose                                 |
+|------------|-----------------------------------------|
+| `if`       | 条件执行                                 |
+| `elif`     | `if` 链中的附加条件                       |
+| `else`     | 条件或循环中的默认分支                     |
+| `for`      | 迭代循环                                 |
+| `while`    | 条件循环                                 |
+| `break`    | 退出最内层循环                            |
+| `continue` | 跳到下一次循环迭代                        |
+| `pass`     | 空操作占位语句                            |
+| `return`   | 从函数返回                               |
+| `with`     | 上下文管理器语句                          |
 
 ### 错误处理
 
-这些关键字构建错误传播和恢复。
+这些关键字用于组织错误的传播和恢复。
 
-| 关键字    | 用途                             |
-|-----------|----------------------------------|
-| `try`     | 开始错误处理块                   |
-| `except`  | 错误处理子句                     |
-| `finally` | `try` 块中的总是执行子句         |
-| `raise`   | 引发错误                         |
-| `assert`  | 如果条件为假则引发错误           |
+| Keyword   | Purpose                                               |
+|-----------|-------------------------------------------------------|
+| `try`     | 开始一个错误处理块                                      |
+| `except`  | 错误处理子句                                           |
+| `finally` | `try` 块中始终执行的子句                                |
+| `raise`   | 引发错误                                               |
+| `assert`  | 在条件为假时中止（受 `-D ASSERT` 控制）                  |
 
 ### 声明
 
-这些关键字引入新的命名实体。
+这些关键字用于引入函数、类型和绑定。
 
-| 关键字   | 用途           |
-|----------|----------------|
-| `def`    | 函数声明       |
-| `struct` | 结构体类型声明 |
-| `trait`  | Trait 声明     |
-| `var`    | 作用域变量绑定 |
-| `ref`    | 作用域引用绑定 |
+| Keyword  | Purpose                                  |
+|----------|------------------------------------------|
+| `def`    | 函数声明                                  |
+| `lambda` | 匿名的单表达式函数                         |
+| `struct` | 结构体类型声明                             |
+| `trait`  | trait 声明                               |
+| `var`    | 作用域变量绑定                             |
+| `ref`    | 作用域引用绑定                             |
 
 ### 关键字运算符
 
-五个运算符拼写为单词而不是符号。符号运算符（`+`、`-`、`*`、`^`、`//` 等）是标点符号，不是关键字。
+有五个运算符以单词形式而不是符号形式书写。符号运算符（`+`、`-`、`*`、`^`、`//` 等）是标点符号，不是关键字。
 
-| 关键字 | 用途       | 关键字 | 用途         |
-|--------|------------|--------|--------------|
-| `and`  | 逻辑与     | `or`   | 逻辑或       |
-| `not`  | 逻辑非     | `in`   | 成员测试     |
-| `is`   | 身份测试   |        |              |
+| Keyword | Purpose       | Keyword | Purpose         |
+|---------|---------------|---------|-----------------|
+| `and`   | 逻辑与         | `or`    | 逻辑或          |
+| `not`   | 逻辑非         | `in`    | 成员测试         |
+| `is`    | 身份测试       |         |                 |
 
 ### 导入
 
-这些关键字控制模块导入。
+这些关键字用于控制模块导入。
 
-| 关键字   | 用途                                   |
-|----------|----------------------------------------|
-| `import` | 导入模块                               |
-| `from`   | 从模块选择性导入                       |
-| `as`     | 导入和 `except` 子句中的别名           |
+| Keyword  | Purpose                                  |
+|----------|------------------------------------------|
+| `import` | 导入模块                                  |
+| `from`   | 从模块中按需导入                            |
+| `as`     | 在导入和 `except` 子句中用于别名             |
 
 ### 编译时
 
-| 关键字     | 用途               |
-|------------|--------------------|
-| `comptime` | 强制编译时求值     |
+| Keyword    | Purpose                        |
+|------------|--------------------------------|
+| `comptime` | 强制编译时求值                   |
 
 ### 字面量关键字
 
-这些关键字也是字面量。它们直接产生值。
+这些关键字同时也是字面量。它们会直接产生一个值。
 
-| 关键字  | 值                             | 关键字 | 值                |
-|---------|--------------------------------|--------|-------------------|
-| `True`  | 布尔真                         | `False`| 布尔假            |
-| `None`  | 值的缺失（`NoneType`）         | `Self` | 封闭类型          |
+| Keyword | Value                           | Keyword | Value              |
+|---------|---------------------------------|---------|--------------------|
+| `True`  | 布尔真                           | `False` | 布尔假             |
+| `None`  | 表示值不存在（`NoneType`）        | `Self`  | 所在类型本身        |
 
 ### 大小写敏感性
 
@@ -135,71 +149,75 @@ basic_value
 
 - `True` 是关键字；`true` 不是。
 - `None` 是关键字；`none` 不是。
-- `Self` 是关键字；`self` 是常规参数名，不是关键字。
+- `Self` 是关键字；`self` 是一个惯用的参数名，不是关键字。
 
 ## 约定
 
-*约定*告诉编译器值如何传递以及如何创建绑定。它们不是保留的，因此使用这些名称的现有 Python 代码不会中断，但在 Mojo 签名中它们有固定含义。
+*约定*用于告诉编译器值如何传递以及绑定如何创建。
 
-参数约定出现在函数签名中的参数名称之前。它们控制所有权和可变性：
+约定名不是保留字，因此使用这些名称的现有 Python 代码不会出问题，但在 Mojo 签名中它们具有固定含义。
 
-{/*  markdownlint-disable MD013  */}
+**参数约定**出现在函数签名中参数名的前面。它们控制所有权和可变性：
 
-| 约定     | 角色               | 含义                                             |
-|----------|--------------------|--------------------------------------------------|
-| `mut`    | 参数               | 现有值的可变引用                                 |
-| `out`    | 参数               | 不使用返回箭头返回值                             |
-| `deinit` | 参数               | 值生命周期结束时的破坏性转移                     |
-| `var`    | 参数或变量         | 值的独立可变拥有副本                             |
-| `ref`    | 参数或变量         | 不拥有值的引用                                   |
+{/* markdownlint-disable MD013 */}
 
-{/*  markdownlint-enable MD013  */}
+| Convention | Role                 | Meaning                                                     |
+|------------|----------------------|-------------------------------------------------------------|
+| (`imm`)    | 参数                  | 对现有值的不可变引用（默认行为）                              |
+| `mut`      | 参数                  | 对现有值的可变引用                                            |
+| `out`      | 参数                  | 不通过返回箭头返回值                                          |
+| `deinit`   | 参数                  | 破坏性转移；一个值生命周期的结束                                |
+| `var`      | 参数或变量             | 值的独立可变拥有副本                                          |
+| `ref`      | 参数或变量             | 不拥有该值的引用                                              |
 
-`var` 和 `ref` 也出现在变量声明中，其中 `var` 创建作用域可变变量，`ref` 创建作用域引用绑定：
+{/* markdownlint-enable MD013 */}
+
+`var` 和 `ref` 也会出现在**变量声明**中，其中 `var` 创建一个作用域可变变量，`ref` 创建一个作用域引用绑定：
 
 ```mojo
 struct CountingTool:
     var value: Int
 
-    def __init__(out self):       # out: self 是返回值
+    def __init__(out self):       # out: self is the return value
         self.value = 0
 
-    def increment(mut self):      # mut: 原地修改 self
+    def increment(mut self):      # mut: modifies self in place
         self.value += 1
 
-var count = 0          # var 创建作用域可变变量
-ref alias = some_list  # ref 绑定引用，不复制
+var count = 0          # var creates a scoped mutable variable
+var data = [1, 2, 3]
+ref view = data        # ref binds a reference, no copying
 ```
 
-没有约定的 `self` 参数是不可变的。修改它需要 `mut`：
+不带约定的 `self` 参数是不可变引用。要修改它需要使用 `mut`：
 
 ```mojo
 struct CountingTool:
-    var value: Int
-
-    def increment(mut self):
-        self.value += 1      # OK: mut self 允许修改
+    # continuing from above...
 
     def get(self) -> Int:
-        self.value += 1      # 错误：self 是不可变的
+        self.value += 1      # Error: self is immutable
         return self.value
 ```
 
-`out` 按名称声明返回值。它不能与 `->` 组合使用：
+`out` 通过名称声明返回值。它不能与 `->` 组合使用：
 
 ```mojo
 def make_point(out result: Point):        # OK
     result = Point(0, 0)
 
-def make_point(out result: Point) -> Point:  # 错误：函数不能同时
-    result = Point(0, 0)                     # 有 'out' 参数和
-                                             # 显式结果类型
+def make_point(out result: Point) -> Point:  # Error: function cannot have
+    result = Point(0, 0)                     # both an 'out' argument and
+                                             # an explicit result type
 ```
 
-`raises` 和 `where` 在签名中也有固定含义。`raises` 声明函数可以引发错误。`where` 在声明末尾引入约束子句：
+`raises` 和 `where` 在声明中也有固定含义。`raises` 声明一个函数可能引发错误。`where` 在声明末尾引入一个约束子句：
 
 ```mojo
 def validate(value: Int) raises:
     if value < 0:
         raise Error("must be non-negative")
+
+def process[T: Copyable](value: T) where conforms_to(T, Sized):
+     # T must implement Sized to be used here
 ```

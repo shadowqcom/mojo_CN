@@ -1,29 +1,30 @@
 ---
 title: Mojo 结构体
 sidebar_position: 1
-description: 介绍 Mojo 结构体。
+description: Mojo 结构体（structs）简介。
 ---
 
-结构体是 Mojo 定义自定义类型的主要方式。当你需要同时建模数据和行为时——无论是小型值类型、数值抽象还是大型系统的基础——你都会使用结构体。
+结构体（struct）是 Mojo 定义自定义类型的主要方式。当你需要同时为数据和行为建模——无论是小型值类型、数值抽象，还是更大型系统的基础——你都会使用结构体。
 
-从高层次来看，Mojo 结构体允许你将数据与操作该数据的方法捆绑在一起。这使得结构体成为表示程序中概念的自然方式，而不是通过函数传递松散相关的值。
+从高层来看，Mojo 结构体允许你将数据与作用于该数据的操作捆绑在一起。这使得结构体成为一种表示程序中概念的自然方式，而不必在函数之间传递松散相关的值。
 
-每个 Mojo `struct` 都是一个数据结构，允许你封装 _字段_ 和 _方法_ 来存储和操作数据。结构体可以定义以下成员：
+每个 Mojo `struct` 都是一种数据结构，允许你封装 _字段_（fields）和 _方法_（methods）来存储和操作数据。结构体可以定义以下成员：
 
 - **字段** 是存储与结构体相关数据的变量。
-- **方法** 是在结构体中定义的函数，通常对字段数据执行操作。
-- **静态方法** 是类型提供的函数，用于执行行为、提供常量或创建专用实例。
-- **双下划线方法**（dunder methods）因其 _d_ouble _under_-scored 形式而命名，两边都有 `__`。也称为"特殊方法"，它们有助于定义 [行为](/docs/manual/structs/#special-methods)，如初始化，并使结构体能够符合 [trait](/docs/manual/traits/)。
+- **方法** 是定义在结构体中的函数，通常作用于字段数据。
+- **静态方法** 是由类型提供的函数，用于执行行为、提供常量或创建专用实例。
+- **双下划线方法**（dunder methods）因其 *d*ouble *under*score 的形式而得名，两侧都有 `__`。它们也称为"特殊方法"（special methods），[帮助定义行为](/docs/manual/structs/#special-methods)（如初始化），并使结构体能够遵循 [trait](/docs/manual/traits/)。
+- **`comptime` 成员** 启用可在优化中使用的编译时引用。
 
-例如，如果你正在构建图形程序，可以使用结构体来定义具有存储每个图像信息（如其组成像素）的 `Image` 字段和对其执行操作（如旋转图像）的 `Image` 方法。
+例如，如果你正在构建一个图形程序，可以使用结构体来定义一个 `Image`，它拥有存储每个图像信息（如其组成像素）的字段，以及对其执行操作（如旋转图像）的方法。
 
-Mojo 的结构体格式旨在提供静态、内存安全的数据结构，既强大又高性能。与可以在运行时自由修改的动态对象（如 Python 类）不同，结构体是在编译时定义的，这使得 Mojo 能够生成高度优化的代码。
+Mojo 的结构体格式旨在提供一种静态的、内存安全的数据结构，既强大又高性能。与可以在运行时被自由修改的动态对象（例如 Python 类）不同，结构体是在编译时定义的，这使得 Mojo 能够生成高度优化的代码。
 
-所有结构体字段必须使用 `var` 声明并包含类型注释。这一要求是 Mojo 编译时保证的一部分，有助于确保性能和内存安全。
+所有结构体字段必须使用 `var` 声明并包含类型注解。这一要求是 Mojo 编译时保证的一部分，有助于同时确保性能和内存安全。
 
 ## 结构体定义
 
-你可以使用以下方式定义一个名为 `MyPair` 的简单结构体，它有两个字段：
+你可以像下面这样定义一个名为 `MyPair` 的简单结构体，包含两个字段：
 
 ```mojo
 struct MyPair:
@@ -31,7 +32,7 @@ struct MyPair:
     var second: Int
 ```
 
-然而，由于它没有构造函数方法，你无法实例化此结构体。因此，这里有一个带有构造函数来初始化两个字段的版本：
+然而，由于这个结构体没有初始化方法，你还无法实例化它。下面是带有一个初始化方法、用于初始化两个字段的版本：
 
 ```mojo
 struct MyPair:
@@ -43,11 +44,11 @@ struct MyPair:
         self.second = second
 ```
 
-请注意，`__init__()` 方法中的第一个参数是 `out self`。你将在所有结构体方法的第一个参数中都有一个 `self` 参数。它引用当前的结构体实例（它允许方法中的代码引用"自身"）。_当你调用构造函数时，你永远不会为 `self` 传递值——Mojo 会自动传递它。_
+注意 `__init__()` 方法中的第一个参数是 `out self`。在所有结构体方法中，第一个参数都会是 `self`。它引用当前的结构体实例（允许方法中的代码引用"自身"）。_当你调用初始化方法时，你永远不需要为 `self` 传值——Mojo 会自动将其传入。_
 
-`out self` 中的 `out` 部分 [是参数约定](/docs/manual/values/ownership#argument-conventions)，它声明 `self` 为可变引用，在函数返回前必须初始化。
+`out self` 中的 `out` 部分是一种[参数约定](/docs/manual/values/ownership#argument-conventions)，它将 `self` 声明为一个可变引用，该引用以未初始化状态开始，并且必须在函数返回之前被初始化。
 
-许多类型使用字段级构造函数，如上面 `MyPair` 所示：它为每个字段接受一个参数，并直接从参数初始化字段。为了节省打字时间，Mojo 提供了 [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 装饰器，它为结构体生成字段级构造函数。因此，你可以像这样重写上面的 `MyPair` 示例：
+许多类型使用类似上面 `MyPair` 所示的字段级初始化方法：它为每个字段接受一个参数，并直接从参数初始化字段。为了节省输入，Mojo 提供了 [`@fieldwise_init`](/docs/reference/decorators/fieldwise-init/) 装饰器，它会为结构体生成一个字段级初始化方法。因此，你可以像下面这样重写上面的 `MyPair` 示例：
 
 ```mojo
 @fieldwise_init
@@ -56,19 +57,19 @@ struct MyPair:
     var second: Int
 ```
 
-`__init__()` 方法是许多 [特殊方法](#special-methods)（也称为"双下划线方法"，因为它们有 *d*ouble *under*scores）之一，具有预定义的名称。
+`__init__()` 方法是众多[特殊方法](#special-methods)（也称为"dunder 方法"，因为它们带有 *d*ouble *under*scores）之一，具有预定义的名称。
 
 :::note
 
-你无法在声明字段时赋值。你必须在构造函数中初始化结构体的所有字段。（如果你尝试让一个字段未初始化，代码将无法编译。）
+你不能在声明字段时赋值。你必须在初始化方法中初始化结构体的所有字段。（如果你试图让某个字段保持未初始化状态，代码将无法编译。）
 
 :::
 
 ## 构造结构体类型
 
-一旦你有了构造函数，使用 `__init__` 或使用 `@fieldwise_init`，就可以创建 `MyPair` 的实例并设置字段：
+一旦你有了初始化方法（通过 `__init__()` 或使用 `@fieldwise_init`），你就可以创建 `MyPair` 的实例并设置字段：
 
-```mojo title="构造实例"
+```mojo title="构造一个实例"
 var mine = MyPair(2, 4)
 print(mine.first)
 ```
@@ -77,114 +78,115 @@ print(mine.first)
 2
 ```
 
-:::note[初始化列表]
-Mojo 初始化列表允许你在不拼写完整类型名称和参数的情况下构造实例。如果可以从上下文推断出完整类型，直接在花括号之间传递构造函数参数，有或没有关键字。例如，`{0.5, fish="salmon"}` 在适当的结构体类型上调用 `__init__(0.5, fish="salmon")`。如果类型被推断为 `MyStruct`，这等同于 `MyStruct(0.5, fish="salmon")`。
+:::note 初始化列表
+Mojo 初始化列表允许你在不必完整拼写出类型名称和参数的情况下构造实例。如果可以从上下文中推断出完整类型，则可以直接在花括号之间传入初始化参数，带不带关键字均可。例如 `{0.5, fish="salmon"}` 会在合适的结构体类型上调用 `__init__(0.5, fish="salmon")`。如果类型被推断为 `MyStruct`，则它等价于 `MyStruct(0.5, fish="salmon")`。
 :::
 
 ## 修改结构体
 
-默认情况下，结构体的方法接收不可变的 `self`，因此它们无法修改结构体的字段。例如：
+默认情况下，结构体的方法接收的是一个不可变的 `self`，因此它们无法修改结构体的字段。例如：
 
 ```mojo
 struct MyStruct:
     var value: Int
 
     def increment(self):
-        self.value += 1 # 错误：赋值中表达式必须是可变的
+        self.value += 1 # ERROR: expression must be mutable in assignment
 
     # ...
 ```
 
-要允许方法修改实例，将其接收器声明为 `mut self`。这使得 `self` 在方法内部可变，并允许对其字段进行持久性更改：
+要允许方法修改实例，请将其接收者声明为 `mut self`。这会使 `self` 在方法内部可变，并允许对其字段进行在方法返回之后仍然保留的更改：
 
 ```mojo
 struct MyStruct:
     var value: Int
 
     def increment(mut self):
-        self.value += 1 # 可以工作：可变的 `self` 允许赋值
+        self.value += 1 # Works: Mutable `self` allows assignment
 
     #...
 ```
 
-:::info
-了解更多关于可变参数和 `mut` 关键字的信息：
-[可变参数 (`mut`)](/docs/manual/values/ownership/#mutable-arguments-mut)
+:::note
+
+阅读有关可变参数和 `mut` 关键字的更多信息：
+[可变参数（`mut`）](/docs/manual/values/ownership/#mutable-arguments-mut)
 :::
 
 ## 使结构体可复制
-Mojo 结构体默认不可复制或可移动。
+
+Mojo 结构体默认既不可复制也不可移动。
 
 例如，以下代码会产生错误：
 
 ```mojo
 var a = MyPair(1, 2)
 
-# 隐式复制
-var b = a  # 值的类型 'MyPair' 无法隐式复制，
-           # 它不符合 'ImplicitlyCopyable'
+# Implicit copy
+var b = a  # value of type 'MyPair' cannot be implicitly copied,
+           # it does not conform to 'ImplicitlyCopyable'
 
-# 显式复制
-var c = a.copy()  # 值的类型 'MyPair' 无法隐式复制，
-        # 它不符合 'ImplicitlyCopyable'
-# 移动
-var d = a^  # 值的类型 'MyPair' 无法复制或移动；考虑让它符合 'Copyable'，
-            # 这也会添加 'Movable' 符合性。
+# Explicit copy
+var c = a.copy()  # value of type 'MyPair' cannot be implicitly copied,
+        # it does not conform to 'ImplicitlyCopyable'
+# Move
+var d = a^  # value of type 'MyPair' cannot be copied or moved; consider
+            # conforming it to 'Copyable', which also adds 'Movable'
+            # conformance.
 ```
 
-在大多数情况下，只需添加 `Copyable` [trait](/docs/manual/traits/) 就可以使结构体可复制（和可移动）。
+在大多数情况下，你只需为结构体添加 `Copyable` [trait](/docs/manual/traits/)，即可使其可复制（同时可移动）。
 
 ### 可移动性
 
-要使结构体仅可移动，添加 `Movable` trait：
+要使结构体仅可移动，请添加 `Movable` trait：
 
   ```mojo
   struct MyPair(Movable):
   ...
   ```
 
-Mojo 将为你生成移动构造函数。你很少需要编写自己的自定义移动构造函数。有关更多信息，请参阅关于
-[移动构造函数](/docs/manual/lifecycle/life/#move-constructor)的部分。
+Mojo 会为你生成移动初始化方法。你很少需要编写自己的自定义移动初始化方法。更多信息，请参阅关于[移动初始化方法](/docs/manual/lifecycle/life/#move-initializer)的小节。
 
 ### 可复制性
 
-要使结构体可复制，添加 `Copyable` trait：
+要使结构体可复制，请添加 `Copyable` trait：
 
   ```mojo
   struct MyPair(Copyable):
     ...
   ```
 
-在大多数情况下，这就是你需要做的全部。Mojo 将为你生成复制构造函数
-（`__init__(out self, *, copy: Self)` 方法）。除非你需要在复制构造函数中有自定义逻辑，否则你不需要编写自己的，例如，如果结构体动态分配内存。有关更多信息，请参阅关于
-[复制构造函数](/docs/manual/lifecycle/life/#copy-constructor)的部分。
+在大多数情况下，这就是你需要做的全部。Mojo 会为你生成复制初始化方法（`__init__(out self, *, copy: Self)` 方法）。除非你在复制初始化方法中需要自定义逻辑（例如，当你的结构体动态分配内存时），否则你不需要自己编写。更多信息，请参阅关于[复制初始化方法](/docs/manual/lifecycle/life/#copy-constructor)的小节。
 
-`Copyable` trait 提供了两种复制值的方法：`copy()` 实例方法和复制初始化器。
-此外，`Copyable` 自动添加可移动性，因此你不需要在声明中同时添加 `Copyable` _和_ `Movable`。
+`Copyable` trait 提供两种复制值的方式：`copy()` 实例方法和复制初始化方法。请优先使用 `copy()` 方法。
+
+此外，`Copyable` 会自动添加可移动性，因此你不需要在声明中同时添加 `Copyable` _和_ `Movable`。
 
 ### 隐式可复制性
 
-要使结构体隐式可复制，添加 `ImplicitlyCopyable` trait：
+要使结构体隐式可复制，请添加 `ImplicitlyCopyable` trait：
 
 ```mojo
 struct MyPair(ImplicitlyCopyable):
     ...
 ```
 
-`ImplicitlyCopyable` 自动暗示 `Copyable` 和 `Movable`，因此所有与可复制性相关的说明都适用于此。只有当复制类型既便宜又没有副作用时，类型才应该是隐式可复制的。不必要的复制可能是内存和性能的巨大消耗，因此要谨慎使用此 trait。
+`ImplicitlyCopyable` 会自动隐含 `Copyable` 和 `Movable`，因此所有与可复制性相关的注意事项在此同样适用。只有当复制该类型的代价低廉且没有副作用时，该类型才应该是隐式可复制的。不必要的复制可能会对内存和性能造成巨大消耗，因此请谨慎使用此 trait。
 
 ## 字段
 
-字段存储结构体的数据。当你声明字段时，它成为结构体内存布局的一部分。因为编译器在编译时知道每个字段的类型，它可以：
+字段存储结构体的数据。当你声明一个字段时，它就成为结构体内存布局的一部分。由于编译器在编译时知道每个字段的类型，它可以：
 
 - 计算结构体的精确内存占用
-- 确保在使用前初始化所有字段
+- 确保所有字段在使用前都被初始化
 - 生成对字段数据的快速、直接访问
 - 防止在运行时更改结构体的布局
 
-字段共享其结构体实例的生命周期。它们在结构体创建时创建，在结构体销毁时销毁。此模型避免了悬空引用和部分构造的对象。
+字段与其所在结构体实例共享生命周期。它们在结构体创建时创建，在结构体销毁时销毁。这种模型避免了悬空引用和部分构造的对象。
 
-在你的结构体实现之外，你使用点表示法（`my_struct.field_name`）访问字段。在结构体内部，你的方法使用 `self`（`self.field_name`）访问字段。Mojo 在编译时知道每个字段的位置，使字段访问直接且高效。
+在结构体实现之外，你使用点号表示法（`my_struct.field_name`）访问字段。在结构体内部，你的方法使用 `self`（`self.field_name`）访问字段。Mojo 在编译时就知道每个字段的位置，使字段访问直接且高效。
 
 ### 字段要求
 
@@ -192,35 +194,35 @@ struct MyPair(ImplicitlyCopyable):
 
 ```mojo
 struct MyStruct:
-    value: Int # 错误。缺少 `var` 关键字
-    var count: Int # 可以
+    value: Int # Error. Missing `var` keyword
+    var count: Int # Yes
 ```
 
-与函数中的局部变量不同，此要求让 Mojo 能够推断结构体的布局，并保证其内存的安全性和可预测性。
+与函数中的局部变量不同，这一要求使 Mojo 能够推导结构体的布局，并保证其内存是安全且可预测的。
 
-**你必须** 为字段、方法或 `comptime` 成员使用唯一的符号。它们都存在于同一命名空间：
+**你必须** 为字段、方法或 `comptime` 成员使用唯一的符号。它们都存在于同一个命名空间中：
 
 ```mojo
 struct MyStruct:
     var count: Int
-    var count: String # 错误。无效的 `count` 重新声明
+    var count: String # Error. Invalid redeclaration of `count`
 ```
 
-**你可以** 重新使用结构体成员的名称作为参数或方法变量。
+**你可以** 将结构体成员的名称重用作参数或方法变量。
 
 ```mojo
 struct MyStruct:
     var foo: Int
 
-    def use_argument(self, foo: Int):  # 参数遮蔽了字段
-        print(foo)  # 打印参数值
+    def use_argument(self, foo: Int):  # Argument shadows field
+        print(foo)  # Prints argument value
 
     def use_local(self, value: Int):
-        var foo = value  # 局部变量遮蔽了字段
-        print(foo, self.foo)  # 打印局部变量，然后是字段
+        var foo = value  # Local variable shadows field
+        print(foo, self.foo)  # Prints local, then field
 ```
 
-**你必须** 如果更新字段值，将 `self` 标记为可变。
+**你必须** 在更新字段值时将 `self` 标记为可变。
 
 ```mojo
 struct MyStruct:
@@ -230,33 +232,31 @@ struct MyStruct:
         self.foo = new_value
 ```
 
-**你必须** 在构造函数中初始化字段，而不是在声明点。
+**你必须** 在初始化方法中初始化字段，而不是在声明处初始化。
 
 ```mojo
 struct MyStruct:
-    var foo: Int = 10 # 错误：未知标记
-    comptime bar = 10 # 可以
+    var foo: Int = 10 # Error: Unknown tokens
+    comptime bar = 10 # Yes
 ```
 
-[`comptime` 成员](/docs/manual/parameters/#comptime-members)
-是编译时常量（不是字段），不占用实例存储，因此它们可以在声明点初始化。
+[`comptime` 成员](/docs/manual/parameters/#comptime-members)是编译时常量（不是字段），不占用实例存储空间，因此它们可以在声明处初始化。
 
 ### 字段约定
 
-与其他 Mojo 元素一样，字段通常遵循
-[某些约定](https://github.com/modular/modular/blob/main/mojo/stdlib/docs/style-guide.md#code-conventions)：
+与其他 Mojo 元素一样，字段通常遵循[某些约定](https://github.com/modular/modular/blob/main/mojo/stdlib/docs/style-guide.md#code-conventions)：
 
-你应该为字段成员使用约定命名：
+你应该为字段成员使用约定俗成的命名：
 
-- 字段名称首选小写 snake_case（例如，`user_count`、`max_capacity`）。
-- 使用描述性名称来指示目的，而不是它们的类型（例如，`error_msg` 而不是 `msg_string`）。
-- 对于旨在内部使用或保持不变量的成员，添加下划线前缀（例如，`_private_field`）。
-- 对于布尔字段，使用 `is_` 或 `has_` 前缀（例如，`is_valid`、`has_data`）。
-- 避免单字母名称，除非有常见的数学约定（如坐标的 `x`、`y`、`z`）。
+- 字段名首选小写 snake_case（例如 `user_count`、`max_capacity`）。
+- 使用描述性名称来说明用途，而不是它们的类型（例如用 `error_msg` 而不是 `msg_string`）。
+- 对于仅供内部使用或用于维护不变量的成员，添加下划线前缀（例如 `_private_field`）。
+- 对于布尔字段，使用 `is_` 或 `has_` 前缀（例如 `is_valid`、`has_data`）。
+- 避免使用单字母名称，除非符合常见的数学约定（如坐标的 `x`、`y`、`z`）。
 
 ## 方法
 
-除了 `__init__()` 等特殊方法外，你还可以向结构体添加任何你想要的其他方法。例如：
+除了像 `__init__()` 这样的特殊方法外，你还可以向结构体添加任何其他方法。例如：
 
 ```mojo
 @fieldwise_init
@@ -277,21 +277,21 @@ print(mine.get_sum())
 14
 ```
 
-请注意，`get_sum()` 也使用 `self` 参数，因为这是你在方法中访问结构体字段的唯一方式。名称 `self` 只是一个约定，你可以使用任何你想要的名称来引用始终作为第一个参数传递的结构体实例。
+注意 `get_sum()` 也使用了 `self` 参数，因为这是在方法中访问结构体字段的唯一方式。`self` 这个名字只是一个约定，你可以使用任何你想要的名称来引用始终作为第一个参数传入的结构体实例。
 
-使用隐式 `self` 参数的方法称为 _实例方法_，因为它们对结构体的实例起作用。
+接收隐式 `self` 参数的方法被称为 _实例方法_（instance methods），因为它们作用于结构体的某个实例。
 
 :::note
 
-结构体方法中的 `self` 参数是 `def` 函数中唯一不需要类型的参数。如果你愿意，可以包含类型，但你可以省略它，因为 Mojo 已经知道它的类型（在这种情况下是 `MyPair`）。
+结构体方法中的 `self` 参数是 `def` 函数中唯一不需要类型的参数。如果你愿意，可以包含类型，但你可以省略它，因为 Mojo 已经知道它的类型（在本例中为 `MyPair`）。
 
 :::
 
 ### 静态方法
 
-结构体可以拥有 _静态方法_。静态方法可以在不创建结构体实例的情况下调用。与实例方法不同，静态方法不接收隐式 `self` 参数，因此它无法访问结构体上的任何字段。
+结构体可以拥有 _静态方法_。静态方法可以在不创建结构体实例的情况下被调用。与实例方法不同，静态方法不接收隐式的 `self` 参数，因此它无法访问结构体上的任何字段。
 
-要声明静态方法，使用 `@staticmethod` 装饰器，并且不要包含 `self` 参数：
+要声明静态方法，请使用 `@staticmethod` 装饰器，并且不要包含 `self` 参数：
 
 ```mojo
 struct Logger:
@@ -304,7 +304,7 @@ struct Logger:
         print("Info: ", message)
 ```
 
-你可以通过在类型上调用它来调用静态方法（在这种情况下是 `Logger`）。你也可以在类型的实例上调用它。以下显示了两种形式：
+你可以通过在类型（本例中为 `Logger`）上调用它来调用静态方法。你也可以在类型的实例上调用它。两种形式如下所示：
 
 ```mojo
 Logger.log_info("Static method called.")
@@ -319,45 +319,42 @@ Info:  Static method called from instance.
 
 ## 结构体与类的比较
 
-如果你熟悉其他面向对象语言，那么结构体听起来可能很像类，它们有一些相似之处，但也存在一些重要区别。最终，Mojo 也将支持类以匹配 Python 类的行为。
+如果你熟悉其他面向对象语言，那么结构体听起来可能很像类，二者确实有一些相似之处，但也存在一些重要差异。最终，Mojo 也将支持类，以匹配 Python 类的行为。
 
-因此，让我们将 Mojo 结构体与 Python 类进行比较。它们都支持方法、字段、运算符重载、用于元编程的装饰器等，但它们的主要区别如下：
+那么，让我们将 Mojo 结构体与 Python 类进行对比。两者都支持方法、字段、运算符重载、用于元编程的装饰器等，但它们的关键差异如下：
 
-- Python 类是动态的：它们允许动态调度、猴子补丁（或"swizzling"），并在运行时动态绑定实例字段。
+- Python 类是动态的：它们允许动态分派、猴子补丁（monkey-patching，或称"swizzling"），以及在运行时动态绑定实例字段。
 
-- Mojo 结构体是静态的：它们在编译时绑定（你无法在运行时添加方法）。结构体允许你在安全易用的同时，通过灵活性换取性能。
+- Mojo 结构体是静态的：它们在编译时绑定（你不能在运行时添加方法）。结构体允许你以安全且易于使用的方式，用灵活性换取性能。
 
 - Mojo 结构体不支持继承（"子类化"），但结构体可以实现 [trait](/docs/manual/traits/)。
 
-- Python 类支持类属性——由类的所有实例共享的值，相当于其他语言中的类变量或静态数据成员。
+- Python 类支持类属性——由该类的所有实例共享的值，相当于其他语言中的类变量或静态数据成员。
 
 - Mojo 结构体不支持静态数据成员。
 
-从语法上讲，与 Python 类相比，最大的区别是结构体中的所有字段都必须使用 `var` 显式声明。
+在语法上，与 Python 类相比最大的区别是：结构体中的所有字段都必须使用 `var` 显式声明。
 
-在 Mojo 中，结构体的结构和内容在编译时设置，程序运行时无法更改。与 Python 不同，你可以在对象上即时添加、删除或更改属性，Mojo 不允许对结构体这样做。
+在 Mojo 中，结构体的结构和内容在编译时确定，在程序运行时无法更改。与 Python 不同——你可以在运行时即时添加、删除或更改对象的属性——Mojo 不允许对结构体这样做。
 
-然而，结构体的静态性质有助于 Mojo 更快地运行你的代码。程序确切地知道在哪里可以找到结构体的信息以及如何使用它，而无需在运行时进行任何额外步骤或延迟。
+然而，结构体的静态特性有助于 Mojo 更快地运行你的代码。程序确切知道在哪里可以找到结构体的信息以及如何使用它，而无需在运行时进行任何额外的步骤或延迟。
 
-Mojo 的结构体也与你可能从 Python 中已经知道的功能配合得很好，如运算符重载（它允许你使用 [特殊方法](#special-methods) 更改数学符号如 `+` 和 `-` 如何与你自己的数据一起工作）。
+Mojo 的结构体也与那些你可能已经在 Python 中熟悉的功能配合得很好，例如运算符重载（它允许你使用[特殊方法](#special-methods)来改变 `+` 和 `-` 等数学符号在你自己数据上的工作方式）。
 
-如上所述，Mojo 的所有标准类型（`Int`、`String` 等）都是使用结构体创建的，而不是硬编码到语言本身。这给了你在编写代码时更多的灵活性和控制力，这意味着你可以使用所有相同的功能定义自己的类型（标准库类型没有特殊处理）。
+如前所述，Mojo 的所有标准类型（`Int`、`String` 等）都是用结构体构建的，而不是被硬连接到语言本身中。这为你在编写代码时提供了更大的灵活性和控制力，也意味着你可以定义自己的类型，使其具备所有相同的能力（标准库类型并没有特殊待遇）。
 
 ## 特殊方法
 
-特殊方法（或"双下划线方法"）如 `__init__()` 是你可以定义在结构体中以执行特殊任务的预定义方法名称。
+特殊方法（或"dunder 方法"）如 `__init__()` 是具有预定义名称的方法，你可以在结构体中定义它们来执行特殊任务。
 
-虽然可以使用方法名称调用特殊方法，但关键是你永远不应该这样做，因为 Mojo 在需要时自动调用它们（这就是它们也被称为"魔法方法"的原因）。例如，当你创建结构体实例时，Mojo 调用 `__init__()` 方法；当 Mojo 销毁实例时，它调用 `__del__()` 方法（如果存在）。
+虽然可以通过方法名来调用特殊方法，但关键在于你永远不应这样做，因为 Mojo 会在需要它们的场合自动调用它们（这也是它们被称为"魔术方法"的原因）。例如，当你创建结构体实例时，Mojo 会调用 `__init__()` 方法；当 Mojo 销毁实例时，它会调用 `__deinit__()` 方法（如果存在）。
 
-即使是看起来内置的操作符行为（`+`、`<`、`==`、`|` 等）也是作为特殊方法实现的，Mojo 在应用于操作符的类型上隐式调用它们来执行操作或比较。
+即使是看似内置的运算符行为（`+`、`<`、`==`、`|` 等），也是作为特殊方法实现的，Mojo 会隐式调用它们以对运算符所作用的类型执行操作或比较。
 
-Mojo 支持大量特殊方法；这里讨论的太多了，但它们通常匹配所有 [Python 的特殊方法](https://docs.python.org/3/reference/datamodel#special-method-names)，并且它们通常执行两种类型的任务之一：
+Mojo 支持一大长串的特殊方法，数量太多无法在此一一讨论，但它们通常与 [Python 的全部特殊方法](https://docs.python.org/3/reference/datamodel#special-method-names)相对应，并且通常完成以下两类任务之一：
 
-- 运算符重载：许多特殊方法旨在重载运算符，如 `<`（小于）、`+`（加）和 `|`（或），以便它们与每种类型适当地工作。有关更多信息，请参阅
-[为自定义类型实现运算符](/docs/manual/operators/#implement-operators-for-custom-types)。
+- 运算符重载：许多特殊方法被设计用于重载运算符，例如 `<`（小于）、`+`（加）和 `|`（或），以便它们能针对每种类型正确工作。更多信息，请参阅[为自定义类型实现运算符](/docs/manual/operators/#implement-operators-for-custom-types)。
 
-- 生命周期事件处理：这些特殊方法处理实例的生命周期和值的所有权。例如，`__init__()` 和 `__del__()` 标记实例生命周期的开始和结束，其他特殊方法定义其他生命周期事件的行为，如如何复制或移动值。
+- 生命周期事件处理：这些特殊方法处理实例的生命周期和值所有权。例如，`__init__()` 和 `__deinit__()` 标记了实例生命周期的起点和终点，而其他特殊方法则定义了其他生命周期事件的行为，例如如何复制或移动一个值。
 
-你可以在 [值生命周期](/docs/manual/lifecycle/) 部分了解所有关于生命周期特殊方法的信息。然而，大多数结构体只是其他类型的简单聚合，因此除非你的类型在创建、复制、移动或销毁实例时需要自定义行为，否则你可以使用 `@fieldwise_init` 装饰器（在
-[结构体定义](#struct-definition)中描述）和 `Copyable`、`Movable` traits（在
-[使结构体可复制](#making-a-struct-copyable-and-movable)中描述）合成所需的基本生命周期方法（并节省一些时间）。
+你可以在[值生命周期](/docs/manual/lifecycle/)部分了解所有关于生命周期特殊方法的内容。然而，大多数结构体只是其他类型的简单聚合，因此除非你的类型在实例被创建、复制、移动或销毁时需要自定义行为，否则你可以使用 `@fieldwise_init` 装饰器（在[结构体定义](#struct-definition)中介绍）以及 `Copyable` 和 `Movable` trait（在[使结构体可复制](#making-a-struct-copyable-and-movable)中介绍）来合成所需的基本生命周期方法（并为自己省下一些时间）。

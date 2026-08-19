@@ -2,63 +2,64 @@
 title: 操作符
 sidebar_label: 操作符
 sidebar_position: 5
-description: >
+description: >-
   Mojo 中的算术、比较、位运算、布尔和赋值操作符，包括优先级和示例。
 ---
 
-{/* 
-已移除：
+{/*
+Removed:
 
-- SIMD/标量部分（标量别名、逐元素运算、类型匹配、.cast()、逐元素比较方法如 .lt()、.eq()）[类型]
-- IntLiteral/FloatLiteral 编译时精度细节 [类型]
-- DType 解释 [过度设计]
-- 接受 Int 指数作为底数的指数运算 [内部细节]
-- StringLiteral 与 String 的区别（支持索引但不支持切片）[类型]
- */}
+- SIMD/Scalar section (scalar aliases, elementwise ops, type matching,
+  .cast(), elementwise comparison methods like .lt(), .eq()) [TYPES]
+- IntLiteral/FloatLiteral compile-time precision details [TYPES]
+- The DType explanation [OVERKILL]
+- Exponentiation accepting an Int exponent specifically [INSIDE BASEBALL]
+- StringLiteral vs String distinction (indexing but not slicing) [TYPES]
+*/}
 
-操作符是用于操作值的符号和关键字。它们使用操作符语法而不是方法调用来支持加法、比较、位运算和布尔逻辑。
+操作符是作用于值的符号和关键字。它们使用操作符语法而不是方法调用来支持加法、比较、位运算和布尔逻辑。
 
-Mojo 的操作符语法与 Python 相似。符号、优先级和结合性使用 Python 的约定，所以如果你使用过 Python、C、Rust 或类似语言，大多数行为会感到熟悉。
+Mojo 的操作符语法镜像 Python。符号、优先级和结合性使用 Python 的约定，所以如果你使用过 Python、C、Rust 或类似语言，大多数行为都会让你感到熟悉。
 
-不过，有一些细节是 Mojo 特有的。布尔操作符使用单词（`and`、`or`、`not`）而不是 `&&` 和 `||` 这样的符号。三元表达式将条件放在中间。插入符（`^`）既用于按位异或，也用于所有权和内存管理的转移符号。
+话虽如此，有一些细节是 Mojo 特有的。布尔操作符使用单词（`and`、`or`、`not`）而不是 `&&` 和 `||` 这样的符号。三元表达式将条件放在中间。插入符（`^`）既用作按位异或，也用作所有权和内存管理的转移符号。
 
 ## 算术运算
 
-标准的算术操作符与大多数语言中的操作符相同：
+标准的算术操作符与你在大多数语言中看到的一致：
 
 ```mojo
-print(7 + 3)    # 10, 加法
-print(7 - 3)    # 4, 减法
-print(7 * 3)    # 21, 乘法
+print(7 + 3)    # 10, add
+print(7 - 3)    # 4, subtract
+print(7 * 3)    # 21, multiply
 ```
 
 指数运算使用两个星号（`**`）而不是插入符（`^`）。如果你更喜欢函数形式，可以调用 `pow(base, exponent)`：
 
 ```mojo
-print(2 ** 8)   # 256 (指数运算)
+print(2 ** 8)   # 256 (exponentiation)
 ```
 
 ### 一元符号
 
-三个前缀操作符适用于单个值。将操作符紧挨着放在值的左侧，中间不要有空格：
+三个前缀操作符作用于单个值。将操作符紧挨着放在值的左侧，中间不要有空格：
 
 - `-x` 取反（`-7`，操作符是 `-`，表达式是 `7`）
-- `+x` 是一个无操作的恒等运算（`+7`）
-- `~x` 反转位（`var a: Int8 = -128; print(~a) # 127`）
+- `+x` 是一个无操作恒等运算（`+7`）
+- `~x` 按位取反（`var a: Int8 = -128; print(~a) # 127`）
 
 ### 除法和取余
 
-Mojo 有两种除法操作符，对于负数来说，它们的区别很重要：
+Mojo 有两种除法操作符，它们的区别对于负数很重要：
 
 ```mojo
 var a = -7
 var b = 4
-print(a / b)   # -1 (向零截断)
-print(a // b)  # -2 (向负无穷取整)
+print(a / b)   # -1 (truncates toward zero)
+print(a // b)  # -2 (rounds toward negative infinity)
 ```
 
-- 当你需要向零截断时使用 `/`。
-- 当你需要地板除法时使用 `//`。
+- 当你想要向零截断时使用 `/`。
+- 当你想要地板除法时使用 `//`。
 
 对于浮点类型，`/` 执行标准除法，`//` 返回向下取整到最近整数的浮点数。
 
@@ -78,17 +79,17 @@ print(7 % -4)   # -1
 
 ### 指数运算
 
-`**` 操作符是右结合的，所以它从右边分组：
+`**` 操作符是右结合的，因此它从右侧分组：
 
 ```mojo
-print(2 ** 3 ** 2)  # 512, 与 2 ** (3 ** 2) 相同
+print(2 ** 3 ** 2)  # 512, same as 2 ** (3 ** 2)
 ```
 
 指数运算是 Mojo 中仅有的两个右结合操作符之一。另一个是三元条件表达式（`if`-`else`）。
 
 ### 矩阵乘法
 
-`@` 操作符执行矩阵乘法。如果你使用过 NumPy，这会让你感到熟悉。
+`@` 操作符执行矩阵乘法。如果你使用过 NumPy，这看起来会很熟悉。
 
 Mojo 不包含内置的矩阵类型，但任何实现了 `__matmul__()` 的类型都可以使用它。
 
@@ -104,7 +105,7 @@ print(10 != 10)   # False
 
 ### 浮点数比较
 
-不要使用相等操作符（`==`）比较浮点数。小的舍入误差会累积，看起来相等的值往往并不相等：
+不要使用相等操作符（`==`）比较浮点值。小的舍入误差会累积，看起来相等的值往往并不相等：
 
 ```mojo
 from std.math import isclose
@@ -115,7 +116,7 @@ for _ in range(10):
 print(total == 1.0)        # False
 ```
 
-在所有浮点类型上使用 `isclose()` 进行近似比较。
+在任何浮点类型上使用 `isclose()` 进行近似比较。
 
 ```mojo
 print(isclose(total, 1.0)) # True
@@ -123,16 +124,16 @@ print(isclose(total, 1.0)) # True
 
 ### 链式比较
 
-你可以将比较操作符链接起来，在一个表达式中检查范围或一系列条件。每对操作符从左到右求值：
+你可以将比较操作符链起来，在一个表达式中检查范围或一系列条件。每对从左到右求值：
 
 ```mojo
 var x = 5
-print(1 < x < 10)      # True, 1 < x 且 x < 10
-print(1 < x < 3)       # False, 1 < x 且 x < 3
-print(1 < x <= 5 < 9)  # True, 1 < x 且 x <= 5 且 5 < 9
+print(1 < x < 10)      # True, 1 < x and x < 10
+print(1 < x < 3)       # False, 1 < x and x < 3
+print(1 < x <= 5 < 9)  # True, 1 < x and x <= 5 and 5 < 9
 ```
 
-表达式 `a < b < c` 等同于 `(a < b) and (b < c)`。中间的值只求值一次，而不是两次。当值来自函数时，这一点很重要：
+表达式 `a < b < c` 等价于 `(a < b) and (b < c)`。中间的值只求值一次，而不是两次。当该值来自函数时，这很重要：
 
 ```mojo
 var short_item_list = [1, 2, 3, 4, 5]
@@ -140,13 +141,13 @@ var ok = 0 < len(short_item_list) <= 10
 print(ok) # True
 ```
 
-比较、成员和身份操作符具有相同的优先级，所以你可以在单个链中组合它们。假设有一个例子：
+比较、成员和身份操作符具有相同的优先级，因此你可以在单个链中组合它们。举一个假设的例子：
 
 ```mojo
 5 != a < b in c is d
 ```
 
-这被评估为：
+它被求值为：
 
 ```mojo
 (5 != a) and (a < b) and (b in c) and (c is d)
@@ -154,19 +155,19 @@ print(ok) # True
 
 ## 位运算
 
-位运算符在整数的位级别上工作。它们允许你直接检查和操作单个位。
+位运算操作符在整数类型上按位工作。它们让你直接检查和操作单个位。
 
-与（`&`）保留两个操作数中都设置的位，或（`|`）保留任一操作数中设置的位，异或（`^`）保留不同的位：
+与（`&`）保留两个操作数中都置位的位，或（`|`）保留任一操作数中置位的位，异或（`^`）保留不同的位：
 
 ```mojo
 var flags: UInt8 = 0b0000_0101
 var mask: UInt8 = 0b0000_0011
-print(flags & mask)   # 1 (只有第 0 位在两者中都设置了)
-print(flags | mask)   # 7 (第 0、1 和 2 位)
-print(flags ^ mask)   # 6 (第 1 和 2 位不同)
+print(flags & mask)   # 1 (only bit 0 set in both)
+print(flags | mask)   # 7 (bits 0, 1, and 2)
+print(flags ^ mask)   # 6 (bits 1 and 2 differ)
 ```
 
-左移（`<<`）和右移（`>>`）将位移动指定的位置数。左移 *n* 等同于乘以 2^n，右移等同于除以 2^n：
+左移（`<<`）和右移（`>>`）将位移动给定的位数。左移 *n* 位等价于乘以 2^n，右移等价于除以 2^n：
 
 ```mojo
 print(1 << 4)    # 16
@@ -174,15 +175,15 @@ print(16 >> 2)   # 4
 print(-16 >> 2)  # -4
 ```
 
-在位运算符中，优先级顺序为：非（`~`）最紧，然后是移位操作符，接着是与，然后是异或，最后是或。如果分组不明显，请使用括号。
+在位运算操作符中，优先级顺序为：非（`~`）最紧，然后是移位操作符，接着是与，然后是异或，最后是或。如果分组不明显，请使用括号。
 
 :::caution
-Mojo 对插入符（`^`）既用于按位异或也用于转移操作符。在可能产生歧义的表达式中，Mojo 将其视为异或。例如，`x^+1` 是 `(x ^ (+1))`，而不是 `((x^) + 1)`。
+Mojo 将插入符（`^`）既用于按位异或，也用于转移操作符。在含义可能产生歧义的表达式中，Mojo 将其视为异或。例如，`x^+1` 是 `(x ^ (+1))`，而不是 `((x^) + 1)`。
 :::
 
 ## 布尔逻辑
 
-Mojo 对布尔操作符使用单词而不是 `&&` 或 `||` 这样的符号。操作符读起来像自然语言：
+Mojo 对布尔操作符使用单词而不是 `&&` 或 `||` 这样的符号。这些操作符读起来就像自然语言：
 
 ```mojo
 print(True and False)   # False
@@ -192,22 +193,23 @@ print(not True)         # False
 
 ### 短路求值
 
-`and` 和 `or` 操作符在结果已知时立即停止。对于 `and`，如果左边是假值，右边不会被求值。对于 `or`，如果左边是真值，右边会被跳过。
+`and` 和 `or` 操作符在结果已知时立即停止。对于 `and`，如果左侧为假值，则不会对右侧求值。对于 `or`，如果左侧为真值，则跳过右侧。
 
 ```mojo
 def always_true() -> Bool:
     print("called")
     return True
 
-# 字符串 "called" 永远不会打印，因为 `and` 的左边已经是 False：
+# The string "called" never prints because the left side
+# of `and` is already False:
 print(False and always_true())  # False
 ```
 
-当右边有副作用或计算成本很高时，这种行为很有用。
+当右侧有副作用或计算成本很高时，这种行为很有用。
 
 ### 真值性
 
-符合 `Boolable` 的类型具有真值，因此它们可以直接用在布尔表达式和 `if` 条件中。规则是可预测的：零、空字符串、空集合和 `None` 是假值。其他一切都是真值。
+符合 `Boolable` 的类型具有真值，因此它们可以直接用于布尔表达式和 `if` 条件中。规则是可预测的：零、空字符串、空集合和 `None` 为假值。其他一切都是真值。
 
 ```mojo
 var name = "Mojo"
@@ -227,12 +229,12 @@ print("red" in colors)         # True
 print("yellow" not in colors)  # True
 ```
 
-它也适用于字符串来检查子串：
+它也适用于字符串，用于检查子串：
 
 ```mojo
 var food = "peanut butter"
 if "nut" in food:
-    print("Contains a nut")  # 打印
+    print("Contains a nut")  # prints
 ```
 
 ### `is` 和 `is not`
@@ -242,31 +244,31 @@ if "nut" in food:
 ```mojo
 var opt: Optional[Int] = None
 if opt is None:
-    print("No value")  # 打印
+    print("No value")  # prints
 
 opt = 42
 if opt is not None:
-    print("Has a value")  # 打印
+    print("Has a value")  # prints
 ```
 
 ## 字符串操作符
 
-字符串支持使用 `+` 进行连接，使用 `*` 进行重复：
+字符串支持使用 `+` 进行拼接，使用 `*` 进行重复：
 
 ```mojo
 var greeting = "Hello" + " " + "Mojo"
 print(greeting)   # Hello Mojo
 print("ha" * 3)   # hahaha
-print("=" * 40)   # 一行 40 个等号
+print("=" * 40)   # a line of 40 equals signs
 ```
 
 :::note
-从多个值构建字符串时，多参数的 `String()` 构造函数比链接 `+` 更高效：
+从多个值构建字符串时，多参数的 `String()` 初始化器比链式 `+` 更高效：
 
 ```mojo
 var result = String("Point (", x, ", ", y, ")")
 
-# 或
+# or
 
 var result = String(t"Point({x}, {y})")
 ```
@@ -282,7 +284,7 @@ print("bird" == "bird")  # True
 
 ## 条件表达式
 
-Mojo 使用 `if`-`else` 进行条件表达式而不是 `? :`。条件放在中间：
+Mojo 使用 `if`-`else` 作为条件表达式，而不是 `? :`。条件位于中间：
 
 ```mojo
 var score = 80
@@ -290,7 +292,7 @@ var result = "pass" if score > 65 else "fail"
 print(result)  # pass
 ```
 
-你可以在任何表达式有效的地方使用这种形式，包括函数参数：
+你可以在任何表达式有效的位置使用这种形式，包括函数实参：
 
 ```mojo
 def greet(name: String):
@@ -299,7 +301,7 @@ def greet(name: String):
 greet("Sami" if True else "Cass")  # Hello, Sami
 ```
 
-与指数运算类似，链式三元表达式也是右结合的。它们从右边分组，可能难以阅读：
+与指数运算一样，链式三元表达式也是右结合的。它们从右侧分组，这可能难以阅读：
 
 ```mojo
 var value = 50
@@ -315,7 +317,7 @@ print(label)  # mid
 
 ### 就地赋值
 
-大多数二进制操作符都有复合赋值形式：`+=`、`-=`、`*=`、`/=`、`//=`、`%=`、`**=`、`@=`、`&=`、`|=`、`^=`、`<<=` 和 `>>=`。这些操作符更新左边的值而不是创建新值：
+大多数二元操作符都有复合赋值形式：`+=`、`-=`、`*=`、`/=`、`//=`、`%=`、`**=`、`@=`、`&=`、`|=`、`^=`、`<<=` 和 `>>=`。它们会更新左侧的值，而不是创建一个新值：
 
 ```mojo
 var count = 0
@@ -325,14 +327,14 @@ print(count)  # 2
 
 var flags: UInt8 = 0b0000_0001
 flags |= 0b0000_0100
-print(flags)  # 5 (第 0 和 2 位设置)
+print(flags)  # 5 (bits 0 and 2 set)
 ```
 
-对于在堆上存储数据的类型，就地操作符可以避免分配中间值。类型必须显式实现其就地方法，因此不是所有支持 `+` 的类型都支持 `+=`。
+对于在堆上存储数据的类型，就地操作符可以避免分配中间值。一个类型必须显式实现其就地方法，因此并非每一个支持 `+` 的类型也支持 `+=`。
 
-### 负鼠操作符
+### 海象操作符
 
-负鼠操作符（`:=`，正式称为*赋值表达式*）在表达式中赋值一个值。赋值的值成为该表达式的结果：
+海象操作符（`:=`，正式名称为*赋值表达式*）在表达式内部对一个值进行赋值。被赋的值会成为该表达式的结果：
 
 ```mojo
 while (name := input("Name or 'quit': ")) != "quit":
@@ -341,13 +343,13 @@ while (name := input("Name or 'quit': ")) != "quit":
 
 ## 优先级
 
-当表达式混合使用操作符时，优先级决定了哪个先执行。从最紧到最松，它们是：调用和属性访问、指数运算、一元前缀操作符、算术运算（乘法和除法在加法和减法之前）、移位、位运算符（与、异或、或）、比较、布尔逻辑（`not` 在 `and` 之前，`and` 在 `or` 之前）、条件表达式和负鼠操作符。
+当一个表达式混合使用多种操作符时，优先级决定了哪个先执行。从最紧到最松依次为：调用和属性访问、指数运算、一元前缀操作符、算术运算（乘法和除法在加法和减法之前）、移位、位运算操作符（与在异或之前，异或在或之前）、比较、布尔逻辑（`not` 在 `and` 之前，`and` 在 `or` 之前）、条件表达式和海象操作符。
 
-如果有疑问，请使用括号。它们在运行时没有成本，并且在编写代码和稍后阅读和维护时都能让你的意图清晰：
+如果有疑问，请使用括号。它们在运行时没有任何成本，并且无论在你编写代码时还是在后续阅读和维护时，都能让你的意图清晰：
 
 ```mojo
-# 不考虑优先级就能清楚表达
+# Clear without thinking about precedence
 var ready = (age >= 18) and (score > threshold)
 ```
 
-赋值操作符（`=`、`+=`、`-=` 等）是语句，不是表达式。你不能将它们混合到表达式中。
+赋值操作符（`=`、`+=`、`-=` 等）是语句，不是表达式。你不能将它们混入表达式中。

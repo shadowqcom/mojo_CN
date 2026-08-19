@@ -1,0 +1,304 @@
+---
+title: Mojo lambda 表达式参考
+sidebar_label: Lambda 表达式
+sidebar_position: 10
+description: >
+  Mojo lambda 表达式参考。涵盖 lambda 签名语法、
+  捕获列表和返回类型、thin lambda 与 lambda 闭包。
+---
+
+{/*
+Compiler verified: 2026-08-05, Mojo 1.0.0.dev0 (modular b6e7701fac1)
+Last updated: 2026-08-05 (new page); 2026-08-06 (polish, clarity)
+
+VERIFIED: ParserExprs.cpp (parseLambda, lambda_expr grammar comment,
+kw_lambda in canParseAtom, unparenthesized-args diagnostic), ExprNodes.h /
+ExprNodes.cpp / ExprNodePrinters.cpp (LambdaNode), DeclResolution.cpp
+(LambdaNode::emitIR: isThin test = bodyCaptures.values.empty() &&
+node->captures.empty() && !node->captureAllByConvention, plus the
+input-param singleton test; promoteClosure fold; emitClosureInstance
+fallback; "cannot use a capturing lambda" diagnostics), Signatures.cpp
+(parseCaptureList, ParsedCaptureList, captureAllByConvention),
+mblib2to3/Grammar.txt (lambdef, old_lambdef), mblack/nodes.py (space after
+`lambda`). Tests: KGEN/test/mojo-integration/lambda.mojo,
+KGEN/test/mojo-parser/exprs/lambda.mojo,
+KGEN/test/mojo-parser/exprs/expressions_errors.mojo. All runnable examples
+on this page execute in docs/code/reference/lambda-expressions/tests.mojo;
+the rejected forms were each confirmed against the compiler individually.
+*/}
+
+*lambda* 是一种匿名的、单表达式函数。它没有名称，主体是单个表达式，且不使用 `return`。lambda 表达式通常作为参数传递给其他函数，使其在高阶编程、回调、事件处理器和其他局部化行为中非常有用。
+
+在 Mojo 中，lambda 表达式属于函数声明家族的一部分：
+
+```mojo
+def main():
+    var inc = lambda (x: Int) -> Int: x + 1
+    print(inc(4))  # 5
+```
+
+此 lambda 等价于以下函数声明：
+
+```mojo
+def inc(x: Int) -> Int:
+    return x + 1
+
+print(inc(4))  # 5
+```
+
+lambda 与 `def` 函数互补。对命名、可复用的函数使用 `def`，对短小的内联行为使用 lambda。
+
+:::caution
+lambda 表达式正在积极开发中。
+
+返回类型推断尚未实现。如果省略返回类型，lambda 返回 `None`，即使其主体产生了一个值。
+
+本页所述规则描述了 Mojo 的当前行为。
+:::
+
+## 语法
+
+lambda 表达式使用紧凑的语法。大部分部分是可选的，取决于 lambda 捕获什么、接受什么以及返回什么。每个 lambda 都包含 `lambda` 关键字、一个主体表达式和引入它的 `:`：
+
+```text
+lambda [[parameter-list]] [(argument-list)] [effects]
+       [{capture-list}] [-> ResultType] : expression
+```
+
+最简单的 lambda 不接受参数、不捕获任何内容，并返回 `None`：
+
+```text
+lambda: None
+```
+
+各部分遵循与标准函数相同的约定：
+
+```mojo
+def main():
+    # Fully explicit. Uses an empty "no-capture" capture list `{}`
+    var a = lambda (x: Int) {} -> Int: x + 1
+
+    # Parameterized
+    var b = lambda [T: Intable](x: T) -> Int: Int(x) + 1
+
+    var y = 1
+    # Capture list omitted. `y` defaults to `imm`
+    var c = lambda (x: Int) -> Int: x * 2 + y
+
+    # Return type omitted (`None`)
+    var list: List[Int] = [1]
+    var d = lambda (x: Int) {mut list}: list.append(x)
+
+    # Arguments and return type omitted. Mutable capture
+    var e = lambda {mut list}: list.append(0)
+    print(a(4), b(4))  # 5 8
+```
+
+## 参数
+
+每个参数必须出现在括号中并具有类型。类型可以是具体的（`String`）或形参化的（`T`、`Self.U`）：
+
+```mojo
+# Concrete argument
+var hello = lambda (x: String) {} -> String: "Hello, " + x
+
+# Parameterized argument
+var inc = lambda [T: Intable](x: T) -> Int: Int(x) + 1
+```
+
+对于不接受参数的 lambda，省略参数列表：
+
+```mojo
+var no_args = lambda -> Int: 42
+```
+
+### 参数约定
+
+参数使用与函数相同的约定。默认约定是 `imm`，它捕获一个不可变引用：
+
+```mojo
+def main():
+    var read_arg = lambda (x: Int) {} -> Int: x + 1
+    # Same as: var read_arg = lambda (imm x: Int) {} -> Int: x + 1
+    var own_arg = lambda (var x: Int) {} -> Int: x + 1
+    var mut_arg = lambda (mut x: Int) {}: x.__iadd__(1)
+
+    var list: List[Int] = [1, 2, 3]
+    mut_arg(list[0])
+    print(list)  # [2, 2, 3]
+```
+
+### 可变参数
+
+lambda 表达式支持 `*args` 和 `**kwargs`，可以单独使用也可以组合使用。`**kwargs` 打包进 `OwnedKwargsDict`，因此用 `var` 声明：
+
+```mojo
+def main():
+    var count = lambda (*args: Int) {} -> Int: len(args)
+    var named = lambda (var **kwargs: Int) {} -> Int: len(kwargs)
+    print(count(10, 20, 30))  # 3
+    print(named(a=1, b=2))    # 2
+```
+
+## 返回类型
+
+省略时，返回类型默认为 `None`：
+
+```mojo
+lambda: 5                     # Error: can't convert IntLiteral to None
+lambda (x: Int) {}: x + 1     # Error: can't convert Int to None
+```
+
+## Lambda 闭包和捕获列表
+
+当 lambda 携带来自其外围作用域的状态，或绑定它在每个调用点声明的形参时，它就成为一个*闭包*。
+
+lambda 捕获列表使用与嵌套 `def` 闭包相同的[约定](/docs/reference/closure-declarations/#capture-conventions)：`imm`、`mut`、`ref`、`var`，以及可复制和可移动。
+
+在以下情况下，lambda 成为一个闭包：
+
+- lambda 主体引用了来自外围作用域的值。
+
+  ```mojo
+  var z = 10
+  var f = lambda (x: Int) -> Int: x + z  # `z` is captured
+  print(f(5))  # 15
+  ```
+
+  在没有显式捕获列表时，此处使用的默认捕获约定是不可变引用（`imm`）。
+
+- lambda 主体使用了显式捕获约定。
+
+  ```mojo
+  var list: List[Int] = [1, 2, 3]
+  var f = lambda (x: Int) {mut list}: list.append(x)  # `list` is captured
+  f(10)
+  print(list)  # [1, 2, 3, 10]
+  ```
+
+  使用 `{mut}` 会产生相同的结果，但 `{mut list}` 更精确。它将捕获限制为 `list`。`{mut}` 捕获主体中使用的每个外部值。显式命名捕获将意外的引用转变为错误，而不是静默捕获。
+
+- lambda 声明了自己的形参列表。
+
+  ```mojo
+  # N is lambda-owned, bound at each call
+  var f = lambda [N: Int](x: Int) {} -> Int: x + N
+  print(f[5](3))  # 8
+  ```
+
+由外围作用域声明的形参是编译时替换的，而非捕获：
+
+```mojo
+def total_as_ints[T: Intable & Copyable](args: List[T]) -> Int:
+    var to_int: def(v: T) thin -> Int = lambda (v: T) -> Int: Int(v)
+    var total = 0
+    for ref a in args:
+        total += to_int(a)
+    return total
+
+def main():
+    print(total_as_ints([1.5, 2.5, 3.9]))  # 6
+```
+
+空捕获列表（`{}`）表示"不捕获任何内容"。它排除了默认的 `imm` 约定，因此使用来自外围作用域的变量是一个错误：
+
+```mojo
+var z = 10
+var f = lambda (x: Int) {} -> Int: x + z  # Error: z isn't captured
+```
+
+任何显式捕获约定都会使 lambda 成为一个闭包，即使它没有捕获任何内容。例如，`lambda (x: Int) {imm} -> Int: x + 1` 是一个闭包，而省略捕获列表的相同 lambda 则是 *thin* 的。
+
+## Thin lambda
+
+不是闭包的 lambda 即为 `thin`。要成为 thin，lambda 必须不捕获任何内容、不使用显式捕获约定，且不声明自己的形参。Thin lambda 可以：
+
+- 作为 thin 函数指针使用，包括 `abi("C")` 回调。
+- 作为 thin 函数类型参数传递。
+- 用 `comptime` 绑定到一个符号。
+- 从函数返回。
+- 存储在结构体字段中。
+- 用作默认参数或形参值。
+
+当 lambda 必须比创建它的作用域存活更久，或在编译时需要时，thin 性质就很重要。
+
+### C ABI 边界
+
+Thin lambda 可以跨越 C ABI 边界，因为它们不携带运行时状态：
+
+```mojo
+var fp = lambda (a: Int32, b: Int32) abi("C") -> Int32: a + b
+print(fp(1, 2))  # 3
+```
+
+`abi("C")` 效果必须出现在 lambda 声明上。仅对变量进行类型标注是不够的。如果选择使用显式类型标注，类型必须*也*带有 `abi("C")` 效果。
+
+### 编译时使用
+
+你可以直接调用任何 lambda。你也可以将任何 lambda 作为运行时参数传递给带有函数形状的仅推断形参类型的高阶函数：
+
+```mojo
+def hof[T: def(x: Int) -> Int, //](f: T): # ...
+```
+
+编译时形参则不同。除非形参被类型化为 `thin`，否则你不能在编译时传递 lambda。当它*是* thin 时，lambda 必须是 thin 的。
+
+Mojo 可以在编译时执行 thin lambda，并将结果赋值给一个 comptime 名称：
+
+```mojo
+def main():
+    comptime whole = (lambda (x: Int) {} -> Int: x * 2)(21)
+    print(whole)  # 42
+```
+
+## 效果
+
+将 lambda 效果放在参数列表之后、捕获列表之前：
+
+```mojo
+def apply_raising(f: def(x: Int) raises thin -> Int, arg: Int) raises
+    -> Int:
+    return f(arg)
+
+def main() raises:
+    print(apply_raising(lambda (x: Int) raises -> Int: x + 1, 2))  # 3
+```
+
+每个 lambda 主体都是单个表达式，不能包含 `raise` 语句。lambda 只能通过调用其他会引发异常的内容来引发。声明 `raises` 允许 lambda 传播异常，而不是引发异常。
+
+## 嵌套
+
+每个 lambda 主体都可以包含另一个 lambda 表达式。内部 lambda 通过自己的捕获列表捕获外部 lambda 的参数，并直接引用外部 lambda 的形参：
+
+```mojo
+def main():
+    var f = lambda (x: Int) {} -> Int: (
+        lambda (y: Int) {imm x} -> Int: y + x
+    )(3)
+    print(f(6))  # 9
+```
+
+## 限制
+
+lambda 表达式有以下限制：
+
+- **单表达式**：主体是一个表达式。没有 `return`、没有语句主体，也没有多语句形式。
+- **没有返回类型推断**：省略的返回类型是 `None`，而不是求解出的类型。
+- **参数需要类型**：没有从使用点进行的参数类型推断。
+- **签名中没有 `thin`**：`thin` 适用于函数*类型*，不适用于 lambda 声明。只要 lambda 不声明任何必须从调用点提供的形参，添加 `{}` 捕获列表即可确保 lambda 是 thin 的。
+
+## 错误
+
+{/* markdownlint-disable MD013 */}
+
+| 编译器报错                                       | 触发条件                                                                    |
+|--------------------------------------------------|-----------------------------------------------------------------------------|
+| Can't convert value to `None` in return value    | 从没有返回类型的 lambda 返回一个值                                          |
+| Could not infer capture convention                | 排除了捕获约定（`{}`）但引用了来自外围作用域的值                            |
+| Mutating method on an immutable value             | 通过 `imm` 捕获进行修改                                                     |
+| Capturing lambda in comptime initializer          | 绑定到 `comptime` 名称的 lambda 闭包                                       |
+| Capturing lambda in type parameter                | 传递给类型形参的 lambda 闭包                                                |
+| Capturing lambda in default parameter             | 用作默认形参值的 lambda 闭包                                                |
+| Can't implicitly convert to a `thin` type         | 在需要 thin 函数的地方传递了一个 lambda 闭包                                |
+
+{/* markdownlint-enable MD013 */}

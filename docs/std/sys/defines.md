@@ -24,7 +24,7 @@ description: "实现检索编译时定义的函数。您可以使用这些函数
   mojo -D FLOAT32 main.mojo
 ```
 
-有关更多信息，请参阅 [Mojo 构建文档](https://www.mojocn.org/docs/cli/build.html#d-keyvalue)。
+有关更多信息，请参阅 [Mojo 构建文档](https://mojocn.org/docs/cli/build.html#d-keyvalue)。
 `mojo run` 命令也支持 `-D` 选项。
 
 

@@ -27,7 +27,7 @@ mojo hello.mojo
 
 直接运行 `mojo`（不带任何命令）可以启动 REPL 会话。
 
-你可以使用 `mojo --version` 检查当前版本。有关版本信息，请参阅 [Mojo 更新日志](https://www.mojocn.org/releases)。
+你可以使用 `mojo --version` 检查当前版本。有关版本信息，请参阅 [Mojo 更新日志](https://mojocn.org/releases)。
 
 ## 命令
 

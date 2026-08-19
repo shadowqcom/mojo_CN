@@ -1,17 +1,19 @@
 ---
-title: 生命周期、来源和引用
+title: 生命周期、来源与引用
 sidebar_position: 4
-description: 使用来源和引用。
+description: 使用来源与引用。
 ---
 
-Mojo 编译器包含一个生命周期检查器，这是一个分析程序数据流的编译器传递。它确定变量何时有效，并在变量生命周期结束时插入析构函数调用。
+{/* markdownlint-disable MD033 */}
 
-Mojo 编译器使用一个称为*来源*的特殊值来跟踪变量和引用的有效性。
+Mojo 编译器内置了一个生命周期检查器（lifetime checker），这是一个分析程序数据流的编译器 pass。它能识别变量何时有效，并在变量生命周期结束时插入去初始化器（deinitializer）调用。
 
-具体来说，来源回答两个问题：
+Mojo 编译器使用一个称为*来源（origin）*的特殊值来跟踪变量的生命周期以及引用的有效性。
+
+具体而言，一个来源回答两个问题：
 
 - 哪个变量"拥有"这个值？
-- 可以使用此引用修改该值吗？
+- 能否通过此引用修改该值？
 
 例如，考虑以下代码：
 
@@ -20,7 +22,7 @@ def print_str(s: String):
     print(s)
 
 def main():
-    name: String = "Joan"
+    var name: String = "Joan"
     print_str(name)
 ```
 
@@ -28,34 +30,38 @@ def main():
 Joan
 ```
 
-`name = "Joan"` 这一行声明了一个具有标识符（`name`）和 `String` 值的逻辑存储空间的变量。当你将 `name` 传递给 `print_str()` 函数时，函数获得该值的不可变引用。因此，`name` 和 `s` 都指向同一个逻辑存储空间，并且具有关联的来源值，这使得 Mojo 编译器能够对它们进行推理。
+`name = "Joan"` 这一行声明了一个变量，它具有标识符（`name`）以及一个用于存放 `String` 值的逻辑存储空间。当你把 `name` 传入 `print_str()` 函数时，该函数获得对该值的一个不可变引用。因此 `name` 和 `s` 都指向同一个逻辑存储空间，并具有关联的来源值，使 Mojo 编译器能够对它们进行推理。
 
-来源跟踪和生命周期检查在编译时完成，因此来源不会跟踪为 `name` 变量分配的实际存储空间。相反，来源符号地跟踪变量，因此编译器跟踪 `print_str()` 是在调用者的作用域中用由 `name` 拥有的值调用的。通过跟踪所有权的数据如何在程序中流动，编译器可以识别值的生命周期。
+来源跟踪与生命周期检查是在编译时完成的，因此来源并不跟踪为 `name` 变量实际分配的存储空间。相反，来源以符号方式跟踪变量，因此编译器记录的是 `print_str()` 是用调用者作用域中由 `name` 拥有的值调用的。通过跟踪拥有的数据如何在程序中流动，编译器能够识别值的生命周期。
 
-大多数情况下，来源由编译器自动处理。然而，在某些情况下，你需要直接与来源交互：
+大多数情况下，来源由编译器自动处理。但在某些情况下，你需要直接与来源打交道：
 
-- 当处理引用时——特别是 `ref` 参数和 `ref` 返回值。
+- 当使用引用时——具体来说是 `ref` 参数和 `ref` 返回值。
 
-- 当处理像 [`Pointer`](/docs/std/memory/pointer/Pointer/) 或 [`Span`](/docs/std/memory/span/Span/) 这样的类型时，它们的数据引用的来源是参数化的。
+- 当使用诸如
+  [`Pointer`](/docs/std/memory/pointer/Pointer/) 或
+  [`Span`](/docs/std/collections/span/Span/) 这类类型时，它们以所引用数据的来源作为参数。
 
-本节还涵盖 [`ref` 参数](#ref-arguments)和[`ref` 返回值](#ref-return-values)，它们允许函数作为具有参数化来源的引用接收参数并提供返回值。
+本节还将介绍 [`ref` 参数](#ref-arguments) 和
+[`ref` 返回值](#ref-return-values)，它们让函数能够以引用的形式接收参数并返回值，并带有参数化的来源。
 
 ## 使用来源
 
-Mojo 的来源值主要由编译器创建，因此你不能直接创建自己的来源值——你通常需要从现有值派生一个来源。
+Mojo 的来源值主要由编译器创建，因此你不能直接创建自己的来源值——通常你需要从一个已有值派生一个来源。
 
-此外，Mojo 使用来源来延长被引用值的生命周期，以便值不会过早被销毁。
+除此之外，Mojo 使用来源来延长被引用值的生命周期，使值不会被过早销毁。
 
 ### 来源类型
 
-Mojo 提供了一个结构体和一组类型别名（`comptime` 值），你可以用来指定来源类型。顾名思义，`ImmutOrigin` 和 `MutOrigin` `comptime` 值分别表示不可变和可变来源：
+Mojo 提供了一个 struct 以及一组类型别名（`comptime` 值），你可以用它们来指定来源类型。顾名思义，`ImmOrigin` 和 `MutOrigin` 这两个 `comptime` 值分别表示不可变来源和可变来源：
 
 ```mojo
-struct ImmutRef[origin: ImmutOrigin]:
+struct ImmutRef[origin: ImmOrigin]:
     pass
 ```
 
-或者你可以使用 [`Origin`](/docs/std/builtin/type_aliases/Origin/) 结构体来指定具有参数化可变性的来源：
+或者你也可以使用 [`Origin`](/docs/std/origin/Origin/)
+struct 来指定一个具有参数化可变性的来源：
 
 ```mojo
 struct ParametricRef[
@@ -66,45 +72,47 @@ struct ParametricRef[
     pass
 ```
 
-来源类型将引用的可变性作为布尔参数值携带，指示来源是可变的、不可变的，还是根据封装 API 指定的参数具有可变性。
+来源类型将引用的可变性作为布尔参数值携带，用以指示该来源是可变的、不可变的，还是其可变性取决于外层 API 指定的参数。
 
-这里的 `is_mutable` 参数是一个[仅推断参数](/docs/manual/parameters/#infer-only-parameters)。`origin` 值通常也被推断。例如，以下代码创建一个到现有值的 [`Pointer`](/docs/std/memory/pointer/Pointer/)，但不需要指定来源——`origin` 从现有值中推断。
+此处的 `is_mutable` 参数是一个[仅推断参数（infer-only parameter）](/docs/manual/parameters/#infer-only-parameters)。`origin` 值通常也是被推断的。例如，以下代码为一个已有值创建了一个 [`Pointer`](/docs/std/memory/pointer/Pointer/)，但无需指定来源——`origin` 从该已有值推断而来。
 
 ```mojo
 from std.memory import Pointer
 
 def use_pointer():
-    a = 10
-    ptr = Pointer(to=a)
+    var a = 10
+    var ptr = Pointer(to=a)
 ```
 
 ### 来源集
 
-`OriginSet` 不是一种来源类型，它代表一组来源。来源集用于跟踪在闭包中捕获的值的生命周期。
+`OriginSet` 并不是一种来源类型，它表示一组来源的集合。来源集用于跟踪在参数化闭包中捕获的值的生命周期。
+
+`OriginSet` **不是**用于表达多个来源组合的通用机制。如果你想表达多个来源的[来源并集](#origin-unions)，应使用 `origin_of()`。
 
 ### 来源值
 
-大多数来源值由编译器创建。作为开发人员，有几种指定来源值的方法：
+大多数来源值都由编译器创建。作为开发者，有几种指定来源值的方法：
 
-- 静态来源。`StaticConstantOrigin` `comptime` 值表示持续整个程序持续时间的不可变值。字符串字面量值具有 `StaticConstantOrigin`。
-
-- 派生来源。`origin_of()` 魔法函数返回与传递的值（或值）关联的来源。
-
-- 推断来源。你可以使用推断参数来捕获传递给函数的值的来源。
-
-- 外部来源。外部来源 `MutExternalOrigin` 和 `ImmutExternalOrigin` 表示不被生命周期检查器跟踪的值，例如动态分配的内存。
-
-- 通配符来源。`ImmutAnyOrigin` 和 `MutAnyOrigin` `comptime` 值是特殊情况，表示可能访问任何活动值的引用。
+- 静态来源（Static origin）。`ImmStaticOrigin` 这个 `comptime` 值表示在整个程序运行期间都存在的不可变值。字符串字面量值就具有 `ImmStaticOrigin`。
+- 派生来源（Derived origin）。`origin_of()` 魔法函数返回与传入的一个或多个值相关联的来源。
+- 推断来源（Inferred origin）。你可以使用推断参数来捕获传入函数的值的来源。
+- 未跟踪来源（Untracked origins）。未跟踪来源 `MutUntrackedOrigin` 和 `ImmUntrackedOrigin` 表示不被生命周期检查器跟踪的值，例如动态分配的内存。
+- 通配来源（Wildcard origins）。`ImmUnsafeAnyOrigin` 和 `MutUnsafeAnyOrigin` 这两个 `comptime` 值是特殊情况，表示一个可能访问任何存活值的引用。
 
 #### 静态来源
 
-当你有一个在整个程序持续时间内存在的值时，可以使用静态来源 `StaticConstantOrigin`。
+当你有一个在整个程序运行期间都存在的值时，可以使用静态来源 `ImmStaticOrigin`。
 
-例如，`StringLiteral` 方法 [`as_string_slice()`](/docs/std/builtin/string_literal/StringLiteral/#as_string_slice) 返回一个指向原始字符串字面量的 [`StringSlice`](/docs/std/collections/string/string_slice/StringSlice/)。字符串字面量是静态的——它们在编译时分配并且从不被销毁——因此切片是用不可变的静态来源创建的。
+例如，`StringLiteral` 方法
+[`as_string_slice()`](/docs/std/builtin/string_literal/StringLiteral/#as_string_slice)
+返回一个
+[`StringSpan`](/docs/std/collections/string/string_span/StringSpan/)
+指向原始字符串字面量。字符串字面量是静态的——它们在编译时分配且从不被销毁——因此该切片是以不可变的静态来源创建的。
 
 #### 派生来源
 
-使用 `origin_of(value)` 运算符获取值的来源。`origin_of()` 的参数可以采用生成以下之一的任意表达式：
+使用 `origin_of(value)` 运算符可以获取一个值的来源。传给 `origin_of()` 的实参可以是任意表达式，只要该表达式产生以下之一：
 
 - 一个来源值。
 
@@ -118,9 +126,11 @@ origin_of(x.y)
 origin_of(foo())
 ```
 
-`origin_of()` 运算符在编译时静态分析；传递给 `origin_of()` 的表达式永远不会被求值。（例如，当编译器分析 `origin_of(foo())` 时，它不会运行 `foo()` 函数。）
+`origin_of()` 运算符在编译时进行静态分析；
+传给 `origin_of()` 的表达式永远不会被求值。（例如，当编译器分析 `origin_of(foo())` 时，它不会运行 `foo()` 函数。）
 
-以下结构体使用 [`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/) 存储字符串值——一个持有拥有值的智能指针。`as_ptr()` 方法返回一个 `Pointer` 到存储的字符串，使用与原始 `OwnedPointer` 相同的来源。
+以下 struct 使用
+[`OwnedPointer`](/docs/std/memory/owned_pointer/OwnedPointer/)（一个持有 owned 值的智能指针）来存储一个字符串值。`as_ptr()` 方法返回一个指向所存储字符串的 `Pointer`，其来源与原始 `OwnedPointer` 相同。
 
 ```mojo
 from std.memory import OwnedPointer, Pointer
@@ -135,49 +145,54 @@ struct BoxedString:
         return Pointer(to=self.o_ptr[])
 ```
 
-请注意，`as_ptr()` 方法将 `self` 参数作为 `mut self`。如果它使用默认的 `read` 参数约定，它将是不可变的，并且派生来源（`origin_of(self.o_ptr)`）也将是不可变的。
+注意，`as_ptr()` 方法将其 `self` 参数声明为 `mut self`。如果它使用默认的参数约定，则该参数将是不可变的，派生来源（`origin_of(self.o_ptr)`）也将是不可变的。
 
-你也可以将多个表达式传递给 `origin_of()` 以表达两个或更多来源的并集：
+你也可以向 `origin_of()` 传入多个表达式以表示两个或更多来源的并集：
 
 `origin_of(a, b)`
 
 #### 来源并集
 
-两个或更多来源的并集创建一个新的来源，为了生命周期扩展的目的，它引用所有原始来源（因此 `a` 和 `b` 的来源的并集扩展两个生命周期）。
+当一个函数返回的引用或指针可能具有若干不同来源之一时，你可以将该引用的来源表示为所有可能来源值的并集。
 
-来源并集是可变的，当且仅当其所有组成部分来源都是可变的。有关示例，请参阅[具有并集来源的返回值](#return-values-with-union-origins)。
+两个或更多来源的并集会创建一个新的来源，在生命周期延长方面它会引用所有原始来源（因此 `a` 和 `b` 的来源的并集会同时延长两者的生命周期）。当且仅当所有组成来源都是可变的，该来源并集才是可变的。使用来源并集的示例可参见
+[具有并集来源的返回值](#return-values-with-union-origins)。
 
 #### 推断来源
 
-由于来源是参数，编译器可以从传递给函数或方法的参数中*推断*一个来源值，如[参数推断](/docs/manual/parameters/#parameter-inference)中所述。这允许函数返回一个与传递给它的参数具有相同来源的值。
+由于来源是参数，编译器可以像
+[参数推断](/docs/manual/parameters/#parameter-inference)中所述的那样，从传入函数或方法的实参中*推断*出来源值。这让函数能够返回一个与传入实参具有相同来源的值。
 
-有关使用推断来源的示例，请参阅[`ref` 参数](#ref-arguments)部分。
+使用推断来源的示例，请参见关于 [`ref` 参数](#ref-arguments)的章节。
 
-#### 外部来源
+#### 未跟踪来源
 
-外部来源 `MutExternalOrigin` 和 `ImmutExternalOrigin` 表示不与任何现有值别名的值。也就是说，它们指向不由任何其他变量拥有的内存，因此不被生命周期检查器跟踪。例如，[`alloc()`](/docs/std/memory/unsafe_pointer/alloc/) 函数返回一个到新动态分配内存块的 `UnsafePointer`，来源为 `MutExternalOrigin`。该来源指示该内存不由 Mojo 所有权系统管理。当你使用像这样的不安全 API 时，你有责任自己管理生命周期：例如，分配内存的结构体通常应该在析构函数中释放该内存。
+未跟踪来源 `MutUntrackedOrigin` 和 `ImmUntrackedOrigin` 表示不与任何已有值别名的值。也就是说，它们指向不由任何其他变量拥有的内存，因此不被生命周期检查器跟踪。例如，
+[`alloc()`](/docs/std/memory/alloc/alloc/) 函数返回一个
+`Allocation`，表示一个新动态分配的内存块，其来源为 `MutUntrackedOrigin`。该来源表明这块内存不由 Mojo 所有权系统管理。当你使用这样的不安全 API 时，你需要自行管理其生命周期：例如，分配内存的 struct 通常应在其去初始化器中释放该内存。
 
-#### 通配符来源
+#### 通配来源
 
-通配符来源 `ImmutAnyOrigin` 和 `MutAnyOrigin` 是特殊情况，表示可能访问任何活动值的引用。这些以前广泛用于不安全指针。使用具有通配符来源的指针有效地禁用了该作用域内任何值的 Mojo 即时销毁，只要指针是活动的。因此，不鼓励使用通配符来源，应作为最后手段使用。
+通配来源 `ImmUnsafeAnyOrigin` 和 `MutUnsafeAnyOrigin` 是特殊情况，表示一个可能访问任何存活值的引用。它们此前被广泛用于不安全指针。在某个作用域内使用具有通配来源的指针，实际上会禁用 Mojo 对该作用域内任何值的 ASAP 销毁，只要该指针仍然存活。它还会阻止 Mojo 实施
+[参数互斥性（argument exclusivity）](/docs/manual/values/ownership/#argument-exclusivity)，并隐藏未使用变量的警告。
+
+因此，不鼓励使用通配来源，应将其作为最后的手段使用。
 
 ## 使用引用
 
-你可以使用 `ref` 关键字与参数和返回值一起使用，以指定具有参数化可变性的引用。也就是说，它们可以是可变的或不可变的。
+你可以在参数和返回值上使用 `ref` 关键字，以指定具有参数化可变性的引用。也就是说，它们既可以是可变的也可以是不可变的。
 
-在被调用函数内部，`ref` 参数看起来像 `read` 或 `mut` 参数。
-
-`ref` 返回值看起来像调用函数的任何其他返回值，但它是对现有值的*引用*，而不是副本。
+`ref` 返回值在调用函数看来与任何其他返回值无异，但它是对已有值的*引用*，而不是副本。
 
 ### `ref` 参数
 
-`ref` 参数约定允许你指定具有参数化可变性的参数：也就是说，你不需要预先知道传递的参数将是可变的还是不可变的。你可能想使用 `ref` 参数有几个原因：
+`ref` 参数约定允许你指定一个具有参数化可变性的参数：也就是说，你不必预先知道传入的参数是可变的还是不可变的。你可能想要使用 `ref` 参数有以下几个原因：
 
-- 你想接受具有参数化可变性的参数。
+- 你希望接收一个具有参数化可变性的参数。
 
-- 你想将一个参数的生命周期绑定到另一个参数的生命周期。
+- 你希望将一个参数的生命周期与另一个参数的生命周期绑定在一起。
 
-- 当你需要一个保证在内存中传递的参数时：这对于需要身份的泛型参数可能很重要，无论具体类型是否可传递到寄存器。
+- 当你希望一个参数保证在内存中传递时：这对于需要同一性的参数化参数很有用，无论具体类型是否可按寄存器传递。
 
 `ref` 参数的语法是：
 
@@ -188,35 +203,35 @@ struct BoxedString:
 <code><strong>ref[</strong><var>origin_specifier(s)</var><strong>] </strong>
 <var>arg_name</var>: <var>arg_type</var></code>
 
-在第一种形式中，`ref` 参数的来源和可变性从传递的值中推断。第二种形式包含一个来源子句，由方括号内的一个或多个来源说明符组成。来源说明符可以是：
+在第一种形式中，`ref` 参数的来源和可变性从传入的值推断而来。第二种形式包含一个来源子句，由方括号中的一个或多个来源说明符组成。来源说明符可以是：
 
 - 一个来源值。
 
-- 一个任意表达式，它被视为 `origin_of(expression)` 的简写。换句话说，以下声明是等效的：
+- 一个任意表达式，它被视为 `origin_of(expression)` 的简写。换句话说，以下两个声明是等价的：
 
   ```mojo
   ref[origin_of(self)]
   ref[self]
   ```
 
-- 一个 [`AddressSpace`](/docs/std/memory/pointer/AddressSpace/) 值。
+- 一个 [`AddressSpace`](/docs/std/memory/address_space/AddressSpace/) 值。
 
-- 下划线字符（`_`）表示来源是*未绑定的*。这等同于省略来源说明符。
+- 一个下划线字符（`_`），表示来源是*未绑定的*。这等价于省略来源说明符。
 
   ```mojo
   def add_ref(ref a: Int, b: Int) -> Int:
     return a+b
   ```
 
-你也可以显式命名来源。如果你想将参数限制为 `ImmutOrigin` 或 `MutOrigin`，或者如果你想将函数的返回值绑定到参数的来源，这很有用。
+你也可以显式地命名来源。如果你希望将参数限制为 `ImmOrigin` 或 `MutOrigin`，或者你希望将函数的返回值绑定到某个参数的来源，这就很有用。
 
-例如，`Span` 类型是连续数据（如字符串的子字符串或列表的子集）的非拥有视图。因为它指向它不拥有的数据，所以它在其指向的数据的来源值上进行参数化，该来源值代表数据的生命周期和所有权。
+例如，`Span` 类型是连续数据（例如字符串的子串或列表的子集）的非拥有视图。因为它指向它并不拥有的数据，所以它以一个来源值作为参数，该来源值代表它所指向数据的生命周期和所有权。
 
-在以下示例中，`to_byte_span()` 函数接收一个 `List[Byte]` 并返回一个与列表具有相同来源的 `Span[Byte]`：
+在以下示例中，`to_byte_span()` 函数接收一个
+`List[Byte]` 并返回一个与该列表具有相同来源的 `Span[Byte]`：
 
 ```mojo
-from std.collections import List
-from std.memory import Span
+from std.collections import List, Span
 
 def to_byte_span[
     is_mutable: Bool,
@@ -226,37 +241,39 @@ def to_byte_span[
     return Span(list)
 
 def main():
-    list: List[Byte] = [77, 111, 106, 111]
+    var list: List[Byte] = [77, 111, 106, 111]
     _ = to_byte_span(list)
 ```
 
-在这个例子中，`origin` 参数从 `list` 参数推断，然后用作返回的 `Span` 的来源。
+在此示例中，`origin` 参数从 `list` 实参推断而来，然后用作返回的 `Span` 的来源。
 
-由于 `Span` 采用 `list` 参数的来源，Mojo 编译器可以将 span 的数据识别为由列表拥有。span 将具有与列表相同的生命周期，并且如果列表是可变的，则 span 将是可变的。
+由于 `Span` 采用了 `list` 实参的来源，Mojo 编译器可以将该 span 的数据识别为由该列表所拥有。该 span 将具有与列表相同的生命周期，并且如果列表是可变的，该 span 也是可变的。
 
 ### `ref` 返回值
 
-与 `ref` 参数一样，`ref` 返回值允许函数返回一个可变或不可变引用。`ref` 返回值的语法是：
+与 `ref` 参数类似，`ref` 返回值允许函数返回对一个值的可变或不可变引用。`ref` 返回值的语法是：
 
 <code><strong>-> ref[</strong><var>origin_specifier(s)</var><strong>] </strong>
  <var>arg_type</var></code>
 
-请注意，你必须为 `ref` 返回值提供来源说明符。来源说明符允许的值与[`ref` 参数](#ref-arguments)列出的值相同。
+注意，你**必须**为 `ref` 返回值提供一个来源说明符。来源说明符允许的值与
+[`ref` 参数](#ref-arguments)中列出的相同。
 
-`ref` 返回值可以是处理更新集合中项的高效方法。执行此操作的标准方法是实现 `__getitem__()` 和 `__setitem__()` dunder 方法。这些方法被调用以从集合中的下标项读取和写入：
+`ref` 返回值可以是更新集合中元素的高效手段。实现此功能的标准方式是实现 `__getitem__()`
+和 `__setitem__()` 这两个 dunder 方法。它们分别被调用于读取和写入集合中下标对应的元素：
 
 ```mojo
-value = list[a]
+var value = list[a]
 list[b] += 10
 ```
 
-使用 `ref` 参数，`__getitem__()` 可以返回一个可被直接修改的可变引用。这与使用 `__setitem__()` 方法相比有优点和缺点：
+借助 `ref` 参数，`__getitem__()` 可以返回一个可被直接修改的可变引用。与使用 `__setitem__()` 方法相比，这各有优劣：
 
-- 可变引用更高效——单个更新不会在两个方法之间拆分。然而，被引用的值必须在内存中。
+- 可变引用更高效——一次更新不会被拆分到两个方法之间。但是，被引用的值必须位于内存中。
 
-- `__getitem__()`/`__setitem__()` 对允许在检索和设置值时运行任意代码。例如，`__setitem__()` 可以验证或约束输入值。
+- `__getitem__()`/`__setitem__()` 这一对方法允许在取值和赋值时执行任意代码。例如 `__setitem__()` 可以验证或约束输入值。
 
-例如，在以下示例中，`NameList` 有一个返回引用的 `__getitem__()` 方法：
+例如，在以下示例中，`NameList` 拥有一个返回引用的 `__getitem__()` 方法：
 
 ```mojo
 struct NameList:
@@ -267,14 +284,14 @@ struct NameList:
         for name in names:
             self.names.append(name)
 
-    def __getitem__(ref self, index: Int) raises -> ref[self.names] String:
+    def __getitem__(ref self, index: Int) raises -> ref[self.names[0]] String:
         if (index >=0 and index < len(self.names)):
             return self.names[index]
         else:
             raise Error("index out of bounds")
 
 def main() raises:
-    list = NameList("Thor", "Athena", "Dana", "Vrinda")
+    var list = NameList("Thor", "Athena", "Dana", "Vrinda")
     ref name = list[2]
     print(name)
     name += "?"
@@ -286,32 +303,33 @@ Dana
 Dana?
 ```
 
-请注意使用 `ref name` 语法来创建引用绑定。
+注意其中使用了 `ref name` 语法来创建一个引用绑定。
 
-如果你将 `ref` 返回值赋给一个变量，该变量接收被引用项的*副本*。如果你需要捕获引用以备将来使用，请使用[引用绑定](/docs/manual/variables/#reference-bindings)：
+如果你把 `ref` 返回值赋给一个变量，该变量会得到被引用元素的*副本*。如果你需要捕获该引用以供后续使用，请使用
+[引用绑定](/docs/manual/variables/#reference-bindings)：
 
 ```mojo
-var name_copy = list[2]  # list[2] 的拥有副本
-ref name_ref = list[2]  # list[2] 的引用
+var name_copy = list[2]  # owned copy of list[2]
+ref name_ref = list[2]  # reference to list[2]
 ```
 
 #### 返回值的参数化可变性
 
-`ref` 返回参数的另一个优点是支持参数化可变性的能力。例如，回想上面 `__getitem__()` 方法的签名：
+`ref` 返回参数的另一个优势是能够支持参数化可变性。例如，回顾一下上面 `__getitem__()` 方法的签名：
 
 ```mojo
 def __getitem__(ref self, index: Int) raises -> ref[self] String:
 ```
 
-由于返回值的 `origin` 与 `self` 的 `origin` 绑定，如果使用可变引用调用该方法，返回的引用将是可变的。如果你有 `NameList` 的不可变引用，该方法仍然有效，但它返回一个不可变引用：
+由于返回值的 `origin` 与 `self` 的 origin 绑定，所以如果使用一个可变引用来调用该方法，返回的引用就会是可变的。如果你拥有对 `NameList` 的一个不可变引用，该方法仍然可用，但它会返回一个不可变引用：
 
 ```mojo
 def pass_immutable_list(list: NameList) raises:
     print(list[2])
-    # list[2] += "?" # 错误，此列表是不可变的
+    # list[2] += "?" # Error, this list is immutable
 
 def main() raises:
-    list = NameList("Sophie", "Jack", "Diana")
+    var list = NameList("Sophie", "Jack", "Diana")
     pass_immutable_list(list)
 ```
 
@@ -319,17 +337,21 @@ def main() raises:
 Diana
 ```
 
-没有参数化可变性，你需要编写两个版本的 `__getitem__()`，一个接受不可变的 `self`，另一个接受可变的 `self`。
+如果没有参数化可变性，你就需要编写两个版本的
+`__getitem__()`，一个接受不可变的 `self`，另一个接受可变的 `self`。
 
 #### 具有并集来源的返回值
 
-`ref` 返回值可以在其来源说明符中包含多个值，这产生来源的并集。例如，以下 `pick_one()` 函数返回两个输入字符串之一的引用，其来源是两个来源的并集。
+`ref` 返回值可以在其来源说明符中包含多个值，从而得到这些来源的并集。例如，以下 `pick_one()`
+函数返回对两个输入字符串之一的引用，其来源是两者来源的并集。
 
 ```mojo
 def pick_one(cond: Bool, ref a: String, ref b: String) -> ref[a, b] String:
     return a if cond else b
 ```
 
-由于编译器无法静态确定将选择哪个分支，此函数必须使用并集来源 `[a, b]`。这确保编译器在返回引用活动时扩展*两个*值的生命周期。
+由于编译器无法静态判断会选择哪一个分支，因此该函数必须使用并集来源 `[a, b]`。这确保编译器在返回引用仍然存活期间延长*两个*值的生命周期。
 
-如果**两个** `a` 和 `b` 都是可变的，则返回的引用是可变的。
+当且仅当 `a` 和 `b` **都**是可变的，返回的引用才是可变的。
+
+{/* markdownlint-enable MD033 */}

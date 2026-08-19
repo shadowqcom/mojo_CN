@@ -8,31 +8,31 @@ description: >
   编译时表达式和推导式。
 ---
 
-{/*  VERIFIED: ParserExprs.cpp, ExprNode.h, ParserBase.h,
-     ExprNodes.h  */}
+{/* VERIFIED: ParserExprs.cpp, ExprNode.h, ParserBase.h,
+     ExprNodes.h */}
 
-*表达式*是任何产生值的代码片段。表达式是计算的基本构建块：你可以将它们与运算符组合、作为参数传递、将结果赋值给变量，并在控制流中用作条件。
+*表达式*是任何会产生值的代码片段。表达式是计算的基本构建块：你可以用运算符将它们组合起来、把它们作为参数传递、把结果赋值给变量，并在控制流中将它们用作条件。
 
 ## 标识符表达式
 
-标识符引用命名元素：变量、函数、类型或模块。在表达式中使用标识符可以获得它所引用的内容：
+标识符引用一个命名的元素：变量、函数、类型或模块。在表达式中使用标识符会得到它所引用的内容：
 
 ```mojo
-score        # 一个变量
-Int          # 一个类型
-range        # 一个函数
+score        # a variable
+Int          # a type
+range        # a function
 ```
 
 ## 括号表达式
 
-括号用于分组子表达式，覆盖默认优先级：
+括号用于对子表达式分组，会覆盖默认的优先级：
 
 ```mojo
-(a + b) * c  # 将 a 和 b 相加，再乘以 c
-(x)          # 就是 x
+(a + b) * c  # add a and b, multiply by c
+(x)          # just x
 ```
 
-括号还允许表达式跨越多行而无需使用反斜杠转义：
+括号还允许表达式跨越多行，而无需使用反斜杠转义：
 
 ```mojo
 var result = (
@@ -44,20 +44,20 @@ var result = (
 
 ## 元组
 
-*元组*是固定大小、有序的值组。逗号创建元组，而不是括号：
+*元组*是固定大小、有序的一组值。逗号会创建元组，而不是括号：
 
 ```mojo
-var a = 2, 3       # 没有括号的元组
-var b = (2, 3)     # 带括号的相同元组
-var x, y = b       # x 是 2，y 是 3
+var a = 2, 3       # tuple without parentheses
+var b = (2, 3)     # same tuple with parentheses
+var x, y = b       # x is 2, y is 3
 ```
 
-使用尾随逗号创建单元素元组。没有它，`(1)` 只是括号中的整数 `1`：
+使用尾随逗号可以创建单元素元组。如果没有尾随逗号，`(1)` 就只是括号中的整数 `1`：
 
 ```mojo
-()          # 空元组
-(1,)        # 单元素元组
-(1, 2, 3)   # 三元素元组
+()          # empty tuple
+(1,)        # one-element tuple
+(1, 2, 3)   # three-element tuple
 ```
 
 元组支持索引：
@@ -69,60 +69,87 @@ print(point[0])  # 10
 
 ## 集合显示
 
-编译器称这些为*显示*。显示类似于字面量，但与字面量不同，显示可以包含表达式和固定值。
+编译器将这些称为*显示（display）*。显示类似于字面量，但与字面量不同，显示可以包含表达式以及固定值。字面量不能包含表达式。
+
+例如：
+
+```mojo
+[1, 2, 3]  # list literal
+[1, 1+1, 1+1+1]  # list display
+```
 
 ### 列表
 
-*列表显示*从逗号分隔的值创建列表：
+*列表显示（list display）*从逗号分隔的值创建列表：
 
 ```mojo
-var empty = []
+var empty: List[Float32] = []
 var numbers = [1, 2, 3]
-var mixed = [1, "two", 3.0,]
+var strings = ["one", "two", "three",]
 ```
 
-Mojo 允许在所有集合元素后使用尾随逗号，包括最后一个。
+Mojo 允许在所有集合元素后面使用尾随逗号，包括最后一个元素。
 
 ### 字典
 
-*字典显示*使用 `:` 分隔每个键值对：
+*字典显示（dict display）*使用 `:` 分隔每个键值对：
 
 ```mojo
-var empty = {}
+var empty: Dict[String, Int] = {}
 var ages = {"Alice": 30, "Bob": 25}
 ```
 
 ### 集合
 
-*集合显示*使用带值但不带冒号的花括号：
+*集合显示（set display）*使用花括号，里面是值但没有冒号：
 
 ```mojo
 var primes = {2, 3, 5, 7}
 ```
 
-不要混淆集合和字典语法。`{1, 2}` 是集合。`{1: 2}` 是字典。
+不要混用集合和字典的语法。`{1, 2}` 是集合。`{1: 2}` 是字典。
 
 ```mojo
-{"a": 1, 2}   # 错误：不能混合 'key: value' 对和集合元素
-{1, "b": 2}   # 错误：不能混合 'key: value' 对和集合元素
+{"a": 1, 2}   # Error: expected 'key: value' in dictionary expression
+{1, "b": 2}   # Error: cannot have a 'key: value' pair in set initializer
 ```
 
-花括号语法还用作*初始化列表*，创建推断类型的实例。没有类型上下文，编译器无法区分集合和初始化列表，因此区别在类型检查时解决。初始化列表可以包含位置值和关键字参数：
+**集合不是初始化列表**。
+花括号语法也可以作为*初始化列表（initializer list）*，用于创建一个推断类型的实例。在没有类型上下文的情况下，编译器无法区分集合和初始化列表，因此这一区分会在类型检查阶段解决。初始化列表可以包含位置值和关键字参数：
 
 ```mojo
-{x, y}           # 集合或初始化列表，没有上下文
-{z=4, "foo"}     # 带关键字参数的初始化列表
+{x, y}           # set or initializer list, without context
+{z=4, "foo"}     # initializer list with keyword argument
 ```
 
-初始化列表是构造函数调用的语法糖。当类型 `T` 从上下文中已知时，`{1, "hello"}` 等同于 `T(1, "hello")`。使用它们将初始化的实例作为参数传递：
+初始化列表是初始化调用的语法糖。当类型 `T` 可以从上下文中得知时，`{1, "hello"}` 等价于 `T(1, "hello")`。可以用它们将已初始化的实例作为参数传递：
 
 ```mojo
-process({1, "hello"})  # 类型从签名推断
+process({1, "hello"})  # type inferred from signature
+
+var x: T = {}  # type inferred from variable declaration, calls T()
+```
+
+**注意点：集合显示是 Mojo 核心语法，但 `Set` 类型不是**。
+你必须从标准库中导入 `Set` 才能将其作为类型使用：
+
+```mojo
+from std.collections import Set # Required to use Set type
+from std.testing import assert_equal
+
+def main() raises:
+    var display_set = {1, 2, 3}        # A set with elements 1, 2, and 3
+    assert_equal(len(display_set), 3)  # The length of the set is 3
+
+    var empty_set = Set[Int]()         # An empty set
+    empty_set.add(4)                   # Add an element to the set
+    empty_set.add(4)
+    assert_equal(len(empty_set), 1)    # Sets do not allow duplicate elements
 ```
 
 ## 成员访问
 
-点运算符访问值上的属性或方法：
+点运算符用于访问某个值上的属性或方法：
 
 ```mojo
 var length = text.count()
@@ -130,11 +157,11 @@ var x = point.x
 var name = person.name.upper()
 ```
 
-链式调用从左到右：`a.b.c` 访问 `a.b` 结果上的 `c`。
+链式调用从左到右进行：`a.b.c` 访问 `a.b` 的结果上的 `c`。
 
 ## 调用
 
-*调用表达式*通过在表达式后附加 `()` 来调用函数或构造值：
+*调用表达式*通过在表达式后面附加 `()` 来调用函数或构造一个值：
 
 ```mojo
 print("hello")
@@ -144,7 +171,7 @@ var p = Point(1.0, 2.0)
 
 ### 位置参数和关键字参数
 
-任何关键字参数之前的参数是位置参数。关键字参数使用 `name=value` 语法。
+在任何关键字参数之前的参数是位置参数。关键字参数使用 `name=value` 语法。
 
 ```mojo
 def greet(name: String, loud: Bool = False):
@@ -155,23 +182,23 @@ greet("Alice", loud=True)  # Hello, ALICE!
 greet(name="Bob") # Hello, Bob!
 ```
 
-位置参数不能跟在关键字参数之后：
+位置参数不能跟在关键字参数后面：
 
 ```mojo
     # greet(loud=True, "Alice")
-    # 错误：位置参数跟在关键字参数之后
+    # Error: positional argument follows keyword argument
 ```
 
 关键字参数不能重复：
 
 ```mojo
 greet(name="Alice", name="Bob")
-# 错误：重复的关键字参数 'name'
+# Error: duplicate keyword argument 'name'
 ```
 
 ## 下标和切片
 
-表达式后的方括号通过索引或键查找值：
+表达式后面的方括号用于通过索引或键查找值：
 
 ```mojo
 var item = collection[0]
@@ -181,28 +208,28 @@ var cell = matrix[i, j]
 
 ### 切片
 
-方括号内的冒号创建*切片*。切片使用 `start:stop` 或 `start:stop:stride` 选择元素范围：
+方括号内的冒号会创建*切片*。切片使用 `start:stop` 或 `start:stop:stride` 来选取一段元素范围：
 
 ```mojo
 var items = [0, 1, 2, 3, 4, 5]
 
-var first_three = items[0:3]   # [0, 1, 2]（不包含 3）
+var first_three = items[0:3]   # [0, 1, 2] (3 not included)
 var from_three  = items[3:]    # [3, 4, 5]
 var every_other = items[::2]   # [0, 2, 4]
 var reversed    = items[::-1]  # [5, 4, 3, 2, 1, 0]
 ```
 
-所有三个部分都是可选的。起始默认为开头，结束默认为末尾，步长默认为 1。结束位置的元素不包含在结果中。
+这三个部分都是可选的。start 默认为开头，stop 默认为末尾，stride 默认为 1。位于 stop 位置的元素不会包含在结果中。
 
 ## 三元条件
 
-`if`-`else` 表达式根据条件在两个值之间选择：
+`if`-`else` 表达式根据条件在两个值之间做出选择：
 
 ```mojo
 var label = "even" if x % 2 == 0 else "odd"
 ```
 
-条件跟在 `if` 后，替代值跟在 `else` 后。如果条件为真，表达式求值为第一个值。如果为假，则为替代值。
+条件跟在 `if` 后面，备选值跟在 `else` 后面。如果条件为真，表达式的求值结果为第一个值。如果为假，则为备选值。
 
 三元表达式是右结合的，可以链式使用：
 
@@ -214,36 +241,42 @@ var size = (
 )
 ```
 
-这分组为
+这等价于
 `"small" if n < 10 else ("large" if n > 100 else "medium")`。
 
 ## 海象运算符
 
-常规赋值（`=`）是语句。它不能出现在更大的表达式中。海象运算符（也称为赋值表达式）`:=` 是赋值的表达式形式：它将值绑定到名称并求值为该值，因此结果可以立即使用：
+常规赋值（`=`）是语句，不是表达式。它们不会产生值。
+
+海象运算符（:=）是赋值的表达式形式。它会将值绑定到一个名称上，并求值为该值。你可以一步完成赋值并使用其结果：
 
 ```mojo
+var n: Int
 if (n := len(items)) > 10:
     print(n)
 
+var name: String
 while (name := input("Prompt: ")) != "quit":
     print(name)
 ```
 
-海象运算符在 `def` 方法和函数中隐式声明变量。它是所有表达式运算符中优先级最低的，因此通常需要在更大的表达式中使用时加括号。
+名称可以像上面示例中那样事先声明，也可以由海象运算符本身引入。它最常用于在一条语句中创建临时值，不过该绑定在其作用域的剩余部分仍然可用。
+
+海象赋值右侧的值不必一定存在于内存中。例如，它可能是一个只存在于寄存器中的计算值。海象运算符本身不意味着任何关于所有权或引用语义的内容。
+
+海象运算符的优先级是所有表达式运算符中最低的。在需要时可以使用括号来明确表达你的意图：
 
 ```mojo
-# 海象运算符需要函数作用域
-n := len(items)      # 错误：表达式必须在函数内部
+if item := list[idx] < 50:        # binds comparison result
+    print(t"{item} is under 50")  # "True is under 50"
 
-# 海象运算符在下标中无效
-def main():
-    items = [1, 2, 3]
-    items[n := 2]    # 错误：下标中不允许使用海象运算符
+if (item := list[idx]) < 50:      # binds list item
+    print(t"{item} is under 50")  # "(actual number) is under 50"
 ```
 
 ## 编译时表达式
 
-`comptime` 强制表达式在编译时求值。需要括号：
+`comptime` 强制表达式在编译时求值。需要使用括号：
 
 ```mojo
 def heavy_calculation() -> Int:
@@ -253,48 +286,63 @@ def heavy_calculation() -> Int:
     return sum
 
 # var x = comptime heavy_calculation()
-# 错误：需要括号
+# Error: requires parentheses
 
-var x = comptime(heavy_calculation())  # 运行时 O(1)
+var x = comptime(heavy_calculation())  # O(1) at runtime
 print(x)  # 499999500000
 ```
 
-循环在编译期间运行一次。在运行时，`x` 是常量。如果表达式无法在编译时求值，编译器会报错。
+该循环在编译期间运行一次。在运行时，`x` 是一个常量。如果表达式无法在编译时求值，编译器会报错。
 
-Mojo 还为编译时类型内省提供内置表达式。这些看起来像函数调用，但它们是对类型和 trait 在编译时操作的关键字：
+Mojo 还为编译时类型内省提供了内置表达式。它们看起来像函数调用，但其实是关键字，在编译时对类型和 trait 进行操作：
 
 ```mojo
-type_of(x)             # 表达式的类型
-conforms_to(T, Trait)  # 测试 trait 一致性
-origin_of(x)           # 引用的来源
+type_of(x)             # type of an expression
+conforms_to(T, Trait)  # test trait conformance
+origin_of(x)           # origin of a reference
 ```
 
-这三个表达式的工作方式与大多数人预期的不同。它们用于反射、条件类型一致性和源集。它们返回编译器内部类型，不会打印。
+这三个表达式用于反射、条件 trait 一致性和 origin 集合。它们返回的是编译器内部类型，无法打印。
 
-{/*  TODO: Uncomment when closure design stabilizes.
-## Function type expressions
+## 函数类型表达式
 
-A function type expression describes the signature of a
-function as a type:
+函数类型表达式将一个函数的签名描述为一个类型：
 
 ```mojo
 def() -> Int
 def(Int, Int) -> Int
 def(var value: String) -> None
 def() raises -> String
+def(T) -> T
 ```
 
-Function type expressions can include argument types with
-conventions, return types, and effects like `raises`.
- */}
+函数类型表达式可以包含带约定的参数类型、返回类型，以及 `raises` 等效果。
+
+## Lambda 表达式
+
+`lambda` 是一个匿名的、单表达式函数。它的参数像函数声明一样带有括号和类型，主体则是单个没有 `return` 的表达式：
+
+```text
+lambda [[parameter-list]] [(argument-list)] [effects]
+       [{capture-list}] [-> ResultType] : expression
+```
+
+例如，下面的 lambda 返回其参数加 1 后的值：
+
+```mojo
+var inc = lambda (x: Int) {} -> Int: x + 1
+var y = inc(4)  # 5
+```
+
+完整的语法、语义和示例，请参阅 [lambda 表达式参考](/docs/reference/lambda-expressions)。
 
 ## 推导式表达式
 
-推导式是一种通过遍历现有值并可选地过滤或转换它们来构建新集合的简洁方式。它用单个（通常）可读的表达式替换常见的循环追加模式。
+推导式是一种通过遍历现有值，并可选地对这些值进行过滤或转换，从而构建新集合的简洁方式。它用单个表达式就能替代常见的“循环并追加”模式。
 
 ### 列表推导式
 
-列表推导式创建列表：
+列表推导式用于创建列表：
 
 ```mojo
 var squares = [x * x for x in [0, 1, 2, 3, 4] if x % 2 == 0]
@@ -306,23 +354,23 @@ var positive = [x for x in range(-3, 3) if x > 0]
 
 **语法：** `[expr for pattern in iterable if condition]`
 
-- 多个 `for` 子句创建嵌套迭代
-- `if` 子句过滤元素
+- 多个 `for` 子句会创建嵌套迭代
+- `if` 子句用于过滤元素
 
 ### 集合推导式
 
-集合推导式创建集合。集合不存储重复项，因此你可能得到比迭代次数更少的元素：
+集合推导式用于创建集合。集合不存储重复元素，因此得到的元素数量可能少于迭代次数。对于一个以 `fib(0)=1` 和 `fib(1)=1` 起始的斐波那契生成器，前 6 个斐波那契数为 `1, 1, 2, 3, 5, 8`：
 
 ```mojo
 var fibs = {fib(x) for x in range(6)}
-# {1, 2, 3, 5, 8}，6 次迭代得到 5 个元素
+# {1, 2, 3, 5, 8}, 5 elements from 6 iterations
 ```
 
 **语法：** `{expr for pattern in iterable if condition}`
 
 ### 字典推导式
 
-字典推导式创建字典：
+字典推导式用于创建字典：
 
 ```mojo
 var dict_squares = {x: x * x for x in range(3)}

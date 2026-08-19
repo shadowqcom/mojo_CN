@@ -2,101 +2,123 @@
 title: 自引用结构体
 sidebar_position: 3
 description: >
-  Mojo 结构体不能直接包含自身。学习如何使用指针来构建链表、树和其他自引用数据结构。
+  Mojo 结构体无法直接包含自身。了解如何使用指针来构建链表、树以及其他自引用数据结构。
 ---
 
-某些数据结构与值语义不太兼容。列表、树和图都需要相互指向的节点。你无法通过在一个值中嵌套另一个值来构建它们，因为类型将永远增长。
+{/* markdownlint-disable MD033 */}
 
-在 Mojo 中，你使用指针、堆分配和手动清理来构建这些形状。这个想法最初可能感觉很新，但一旦你分步看到它，模式就会保持简单。
+有些数据结构并不适合用值语义来表达。列表、树和图都需要能够相互指向的节点。你无法通过将一个值嵌套在另一个值中来构建这些结构，因为类型会无限增长。
+
+在 Mojo 中，你使用指针、堆分配和手动清理来构建这些结构。这一思路乍看可能很新颖，但只要分小步去看，模式其实很简单。
 
 ## 避免直接自引用
 
-Mojo 不会让你构建存储其自身另一个实例的类型，即使嵌套在 `Optional` 中：
+Mojo 不允许你构建一个直接存储自身另一个实例的类型，即使嵌套在 [`Optional`](/docs/std/collections/optional/Optional/) 中也不行：
 
 ```mojo
 struct Node:
     var value: String
-    var next: Optional[Node]  # 错误：递归引用
+    var next: Optional[Node]  # ERROR: Recursive reference
 
     # ...
 ```
 
-每个 `struct` 都有固定的布局。如果 `Node` 直接持有另一个 `Node`，编译器将不知道要保留多少空间。可选字段也无济于事，因为外部值仍然需要为内部值留出空间。
+每个 `struct` 都有固定的布局。如果 `Node` 直接持有另一个 `Node`，编译器将不知道要预留多少空间。可选字段也帮不上忙，因为外层值仍然需要为内层值留出空间。
 
-指针解决了这个问题。指针有固定的大小，它们允许值相互指向而不会导致类型爆炸。
+指针解决了这个问题。指针具有固定大小，它们让值可以相互指向而不会让类型膨胀。
 
 ## 添加自引用指针
 
-以下代码显示如何设置可以指向其自身类型的节点。此示例为你提供了一个具有值槽和到下一个节点的单个链接的节点类型：
+下面的代码展示了如何设置一个可以指向自身类型的节点。这个示例为你提供了一种节点类型，它有一个值槽以及一个指向下一个节点的链接：
 
 ```mojo
-struct Node[ElementType: ImplicitlyCopyable & Writable](Movable):
-    comptime NodePointer = UnsafePointer[Self, MutExternalOrigin]
+struct Node[T: ImplicitlyCopyable & Writable & Deinitable](
+    Movable
+):
+    comptime NodePointer = Pointer[Self, MutUntrackedOrigin]
 
 
-    var value: Optional[Self.ElementType] # 节点的 `value`
-    var next: Optional[Self.NodePointer] # 指向下一个 `Node` 的指针
+    var value: Optional[Self.T] # The `Node`'s value
+    var next: Optional[Self.NodePointer] # Pointer to the next `Node`
 
 
-    # 使用 `Optional` 值允许'空'节点构造
-    # 可以移动到新分配的内存中
-    def __init__(out self, value: Optional[Self.ElementType] = None):
+    # Uses an `Optional` value to allow 'empty' Node construction
+    # that can be moved into newly allocated memory
+    def __init__(out self, value: Optional[Self.T] = None):
         self.value = value
         self.next = {}
 ```
 
-代码定义了基于
-[`UnsafePointer`](/docs/std/memory/unsafe_pointer/UnsafePointer/)
-的类型特定 `NodePointer` 类型别名。
+这段代码定义了一个特定于类型的 `NodePointer` 类型别名，它基于 [`Pointer`](/docs/std/memory/pointer/Pointer/)。
 
-[`MutExternalOrigin`](/docs/manual/values/lifetimes/)
-允许指针表示不会被生命周期检查器跟踪的动态分配内存。你需要根据需要分配和释放内存。
+[`MutUntrackedOrigin`](/docs/manual/values/lifetimes/) 让指针可以表示生命周期检查器不跟踪的动态分配内存。你需要按需分配和释放内存。
 
-`next` 字段是 `Optional[Self.NodePointer]`，因为节点可能或可能不会链接到另一个节点。`UnsafePointer` 不可为空，因此 `Optional` 提供空状态。`Optional[UnsafePointer]` 与原始指针具有相同的内存布局，因此没有开销。有关此模式的更多信息，请参阅
-[处理可空性](/docs/manual/pointers/unsafe-pointers/#working-with-nullability)。
+`next` 字段是 `Optional[Self.NodePointer]`，因为一个节点可能链接、也可能不链接到另一个节点。`Pointer` 不可为空，因此由 `Optional` 提供空状态。`Optional[Pointer]` 与原始指针具有相同的内存布局，因此没有任何额外开销。有关此模式的更多信息，请参阅 [使用可空性](/docs/manual/pointers/using-pointers/#working-with-nullability)。
 
-可选的 `value` 让你可以创建"空"节点，使你能够将新的 `Node` 内存分配移动到位。
+可选的 `value` 让你可以创建"空"节点，从而能够将新分配的 `Node` 内存移动到位。
 
 ## 构建节点
 
-这是你将在许多引用结构中使用的关键模式：
+下面是你在许多引用结构中都可以使用的关键模式：
 
 1. 分配空间。
-2. 构造一个值持有节点。
-3. 将其移动到已分配的内存中。
-4. 返回指针。
+1. 构造一个持有值的节点。
+1. 将其写入已分配的内存。
+1. 返回指针。
 
-这是该模式的示例：
+下面是该模式的一个示例：
 
 ```mojo
 @staticmethod
-def make_node(value: Self.ElementType) -> Self.NodePointer:
-    var node_ptr = alloc[Self](1)
-    node_ptr.init_pointee_move(Self(value))
+def make_node(value: Self.T) -> Self.NodePointer:
+    var node_ptr = alloc[Self]({count = 1}).unsafe_leak()
+    node_ptr.unsafe_write(Self(value))
     return node_ptr
 ```
 
-这种"分配空间、初始化和移动"的方法在 Mojo 中创建安全的基于指针的结构。
+在本例中，构造节点（`Self(value)`）足够简单，因此它与 [`unsafe_write()`](/docs/std/memory/pointer/Pointer/#unsafe_write) 调用写在一起。
+
+这种"分配空间、初始化并写入"的方法可以在 Mojo 中创建安全的基于指针的结构。
+
+[`alloc()`](/docs/std/memory/alloc/alloc/) 返回一个 [`Allocation`](/docs/std/memory/alloc/Allocation/)，它是一个拥有所有权的句柄，编译器要求你在它离开作用域之前释放它。这是正确的默认行为，但节点必须比分配它的函数活得长，因此 `make_node()` 调用 [`unsafe_leak()`](/docs/std/memory/alloc/Allocation/#unsafe_leak) 从句柄中取出原始指针。泄漏会把内存的责任转移给你——关于何时更应选择哪种方式，请参阅 [更多内存分配模式](/docs/manual/pointers/using-pointers/#more-memory-allocation-patterns)。
+
+## 释放节点
+
+释放一个节点需要两步：先销毁存储在该内存中的值，再释放内存本身。由于 `make_node()` 返回的是原始指针，你需要将泄漏的指针与其分配时的布局重新配对，得到一个 [`dealloc()`](/docs/std/memory/alloc/dealloc/) 可以消费的 `Allocation`：
+
+```mojo
+@staticmethod
+def free_node(var node_ptr: Self.NodePointer):
+    node_ptr.unsafe_deinit_pointee()
+    dealloc(
+        ThinAllocation(unsafe_owned_ptr=node_ptr).unsafe_with_layout(
+            {count = 1}
+        )
+    )
+```
+
+之所以分为两步，是因为 `dealloc()` 在释放内存时不会对其持有的内容执行析构方法。跳过 [`unsafe_deinit_pointee()`](/docs/std/memory/pointer/Pointer/#unsafe_deinit_pointee) 会泄漏节点值所拥有的内容，本例中即为 [`String`](/docs/std/collections/string/string/String/) 的堆缓冲区。
+
+每个删除节点的地方都调用这一个方法，因此 `make_node()` 与 `free_node()` 的配对很容易审计。
 
 ## 链接节点
 
-要链接节点，创建一个新节点并将你的 `next` 指针设置为指向它。此示例显示如何使用提供的值 `append` 新节点。如果已存在 `next` 节点，代码会在附加新节点之前释放它。
+要链接节点，需要创建一个新节点，并将你的 `next` 指针指向它。这个示例展示了如何使用提供的值来 `append()` 一个新节点。如果已存在 `next` 节点，代码会先释放它，再追加新节点。
 
 ```mojo
-def append(mut self, value: Self.ElementType):
-    # 如果替换 `next`，则释放链
+def append(mut self, value: Self.T):
+    # Free chain if replacing `next`
     if self.next:
         var next_ptr = self.next.value()
         next_ptr[].free_chain()
-        next_ptr.destroy_pointee()
-        next_ptr.free()
+        Self.free_node(next_ptr)
 
     self.next = Self.make_node(value)
 ```
 
 ## 遍历列表
 
-要遍历列表，请跟随链直到到达终点。递归代码使这易于阅读。此示例打印存储在每个节点中的值：
+要遍历列表，沿着链一直走到末尾即可。递归代码使这易于阅读。本示例打印每个节点中存储的值：
 
 ```mojo
 @staticmethod
@@ -107,7 +129,7 @@ def print_list(node: Optional[Self.NodePointer]):
 
     var node_ptr = node.value()
 
-    current_value: Optional[Self.ElementType] = node_ptr[].value
+    var current_value: Optional[Self.T] = node_ptr[].value
     if current_value:
         print(current_value.value(), end=" ")
 
@@ -117,111 +139,120 @@ def print_list(node: Optional[Self.NodePointer]):
         print()
 ```
 
-模式很简单：检查值，如果存在则打印它，然后移动到下一个链接。
+模式很简单：检查值，如果存在就打印，然后移动到下一个链接。
 
 :::note
-此示例使用静态方法，但你也可以将其实现为实例方法。
+本示例使用静态方法，但你也可以将其实现为实例方法。
 :::
 
 ## 清理
 
-因为你为自己分配每个节点，所以你也负责释放它。此清理遍历链并在销毁其 pointee 后释放每个节点：
+由于每个节点都是由你自己分配的，你也负责释放它。这个清理过程遍历整条链，在销毁每个节点的 pointee 后释放它：
 
 ```mojo
 def free_chain(self):
     var current = self.next
     while current:
         var current_ptr = current.value()
-        next_node = current_ptr[].next
-        current_ptr.destroy_pointee()
-        current_ptr.free()
+        var next_node = current_ptr[].next
+        Self.free_node(current_ptr)
         current = next_node
 ```
 
-"头"节点保持已分配状态，除非你显式为自己释放它：
+注意，循环在释放节点 *之前* 读取 `current_ptr[].next`。一旦 `free_node()` 返回，指针即变为悬垂，再通过它读取就会变成 use-after-free。
+
+"头"节点会一直保持分配状态，除非你显式释放它：
 
 ```mojo
 list_head[].free_chain()
-list_head.destroy_pointee()
-list_head.free()
+ListNode.free_node(list_head)
 ```
 
-## 析构函数
+### 析构方法
 
-当你构建真实的 Mojo 数据结构时，你通常想要一个安全的 API，将原始指针隐藏给用户。在完整的链表类型（而不是可链接节点的小型演示）中，父列表处理节点分配和释放。因为它拥有节点，它还在其
-[析构函数](/docs/manual/lifecycle/death/)
-中执行清理。
+当你构建真正的 Mojo 数据结构时，通常希望提供一个安全的 API，向用户隐藏原始指针。在一个完整的链表类型（而非可链接节点的小型演示）中，由父列表处理节点的分配和释放。由于它拥有这些节点，它也会在其 [析构方法](/docs/manual/lifecycle/death/) 中执行清理。
 
-这是一个小示例，显示如何初始化 `self`：
+下面是一个小示例，展示如何析构 `self`：
 
 ```mojo
-struct LinkedList[T]:
-    var _head: Optional[Self._NodePointer]
+struct LinkedList[T: ImplicitlyCopyable & Writable & Deinitable]:
+    comptime _Node = Node[T]
 
-    def __del__(deinit self):
-        """通过释放所有节点来清理列表。
+    var _head: Optional[Self._Node.NodePointer]
 
-        注：
-            时间复杂度：O(n) in len(self)。
+    def __deinit__(deinit self):
+        """Clean up the list by freeing all nodes.
 
-        另请参阅：
-            "选择析构函数的形式！"
-            -- Gozer，《鬼娃回魂》（1984）。
+        Notes:
+            Time complexity: O(n) in len(self).
+
+        See Also:
+            "Choose the form of the Destructor!"
+            -- Gozer, "Ghostbusters" (1984).
         """
         var curr = self._head
         while curr:
-            var next = curr.value()[].next
-            curr.value().destroy_pointee()
-            curr.value().free()
+            var curr_ptr = curr.value()
+            var next = curr_ptr[].next
+            Self._Node.free_node(curr_ptr)
             curr = next
 ```
 
-{/*  markdownlint-disable MD033  */}
-
-:::info[整合在一起]
+:::note Putting it together
 
 <details>
   <summary>查看完整示例代码</summary>
 
 ```mojo
-from std.os import abort
+from std.memory import ThinAllocation, dealloc
 
-comptime Element = String # 适配你的类型
-comptime ListNode = Node[Element] # 构造 LinkedList
+comptime Element = String  # Adapt for your type
+comptime ListNode = Node[Element]  # Constructing a LinkedList
 
-struct Node[ElementType: ImplicitlyCopyable & Writable](Movable):
-    comptime NodePointer = UnsafePointer[Self, MutExternalOrigin]
 
-    var value: Optional[Self.ElementType] # 节点的 `value`
-    var next: Optional[Self.NodePointer] # 指向下一个 `Node` 的指针
+struct Node[T: ImplicitlyCopyable & Writable & Deinitable](Movable):
+    comptime NodePointer = Pointer[Self, MutUntrackedOrigin]
 
-    # 使用 `Optional` 值允许'空'节点构造
-    # 可以移动到新分配的内存中
-    def __init__(out self, value: Optional[Self.ElementType] = None):
+    var value: Optional[Self.T]  # The `Node`'s value
+    var next: Optional[Self.NodePointer]  # Pointer to the next `Node`
+
+    # Uses an `Optional` value to allow 'empty' Node construction
+    # that can be moved into newly allocated memory
+    def __init__(out self, value: Optional[Self.T] = None):
         self.value = value
         self.next = {}
 
-    # 构造一个带有 `value` 的 `Node`，使用堆分配并
-    # 返回指向新 `Node` 的指针。
+    # Constructs a `Node` with a `value` with heap allocation and
+    # returns a pointer to the new `Node`.
     @staticmethod
-    def make_node(value: Self.ElementType) -> Self.NodePointer:
-        var node_ptr = alloc[Self](1)
-        node_ptr.init_pointee_move(Self(value))
+    def make_node(value: Self.T) -> Self.NodePointer:
+        var node_ptr = alloc[Self]({count = 1}).unsafe_leak()
+        node_ptr.unsafe_write(Self(value))
         return node_ptr
 
-    # 构造一个带有已分配内存的 `Node`，分配值，将指针附加到 `self.next`。
-    # 替换任何现有的 `next`。
-    def append(mut self, value: Self.ElementType):
-        # 如果替换 `next`，则释放链
+    # Destroys the pointee, then releases the `Node`'s heap allocation by
+    # pairing the leaked pointer back up with the layout it was allocated with.
+    @staticmethod
+    def free_node(var node_ptr: Self.NodePointer):
+        node_ptr.unsafe_deinit_pointee()
+        dealloc(
+            ThinAllocation(unsafe_owned_ptr=node_ptr).unsafe_with_layout(
+                {count = 1}
+            )
+        )
+
+    # Constructs a `Node` with allocated memory, assigns a value, appends
+    # the pointer to `self.next`. Replaces any existing `next`.
+    def append(mut self, value: Self.T):
+        # Free chain if replacing `next`
         if self.next:
             var next_ptr = self.next.value()
             next_ptr[].free_chain()
-            next_ptr.destroy_pointee()
-            next_ptr.free()
+            Self.free_node(next_ptr)
 
         self.next = Self.make_node(value)
 
-    # 打印从此指针的 pointee 开始的列表
+    # Prints the list starting at this pointer's pointee
     @staticmethod
     def print_list(node: Optional[Self.NodePointer]):
         if not node:
@@ -230,7 +261,7 @@ struct Node[ElementType: ImplicitlyCopyable & Writable](Movable):
 
         var node_ptr = node.value()
 
-        current_value: Optional[Self.ElementType] = node_ptr[].value
+        var current_value: Optional[Self.T] = node_ptr[].value
         if current_value:
             print(current_value.value(), end=" ")
 
@@ -239,15 +270,15 @@ struct Node[ElementType: ImplicitlyCopyable & Writable](Movable):
         else:
             print()
 
-    # 释放所有连续分配的 `Node` pointee。不释放 self
+    # Releases all successively allocated `Node` pointees. Does not release self.
     def free_chain(self):
         var current = self.next
         while current:
             var current_ptr = current.value()
-            next_node = current_ptr[].next
-            current_ptr.destroy_pointee()
-            current_ptr.free()
+            var next_node = current_ptr[].next
+            Self.free_node(current_ptr)
             current = next_node
+
 
 def main():
     var values: List[Element] = ["one", "one", "two", "three", "five", "eight"]
@@ -260,10 +291,10 @@ def main():
 
     ListNode.print_list(list_head)
 
-    # 演示清理。在短命程序中，操作系统会在退出时回收内存
+    # Demonstrates cleanup. In short-lived programs, the OS reclaims memory
+    # at exit
     list_head[].free_chain()
-    list_head.destroy_pointee()
-    list_head.free()
+    ListNode.free_node(list_head)
 ```
 
 输出：
@@ -275,15 +306,9 @@ one one two three five eight
 </details>
 :::
 
-{/*  markdownlint-enable MD033  */}
-
 ## 接下来做什么？
 
-- 在 Mojo 的
-  [UnsafePointer](/docs/std/memory/unsafe_pointer/UnsafePointer/)
-  和 [生命周期和来源规则](/docs/manual/values/lifetimes/) 指南中了解有关 **指针和内存安全** 的更多信息。
-- 在 Mojo
-  [析构函数](/docs/manual/lifecycle/death/) 文档中了解有关如何 **管理清理** 的更多信息。
-- 了解有关
-  [带 trait 的泛型结构](/docs/manual/traits/#generic-structs-with-traits)
-  以及它们如何让你构建 **可重用的节点和列表类型**。
+- 在 Mojo 的 [使用指针](/docs/manual/pointers/using-pointers/) 和 [生命周期与 origin 规则](/docs/manual/values/lifetimes/) 指南中，进一步了解 **指针与内存安全**。
+- 在 Mojo 的 [析构方法](/docs/manual/lifecycle/death/) 文档中，进一步了解如何 **管理清理**。
+
+{/* markdownlint-enable MD033 */}

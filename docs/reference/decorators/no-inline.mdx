@@ -1,76 +1,20 @@
 ---
-title: '@no_inline 装饰器'
+title: '@no_inline'
 sidebar_label: '@no_inline'
 sidebar_position: 12
-description: >
-  @no_inline 装饰器参考。禁止函数内联。
+description: 阻止函数被内联。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
-
-`@no_inline` 装饰器禁止函数内联。编译器会生成真正的函数调用，而不是将函数体插入到调用位置。
-
-## 语法
+你可以在任何函数上添加 `@no_inline` 装饰器，以阻止编译器将其内联。
 
 ```mojo
 @no_inline
-def function_name(...):
+def my_large_function():
     ...
 ```
 
-## 用法
+内联是一种优化，可减少小型、频繁调用函数的调用开销。可以使用
+[`@always_inline`](/docs/reference/decorators/always-inline/) 显式标记函数进行内联，或者由编译器自动内联。
 
-```mojo
-@no_inline
-def complex_operation(x: Int) -> Int:
-    # 复杂的实现...
-    return result
-```
-
-## 适用场景
-
-### 减少代码膨胀
-
-```mojo
-@no_inline
-def large_function():
-    # 大量代码
-    pass
-```
-
-### 调试
-
-```mojo
-@no_inline
-def debug_helper():
-    # 在调试器中更容易设置断点
-    pass
-```
-
-### 热点代码分离
-
-```mojo
-@no_inline
-def cold_path():
-    # 很少执行的代码
-    pass
-
-@always_inline
-def hot_path():
-    # 频繁执行的代码
-    pass
-```
-
-## 与 `@always_inline` 对比
-
-| 装饰器         | 行为               |
-|----------------|--------------------|
-| `@always_inline` | 强制内联         |
-| `@no_inline`     | 禁止内联         |
-| 无装饰器         | 编译器决定       |
-
-## 注意事项
-
-- 可能增加函数调用开销
-- 可能减少代码膨胀
-- 适用于调试和性能分析
+过多的内联函数会拖慢编译速度，并大幅增加编译后程序的二进制大小。特别是对于大型或复杂的函数，内联可能不会带来太多收益。

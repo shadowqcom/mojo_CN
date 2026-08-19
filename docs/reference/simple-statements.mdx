@@ -7,10 +7,10 @@ description: >
   赋值语句和其他简单语句。
 ---
 
-{/*  VERIFIED: ParserStmts.cpp parseStmt(), parseImportStmt(),
+{/* VERIFIED: ParserStmts.cpp parseStmt(), parseImportStmt(),
      parseFromImportStmt(), parseReturnStmt(), parseRaiseStmt(),
      parseAssertStmt(), parseBreakOrContinueStmt(), parseVarStmt(),
-     parseComptimeCompoundStmt()  */}
+     parseComptimeCompoundStmt() */}
 
 *简单语句*在单个逻辑行上执行单个操作。多个简单语句可以用分号分隔在同一行上。
 
@@ -19,56 +19,66 @@ description: >
 *导入语句*将模块及其成员暴露给当前作用域。导入可以出现在模块级别、函数内部或其他作用域内。它们不需要出现在文件顶部。
 
 ```mojo
-import math
-from collections import Dict, Set
+import std.math
+from std.collections import Dict, Set
+```
+
+使用括号可以在多行上导入以提高可读性，并支持干净的提交差异：
+
+```mojo
+from std.collections import (
+    Dict,
+    Set,
+    List,    # Trailing comma is legal
+)
 ```
 
 ### 模块导入
 
 ```mojo
-import math
-import numpy as np            # 别名模块名以避免冲突
+import std.math
+import numpy as np            # Alias the module name to avoid collisions
 ```
 
 ### 选择性导入
 
 ```mojo
-from math import sqrt, pi
-from collections import Dict as Dictionary   # 别名导入的名称
+from std.math import sqrt, pi
+from std.collections import Dict as Dictionary   # Alias the imported name
 ```
 
 ### 通配符导入
 
 ```mojo
-from math import *  # 导入 math 模块的所有公共名称
+from std.math import *  # Imports all public names from the std.math module
 ```
 
 ## 表达式语句
 
-*表达式语句*为副作用求值表达式。当结果未使用（除 `None` 外）时，编译器会警告：
+*表达式语句*为副作用求值表达式。当结果未使用（除 `None` 外）时，编译器会发出警告：
 
 ```mojo
-x + y              # 警告：结果未使用
+x + y              # Warning: result is unused
 ```
 
-当结果为 `None` 时，编译器不会警告，这对于为副作用调用的函数很常见：
+当结果为 `None` 时，编译器不会发出警告，这对于为副作用而调用的函数很常见：
 
 ```mojo
-print("hello")     # 副作用：打印
-trigger()          # 副作用：为行为调用
+print("hello")     # Side effect: prints
+trigger()          # Side effect: called for behavior
 ```
 
-将结果赋值给 `_` 以显式丢弃并消除警告：
+将结果赋值给 `_` 可以显式丢弃它并消除警告：
 
 ```mojo
-_ = update()       # 显式丢弃结果
+_ = update()       # Explicitly discard the result
 ```
 
-表达式在模块作用域或结构体主体内的方法外部无效。
+表达式在模块作用域或结构体主体内方法外部是无效的。
 
 ## 赋值语句
 
-*赋值语句*使用 `=` 将值绑定到名称：
+*赋值语句*使用 `=` 将值绑定到名称。使用 `var` 声明来声明新变量：
 
 ```mojo
 var x = 42
@@ -76,39 +86,31 @@ var name = "Alice"
 var result = compute()
 ```
 
-当类型可以从初始化器推断时，使用 `var` 是可选的，就像在 Python 中一样，但不推荐。显式的 `var`（和 `ref`）声明表明你打算声明新变量，并且易于扫描。
+使用 `ref` 声明来创建引用绑定：
 
 ```mojo
-x = 42          # 类型推断为 Int
-name = "Alice"  # 类型推断为 String
+ref y = my_list[3]  # `y` is a reference to the value at `my_list[3]`
 ```
 
-### 带注解的赋值
+`y` 引用绑定不会创建新值。它创建对 `my_list[3]` 中现有值的引用。修改 `y` 会修改 `my_list[3]` 中的值；修改 `my_list[3]` 会改变 `y` 读取的内容。
 
-带注解的赋值将类型绑定到名称，带有可选的初始化器：
-
-```mojo
-x: Int = 42
-name: String = "Alice"
-values: List[Float64] = []
-```
-
-没有类型和初始化器的 `var` 是错误的：
+带注解的赋值将类型绑定到名称，带有可选的初始化器。类型注解不是必需的，但它们能提高可读性并捕获错误：
 
 ```mojo
-var x        # 错误：声明必须有类型或初始化器
-var x: Int   # OK：提供了类型，值未初始化
-var x = 42   # OK：类型从初始化器推断
-```
-
-你不需要为变量添加类型，但添加类型注解是一个好习惯，可以提高可读性、表明意图并捕获错误：
-
-```mojo
-var x: Int16 = 42
+var x: Int = 42
 var name: String = "Alice"
+var values: List[Float64] = []
 ```
 
-当类型复杂且冗长时，可以使用 comptime 别名保持代码简洁：
+`var` 既没有类型*又*没有初始化器是一个错误：
+
+```mojo
+var x        # Error: declaration must have either a type or an initializer
+var x: Int   # OK: type provided, value uninitialized
+var x = 42   # OK: type inferred from initializer
+```
+
+当类型复杂且书写冗长时，可以使用 comptime 别名保持代码简洁：
 
 ```mojo
 comptime Vec3 = List[Float64]
@@ -117,15 +119,62 @@ var position: Vec3 = [0.0, 0.0, 0.0]
 
 ### 多重赋值
 
+多重赋值为你提供了初始化变量的简洁语法。
+
+将相同的值赋给多个名称。这是右结合的。`z` 先被赋值，然后是 `y`，然后是 `x`。如果右侧有副作用，它们只执行一次：
+
 ```mojo
-x = y = z = 0        # 将相同的值赋给多个名称
-a, b = 1, 2          # 解构赋值
-(a, b) = (1, 2)      # 等价的解构，不是"将元组赋给元组"
+# Good for initializing counters/flags to the same literal.
+var x = var y = var z = "Hello"
+print(x, y, z) # Hello Hello Hello
+
+# Mixing conventions
+ref a = var b = var c = "Hello"
+print(a, b, c)
+
+a = "World"
+print(b) # World
+```
+
+解构赋值：
+
+```mojo
+var a, b = 1, 2          # Destructuring assignment
+var (c, d) = (1, 2)      # Equivalent destructuring
+                         # not "assign tuple to tuple"
+print(a, b, c, d)  # 1 2 1 2
+
+def returns_pair() -> Tuple[Int, Int]:
+    return (1, 2)
+
+var e, f = returns_pair()
+print(e, f)  # 1 2
+```
+
+避免对不相关的值使用多重赋值进行解构。
+
+```mojo
+var temperature, name = 98.6, "Bob"
+```
+
+可读性不如两行代码：
+
+```mojo
+var temperature = 98.6
+var name = "Bob"
+```
+
+### 简单交换
+
+```mojo
+var a, b, c = 1, 2, 3
+a, b, c = c, a, b
+print(a, b, c)  # 3 1 2
 ```
 
 ### 增强赋值
 
-增强赋值是将操作与赋值组合的语法糖。左边只求值一次：
+增强赋值是组合操作与赋值的语法糖。左侧只求值一次：
 
 ```mojo
 x += 5       # x = x + 5
@@ -135,7 +184,7 @@ x /= 4       # x = x / 4
 x //= 2      # x = x // 2
 x %= 7       # x = x % 7
 x **= 2      # x = x ** 2
-x @= m       # x = x @ m（矩阵乘法）
+x @= m       # x = x @ m  (matrix multiply)
 x &= mask    # x = x & mask
 x |= flags   # x = x | flags
 x ^= bits    # x = x ^ bits
@@ -145,7 +194,7 @@ x >>= 1      # x = x >> 1
 
 ## pass 语句
 
-`pass` 是空操作。在需要语句但不需要操作的地方使用它作为占位符：
+`pass` 是空操作。在需要语句但不需要任何操作的地方将其用作占位符：
 
 ```mojo
 def not_ready():
@@ -155,13 +204,7 @@ struct Empty:
     pass
 ```
 
-在空函数和结构体主体中需要 `pass` 以避免语法错误。
-
-:::note[省略号语句]
-`...` 在大多数代码中作为语句功能上等同于 `pass`。为了可读性，优先使用 `pass` 而不是 `...`。
-
-在 trait 定义中，`...` 将方法标记为必需。将 `...` 的使用限制在 trait 中，可以在阅读使用它的代码时更容易确定其角色。
-:::
+空的函数和结构体主体需要 `pass` 以避免语法错误。
 
 ## return 语句
 
@@ -169,7 +212,7 @@ struct Empty:
 
 ```mojo
 def greet(name: String):
-    if not name:  # String 为空时为假
+    if not name:  # String is falsy when empty
         return
     print(t"Hello, {name}!")
 
@@ -186,7 +229,7 @@ def early_exit(items: List[Int], target: Int) -> Bool:
 没有显式 `return` 的函数隐式返回 `None`。`return` 只在函数内部有效：
 
 ```mojo
-return 42    # 错误：不能从此上下文返回
+return 42    # Error: cannot return from this context
 ```
 
 ## raise 语句
@@ -203,7 +246,7 @@ def mitigate_risk():
     try:
         if not perform_some_test():
             raise Error("test failed")
-        # 执行有风险的工作，知道测试通过了
+        # perform risky work, knowing test passed
     except e:
         log(e)
 ```
@@ -213,19 +256,19 @@ def mitigate_risk():
 ```mojo
 try:
     validate(value)
-    # 执行工作，知道 value 有效
+    # perform work, knowing value is valid
 except e:
-    raise  # 重新引发当前错误给下一个处理程序
+    raise  # Re-raises current error to the next handler
 ```
 
-在无效上下文外引发是错误的：
+在无效上下文之外引发是一个错误：
 
 ```mojo
-raise Error("oops")   # 错误：不能在此上下文中引发错误
-                      # （用 try 包围，或将函数标记为 raises）
+raise Error("oops")   # Error: cannot raise error in this context
+                      # (surround with try, or mark function as raises)
 
-raise                 # 错误：没有上下文错误可重新引发
-                      # （裸 raise 需要活动的 except 块）
+raise                 # Error: no contextual error to reraise
+                      # (bare raise requires an active except block)
 ```
 
 ## 使用 break 和 continue 语句控制流
@@ -235,10 +278,10 @@ raise                 # 错误：没有上下文错误可重新引发
 ```mojo
 for x in range(10):
     if x == 5:
-        break        # 在 5 处停止
+        break        # Stop at 5
     if x % 2 == 0:
-        continue     # 跳过偶数
-    print(x)         # 打印 1, 3
+        continue     # Skip even numbers
+    print(x)         # Prints 1, 3
 ```
 
 ## 编译时声明
@@ -250,11 +293,23 @@ comptime SIZE = 256
 comptime MAX = SIZE * 2
 ```
 
-`comptime` 赋值也用于在 trait 中声明关联类型，并可用于创建类型别名和 trait 组合别名：
+`comptime` 在 trait 中声明关联类型，也可用于创建类型别名和 trait 组合别名：
 
 ```mojo
-comptime Permissive = ImplicitlyCopyable & ImplicitlyDestructible
+comptime Permissive = ImplicitlyCopyable & Deinitable
 
-trait SimpleTrait (Writable):  # `SimpleTrait` 细化 `Writable`
-    comptime Element = Permissive  # 使用 comptime 别名的关联类型
+trait SimpleTrait(Writable):  # `SimpleTrait` refines `Writable`
+    comptime Element = Permissive  # Associated type with a comptime alias
 ```
+
+尾随的 `where` 子句约束参数化声明的参数。编译器在每次使用时检查条件：
+
+```mojo
+comptime AscendingMidpoint[lo: Int, hi: Int]: Int where lo < hi = (lo + hi) / 2
+
+def main():
+    comptime mid = AscendingMidpoint[2, 10]    # 6
+    # comptime bad = AscendingMidpoint[10, 2]  # Error: lo < hi not satisfied
+```
+
+`where` 子句要求编译器能在编译时求值的条件，例如比较、布尔组合和 `conforms_to()`。

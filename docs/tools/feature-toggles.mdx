@@ -1,0 +1,484 @@
+---
+title: Mojo 编译功能开关
+sidebar_label: 功能开关
+sidebar_position: 2
+description: >
+  如何在编译时有条件地启用或禁用 Mojo 代码中的行为。
+---
+
+Mojo 提供了多种用于编译时功能门控和配置的机制：
+
+- **编译时定义**（`-D` 和 `sys.defines`）：将值从命令行传入 Mojo 代码
+- **编译时条件与平台检测**（`comptime if`、`comptime assert`、`sys.info`）：根据编译时条件分支或中止编译
+- **调试与优化门控**（`debug_assert()`）：控制仅调试行为和运行时检查
+
+## 编译时条件
+
+### 使用 `comptime assert` 建立前置条件
+
+当条件求值为 `False` 时，`comptime assert` 会中止编译。与运行时断言不同，它在编译期间执行，并产生带有你提供的消息的编译器错误。
+
+使用 `comptime assert` 来声明关于参数或编译目标的编译时前置条件。例如，假设你从 CPU 构建中调用了一个 GPU 特定函数：
+
+```mojo
+from std.sys import is_gpu
+
+def gpu_kernel():
+    # Called from a CPU build
+    comptime assert is_gpu(), "this function requires a GPU target"
+    # ... GPU-specific code
+```
+
+当你调用 `gpu_kernel()` 时，编译器会打印一条带有你提供的消息的 `constraint failed:`
+提示，并指向该断言：
+
+```text
+note: constraint failed: this function requires a GPU target
+    comptime assert is_gpu(), "this function requires a GPU target"
+    ^
+```
+
+### 使用 `comptime if` 进行功能门控
+
+使用 `comptime if` 在编译时选择代码路径。条件必须是*可参数求值的*，即编译器必须能够对其推理，并且它可以依赖于 `comptime` 值和参数表达式：
+
+调用：
+
+```sh
+mojo run -Dmode=release hello.mojo
+```
+
+代码：
+
+```mojo
+from std.sys import get_defined_string
+
+def main():
+    comptime mode = get_defined_string["mode", "debug"]()
+
+    comptime if mode == "release":
+        print("optimized path")
+    else:
+        print("debug path with extra checks")
+```
+
+## 编译时定义
+
+`-D` 标志将键值对从命令行传入 Mojo 代码。`std.sys.defines` 模块读取它们。
+
+调用：
+
+```sh
+mojo run -Dmode=release -Dverbose -Dmax_threads=8 hello.mojo
+
+# or
+
+mojo run -D mode=release -D verbose -D max_threads=8 hello.mojo
+```
+
+你可以写成 `-Dkey=value` 或 `-D key=value`。键和值必须用 `=` 连接。
+
+支持的形式包括：
+
+- `-D KEY=VALUE`：值被解析为字符串、整数或布尔值，取决于哪个 `get_defined_*[]()` 函数读取它
+- `-D KEY`：定义一个没有值的标志。`is_defined[]()` 返回
+  `True`。使用 `is_defined[]()` 进行存在性检查
+- `-D KEY=42`：数值可以用
+  `get_defined_int[]()` 读取
+
+`sys.defines` 模块公开了几个函数用于读取编译时定义。所有定义名称都是编译时
+`StaticString` 参数，而非运行时字符串。
+
+### `is_defined[name]()`
+
+当传递了 `-D name` 时，`is_defined[name]()` 返回 `True`，无论其值为何。它从不报错。
+
+调用：
+
+```sh
+mojo -Dverbose hello.mojo
+```
+
+代码：
+
+```mojo
+from std.sys import is_defined
+
+def main():
+    comptime if is_defined["verbose"]():
+        print("verbose mode enabled")
+```
+
+`is_defined[name]()` 类似于 C 的 `#ifdef`。它仅检查某个定义是否存在。值会被忽略。
+
+当任意值都能启用该功能，或你只关心标志是否被传递时使用它。使用其他 `get_defined_*[]()` 函数来读取值本身。
+
+### `get_defined_bool[name, default=False]()`
+
+`get_defined_bool[name, default=False]()` 返回一个 `Bool`。它区分"已定义"和"真值"。
+
+以下值被视为 `True`：
+
+- `1`
+- `true`、`True`、`TRUE`
+- `on`、`On`、`ON`
+
+任何其他赋值的字符串值都返回 `False`。
+
+当定义未提供值时，此函数会报错。
+
+| 命令                           | 编译器视图                  | 结果                                             |
+|--------------------------------|------------------------------|--------------------------------------------------|
+| `mojo -D verbose app.mojo`     | `verbose` 已定义，无值       | 错误                                             |
+| `mojo -D verbose=on app.mojo`  | `verbose="on"`               | `True`                                           |
+| `mojo -D verbose=yes app.mojo` | `verbose="yes"`              | `False`（`yes` 不是被识别的真值）                |
+| `mojo app.mojo`                | 缺少定义                     | `default` → `False`                              |
+
+```mojo
+from std.sys import get_defined_bool
+
+def main():
+    comptime verbose = get_defined_bool["verbose"]()
+    comptime if verbose:
+        print("verbose mode enabled")
+```
+
+避免使用 `default=True`。它以令人困惑的方式颠倒了语义：缺失的值变为 `True`，而存在但非真值的值（例如 `-D verbose=banana` 或 `-D verbose=0`）变为 `False`。
+
+如果你需要 `default=True`，考虑改用 `is_defined[]()`。它能更清晰地表达意图。
+
+### `get_defined_int[name]()` 和 `get_defined_int[name, default]()`
+
+`get_defined_int[name]()` 返回一个 `Int`。如果定义缺失或值不是有效整数，编译将失败。
+
+仅在定义为必需时使用此项。
+
+调用：
+
+```sh
+mojo -D max_threads=8 app.mojo
+```
+
+代码：
+
+```mojo
+from std.sys import get_defined_int
+
+def main():
+    comptime threads = get_defined_int["max_threads"]()
+    print(t"Up to {threads} threads")
+```
+
+解析器仅接受十进制整数。例如，`-D N=10` 可行。`-D N=0x10`、`-D N=0o10` 和 `-D N=1_000` 都会在 `get_defined_int[]()` 调用处失败。这些值作为字符串存储，Mojo 不识别这些格式为整数。
+
+非整数值（如 `-D max_threads=eight`）会以同样方式失败。如果遇到这些错误，请检查命令行拼写和格式。
+
+带默认值的版本在定义缺失时返回提供的值，而不是报错。
+
+调用：
+
+```sh
+mojo -D max_threads=8 app.mojo
+```
+
+代码：
+
+```mojo
+from std.sys import get_defined_int
+
+def main():
+    comptime threads = get_defined_int["max_threads", 4]()
+    print("using", threads, "threads")
+```
+
+默认值仅处理缺失的定义。如果定义存在但其值不是有效整数，编译仍会失败。
+
+### `get_defined_string[name]()` 和 `get_defined_string[name, default]()`
+
+`get_defined_string[name]()` 返回一个 `StaticString`。如果定义缺失，编译将失败。
+
+在定义为必需时使用此项。
+
+调用：
+
+```sh
+mojo -D mode=release app.mojo
+```
+
+代码：
+
+```mojo
+from std.sys import get_defined_string
+
+def main():
+    comptime mode = get_defined_string["mode"]()
+    comptime if mode == "release":
+        print("release build")
+```
+
+带默认值的版本在定义完全缺失时返回 `default`，而不是报错。
+
+调用：
+
+```sh
+mojo -D mode=release app.mojo # release
+
+# or
+
+mojo app.mojo # debug (default)
+```
+
+代码：
+
+```mojo
+from std.sys import get_defined_string
+
+def main():
+    comptime mode = get_defined_string["mode", "debug"]()
+    comptime if mode == "release":
+        print("release build")
+```
+
+### `get_defined_dtype[name, default]()`
+
+`get_defined_dtype[name, default]()` 返回一个 `DType`。必须提供默认值。
+
+使用此项以用户选择的类型对数值代码进行参数化。
+
+调用：
+
+```sh
+mojo -D dtype=float8_e4m3fn -D ctype=bfloat16 app.mojo
+```
+
+代码：
+
+```mojo
+from std.sys import get_defined_dtype
+
+def main() raises:
+    # ... setup for a typical matmul call
+
+    comptime a_type = get_defined_dtype["dtype", DType.bfloat16]()
+    comptime c_type = get_defined_dtype["ctype", DType.bfloat16]()
+    matmul[a_type, c_type](a, b, c)  # specialized at compile time for this dtype pair
+
+    # ... continuing code
+```
+
+与产生预处理器字符串的 C 风格 `-D` 标志不同，Mojo 将 `-D` 值视为类型系统中的一等编译时参数。
+
+这允许编译器为命令行传递的每个 `DType` 组合特化代码（如 `matmul[]()`），而无需运行时分支。
+
+值由标准库内部的 `DType` 解析器解析，它期望规范名称，如 `float16`、`bfloat16` 和 `float8_e4m3fn`。
+
+拼写错误或别名（如 `fp16` 和 `bf16`）不一定会在 `get_defined_dtype[]()` 调用处产生编译时错误。它们会被解析为无效的 dtype。如果该值稍后在拒绝它的上下文中使用，错误会随后出现。
+
+如果遇到这些错误，请检查命令行上使用的确切拼写。
+
+## 平台和架构检测
+
+`sys.info` 模块提供了编译时、可参数求值的函数，用于根据编译目标进行分支。
+
+### 操作系统检测
+
+使用以下方法检测目标操作系统：
+
+- `CompilationTarget.is_linux()`
+- `CompilationTarget.is_macos()`
+
+Mojo 目前不原生支持 Windows 目标，因此没有 Windows 检测 API。
+
+### CPU 检测
+
+使用以下方法检测目标 CPU 架构或特定 Apple Silicon 代：
+
+- `CompilationTarget.is_x86()`
+- `CompilationTarget.is_apple_silicon()`
+- `CompilationTarget.is_apple_m1()` 到
+  `CompilationTarget.is_apple_m5()`
+
+### 指令集检测
+
+使用以下 API 检测目标指令集扩展：
+
+- `CompilationTarget.has_avx512f()`
+- `CompilationTarget.has_neon()`
+
+### GPU 和加速器检测
+
+使用以下方法检查代码是否*为*特定加速器目标而编译：
+
+- `is_nvidia_gpu()`
+- `is_amd_gpu()`
+- `is_apple_gpu()`
+- `is_gpu()`
+
+使用以下方法检查*主机系统*是否检测到加速器：
+
+- `has_accelerator()`
+- `has_nvidia_gpu_accelerator()`
+- `has_amd_gpu_accelerator()`
+- `has_apple_gpu_accelerator()`
+
+这一区别很重要：
+
+- `is_nvidia_gpu()` 问的是："我是在为 NVIDIA GPU 编译吗？"
+- `has_nvidia_gpu_accelerator()` 问的是 NVIDIA GPU 加速是否可用。当当前编译目标是 NVIDIA GPU 时，这也可以为真。
+
+例如：
+
+```mojo
+from std.sys import CompilationTarget
+
+def compute():
+    comptime if CompilationTarget.has_avx512f():
+        print("AVX-512 path")
+    elif CompilationTarget.is_apple_silicon():
+        print("Apple Silicon path")
+    else:
+        print("generic path")
+```
+
+这些函数报告编译器正在为之构建的内容。要以不同平台为目标，请从命令行设置架构、CPU、功能集或加速器。有关可用标志及如何查询工具链支持内容的信息，请参阅[编译目标](/docs/tools/compilation)。
+
+## 内置定义
+
+Mojo 提供了几个内置定义，用于控制编译和运行时行为。除 `ASSERT` 外，每个都由编译器从驱动程序标志填充。使用驱动程序标志而不是 `-D`，以便定义与编译器行为匹配。标志如下表所示：
+
+| 定义                    | 标志                             | 类型     | 值                                                  |
+|-------------------------|----------------------------------|----------|-----------------------------------------------------|
+| `__OPTIMIZATION_LEVEL`  | `-O` / `--optimization-level`    | `Int`    | `0`、`1`、`2`、`3`（默认为 `3`）                    |
+| `__DEBUG_LEVEL`         | `-g` / `--debug-level`           | `String` | `"line-tables"`、`"full"`                           |
+| `__SANITIZE_ADDRESS`    | `--sanitize=address`             | `Int`    | `0`（关闭，默认）、`1`（开启）                       |
+
+如果省略 `-g`，则不会注入 `__DEBUG_LEVEL`；`DebugLevel.level` 作为库回退返回 `"none"`。
+
+`--sanitize` 也接受 `thread`（ThreadSanitizer），但只有 `--sanitize=address` 会注入编译时定义。
+
+通过 `sys.compile` 读取这些值，它将它们作为编译时值 `OptimizationLevel.level`（`Int`）、`DebugLevel.level`（`String`）和 `SanitizeAddress`（`Bool`）公开。
+
+例如：
+
+```mojo
+from std.sys.compile import OptimizationLevel
+
+def main():
+    comptime if OptimizationLevel.level == 0:
+        print("unoptimized build")
+```
+
+Mojo 的 `ASSERT` 标志控制 `debug_assert()` 行为：
+
+| 定义     | 标志                 | 类型     | 值                                       |
+|----------|----------------------|----------|------------------------------------------|
+| `ASSERT` | `-D ASSERT=<value>` | `String` | `none`、`safe`（默认）、`all`、`warn`     |
+
+`debug_assert()` 直接读取此值。支持的断言级别为：
+
+- `none`：禁用所有断言
+- `safe`（非调试构建中的默认值）：仅运行标记为
+  `assert_mode="safe"` 的断言
+- `all`：运行每个 `debug_assert()` 调用
+- `warn`：运行每个断言，但发出警告而不是中止
+
+例如：
+
+```sh
+mojo run -D ASSERT=all hello.mojo
+```
+
+## 使用 `debug_assert()` 与 `-D ASSERT`
+
+`debug_assert()` 是一个由 `-D ASSERT` 标志控制的运行时断言，默认为 `safe`。其他与调试相关的设置（如 `-g` 和 `-O`）不影响 `debug_assert()` 行为。
+
+默认 `safe` 模式仅运行显式标记为低开销的断言：
+
+```mojo
+debug_assert[assert_mode="safe"](
+    n >= 0,
+    "nth: n must be non-negative",
+)
+```
+
+写为 `debug_assert(...)` 的未标记断言在 `-D ASSERT=warn` 和 `-D ASSERT=all` 下运行。约定如下：
+
+- 用 `assert_mode="safe"` 标记常量时间检查，如边界测试和整数比较
+- 遍历、分配和更昂贵的不变式检查保持未标记
+
+普通 `Bool` 形式总是求值条件，即使断言被禁用：
+
+```mojo
+# Bool form: always evaluates the condition.
+debug_assert(len(data) > 0, "data must not be empty")
+```
+
+:::caution Apple GPU
+`debug_assert()` 在 Apple GPU 目标上被静默禁用。
+:::
+
+## 调试和优化
+
+调试和优化功能独立控制；启用一个不会自动启用其他功能。"调试构建"在 Mojo 中可以指几种不同的事情。
+
+**更改编译器输出方式**：
+
+| 目标                                            | 标志                                  | 效果                                       |
+|-------------------------------------------------|---------------------------------------|--------------------------------------------|
+| 发出完整调试信息（LLDB 符号）                   | `-g` 或 `--debug-level=full`          | 设置 `__DEBUG_LEVEL="full"`                |
+| 仅发出行表                                      | `-g1` 或 `--debug-level=line-tables`  | 设置 `__DEBUG_LEVEL="line-tables"`         |
+| 禁用优化                                        | `-O0` 或 `--no-optimization`          | 设置 `__OPTIMIZATION_LEVEL=0`              |
+| 启用 AddressSanitizer                           | `--sanitize=address`                  | 设置 `__SANITIZE_ADDRESS=1`                |
+
+**更改 Mojo 代码看到的定义**：
+
+| 目标                                            | 标志                                  | 效果                                       |
+|-------------------------------------------------|---------------------------------------|--------------------------------------------|
+| 启用所有 `debug_assert()` 检查                  | `-D ASSERT=all`                       | 独立于 `-g` 和 `-O`                        |
+
+典型的调试配置结合了其中几个标志：
+
+```sh
+mojo -g -O0 -D ASSERT=all app.mojo
+```
+
+`-g` 和 `-O` 驱动程序标志不影响 `debug_assert()`。如果你想要这些行为一起生效，请显式传递每个标志。
+
+典型的发布构建不需要特殊标志。运行：
+
+```sh
+mojo app.mojo
+```
+
+使用 `-O3`，不发出调试信息并禁用消毒器。
+
+一个例外是 `debug_assert()`。其默认模式为 `safe`，因此标记为始终开启的断言仍会执行。传递 `-D ASSERT=none` 来禁用它们。
+
+## 读取优化和调试级别
+
+编译器定义的值 `__OPTIMIZATION_LEVEL` 和 `__DEBUG_LEVEL` 通过 `sys.compile` 作为编译时值 `OptimizationLevel` 和 `DebugLevel` 公开。
+
+在需要精细控制时使用它们：
+
+- `OptimizationLevel.level` 存储从 `0` 到 `3` 的整数。
+- `DebugLevel.level` 存储字符串 `"none"`、`"line-tables"` 或 `"full"` 之一。
+
+```mojo
+from std.sys.compile import DebugLevel
+
+def main():
+    comptime if DebugLevel.level == "full":
+        print(
+            "full debug info emitted: enabling source-aware logging"
+        )
+```
+
+:::note
+不要将 Mojo 断言级别与 MAX 运行时配置混淆。
+
+MAX 运行时通过 `MODULAR_DEBUG=assert-level=...` 环境变量定义自己的断言系统，级别包括 `none`、`warn`、`safe` 和 `all`。
+
+这些设置控制 MAX 推理运行时断言。`-D ASSERT` 控制 Mojo 的 `debug_assert()` 行为。
+
+这两个系统是独立的。
+:::

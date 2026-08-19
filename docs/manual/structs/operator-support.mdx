@@ -1,35 +1,35 @@
 ---
-title: 为自定义类型添加操作符支持
-sidebar_label: 操作符支持
+title: 为自定义类型添加运算符支持
+sidebar_label: 运算符支持
 sidebar_position: 2
-description: >
-  通过在结构体中创建双下划线方法，为自定义类型实现操作符。
+description: >-
+  通过在结构体中创建 dunder 方法，为自定义类型实现运算符。
 ---
 
-每个 Mojo 操作符都映射到一组你可以添加到结构体实现的双下划线方法。这些方法允许你使用操作符语法而不是直接调用方法。
+每个 Mojo 运算符都映射到一组你可以添加到结构体实现中的 dunder 方法。这些方法让你可以使用运算符语法，而不必直接调用方法。
 
-了解你的操作符及其相关方法将为自定义结构体打开完整的操作符语法套件。
+了解运算符及其相关方法，可以为你的自定义结构体开启完整的运算符语法套件。
 
 ## 前向、反向和原地方法
 
-每个二元操作符最多使用三种方法形式。例如，考虑加法 `a + b`：
+每个二元运算符最多使用三种方法形式。例如，考虑加法 `a + b`：
 
-- **前向**：Mojo 首先尝试 `a.__add__(b)`。
-- **反向**：如果前向方法不存在或无法处理 `b` 的类型，Mojo 回退到 `b.__radd__(a)`。
-- **原地**：对于 `a += b`，Mojo 调用 `a.__iadd__(b)`。
+- **前向**（Forward）：Mojo 首先尝试 `a.__add__(b)`。
+- **反向**（Reverse）：如果前向方法不存在或无法处理 `b` 的类型，Mojo 会回退到 `b.__radd__(a)`。
+- **原地**（In-place）：对于 `a += b`，Mojo 调用 `a.__iadd__(b)`。
 
-反向方法存在于混合类型表达式中，其中左操作数不知道右操作数的类型：
+反向方法适用于左操作数不知道右操作数类型的混合类型表达式：
 
 ```mojo
-a + 5    # 调用 a.__add__(5)
-5 + a    # Int 不知道你的类型，回退
-         # 到 a.__radd__(5)
-a += 5   # 调用 a.__iadd__(5)
+a + 5    # calls a.__add__(5)
+5 + a    # Int doesn't know your type, falls back
+         # to a.__radd__(5)
+a += 5   # calls a.__iadd__(5)
 ```
 
-## 一元操作符
+## 一元运算符
 
-一元操作符如果未更改，则返回原始值，或表示结果的新值。例如，`-x` 使用一元否定操作符：
+一元运算符在值未改变时返回原值，否则返回表示结果的新值。例如，`-x` 使用一元取负运算符：
 
 ```mojo
 @fieldwise_init
@@ -40,23 +40,23 @@ struct MyInt:
         return Self(-self.value)
 ```
 
-如果 `x` 是 `MyInt`，那么 `-x` 返回一个新实例，其 `value` 字段取反。
+如果 `x` 是一个 `MyInt`，那么 `-x` 会返回一个新实例，其 `value` 字段被取负。
 
-## 比较操作符和 trait
+## 比较运算符与 trait
 
-操作符并不要求你将类型符合到 trait。然而，这样做是有益的。
+运算符并不要求你为类型遵循某个 trait。但是，这样做会有好处。
 
-`Comparable` trait 为 `<=`、`>` 和 `>=` 提供默认值。你只需要实现 `__lt__()` 和 `__eq__()`。
+`Comparable` trait 为 `<=`、`>` 和 `>=` 提供了默认实现。你只需实现 `__lt__()` 和 `__eq__()`。
 
-类似地，`Equatable` trait 在所有字段都是 `Equatable` 时为 `__eq__()` 和 `__ne__()` 提供默认值。
+类似地，当所有字段都是 `Equatable` 时，`Equatable` trait 为 `__eq__()` 和 `__ne__()` 提供了默认实现。
 
-对于没有自然排序的类型（如复数），只实现 `Equatable`，而不是 `Comparable`。
+对于没有自然排序的类型（例如复数），只需实现 `Equatable`，而不要实现 `Comparable`。
 
-## 下标操作符
+## 下标运算符
 
-实现 `__getitem__()` 用于读取，`__setitem__()` 用于写入。两个下标方法都接受可变参数用于多维索引。
+实现 `__getitem__()` 用于读取，`__setitem__()` 用于写入。两个下标方法都接受可变参数，以支持多维索引。
 
-对于简单的单维集合，你可以使用简单索引解锁下标：
+对于简单的一维集合，你可以用一个简单的索引来启用下标：
 
 ```mojo
 struct MySeq[T: Copyable]:
@@ -66,21 +66,21 @@ struct MySeq[T: Copyable]:
         ...
 ```
 
-对于多维集合，请使用可变参数或多个索引参数：
+对于多维集合，可以使用可变参数或多个索引参数：
 
 ```mojo
 struct Grid[T: Copyable]:
-    # 固定的两个维度
+    # Fixed two dimensions
     def __getitem__(self, x: Int, y: Int) -> T:
         ...
-    # 任意维度
+    # Arbitrary dimensions
     def __getitem__(self, *indices: Int) -> T:
         ...
 ```
 
-自定义下标也可以支持切片和索引，如 `obj[1:5]`。使用 [`Slice`](/docs/std/builtin/builtin_slice/Slice/) 参数而不是 `Int` 来实现 `__getitem__()`。
+自定义下标也可以支持切片以及索引，例如 `obj[1:5]`。使用一个 [`Slice`](/docs/std/builtin/builtin_slice/Slice/) 参数而不是 `Int` 来实现 `__getitem__()`。
 
-每个 `Slice` 有三个可选字段：`start`、`end` 和 `step`。你通过调用 `indices()` 来规范化这些字段。传递你类型的 size。这返回一个三元组值，表示根据你的范围调整的跨度，将省略的值或负索引解析为非负位置：
+每个 `Slice` 都有三个可选字段：`start`、`end` 和 `step`。你可以通过调用 `indices()` 来规范化它们。传入你类型的大小。这会返回一个三元组，表示根据你的尺寸调整后的范围，并将省略值或负索引解析为非负位置：
 
 ```mojo
 struct MySeq[T: Copyable]:
@@ -94,41 +94,41 @@ struct MySeq[T: Copyable]:
         ...
 ```
 
-## 演示：构建 `Complex` 类型
+## 演练：构建一个 `Complex` 类型
 
-接下来的部分逐步构建一个 `Complex` 结构体。此示例演示了每个类别的操作符实现。
+接下来几个小节会逐步构建一个 `Complex` 结构体。这个示例演示了每一类运算符的实现。
 
-在此演练中，你将处理一元操作符、具有相同类型和混合类型操作数的二元操作符、反向方法、原地赋值、相等比较和下标访问。
+在本演练中，你将使用一元运算符、具有相同类型和混合类型操作数的二元运算符、反向方法、原地赋值、相等比较、布尔转换以及下标访问。
 
 :::note
-标准库包含
-[`ComplexSIMD`](/docs/std/complex/complex/ComplexSIMD/)，
-一个具有基本算术支持的参数化复数类型。此示例中的 `Complex` 类型是独立的，并且不基于 `ComplexSIMD`。
+标准库中包含 [`ComplexSIMD`](/docs/std/complex/complex/ComplexSIMD/)，它是一种参数化的复数类型，提供基本的算术支持。本示例中的 `Complex` 类型是独立的，并不基于 `ComplexSIMD`。
 :::
 
 ## 创建基础类型
 
-复数包含实部和虚部，存储在实部 `re` 和虚部 `im` 字段中：
+一个复数包含实部和虚部，分别存储在实部字段 `re` 和虚部字段 `im` 中：
 
 ```mojo
 from std.math import sqrt
 
 @fieldwise_init
 struct Complex(
+    Boolable,
     Equatable,
-    Writable,
     TrivialRegisterPassable,
+    Writable,
 ):
     var re: Float64
     var im: Float64
 ```
 
-- 符合 `TrivialRegisterPassable` 让你获得值语义，而无需编写特殊生命周期方法。
+- 遵循 `TrivialRegisterPassable` 让你获得值语义，而无需编写特殊的生命周期方法。
 - `Equatable` 让你可以比较两个实例，`Writable` 为 `print()` 语句生成输出。
+- `Boolable` 让你可以在布尔上下文中使用 `Complex` 值，例如作为 `if` 条件。
 
-### 便捷初始化器
+### 便捷初始化方法
 
-添加便捷初始化器可以让你只使用数字的实部来创建实例：
+添加一个便捷初始化方法，让你可以仅使用数值的实部来创建实例：
 
 ```mojo
 def __init__(out self, re: Float64):
@@ -136,32 +136,41 @@ def __init__(out self, re: Float64):
     self.im = 0.0
 ```
 
-## 使你的类型可打印
+## 让你的类型可打印
 
-实现 `Writable` 让你可以直接使用 `print()` 和 `String()`。此自定义实现提供括号和单独的实部和虚部输出。
+实现 `Writable` 让你可以直接使用 `print()` 和 `String()`。这个自定义实现提供了圆括号，并分别输出实部和虚部。
 
 ```mojo
-# 结构体方法
+# Struct method
 def write_to(self, mut writer: Some[Writer]):
     writer.write("(", self.re)
     if self.im < 0:
         writer.write(" - ", -self.im)
     else:
         writer.write(" + ", self.im)
-    writer.write("i")
-
-...
-
-c = Complex(3.14, -2.72)
-print(c)  # (3.14 - 2.72i)
+    writer.write("i)")
 ```
 
-## 添加一元操作符支持
-
-`+c` 返回未更改的值。`-c` 取反两个分量：
+你也可以实现 `write_repr_to()` 来定义该值的 *表示*（representation）——即由 `repr()` 返回的、面向开发者的形式。该实现会产生一个字符串，镜像出你在代码中构造该值的方式：
 
 ```mojo
-# 方法
+# Struct method
+def write_repr_to(self, mut writer: Some[Writer]):
+    t"Complex(re = {self.re}, im = {self.im})".write_to(writer)
+```
+
+```mojo
+var c = Complex(3.14, -2.72)
+print(c)        # (3.14 - 2.72i)
+print(repr(c))  # Complex(re = 3.14, im = -2.72)
+```
+
+## 添加一元运算符支持
+
+`+c` 原样返回该值。`-c` 将两个分量都取负：
+
+```mojo
+# methods
 def __pos__(self) -> Self:
     return self
 
@@ -170,14 +179,14 @@ def __neg__(self) -> Self:
 
 ...
 
-c = Complex(-1.2, 6.5)
+var c = Complex(-1.2, 6.5)
 print(+c)  # (-1.2 + 6.5i)
 print(-c)  # (1.2 - 6.5i)
 ```
 
 ## 支持二元算术
 
-使用双下划线方法添加两个 `Complex` 值之间的加法、减法、乘法和除法。每种形式都返回一个新的 `Complex` 实例：
+通过 dunder 方法为两个 `Complex` 值之间的加法、减法、乘法和除法添加支持。每种形式都返回一个新的 `Complex` 实例：
 
 ```mojo
     def __add__(self, rhs: Self) -> Self:
@@ -193,7 +202,7 @@ print(-c)  # (1.2 - 6.5i)
         )
 
     def __truediv__(self, rhs: Self) -> Self:
-        denom = rhs.squared_norm()
+        var denom = rhs.squared_norm()
         return Self(
             (self.re * rhs.re + self.im * rhs.im) / denom,
             (self.im * rhs.re - self.re * rhs.im) / denom,
@@ -207,22 +216,22 @@ print(-c)  # (1.2 - 6.5i)
 ```
 
 ```mojo
-c1 = Complex(-1.2, 6.5)
-c2 = Complex(3.14, -2.72)
+var c1 = Complex(-1.2, 6.5)
+var c2 = Complex(3.14, -2.72)
 print(c1 + c2)  # (1.94 + 3.78i)
 print(c1 * c2)  # (13.91 + 23.67i)
 ```
 
 ## 使用反向方法添加混合类型算术
 
-要支持像 `2.5 + c` 这样的表达式，其中 `Float64` 在左边，你需要两个重载的前向方法和反向方法。没有 `__radd__()`，`2.5 + c` 将会失败，因为 `Float64` 不知道 `Complex`：
+要支持像 `2.5 + c` 这样 `Float64` 在左侧的表达式，你既需要重载的前向方法，也需要反向方法。如果没有 `__radd__()`，`2.5 + c` 会失败，因为 `Float64` 对 `Complex` 一无所知：
 
 ```mojo
-    # 前向：Complex + Float64
+    # Forward: Complex + Float64
     def __add__(self, rhs: Float64) -> Self:
         return Self(self.re + rhs, self.im)
 
-    # 反向：Float64 + Complex
+    # Reversed: Float64 + Complex
     def __radd__(self, lhs: Float64) -> Self:
         return Self(self.re + lhs, self.im)
 
@@ -242,17 +251,17 @@ print(c1 * c2)  # (13.91 + 23.67i)
         return Self(self.re / rhs, self.im / rhs)
 
     def __rtruediv__(self, lhs: Float64) -> Self:
-        denom = self.squared_norm()
+        var denom = self.squared_norm()
         return Self(
             (lhs * self.re) / denom,
             (-lhs * self.im) / denom,
         )
 ```
 
-现在两种顺序都有效：
+现在两种顺序都能正常工作：
 
 ```mojo
-c = Complex(-1.2, 6.5)
+var c = Complex(-1.2, 6.5)
 print(c + 2.5)    # (1.3 + 6.5i)
 print(2.5 + c)    # (1.3 + 6.5i)
 print(2.5 * c)    # (-3.0 + 16.25i)
@@ -260,7 +269,7 @@ print(2.5 * c)    # (-3.0 + 16.25i)
 
 ### 允许原地赋值
 
-原地方法直接修改 `self` 而不是返回新值。你可以为 `Complex` 和 `Float64` 操作数两者都重载：
+原地方法直接修改 `self`，而不是返回一个新值。你可以分别为 `Complex` 和 `Float64` 操作数进行重载：
 
 ```mojo
     def __iadd__(mut self, rhs: Self):
@@ -300,7 +309,7 @@ print(2.5 * c)    # (-3.0 + 16.25i)
 
 ...
 
-c = Complex(-1.0, -1.0)
+var c = Complex(-1.0, -1.0)
 c += Complex(0.5, -0.5)
 print(c)       # (-0.5 - 1.5i)
 c += 2.75
@@ -313,53 +322,67 @@ print(c)       # (0.84375 - 0.5625i)
 
 ## 支持类型相等检查
 
-复数没有自然排序，因此你应该实现 `Equatable`（而不是 `Comparable`）。这让你获得 `==` 和 `!=` 而不会暗示一个复数"小于"另一个：
+复数没有自然的排序，因此 `Complex` 遵循 `Equatable`（而不是 `Comparable`）。这让你获得 `==` 和 `!=`，而不会暗示一个复数"小于"另一个。
+
+你不需要自己实现 `__eq__()` 或 `__ne__()`——只有当某个类型的相等语义需要与逐字段比较不同时，才需要实现它们。`Equatable` 提供了一个默认的 `__eq__()`，它使用编译时反射来比较每一个字段，还提供了一个默认的 `__ne__()`，返回 `__eq__()` 的反值。一个 `Complex` 只有在两个字段都匹配时才等于另一个 `Complex`，因此基于反射的默认实现恰好就是你想要的行为。（请记住，由于浮点 `NaN` 永远不等于它自身，因此持有 `NaN` 的 `Complex` 也不会等于它自身。）
 
 ```mojo
-    def __eq__(self, other: Self) -> Bool:
-        return (self.re == other.re and
-                self.im == other.im)
-
-    # 符合 Equatable 会自动提供此功能
-    def __ne__(self, other: Self) -> Bool:
-        return not (self == other)
-```
-
-```mojo
-c1 = Complex(-1.2, 6.5)
-c2 = Complex(-1.2, 6.5)
-c3 = Complex(3.14, -2.72)
+var c1 = Complex(-1.2, 6.5)
+var c2 = Complex(-1.2, 6.5)
+var c3 = Complex(3.14, -2.72)
 print(c1 == c2)  # True
 print(c1 != c3)  # True
 ```
 
-## 解锁下标访问
+## 支持在布尔上下文中使用
 
-获取和设置项双下划线允许你在类型中索引内容。对于此示例，复数的实部是索引 0，索引 1 返回虚部：
+遵循 `Boolable` 并实现 `__bool__()`，可以让你在布尔上下文中直接使用 `Complex` 值，例如作为 `if` 条件或调用 `Bool()`。Mojo 在内置数值非零时将其视为"真"，因此一个自然的定义是：只要任一分量非零，就把复数视为"真"：
+
+```mojo
+    def __bool__(self) -> Bool:
+        return self.re != 0.0 or self.im != 0.0
+```
+
+```mojo
+var c1 = Complex(0.0, 0.0)
+var c2 = Complex(-1.2, 6.5)
+print(Bool(c1))  # False
+print(Bool(c2))  # True
+
+if c2:
+    print("c2 is nonzero")  # c2 is nonzero
+```
+
+## 启用下标访问
+
+get 和 set 项的 dunder 方法允许你对类型中的内容进行索引。在本示例中，复数的实部对应索引 0，索引 1 返回虚部分量：
 
 ```mojo
     def __getitem__(self, idx: Int) raises -> Float64:
-        if idx == 0: return self.re
-        if idx == 1: return self.im
+        if idx == 0:
+            return self.re
+        if idx == 1:
+            return self.im
         raise "index out of bounds"
 
-    def __setitem__(
-        mut self, idx: Int, value: Float64
-    ) raises:
-        if idx == 0: self.re = value
-        elif idx == 1: self.im = value
-        else: raise "index out of bounds"
+    def __setitem__(mut self, idx: Int, value: Float64) raises:
+        if idx == 0:
+            self.re = value
+        elif idx == 1:
+            self.im = value
+        else:
+            raise "index out of bounds"
 
 ...
 
-c = Complex(3.14)
+var c = Complex(3.14)
 print(c[0], c[1])  # 3.14 0.0
 c[1] = 42.0
 print(c)            # (3.14 + 42.0i)
 ```
 
-## 每个操作符，一次演练
+## 每个运算符，一次演练
 
-此示例引导你完成了从简单算术到比较再到下标的每个 Mojo 操作符。
+本示例带你走过了每一个 Mojo 运算符，从简单的算术到比较再到下标。
 
-实现正确的双下划线方法和/或符合正确的 trait 使你能够对几乎任何自定义类型使用操作符语法。
+实现正确的 dunder 方法和/或遵循正确的 trait，可以让你对几乎任何自定义类型使用运算符语法。

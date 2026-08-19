@@ -3,219 +3,498 @@ title: Mojo Trait 声明参考
 sidebar_label: Trait 声明
 sidebar_position: 9
 description: >
-  Mojo trait 声明语法参考。涵盖方法签名、默认实现、
-  trait 继承、关联类型和一致性要求。
+  Mojo trait 声明参考。涵盖必需方法和提供方法、关联类型、
+  trait 精化、trait 组合和一致性规则。
 ---
 
-{/*  VERIFIED: ParserStmts.cpp parseTrait(), TokenKinds.def,
-     ASTDecl.h, ASTDecl.cpp  */}
+{/* Sources:
+ParserStmts.cpp (parseTraitStmt, maybeMarkDefaultedTraitMethod,
+parseVarStmt trait rejection, parseAliasDeclStmtBody trait
+handling), DeclResolution.cpp (resolveSignature(TraitDeclOp),
+resolveBody(TraitDeclOp), resolveBody(TraitType),
+addParentDeclsToTrait, addSelfTypeToTrait,
+resolveSyntheticSignature, parseOptionalInheritanceList,
+resolveSignature(AliasDeclOp) trait branch),
+DeclResolver.cpp (resolveSignature dispatch, resolveBody
+dispatch), Traits.cpp (verifyAndBuildConformance,
+signatureResolveDefaultTraitFnStubs,
+checkMethodConstraintStatus), Traits.h,
+StructEmitter.cpp (synthesizeDefaultTraitMethodWrapper),
+ASTDecl.h (traitConformanceLineage, doesNominalTypeConformTo),
+TokenKinds.def, ExprNode.h, MojoDiags.h, ParserBase.h
+*/}
 
-*Trait 声明*定义一组方法签名和关联类型。Trait 指定类型必须提供的行为，而不定义具体实现。结构体可以*一致*于 trait，提供所需的方法实现。
+*trait* 定义了一致类型必须满足的要求，包括方法、关联类型和常量。Trait 类似于 Swift 中的 *protocols*、Java 中的 *interfaces* 和 Rust 中的 *traits*。当类型一致于某个 trait 时，编译器会检查每个要求，并在缺失任何内容时拒绝代码。
+
+## Trait 声明
+
+trait 用 `trait` 关键字声明，后跟 trait 名称和一个可选的精化列表。主体包含 trait 的要求，既有必需的也有提供的：
+
+```text
+trait Name:
+    body
+
+trait Name(ParentA, ParentB):
+    body
+```
+
+trait 必须在文件的顶层声明。它们不能嵌套在结构体、其他 trait 或函数中：
+
+```mojo
+struct Outer:
+    trait Inner:  # Error: nested trait not supported here
+        ...
+```
+
+### 标记 trait
+
+空 trait 被称为*标记 trait*（marker traits），用于表示类型具有某种特定属性或能力，而不精化其他 trait 或声明要求：
+
+```mojo
+trait AnyType:
+    pass
+```
+
+Mojo 的标记 trait 包括：`AnyType`、`TrivialRegisterPassable`、`RegisterPassable` 和 `ImplicitlyCopyable`。它们向编译器告知类型的属性，支持编译时优化。
+
+## Trait 主体元素
+
+trait 主体可以包含以下元素：
+
+{/* markdownlint-disable MD013 */}
+
+| 元素                              | 语法                  | 作用                                     |
+|-----------------------------------|-------------------------|------------------------------------------|
+| 必需方法                          | `...` body              | 一致类型必须实现                          |
+| 提供方法                          | 代码主体               | 除非被覆盖否则被继承                      |
+| Comptime 成员 - 关联类型          | `comptime Name: Trait`  | 一致类型提供具体类型                     |
+| Comptime 成员 - 必需值            | `comptime name: Type`   | 一致类型提供一个值                       |
+| Comptime 成员 - 常量              | `comptime name = value` | 所有一致类型共享                         |
+
+{/* markdownlint-enable MD013 */}
+
+## Trait 与成员名称
+
+{/* VERIFIED: From ParserStmts.cpp parseTraitStmt() */}
+
+trait 名称必须是有效标识符。按照约定，它们描述一种能力：`Writable`、`Hashable`、`Copyable`。
+
+### 命名约定
+
+{/* markdownlint-disable MD013 */}
+
+| 元素               | 命名                                                              | 备注                                                                    |
+|--------------------|--------------------------------------------------------------------|--------------------------------------------------------------------------|
+| trait 名称         | `PascalCase`                                                       | 通过一致性获得的能力：`Equatable`、`Copyable`、`PathLike`。 |
+| 实例方法           | `lower_snake_case()`                                               | 方法的动作：`write_to()`、`update()`                                |
+| 静态方法           | `lower_snake_case()`                                               | 方法的动作：`get_type_name`、`get_element_bitwidth`                 |
+| `comptime` 成员    | trait 组合用 `PascalCase`。值用 `lower_snake_case` | 描述用途：`KeyElement`、`element_bitwidth`                          |
+| 关联类型           | `PascalCase`                                                       | 描述用途：`Element`、`Iterator`                                     |
+
+{/* markdownlint-enable MD013 */}
+
+:::caution
+
+定义 trait 时，避免使用带单下划线或双下划线前缀的私有成员名。这可能使必需成员在 trait 用户的生成文档中被隐藏。出于类似原因，不要使用 `@doc_hidden` 来隐藏 trait 成员。
+
+标准库中有少量编译器已知的必需 trait 元素的例外。
+
+:::
+
+## 方法
+
+trait 定义必需方法和提供方法，以及实例成员和静态成员。实例方法以 `self` 作为第一个参数。静态方法需要 `@staticmethod` 装饰器。
+
+### 必需方法
+
+省略号（`...`）标记必需方法。一致类型必须提供实现：
+
+```mojo
+trait RequiredMethods:
+    def required_method(self):
+        ...
+
+    @staticmethod
+    def required_static_method():
+        ...
+
+@fieldwise_init
+struct SampleStruct(RequiredMethods):
+    def required_method(self):
+        print("Required method")
+
+    @staticmethod
+    def required_static_method():
+        print("Required static method")
+
+def main():
+    var s = SampleStruct()
+    s.required_method()        # Required method
+    SampleStruct.required_static_method() # Required static method
+```
+
+### 提供方法
+
+具有非 `...` 主体的方法提供默认实现。一致类型自动获得该行为，但也可以覆盖它：
+
+```mojo
+trait ProvidedMethods:
+    def provided_method(self):
+        print("Provided method")
+
+    @staticmethod
+    def provided_static_method():
+        print("Provided static method")
+
+@fieldwise_init
+struct SampleStruct(ProvidedMethods):
+    def provided_method(self):
+        print("Overridden provided method")
+
+def main():
+    var sample = SampleStruct()
+    sample.provided_method()        # Overridden provided method
+    SampleStruct.provided_static_method() # Provided static method
+```
+
+必需方法和提供方法都可以返回值：
+
+```mojo
+trait Describable:
+    def provided_describe(self) -> String:
+        return "no description"  # Type can override this implementation
+
+    def required_describe(self) -> String:
+        ...  # Type must provide an implementation for this method
+```
+
+提供的行为不能使用任何特定一致类型的实现细节，因为 trait 不了解类型除 trait 和精化列表中声明的能力之外的任何能力。该行为必须在所有一致类型上都有效。
+
+### `pass` vs `...`
+
+`pass` 和 `...` 在 trait 主体中含义不同：
+
+- `...` 标记必需方法桩。
+- `pass` 是一个无操作（no-op），算作提供实现主体。仅在方法返回 `None` 时有效。
+
+如果一个方法声明了返回类型但用 `pass` 作为其主体，编译器会鼓励你将其替换为 `...`：
+
+```mojo
+trait Unsupported:
+    def __compute__(self) -> Int:
+        pass
+    # Error because trait method with a return type must not use 'pass'.
+    # Use '...' to declare the method as required.
+```
+
+## Comptime 成员：关联类型
+
+关联类型是一个 `comptime` 成员，用于声明一致类型必须指定的相关从属类型。例如，关联类型可能是容器或集合 trait 的 `Element` 类型，或映射的 `Key` 和 `Value` 类型。
+
+关联类型声明为没有初始化器的 `comptime` 成员。只有 trait 可以使用此声明形式。一致结构体提供满足 trait 中声明的任何约束的具体值。
+
+在以下示例中，`Self` 指代一致类型，因此 `Self.Associated` 指代一致类型为关联类型 `Associated` 提供的值：
+
+```mojo
+trait Boxable:
+    comptime Associated: Writable & Copyable & Deinitable
+
+    def unbox(self) -> Self.Associated:
+        ...
+
+@fieldwise_init
+struct ConcreteBox(Boxable):
+    comptime Associated = String
+    var value: Self.Associated
+
+    def unbox(self) -> Self.Associated:
+        return self.value.copy()
+
+def main():
+    var box = ConcreteBox(value="Hello")
+    var unboxed = box.unbox()  # Known to be Copyable
+    print(unboxed)             # Known to be Writable
+    _ = unboxed^               # Known to be Deinitable
+```
+
+关联类型可以从调用点赋值。这让 trait 可以跨类型家族工作：
+
+```mojo
+comptime Base = Copyable & Deinitable & Writable
+
+@fieldwise_init
+struct Box[T: Base](Boxable):
+    comptime Associated = Self.T
+    var value: Self.Associated
+
+    def unbox(self) -> Self.Associated:
+        return self.value.copy()
+```
+
+没有赋值、类型或 trait 的 `comptime` 是错误的：
+
+```mojo
+trait Unsupported:
+    comptime X
+    # Error: expected '=' after comptime declaration
+
+trait Supported:
+    comptime X: Copyable # OK: associated type
+    comptime y: Int      # OK: required value
+    comptime z = 42      # OK: constant
+```
+
+在 trait 之外，没有初始化器的 `comptime` 成员是错误的：
+
+```mojo
+struct Unsupported:
+    comptime X: Int
+    comptime Y: Copyable
+    # Error: only traits may contain a comptime member
+    # without an initializer
+```
+
+## Comptime 成员：常量和必需值
+
+trait 可以声明 `comptime` 常量（共享值）和必需赋值（一致类型必须提供一个值）。
+
+### 常量
+
+此 trait 基于关联类型 `Element` 和一个命名的 trait 组合，为一致类型提供可用的位宽：
+
+```mojo
+from std.sys.info import bit_width_of
+
+comptime BaseElement = Copyable & Deinitable & Writable
+
+trait Test:
+    comptime Element: RegisterPassable
+    comptime element_bitwidth = bit_width_of[Self.Element]()
+
+
+@fieldwise_init
+struct SampleStruct[T: BaseElement](Test):
+    comptime Element = Int64
+    var x: Self.T
+
+    def show_element_bitwidth(self):
+        print(Self.element_bitwidth)
+
+def main():
+    var s = SampleStruct[Int64](x=42)
+    s.show_element_bitwidth()  # 64
+    print(s.x)                 # 42
+```
+
+:::note
+不要使用 trait 定义诸如 `PI` 或 `SPEED_OF_LIGHT` 之类的通用常量。对于本地使用，请在模块的顶层定义它们；对于更广泛的使用，请将其作为相关结构体的公开成员定义。
+:::
+
+### Comptime 成员：必需值
+
+必需值是没有初始化器的 `comptime` 成员。一致类型必须为其提供一个值。这在 trait 需要一个在各一致类型间变化的编译时常量时很有用。例如，一个 `Measurable` trait 可能要求一个 `unit` 字符串和一个 `always_positive` 布尔值来验证测量值。
+
+在此示例中，trait 要求一致类型提供一个 `unit` 字符串、一个 `always_positive` 布尔值和一个 `get_value()` 方法。`validate()` 函数使用这些要求在 `always_positive` 为 `True` 时检查值是否为正：
+
+```mojo
+trait Measurable:
+    comptime unit: StaticString          # Required
+    comptime always_positive: Bool       # Required
+
+    def get_value(self) -> Float64: ...  # Required method
+
+def validate[T: Measurable](measurement: T) raises:
+    comptime if T.always_positive:
+        if Float64(measurement.get_value()) < 0.0:
+            raise Error(t"{T.unit} cannot be negative")
+
+@fieldwise_init
+struct Pascals(Measurable):
+    comptime unit: StaticString = "Pa"
+    comptime always_positive: Bool = True
+    var value: Float64
+    def get_value(self) -> Float64:
+        return self.value
+
+def main() raises:
+    validate(Pascals(value=101325.0))   # Validation succeeds
+    # validate(Pascals(value=-101325.0))  # Validation fails
+    # run-time error:
+    # "Unhandled exception caught during execution: Pa cannot be negative"
+```
+
+为 `DegreesCentigrade` 建立类似的一致性时，会将 `unit` 设为 `"°C"`，将 `always_positive` 设为 `False`。值 `-10.0` 对 `DegreesCentigrade` 会通过验证，对 `Pascals` 则会失败。
+
+## Trait 精化
+
+当一个 trait 精化另一个 trait 时，其约束包含父 trait 的约束：
 
 ```mojo
 trait Printable:
-    def __str__(self) -> String: ...
+    def to_string(self) -> String:
+        ...
 
-struct Point(Printable):
-    var x: Float64
-    var y: Float64
+trait PrettyPrintable(Printable):
+    def to_pretty_string(self) -> String:
+        ...
 
-    def __str__(self) -> String:
-        return t"Point({self.x}, {self.y})"
+@fieldwise_init
+struct Box[T: Copyable & Writable & Deinitable](PrettyPrintable):
+    var value: Self.T
+
+    def to_string(self) -> String:
+        return String(t"Box({self.value})")
+
+    def to_pretty_string(self) -> String:
+        return String(t"Box with value: {self.value}")
+
+def render[T: PrettyPrintable](item: T):
+    # to_string() available: PrettyPrintable refines Printable
+    print(item.to_string(), "-", item.to_pretty_string())
+
+def main():
+    render(Box(1))       # Box(1) - Box with value: 1
+    render(Box("hello")) # Box(hello) - Box with value: hello
 ```
 
-## Trait 名称
+要求 `T: PrettyPrintable` 的函数可以调用 `Printable` 中的任何方法，而无需在约束中命名它。
 
-Trait 名称必须是有效的标识符。使用 PascalCase 命名 trait：
+### 约束解析顺序
+
+当编译器解析 trait 约束时：
+
+- 首先检查参数声明的 trait。
+- 传递性地包含父 trait。
+- 如果约束使用 `&`，则所有组合的 trait 都必须满足。
+- 如果存在 `where` 子句，则在参数级约束之后检查其约束。
+
+如果任何检查失败，编译器会报告类型不一致于哪个 trait。
+
+子 trait 可以通过声明具有相同签名的方法来覆盖父方法。父方法的版本会在子 trait 的要求中被替换。
+
+:::note
+每个 trait 都隐式精化 `AnyType`。
+:::
+
+## `Some[]` 作为约束语法糖
+
+`Some[Trait(s)]` 是受该 trait 或组合约束的类型参数的简写。它是语法糖，不是一种新机制。它将约束移到参数上，而不是在一个地方声明参数并在另一处使用它。编译器在调用点推断具体类型，就像它对显式参数所做的那样。如果推断失败，编译器会要求使用显式参数。
+
+{/* markdownlint-disable MD013 */}
+
+| 上下文             | 使用参数                                         | 使用 `Some`                                   |
+|---------------------|--------------------------------------------------|-----------------------------------------------|
+| 参数                | `def foo[T: Intable, //](x: T)`                  | `def foo(x: Some[Intable])`                   |
+| 函数类型            | `def f[F: def(Int) -> None](func: F)`            | `def f(func: Some[def(Int) -> None])`         |
+| 可变参数             | `def show[*Ts: Writable](*pack: *Ts)`            | `def show(*pack: *SomeTypeList[Writable])`    |
+| 运算符重载          | `def __getitem__[I: Indexer, //](self, idx: I)`  | `def __getitem__(self, idx: Some[Indexer])`   |
+
+{/* markdownlint-enable MD013 */}
+
+### `Some` 不适用的场合
+
+编译器无法为结构体字段推断具体类型：
 
 ```mojo
-trait Comparable:
-    def __lt__(self, rhs: Self) -> Bool: ...
+@fieldwise_init
+struct Struct(Writable):
+    var x: Some[Copyable & Deinitable & Writable]
+    # Error: a `Some` struct field has no concrete type to infer
 ```
 
-## 方法签名
-
-Trait 方法签名以 `...` 结尾，表示实现必须提供具体实现：
+请改用显式类型参数：
 
 ```mojo
-trait Addable:
-    def __add__(self, rhs: Self) -> Self: ...
+@fieldwise_init
+struct Struct[T: Copyable & Deinitable & Writable](Writable):
+    var x: Self.T
 ```
 
-### 默认实现
+## Trait 限制
 
-Trait 方法可以有默认实现。使用 `pass` 或具体代码：
+trait 不支持参数列表：
 
 ```mojo
-trait Equatable:
-    def __eq__(self, rhs: Self) -> Bool: ...
-
-    def __ne__(self, rhs: Self) -> Bool:
-        return not (self == rhs)
+trait Unsupported[T]:  # Error: trait declarations do not support
+    ...                # parameters
 ```
 
-## Trait 继承
-
-Trait 可以继承其他 trait。子 trait 要求一致类型实现所有父 trait 的方法：
+trait 不能声明或使用字段：
 
 ```mojo
-trait Comparable(Equatable):
-    def __lt__(self, rhs: Self) -> Bool: ...
-
-    def __le__(self, rhs: Self) -> Bool:
-        return self < rhs or self == rhs
-
-    def __gt__(self, rhs: Self) -> Bool:
-        return not (self <= rhs)
-
-    def __ge__(self, rhs: Self) -> Bool:
-        return not (self < rhs)
+trait Unsupported:
+    var x: Int  # Error: traits do not support 'var' fields
 ```
 
-### 多重继承
-
-Trait 可以继承多个 trait：
+trait 不支持方法上的 `where` 子句：
 
 ```mojo
-trait Numeric(Addable, Multipliable):
-    def __neg__(self) -> Self: ...
-```
-
-## 关联类型
-
-Trait 可以声明关联类型。一致类型必须指定具体类型：
-
-```mojo
-trait Container:
-    comptime Element: AnyType
-
-    def get(self) -> ref Element: ...
-    def set(mut self, value: Element): ...
-
-struct IntContainer(Container):
-    comptime Element = Int
-    var value: Int
-
-    def get(self) -> ref Int:
-        return self.value
-
-    def set(mut self, value: Int):
-        self.value = value
-```
-
-### 关联类型约束
-
-关联类型可以有约束：
-
-```mojo
-trait Container:
-    comptime Element: Copyable & Movable
-```
-
-## Self 类型
-
-在 trait 方法中，`Self` 引用一致类型：
-
-```mojo
-trait Cloneable:
-    def __copyinit__(out self, *, copy: Self): ...
-```
-
-## Trait 组合
-
-使用 `&` 组合 trait：
-
-```mojo
-def process[T: Copyable & Movable](value: T):
-    ...
-```
-
-### Trait 别名
-
-使用 `comptime` 创建 trait 别名：
-
-```mojo
-comptime Value = Copyable & Movable & Stringable
-
-def process[T: Value](value: T):
-    ...
+trait Unsupported:
+    def maybe(self) -> Int where conforms_to(Self, Sized):
+        ...
+    # Error: 'where' clauses on trait methods are not supported
 ```
 
 ## 一致性检查
 
-编译器验证一致类型实现了所有必需方法：
+编译器会检查每个要求，并在未满足时报错。
+
+### 缺失方法
 
 ```mojo
-trait Printable:
-    def __str__(self) -> String: ...
+trait Sized:
+    def __len__(self) -> Int: ...
 
-# 错误：'Point' 不符合 trait 'Printable'
-# 缺少方法 '__str__'
-struct Point(Printable):
-    var x: Float64
-    var y: Float64
+@fieldwise_init
+struct SizedStruct[T: Copyable](Sized):
+    var backing_store: List[Self.T]
+
+# Error about missing a trait's required function '__len__'.
 ```
 
-## 条件一致性
-
-一致性可以有条件地基于编译时参数：
+### 缺失必需成员
 
 ```mojo
-struct Optional[T: AnyType](Equatable) where T: Equatable:
-    var value: T
-    var has_value: Bool
+trait Container:
+    comptime Element: Copyable
 
-    def __eq__(self, rhs: Self) -> Bool:
-        if not self.has_value and not rhs.has_value:
-            return True
-        if self.has_value != rhs.has_value:
-            return False
-        return self.value == rhs.value
+@fieldwise_init
+struct Bag(Container):
+    var data: Int
+    # Error: 'Bag' does not implement all requirements for
+    # 'Container'
+    # Note: required member 'Element' is not specified
 ```
 
-## 内置 Trait
-
-Mojo 提供许多内置 trait：
-
-| Trait                  | 描述                           |
-|------------------------|--------------------------------|
-| `AnyType`              | 所有类型的基 trait             |
-| `Copyable`             | 可以复制                       |
-| `Movable`              | 可以移动                       |
-| `Equatable`            | 可以比较相等性                 |
-| `Comparable`           | 可以比较大小                   |
-| `Stringable`           | 可以转换为字符串               |
-| `Intable`              | 可以转换为整数                 |
-| `Floatable`            | 可以转换为浮点数               |
-| `Collection`           | 集合类型                       |
-| `Iterable`             | 可以迭代                       |
-| `Sized`                | 有已知大小                     |
-| `Container`            | 可以包含元素                   |
-
-## Trait 对象
-
-Trait 可以用作类型，表示"任何一致的类型"：
+### 关联类型上的类型不匹配
 
 ```mojo
-def print_all(items: List[Printable]):
-    for item in items:
-        print(item)
+trait Taggable:
+    comptime Tag: Sized
+
+@fieldwise_init
+struct Widget(Taggable):
+    comptime Tag = Bool
+    # Error since Bool is not Sized
 ```
 
-## 静态方法
+### 提供方法冲突
 
-Trait 可以定义静态方法：
+当结构体一致性列表中的两个 trait 为同一方法产生冲突的提供方法时，结构体必须手动实现它：
 
 ```mojo
-trait Factory:
-    @staticmethod
-    def create() -> Self: ...
+trait Greeter:
+    def greet(self):
+        print("Hello from Greeter")
 
-struct Point(Factory):
-    var x: Float64
-    var y: Float64
+trait Welcomer:
+    def greet(self):
+        print("Welcome from Welcomer")
 
-    @staticmethod
-    def create() -> Point:
-        return Point(0.0, 0.0)
+@fieldwise_init
+struct Host(Greeter, Welcomer):
+    pass
+    # Error about a trait method requirement greet having conflicting
+    # default implementations in Greeter and Welcomer; you must
+    # implement it manually
 ```

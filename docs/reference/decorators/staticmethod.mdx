@@ -1,99 +1,33 @@
 ---
-title: '@staticmethod 装饰器'
+title: '@staticmethod'
 sidebar_label: '@staticmethod'
 sidebar_position: 14
-description: >
-  @staticmethod 装饰器参考。声明静态方法。
+description: 将 struct 方法声明为静态方法。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+你可以在 struct 方法上添加 `@staticmethod` 装饰器来声明一个静态方法。
 
-`@staticmethod` 装饰器声明静态方法。静态方法不接受 `self` 参数，可以直接通过类型名调用。
-
-## 语法
+例如：
 
 ```mojo
-struct TypeName:
+from std.pathlib import Path
+
+
+struct MyStruct(Movable):
+    var data: List[UInt8]
+
+    def __init__(out self):
+        self.data = List[UInt8]()
+
     @staticmethod
-    def method_name(...):
-        ...
+    def load_from_file(file_path: Path) raises -> Self:
+        var new_struct = MyStruct()
+        new_struct.data = file_path.read_bytes()
+        return new_struct ^
 ```
 
-## 用法
+与实例方法不同，静态方法不接受隐式的 `self` 参数。它不附加到 struct 的特定实例，因此无法访问实例数据。
 
-```mojo
-struct Math:
-    @staticmethod
-    def square(x: Int) -> Int:
-        return x * x
-
-def main():
-    print(Math.square(5))  # 25
-```
-
-## 示例
-
-### 工厂方法
-
-```mojo
-struct Point:
-    var x: Float64
-    var y: Float64
-
-    def __init__(out self, x: Float64, y: Float64):
-        self.x = x
-        self.y = y
-
-    @staticmethod
-    def origin() -> Point:
-        return Point(0.0, 0.0)
-
-def main():
-    var p = Point.origin()
-```
-
-### 工具方法
-
-```mojo
-struct StringUtils:
-    @staticmethod
-    def is_empty(s: String) -> Bool:
-        return len(s) == 0
-
-    @staticmethod
-    def trim(s: String) -> String:
-        return s.strip()
-
-def main():
-    print(StringUtils.is_empty(""))  # True
-```
-
-### 常量定义
-
-```mojo
-struct Constants:
-    comptime PI: Float64 = 3.141592653589793
-    comptime E: Float64 = 2.718281828459045
-
-    @staticmethod
-    def golden_ratio() -> Float64:
-        return 1.618033988749895
-
-def main():
-    print(Constants.PI)
-    print(Constants.golden_ratio())
-```
-
-## 与实例方法对比
-
-| 特性         | 静态方法         | 实例方法         |
-|--------------|------------------|------------------|
-| self 参数    | 无               | 有               |
-| 访问实例字段 | 不能             | 可以             |
-| 调用方式     | TypeName.method()| instance.method()|
-
-## 注意事项
-
-- 静态方法不能访问实例字段
-- 通过类型名调用，不需要实例
-- 适用于工具函数和工厂方法
+有关更多信息，请参阅
+[静态方法](/docs/manual/structs/#static-methods)的文档。

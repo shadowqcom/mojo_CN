@@ -1,0 +1,693 @@
+---
+title: 使用指针
+sidebar_position: 2
+description: 使用指针和动态分配的内存。
+---
+
+{/* markdownlint-disable MD033 */}
+
+[`Pointer`](/docs/std/memory/pointer/Pointer/) struct 是 Mojo 中用于间接引用内存位置的主要指针类型。
+
+你可以通过多种方式使用指针：
+
+- 作为对现有已拥有值的安全间接引用。（例如，集合的迭代器可能持有一个指向原始集合的指针。）
+
+- 作为指向动态分配内存块的指针，用于构建类数组的数据结构。
+
+- 作为传递给低级接口或其他编程语言的原始内存位置。
+
+其中一些用法是安全的，但其他用法——特别是涉及动态分配内存的用法——是_不安全的_：你的代码（而非编译器）负责正确使用内存。
+
+有关标准库指针类型的比较，请参阅[指针简介](/docs/manual/pointers/)。
+
+## 指针基础
+
+`Pointer` 是一种持有内存地址的类型。你可以在该内存中存储和检索值。`Pointer` 类型是_参数化的_——它可以指向任何类型的值，值类型以参数的形式指定。指针指向的值有时被称为_被指物_（pointee）。
+
+```mojo
+var count: Int = 0
+# Point to an existing value
+var ptr = Pointer(to=count)  # ptr's type is Pointer[Int, ...]
+# Mutate the value
+ptr[] = 100
+```
+
+{/* rumdl-disable MD033 */}
+<figure>
+
+![一个局部变量 ptr 指向一个持有地址 0x06f6a6f4d 的 Pointer[Int]。箭头从
+Pointer 指向一个包含值 100 的 Int 被指物，其内存地址为
+0x06f6a6f4d。](../images/pointers/pointer-diagram.png#light)
+![一个局部变量 ptr 指向一个持有地址 0x06f6a6f4d 的 Pointer[Int]。箭头从
+Pointer 指向一个包含值 100 的 Int 被指物，其内存地址为
+0x06f6a6f4d。](../images/pointers/pointer-diagram-dark.png#dark)
+
+<figcaption><b>图 1.</b> 指针与被指物</figcaption>
+</figure>
+{/* rumdl-enable MD033 */}
+
+访问内存——检索或更新值——被称为_解引用_指针。你可以在变量名后跟一对空的方括号来解引用指针：
+
+```mojo
+# Update an initialized value
+ptr[] += 10
+# Access an initialized value
+print(ptr[])
+```
+
+```output
+110
+```
+
+这两项操作——创建指向现有值的指针和解引用该指针——是安全的：指针维护了与原始值的归属关系链接，因此 Mojo 可以跟踪内存。
+
+其他操作，特别是涉及动态分配内存的操作，通常是_不安全的_，这意味着你的代码负责：
+
+- 分配和释放内存
+- 知道给定的内存位置是已初始化还是未初始化
+- 当被指物不再被使用时手动调用析构函数
+
+不安全操作以 `unsafe_` 为前缀，或使用以 `unsafe_` 为前缀的关键字参数。
+
+## 指针的生命周期
+
+在任何给定时刻，指针值都可以处于几种状态之一。它可以是_未初始化的_、_悬空的_，或者指向一个有效但已初始化或未初始化的内存位置：
+
+- 未初始化。就像任何变量一样，`Pointer` 类型的变量可以被声明但未初始化。
+
+  ```mojo no-test
+  var ptr: Pointer[Int, MutUntrackedOrigin]
+  ```
+
+- 指向已分配但未初始化的内存。[`alloc()`](/docs/std/memory/alloc/alloc/) 函数分配一块内存，其中包含被指物类型的指定数量元素的空间，[`Allocation.unsafe_ptr()`](/docs/std/memory/alloc/Allocation/#unsafe_ptr) 返回指向该内存的指针。
+
+  ```mojo
+  var allocation = alloc(Layout[Int].single())
+  var ptr = allocation.unsafe_ptr()
+  ```
+
+  尝试解引用指向未初始化内存的指针会导致未定义行为。
+
+- 指向已初始化的内存。你可以通过将现有值移动或复制到内存中来初始化已分配但未初始化的指针。或者你可以通过使用 `to` 关键字参数调用构造函数来构造一个指向现有值的指针。
+
+  ```mojo no-test
+  ptr.unsafe_write(value^)
+  # or
+  ptr.unsafe_write(copy=value)
+  # or
+  var ptr = Pointer(to=value)
+  ```
+
+  一旦值被初始化，你可以使用解引用语法读取或修改它：
+
+  ```mojo no-test
+  var oldValue = ptr[]
+  ptr[] = newValue
+  ```
+
+- 悬空。当你释放指针分配的内存时，你会得到一个_悬空指针_。地址仍然指向其之前的位置，但该内存不再分配给此指针。尝试解引用指针或调用任何会访问该内存位置的方法都会导致未定义行为。
+
+  ```mojo
+  dealloc(allocation^)
+  ```
+
+下面的图示展示了 `Pointer` 的生命周期：
+
+{/* rumdl-disable MD033 */}
+<figure>
+
+![包含四个状态的状态图。声明为 var ptr:
+Pointer[T] 的指针从未初始化开始。从那里，Allocation.unsafe_leak() 或
+Allocation.unsafe_ptr() 导致指针指向未初始化内存，而
+Pointer(to=val) 导致指针指向已初始化内存。unsafe_write()
+将指针从未初始化内存移动到已初始化内存，而 unsafe_take_pointee() 和
+unsafe_deinit_pointee() 将其移回。指向已初始化内存的指针可以被读取或就地修改。对
+Allocation 调用 dealloc() 会留下一个悬空
+指针。](../images/pointers/pointer-lifecycle.png#light)
+
+![包含四个状态的状态图。声明为 var ptr:
+Pointer[T] 的指针从未初始化开始。从那里，Allocation.unsafe_leak() 或
+Allocation.unsafe_ptr() 导致指针指向未初始化内存，而
+Pointer(to=val) 导致指针指向已初始化内存。unsafe_write()
+将指针从未初始化内存移动到已初始化内存，而 unsafe_take_pointee() 和
+unsafe_deinit_pointee() 将其移回。指向已初始化内存的指针可以被读取或就地修改。对
+Allocation 调用 dealloc() 会留下一个悬空
+指针。](../images/pointers/pointer-lifecycle-dark.png#dark)
+
+<figcaption><b>图 2.</b> <code>Pointer</code> 的生命周期</figcaption>
+</figure>
+{/* rumdl-enable MD033 */}
+
+### 分配内存
+
+使用 [`std.memory.alloc`](/docs/std/memory/alloc/) 模块来分配和释放内存。要分配内存，你需要提供一个_布局_（layout），它指定：
+
+- 要存储的值的类型（例如，`Int`）。
+- 要为其分配空间的值的数量。
+- 可选地，分配的内存对齐方式。
+
+`alloc()` 函数返回一个 `Allocation`，这是一个显式销毁的句柄，其中持有一个指向已分配内存的不安全指针以及用于分配它的布局。使用 `dealloc()` 释放该分配及其关联的内存。
+
+```mojo
+from std.memory.alloc import alloc, dealloc, Layout
+var allocation = alloc(Layout[Int](count=4))
+# Use allocation
+var ptr = allocation.unsafe_ptr()
+for i in range(4):
+    ptr.unsafe_offset(i).unsafe_write(i)
+
+# Release allocation
+dealloc(allocation^)
+```
+
+你也可以将上面的分配写为 `alloc[Int]({count = 4})`。
+
+由于 `Allocation` 是显式销毁类型，你必须在它超出作用域之前释放它。
+
+分配失败会终止程序；你无法用 `try/except` 块捕获此失败。`alloc()` 函数总是返回一个分配，其中包含一个指向已分配空间的有效非空指针。已分配的空间是_未初始化的_——就像一个已声明但未初始化的变量。
+
+### 初始化被指物
+
+要初始化已分配的内存，`Pointer` 提供了
+[`unsafe_write()`](/docs/std/memory/pointer/Pointer/#unsafe_write)
+方法，该方法将一个值移动到指针的内存位置：
+
+```mojo no-test
+str_ptr.unsafe_write(my_string^)
+```
+
+注意，要移动值，你通常需要添加转移符号（`^`），除非该值是[隐式可复制](/docs/std/builtin/value/ImplicitlyCopyable/)类型（如 `Int`）或新构造的"owned"值：
+
+```mojo
+str_ptr.unsafe_write("Owned string")
+```
+
+要将值复制（而非移动）到指针的内存位置，请将其作为 `copy` 关键字参数传入：
+
+```mojo no-test
+ptr.unsafe_write(copy=my_value)
+```
+
+或者，你可以通过使用 `to` 关键字参数调用 `Pointer` 构造函数来获取指向现有值的指针。例如，这对于获取栈上值的指针很有用。
+
+```mojo
+var counter: Int = 5
+var ptr = Pointer(to=counter)
+```
+
+注意，当调用 `Pointer(to=value)` 时，你不需要分配内存，因为你指向的是一个现有值。
+
+### 解引用指针
+
+使用 `[]` 解引用运算符访问指针存储的值（"被指物"）。
+
+```mojo
+# Read from pointee
+print(ptr[])
+# Mutate pointee
+ptr[] = 0
+```
+
+```output
+5
+```
+
+如果你已为多个值分配了空间，可以使用带 `unsafe_offset` 关键字参数的下标语法访问这些值：
+
+```mojo no-test
+ptr[unsafe_offset=3] = 0
+# Equivalent to:
+ptr.unsafe_offset(3)[] = 0
+```
+
+你不能安全地对未初始化的内存使用解引用运算符，即使是为了_初始化_被指物。这是因为对解引用的指针赋值会调用现有被指物上的生命周期方法（如析构函数、移动构造函数或复制构造函数）。
+
+```mojo
+var allocation = alloc[String]({count = 1})
+var str_ptr = allocation.unsafe_ptr()
+# str_ptr[] = "Testing" # Undefined behavior!
+str_ptr.unsafe_write("Testing")
+str_ptr[] += " pointers"  # Works now
+```
+
+### 销毁或移除值
+
+[`unsafe_take_pointee()`](/docs/std/memory/pointer/Pointer/#unsafe_take_pointee)
+方法将一个被指物从 `ptr` 指向的内存位置移出。这是一个消费性移动。它在目标值上调用移动构造函数。它使该内存位置变为未初始化状态。
+
+[`unsafe_deinit_pointee()`](/docs/std/memory/pointer/Pointer/#unsafe_deinit_pointee)
+方法在被指物上调用析构函数，并使 `ptr` 指向的内存位置变为未初始化状态。
+
+`unsafe_take_pointee()` 和 `unsafe_deinit_pointee()` 都要求指针非空，且内存位置包含被指物类型的有效、已初始化的值；否则该函数会导致未定义行为。
+
+调用
+[`unsafe_write_move_from(self, src)`](/docs/std/memory/pointer/Pointer/#unsafe_write_move_from)
+将 `src` 指向的值移动到 `self` 指向的内存位置。此操作后，该值的所有权从 `src` 转移到 `self`，`src` 处的内存变为未初始化状态：不要从中读取数据，也不要对其调用析构函数。要使内存再次有效，请使用 `unsafe_write*()` 操作之一用新值初始化它。
+
+:::note
+Mojo 假定目标内存是未初始化的。
+它不会在写入来自 `src` 的值之前销毁现有内容。
+:::
+
+### 释放内存
+
+对分配调用 [`dealloc()`](/docs/std/memory/alloc/dealloc/) 会释放已分配的内存。它不会对内存中存储的任何值调用析构函数——你需要显式地执行此操作（例如，使用
+[`unsafe_deinit_pointee()`](/docs/std/memory/pointer/Pointer/#unsafe_deinit_pointee)
+或[销毁或移除值](#destroying-or-removing-values)中描述的其他函数之一）。
+
+释放指针而不释放关联的内存可能导致内存泄漏——你的程序会不断占用越来越多的内存，因为并非所有已分配的内存都被释放。
+
+由于释放 `Allocation` 或 `ThinAllocation` 会消耗该分配，因此你受到保护，不会两次释放同一分配，除非你使用
+[分配与 raising 函数](#allocations-and-raising-functions)中描述的 `unsafe_leak()` 方法。
+
+释放指针的内存后，你会得到一个悬空指针——其地址仍然指向已释放的内存。任何访问该内存的尝试，如解引用指针，都会导致未定义行为。
+
+## 存储多个值
+
+如[分配内存](#allocating-memory)中所述，你可以使用 `Pointer` 为多个值分配内存。内存被分配为单个连续块。
+[`unsafe_offset()`](/docs/std/memory/pointer/Pointer/#unsafe_offset) 方法返回一个新指针，该指针从原始指针偏移指定数量的值：
+
+```mojo
+var third_ptr = first_ptr.unsafe_offset(2)
+```
+
+偏移量也可以是负数，以在块中向后移动。由于 `unsafe_offset()` 返回一个新指针而不是修改原始指针，你需要将结果赋回变量以推进它：
+
+```mojo
+# Advance the pointer one element:
+ptr = ptr.unsafe_offset(1)
+```
+
+{/* rumdl-disable MD033 */}
+<figure>
+
+![地址 0x..101 到 0x..104 处的四个连续内存位置，分别持有字符 M、o、j 和 o。first_ptr 指向第一个位置，而
+first_ptr.unsafe_offset(2) 指向
+第三个位置。](../images/pointers/pointer-offset.png#light)
+![地址 0x..101 到 0x..104 处的四个连续内存位置，分别持有字符 M、o、j 和 o。first_ptr 指向第一个位置，而
+first_ptr.unsafe_offset(2) 指向
+第三个位置。](../images/pointers/pointer-offset-dark.png#dark)
+
+<figcaption><b>图 3.</b> 指针偏移</figcaption>
+</figure>
+{/* rumdl-enable MD033 */}
+
+例如，以下代码分配内存来存储 6 个 `Float64` 值，并将它们全部初始化为零。
+
+```mojo
+var allocation = alloc(Layout[Float64](count=6))
+var float_ptr = allocation.unsafe_ptr()
+for offset in range(6):
+    float_ptr.unsafe_offset(offset).unsafe_write(0.0)
+```
+
+一旦值被初始化，你可以使用带 `unsafe_offset` 关键字参数的下标语法访问它们：
+
+```mojo
+float_ptr[unsafe_offset=2] = 3.0
+for offset in range(6):
+    print(float_ptr[unsafe_offset=offset], end=", ")
+```
+
+```output
+0.0, 0.0, 3.0, 0.0, 0.0, 0.0,
+```
+
+## 指针与 origin
+
+`Pointer` struct 有一个 `origin` 参数，用于跟踪它所指向的内存的来源。`Pointer` 的完整参数签名如下所示：
+
+```mojo no-test
+struct Pointer[
+    mut: Bool,
+    //,
+    T: AnyType,
+    origin: Origin[mut=mut],
+    *,
+    address_space: AddressSpace = AddressSpace.GENERIC,
+]
+```
+
+对于使用 `to` 关键字参数初始化的指针，origin 从被指物的 origin 推断而来。例如，在以下代码中，`s_ptr.origin` 与 `s` 的 origin 相同：
+
+```mojo
+var s = "Testing"
+var s_ptr = Pointer(to=s)
+```
+
+当使用 `alloc()` 函数分配内存时，返回的指针的 `origin` 值为 `MutUntrackedOrigin`。此值表示一个可变的、不与现有值_别名_（alias）的 origin。例如，它不指向为任何其他变量分配的内存。此内存不被 Mojo 的生命周期检查器跟踪，你需要负责释放它。
+
+如果你在 struct 的实现中使用指针，通常不必担心 origin，只要指针没有暴露在 struct 外部即可。例如，如果你实现一个静态数组类型，它在其构造函数中分配内存，在析构函数中释放内存，并且不将指针暴露在 struct 外部，那么默认的 origin 就可以。
+
+但如果 struct 暴露了指向该内存的指针或引用，你需要适当地设置 origin。例如，[`List`](/docs/std/collections/list/List/) 类型有一个 `unsafe_ptr()` 方法，返回一个指向底层存储的 `Pointer`。在这种情况下，返回的指针应该共享该列表的 origin，因为列表是存储的逻辑所有者。
+
+该方法看起来像这样：
+
+```mojo no-test
+def unsafe_ptr[
+    origin: Origin, address_space: AddressSpace, //
+](ref[origin, address_space] self) -> Pointer[
+    Self.T, origin, address_space=address_space
+]:
+    return (
+        self._data.unsafe_mut_cast[origin.mut]()
+        .unsafe_origin_cast[origin]()
+        .unsafe_address_space_cast[address_space]()
+    )
+```
+
+这返回原始指针的一个副本，其 origin 设置为与 `self` 值的 origin 和可变性相匹配。
+
+这样的方法是不安全的，但设置正确的 origin 使其更安全，因为编译器知道指针引用的是由列表拥有的数据。
+
+当将指针作为函数参数接收时，你通常希望要求可变或不可变的 origin，但其他方面让编译器推断 origin。以下是一个示例：
+
+```mojo
+def print_bytes(bytes: Pointer[mut=False, Byte, _], count: Int):
+    for i in range(count):
+        print(hex(bytes[unsafe_offset=i]), end=" ")
+    print()
+```
+
+通过将仅用于推断的 `mut` 参数绑定为 `False`，并让 origin 保持未绑定状态（使用 `_`），此签名让编译器推断 origin，但强制该 origin 为不可变。Mojo 可以将可变指针隐式转换为不可变指针，因此你可以将可变指针传递给 `print_bytes()`，但该函数无法修改数据。
+
+## 处理可空性
+
+`Pointer` 是不可空类型。要模拟空指针，请将其包装在 [`Optional`](/docs/std/collections/optional/Optional/) 中：
+
+```mojo
+var ptr = Optional[Pointer[Int, MutUntrackedOrigin]]()
+```
+
+这创建了一个值为 `None` 的 `Optional`，等同于空指针。`Optional[Pointer]` 与原始指针具有相同的内存布局，因此你可以将其作为 `NULL` 跨 FFI 边界传递。
+
+要检查可选指针是否为空，请使用 `Optional` 的方法：
+
+```mojo
+if ptr:
+    # ptr is not None — safe to unwrap
+    var p = ptr.value()
+```
+
+当你需要一个用于延迟初始化的非空值时，请使用 `unsafe_dangling()` 而不是 `Optional`：
+
+```mojo
+var ptr = Pointer[Int, MutUntrackedOrigin].unsafe_dangling()
+```
+
+有关可选指针在数据结构中的实际示例，请参阅[自引用 struct](/docs/manual/structs/reference/)。
+
+## 更多内存分配模式
+
+在某些情况下，你可能不希望持有 `Allocation`：
+
+- 在为 struct 分配数据时，你可能希望改用
+  [`ThinAllocation`](/docs/std/memory/alloc/ThinAllocation/)，以避免使用额外的内存。
+
+- 在使用 raising 函数时，你有时需要避免使用像 `Allocation` 或 `ThinAllocation` 这样的显式销毁类型。
+
+以下各节描述了这些特殊情况。
+
+### 在 struct 字段中持有分配
+
+将分配作为 struct 字段存储时，你可能不希望存储 `Allocation` struct 中包含的额外布局数据。布局数据是两个 `Int` 值（对齐方式和元素数量），通常每次分配额外占用 16 字节。如果你的 struct 已经跟踪了它分配的空间量，你可以通过存储 `ThinAllocation`（一个围绕指针的显式销毁包装器）来消除这额外空间。
+
+`Allocation.into_thin()` 方法消耗原始分配并返回一个 `ThinAllocation`：
+
+```mojo
+struct Counter:
+    comptime _layout = Layout[Int].single()
+    var _alloc: ThinAllocation[Int]
+
+    def __init__(out self, value: Int):
+        self._alloc = alloc(Self._layout).into_thin()
+        self._alloc.unsafe_ptr().unsafe_write(value)
+
+    def increment(mut self):
+        self._alloc.unsafe_ptr()[] += 1
+
+    def get(self) -> Int:
+        return self._alloc.unsafe_ptr()[]
+
+    def __deinit__(deinit self):
+        # Convert ThinAllocation back into Allocation
+        dealloc(self._alloc^.unsafe_with_layout(Self._layout))
+```
+
+要释放 `ThinAllocation`，你需要提供原始布局以使用 `unsafe_with_layout()` 方法重建一个 `Allocation`。此示例将布局存储为 comptime 成员；对于具有动态大小的 struct，你可以重建原始布局：
+
+```mojo no-test
+self._alloc^.unsafe_with_layout({count = size})
+```
+
+### 分配与 raising 函数
+
+由于 `Allocation` 和 `ThinAllocation` 需要在超出作用域之前显式释放，它们可能与 raising 函数冲突。
+
+考虑以下代码：
+
+```mojo no-test
+def allocating_function() raises:
+    var data = alloc[Float64]({count = 64})
+    # ...
+    raising_function(data.unsafe_ptr())
+    dealloc(data^)
+```
+
+由于错误可能导致 `allocating_function()` 在未执行 `dealloc()` 调用的情况下退出，编译器会将此识别为潜在的内存泄漏。针对此问题有几种方法。该函数可以使用 `try`/`except` 语句来确保在发生错误时释放内存：
+
+```mojo
+def allocating_function() raises:
+    var data = alloc[Float64]({count = 64})
+    # ...
+    try:
+        raising_function(data.unsafe_ptr())
+    except e:
+        dealloc(data^)
+        raise e^  # propagate the error
+    dealloc(data^)
+```
+
+如果这不可行，替代方案是使用 `unsafe_leak()` 方法获取分配指针的所有权。这会消耗该分配，但要求你确保内存被释放。如果其他模式不起作用，你应该将此模式视为最后的手段：
+
+```mojo
+def leaky_function() raises:
+    var data_ptr = alloc[Float64]({count = 64}).unsafe_leak()
+    # ...
+    raising_function(data_ptr)
+    dealloc(
+        ThinAllocation(unsafe_owned_ptr=data_ptr).unsafe_with_layout(
+            {count = 64}
+        )
+    )
+```
+
+这种方法的缺点包括：
+
+- 如果在此示例中 `raising_function()` 抛出错误，`dealloc()` 永远不会被调用，从而泄漏内存。
+
+- 当你像这样从 `Pointer` 重建 `Allocation` 时，你面临两次释放同一内存的风险。
+
+## 使用外部指针
+
+在与其他编程语言交换数据时，你可能需要从外部指针构造 `Pointer`。Mojo 限制从任意地址创建 `Pointer` 实例，以避免用户意外创建彼此_别名_的指针（即两个指针引用同一位置）。但是，有一些特定的方法可以从 Python 或 C/C++ 指针获取 `Pointer`。
+
+在处理其他地方分配的内存时，你需要知道谁负责释放该内存。释放其他地方分配的内存可能导致未定义行为。
+
+在使用某些外部函数时，你可能需要提供一个没有特定类型的指针（类型擦除指针，或 C/C++ 中的"void 指针"）。这等同于 Mojo 的 `OpaquePointer`。
+
+你还需要了解存储在内存中的数据格式，包括数据类型和字节顺序。更多信息请参阅[转换数据：位转换和字节顺序](#converting-data-bitcasting-and-byte-order)。
+
+### 从原始内存地址创建 Mojo 指针
+
+你可以使用 `unsafe_from_address` 构造函数从原始内存地址创建 `Pointer`。
+
+```mojo
+def write_to_address(mmio_address: Int, value: Int32):
+    var ptr = Pointer[Int32, MutUntrackedOrigin](
+        unsafe_from_address=mmio_address
+    )
+
+    # Writing to a raw memory address may require a volatile load/store as the
+    # operation may have side effects not visible to the compiler.
+    # You can specify this using the `volatile` parameter.
+    ptr.unsafe_store[volatile=True](value)
+```
+
+这是不安全的，因为调用者必须确保在写入之前地址有效，并且在读取之前内存已初始化。调用者还必须确保指针的 origin 和可变性对该地址有效；否则可能导致未定义行为。
+
+### 从 Python 指针创建 Mojo 指针
+
+`PythonObject` 类型定义了
+[`unsafe_get_as_pointer()`](/docs/std/python/python_object/PythonObject/#unsafe_get_as_pointer)
+方法，用于从 Python 地址构造 `Pointer`。
+
+:::note
+
+在可能的情况下，请使用更安全的方法与 Python 交换数据，例如
+[`python.numpy`](/docs/std/python/numpy/) 模块，它提供了在 Mojo 和 Python 之间传输一维 NumPy 数组的便捷函数。
+
+:::
+
+以下代码创建一个 NumPy 数组，然后使用 Mojo 指针访问数据：
+
+```mojo
+from std.python import Python
+
+def share_array() raises:
+    var np = Python.import_module("numpy")
+    var arr = np.array(Python.list(1, 2, 3, 4, 5, 6, 7, 8, 9))
+    var ptr = arr.ctypes.data.unsafe_get_as_pointer[DType.int64]()
+    for i in range(9):
+        print(ptr[unsafe_offset=i], end=", ")
+    print()
+
+def main() raises:
+    share_array()
+```
+
+```output
+1, 2, 3, 4, 5, 6, 7, 8, 9,
+```
+
+此示例使用 NumPy
+[`ndarray.ctypes`](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.ctypes.html#numpy.ndarray.ctypes)
+属性访问指向底层存储的原始指针（`ndarray.ctypes.data`）。`unsafe_get_as_pointer()` 方法构造一个指向此地址的 `Pointer`。
+
+### 使用 C/C++ 指针
+
+如果你调用一个使用
+[`external_call`](/docs/std/ffi/external_call/) 函数返回指针的 C/C++ 函数，你可以将返回类型指定为 `Pointer`，Mojo 会为你处理类型转换。
+
+值得注意的是，跨 FFI 边界工作时，`origin` 参数通常应设置为 `(Mut/Immut)UntrackedOrigin`，因为指针指向的是 Mojo 程序外部分配的内存。
+
+```mojo no-test
+from std.ffi import external_call
+
+def get_foreign_pointer() -> Pointer[Int, MutUntrackedOrigin]:
+    var ptr = external_call[
+        "my_c_function", # external function name
+        Pointer[Int, MutUntrackedOrigin] # return type
+    ]()
+    return ptr
+```
+
+### 不透明指针
+
+`OpaquePointer` 类型是一种没有特定类型的指针。在其他语言中，这通常被称为类型擦除指针或 void 指针。不透明指针通常在与非 Mojo 代码交互时使用，例如接受 void 指针的 C 库函数。
+
+`OpaquePointer` 实际上是 `Pointer[NoneType]` 的类型别名，因此它具有与任何其他 `Pointer` 相同的 API。
+
+你不能解引用不透明指针，但可以使用 `unsafe_bitcast()` 方法将其转换为特定类型。类似地，你可以通过位转换到 `NoneType` 从现有指针创建不透明指针。例如：
+
+```mojo
+var str = "Hello, world!"
+var str_ptr = Pointer(to=str)
+var opaque_ptr = str_ptr.unsafe_bitcast[NoneType]()
+# ... call some foreign function that takes a void pointer
+```
+
+## 转换数据：位转换和字节顺序
+
+位转换指针会返回一个具有相同内存位置但新数据类型的指针。如果你需要从单个内存区域访问不同类型的数据，这会很有用。这种情况可能发生在读取二进制文件（如图像文件）或从网络接收数据时。
+
+以下示例处理一种由数据块组成的格式，其中每个块包含可变数量的 32 位整数。每个块以一个 8 位整数开头，标识该块中值的数量。
+
+```mojo
+def read_chunks(
+    var ptr: Pointer[mut=False, UInt8, _],
+) -> List[List[UInt32]]:
+    var chunks = List[List[UInt32]]()
+    # A chunk size of 0 indicates the end of the data
+    var chunk_size = Int(ptr[])
+    while chunk_size > 0:
+        # Skip the 1 byte chunk_size and get a pointer to the first
+        # UInt32 in the chunk
+        var ui32_ptr = ptr.unsafe_offset(1).unsafe_bitcast[UInt32]()
+        var chunk = List[UInt32](capacity=chunk_size)
+        for i in range(chunk_size):
+            chunk.append(ui32_ptr[unsafe_offset=i])
+        # List is not implicitly copyable, so it needs the transfer sigil (^)
+        chunks.append(chunk^)
+        # Move our pointer to the next byte after the current chunk
+        ptr = ptr.unsafe_offset(1 + 4 * chunk_size)
+        # Read the size of the next chunk
+        chunk_size = Int(ptr[])
+    return chunks^
+```
+
+在处理从文件或网络读取的数据时，你可能还需要处理字节顺序。大多数系统使用小端序字节顺序（也称为最低有效字节，或 LSB），其中多字节值中的最低有效字节排在前面。例如，数字 1001 可以用十六进制表示为 0x03E9，其中 E9 是最低有效字节。以 16 位小端序整数表示时，这两个字节的顺序是 E9 03。以 32 位整数表示时，则为 E9 03 00 00。
+
+大端序或最高有效字节（MSB）顺序则相反：在 32 位情况下，为 00 00 03 E9。MSB 顺序常用于文件格式和网络数据传输。你可以使用
+[`byte_swap()`](/docs/std/bit/bit/byte_swap/) 函数将 SIMD 值的字节顺序从大端序交换为小端序或反之。例如，如果上面的方法读取的是大端序数据，你只需更改一行：
+
+```mojo no-test
+chunk.append(byte_swap(ui32_ptr[unsafe_offset=i]))
+```
+
+## 使用 SIMD 向量
+
+`Pointer` 类型包含
+[`unsafe_load()`](/docs/std/memory/pointer/Pointer/#unsafe_load)
+和
+[`unsafe_store()`](/docs/std/memory/pointer/Pointer/#unsafe_store)
+方法，用于执行标量值的对齐加载和存储。它还支持步长加载/存储和聚集/分散的方法。
+
+步长加载使用连续内存地址之间的偏移量（"步幅"）将值从内存加载到 SIMD 向量中。这对于从表格数据中提取行或列，或从结构化数据中提取单个值很有用。例如，考虑 RGB 图像的数据，其中每个像素由三个 8 位值组成，分别表示红色、绿色和蓝色。如果你只想访问红色值，可以使用步长加载或存储。
+
+{/* rumdl-disable MD033 */}
+<figure>
+
+![一行字节，持有 R、G 和 B 像素值的重复序列。指针指向第一个 R，步幅为 3 的箭头跳过每个 G 和 B 到达下一个
+R。](../images/pointers/strided-load-storage.png#light)
+![一行字节，持有 R、G 和 B 像素值的重复序列。指针指向第一个 R，步幅为 3 的箭头跳过每个 G 和 B 到达下一个
+R。](../images/pointers/strided-load-storage-dark.png#dark)
+
+<figcaption><b>图 4.</b> 步长加载</figcaption>
+</figure>
+{/* rumdl-enable MD033 */}
+
+以下函数使用
+[`unsafe_strided_load()`](/docs/std/memory/pointer/Pointer/#unsafe_strided_load)
+和
+[`unsafe_strided_store()`](/docs/std/memory/pointer/Pointer/#unsafe_strided_store)
+方法对图像中的红色像素值进行反转，每次处理 8 个值。（注意，此函数仅处理像素数量可被 8 整除的图像。）
+
+```mojo
+def invert_red_channel(ptr: Pointer[mut=True, UInt8, _], pixel_count: Int):
+    # Number of values loaded or stored at a time
+    comptime simd_width = 8
+    # Bytes per pixel, which is also the stride size
+    comptime bpp = 3
+    for i in range(0, pixel_count * bpp, simd_width * bpp):
+        var red_values = ptr.unsafe_offset(i).unsafe_strided_load[
+            width=simd_width
+        ](bpp)
+        # Invert values and store them in their original locations
+        ptr.unsafe_offset(i).unsafe_strided_store[width=simd_width](
+            ~red_values, bpp
+        )
+```
+
+[`unsafe_gather()`](/docs/std/memory/pointer/Pointer/#unsafe_gather)
+和
+[`unsafe_scatter()`](/docs/std/memory/pointer/Pointer/#unsafe_scatter)
+方法让你可以加载或存储一组存储在任意位置的值。你通过传入一个相对于当前指针的_偏移量_ SIMD 向量来实现这一点。例如，当使用 `unsafe_gather()` 时，向量中的第 <var>n</var> 个值是从（指针地址）+ <var>offset[n]</var> 加载的。
+
+## 安全性
+
+要安全地使用 `Pointer`，你需要确保指针指向单个、已初始化的值。如果该值在逻辑上由指针拥有，你需要确保在释放内存之前调用了该值的析构函数。
+
+使用 `Pointer(to=value)` 和简单的解引用（`ptr[]`）可以确保指针与其指向的值一样安全。
+
+使用任何以 `unsafe_` 为前缀的 API（或具有以 `unsafe_` 为前缀的关键字参数）都会导致潜在不安全的操作。
+
+例如：
+
+- 如果你分配了内存，你需要释放该内存。如果你使用 `unsafe_leak()` 方法从分配中获取指针，Mojo 的生命周期检查器无法跟踪该内存，并且不会在可能的泄漏上报错。你需要确保内存被释放。如果你通过调用 `List.unsafe_take_allocation()` 等方法承担了分配的责任，这也同样适用。
+
+- 如果你分配了内存，或从其他来源获取了分配的所有权，你需要跟踪被指物是已初始化还是未初始化。访问未初始化的内存会导致未定义行为。
+
+- 通过指针访问多个值时（例如，使用 `unsafe_offset()` 或 `unsafe_load()`），你始终处于不安全领域。你必须跟踪分配的大小（以知道给定地址是否有效）以及哪些值已初始化。
+
+{/* markdownlint-enable MD033 */}

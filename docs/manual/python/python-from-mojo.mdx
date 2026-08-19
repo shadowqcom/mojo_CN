@@ -5,19 +5,19 @@ description: 如何在 Mojo 代码中导入和使用 Python 模块。
 show_languages: true
 ---
 
-Python 生态系统中有大量有用的库，你不需要在 Mojo 中重写它们。相反，你可以直接导入 Python 包并从 Mojo 调用 Python API。Python 代码在标准的 Python 解释器（CPython）中运行，因此你现有的 Python 代码不需要做任何修改。
+Python 生态系统中有大量有用的库，因此你不需要在 Mojo 中重写它们。相反，你可以直接导入 Python 包并从 Mojo 调用 Python API。Python 代码在标准的 Python 解释器（CPython）中运行，因此你现有的 Python 代码不需要做任何修改。
 
 ## 指定 Python 版本
 
-Mojo 不包含 CPython 解释器——它使用你环境默认 Python 版本提供的 CPython 解释器。因此，请确保你了解 Mojo 代码将在每个运行环境中使用的 Python 版本。
+Mojo 不包含 CPython 解释器——它使用你环境默认 Python 版本所提供的 CPython 解释器。因此，请确保你了解 Mojo 代码将在每个运行环境中使用的 Python 版本。
 
-为了确保获得一致的结果，我们建议你[使用 Pixi](/pixi) 来管理包依赖和虚拟环境。在 Pixi 项目中，你可以这样指定 Python 版本：
+为了确保获得一致的结果，我们建议你[使用 Pixi](https://pixi.prefix.dev/latest/installation/) 来管理你的包依赖和虚拟环境。在 Pixi 项目中，你可以这样指定 Python 版本：
 
 ```sh
 pixi add "python==3.11"
 ```
 
-现在，即使你的操作系统默认 Python 版本是其他版本，你的 Pixi 项目（以及其中的 Mojo 代码）始终使用 Python 3.11。
+现在，即使你的操作系统默认 Python 版本是其他版本，你的 Pixi 项目（以及其中的 Mojo 代码）也始终使用 Python 3.11。
 
 ```sh
 pixi run python --version
@@ -37,18 +37,12 @@ Python 3.11.0
 from std.python import Python
 
 def main() raises:
-    # 这等价于 Python 的 `import numpy as np`
-    np = Python.import_module("numpy")
+    # This is equivalent to Python's `import numpy as np`
+    var np = Python.import_module("numpy")
 
-    # 现在可以像在 Python 中一样使用 numpy
-    array = np.array(Python.list(1, 2, 3))
-    print(array)
-```
-
-运行此程序产生以下输出：
-
-```output
-[1 2 3]
+    # Now use numpy as if writing in Python
+    var array = np.array(Python.list(1, 2, 3))
+    print(array)  # [1 2 3]
 ```
 
 假设你的环境中已安装 NumPy 包，这会导入 NumPy，你可以使用它的任何功能。
@@ -59,15 +53,11 @@ def main() raises:
 from std.python import Python
 
 def main() raises:
-    np = Python.import_module("numpy")
-    array = np.array(Python.list(1, 2, 3))
+    var np = Python.import_module("numpy")
+    var array = np.array(Python.list(1, 2, 3))
 
-    builtins = Python.import_module("builtins")
-    print(builtins.type(array))
-```
-
-```output
-<class 'numpy.ndarray'>
+    var builtins = Python.import_module("builtins")
+    print(builtins.type(array))  # <class 'numpy.ndarray'>
 ```
 
 需要注意的几点：
@@ -78,19 +68,19 @@ def main() raises:
 
 - Mojo 尚不支持顶层代码，因此 `import_module()` 调用必须在另一个方法内部。这意味着你可能需要多次导入模块或传递模块的引用。这与 Python 的工作方式相同：多次导入模块不会多次运行初始化逻辑，因此你不会付出任何性能代价。
 
-- `import_module()` 可能会抛出异常。在 Python 代码中抛出异常比在 Mojo 标准库中[出于性能原因限制其使用](/docs/roadmap#the-standard-library-has-limited-exceptions-use)要常见得多。
+- `import_module()` 可能会抛出异常。在 Python 代码中抛出异常比在 Mojo 标准库中要常见得多，后者[出于性能原因限制了异常的使用](/docs/roadmap#the-standard-library-has-limited-exceptions-use)。
 
 - 我们建议使用包管理器（如 pixi、uv 或 conda）来管理你的环境。有关使用 pixi 设置 Mojo 项目的说明，请参阅 Mojo 入门教程中的[创建 Mojo 项目](/docs/manual/get-started/#1-create-a-mojo-project)。
 
 :::caution
 
-[`mojo build`](/docs/cli/build/) 不会包含你的 Mojo 项目使用的 Python 包。相反，Mojo 在运行时加载 Python 解释器和 Python 包，因此它们必须在你运行 Mojo 程序的环境中提供（例如在你构建可执行文件的 pixi 环境中）。
+[`mojo build`](/docs/cli/build/) 不会包含你的 Mojo 项目所使用的 Python 包。相反，Mojo 在运行时加载 Python 解释器和 Python 包，因此它们必须在你运行 Mojo 程序的环境中提供（例如在你构建可执行文件的 pixi 环境中）。
 
 :::
 
 ### 导入本地 Python 模块
 
-如果你有一些本地 Python 代码想在 Mojo 中使用，只需将目录添加到 Python 路径中，然后导入模块即可。
+如果你有一些本地 Python 代码想在 Mojo 中使用，只需将该目录添加到 Python 路径中，然后导入模块即可。
 
 例如，假设你有一个名为 `mypython.py` 的 Python 文件：
 
@@ -98,7 +88,7 @@ def main() raises:
 import numpy as np
 
 def gen_random_values(size, base):
-    # 生成一个 size x size 的随机数数组，值在 base 和 base+1 之间
+    # generate a size x size array of random numbers between base and base+1
     random_array = np.random.rand(size, size)
     return random_array + base
 ```
@@ -110,9 +100,9 @@ from std.python import Python
 
 def main() raises:
     Python.add_to_path("path/to/module")
-    mypython = Python.import_module("mypython")
+    var mypython = Python.import_module("mypython")
 
-    values = mypython.gen_random_values(2, 3)
+    var values = mypython.gen_random_values(2, 3)
     print(values)
 ```
 

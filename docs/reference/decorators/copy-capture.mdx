@@ -1,94 +1,28 @@
 ---
-title: '@copy_capture 装饰器'
-sidebar_label: '@copy_capture'
+title: '@__copy_capture'
+sidebar_label: '@__copy_capture'
 sidebar_position: 5
-description: >
-  @copy_capture 装饰器参考。控制闭包如何捕获外部变量。
+description: 按拷贝方式捕获寄存器可传递类型的值（已弃用）。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+:::caution 已弃用
+`@__copy_capture` 装饰器已弃用，并将在未来版本中移除。请改用当前的[闭包](/docs/manual/functions/closures/)语法配合捕获列表。
+:::
 
-`@copy_capture` 装饰器控制闭包如何捕获外部变量。默认情况下，闭包按引用捕获变量。使用 `@copy_capture` 可以按值捕获。
-
-## 语法
-
-```mojo
-@copy_capture
-def closure(...):
-    ...
-```
-
-## 用法
-
-### 默认行为（按引用捕获）
+你可以在旧版闭包上添加 `@__copy_capture` 装饰器，以按拷贝方式捕获寄存器可传递的值。此装饰器使嵌套函数在闭包对象形成时将指定变量的值复制到闭包对象中，而不是按引用捕获该变量。这允许你将闭包作为参数传递，但不保证生命周期会被正确尊重。
 
 ```mojo
-def make_counter() -> def() -> Int:
-    var count = 0
-    def increment() capturing -> Int:
-        count += 1  # 按引用捕获 count
-        return count
-    return increment
+  def foo(x: Int):
+      var z = x
+
+      @__copy_capture(z)
+      @__parameter
+      def formatter() -> Int:
+          return z
+      z = 2
+      print(formatter())
+
+  def main():
+      foo(5)
 ```
-
-### 按值捕获
-
-```mojo
-def make_adder(x: Int) -> def(Int) -> Int:
-    @copy_capture
-    def add(y: Int) -> Int:
-        return x + y  # 按值捕获 x
-    return add
-
-def main():
-    var add5 = make_adder(5)
-    print(add5(10))  # 15
-```
-
-## 示例
-
-### 捕获当前值
-
-```mojo
-def create_closures() -> List[def() -> Int]:
-    var closures: List[def() -> Int] = []
-    for i in range(3):
-        var value = i
-        @copy_capture
-        def get_value() -> Int:
-            return value  # 捕获 value 的副本
-        closures.append(get_value)
-    return closures
-
-def main():
-    var closures = create_closures()
-    for closure in closures:
-        print(closure())  # 0, 1, 2
-```
-
-### 与按引用捕获对比
-
-```mojo
-def demo_capture():
-    var x = 10
-
-    # 按引用捕获
-    def by_ref() capturing -> Int:
-        return x
-
-    # 按值捕获
-    @copy_capture
-    def by_value() -> Int:
-        return x
-
-    x = 20
-
-    print(by_ref())   # 20（看到更新后的值）
-    print(by_value()) # 10（看到捕获时的值）
-```
-
-## 注意事项
-
-- 按值捕获需要变量是可复制的
-- 按值捕获会增加内存使用（存储副本）
-- 选择捕获方式取决于具体需求

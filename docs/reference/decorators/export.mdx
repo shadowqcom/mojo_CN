@@ -1,74 +1,52 @@
 ---
-title: '@export 装饰器'
+title: '@export'
 sidebar_label: '@export'
 sidebar_position: 9
-description: >
-  @export 装饰器参考。导出函数为公共符号。
+description: 标记函数以供导出。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
-
-`@export` 装饰器将函数导出为公共符号。导出的函数可以从其他模块或共享库调用。
-
-## 语法
+你可以在任何函数上添加 `@export` 装饰器，使其作为导出符号在编译产物中公开可用，从而允许从外部代码调用。`@export` 函数必须使用显式的 [`abi`](/docs/reference/function-declarations#abi-c) 效果声明其调用约定。
 
 ```mojo
+# This function is internal - not an exported symbol
+def internal_helper():
+    print("Internal")
+
+# This function is exported under its own name, "my_exported_function"
 @export
-def function_name(...):
-    ...
+def my_exported_function() abi("Mojo"):
+    print("Exported!")
+    internal_helper()
+
+# This function is exported under the name "my_renamed_function"
+@export("my_renamed_function")
+def my_other_function() abi("Mojo"):
+    print("Another function.")
 ```
 
-## 用法
+`@export` 装饰器可以接受一个可选参数：
+
+- 用于导出函数的替代名称，如上所示。
+
+使用名称指定符和 `abi("C")` 效果来导出符合 C 调用约定的函数。你还必须提供一个作为有效 C 标识符的函数名。例如：
 
 ```mojo
-@export
-def public_api():
+@export("my_func")
+def my_function(
+    name: StaticString,
+    ptr: OpaquePointer[MutUntrackedOrigin],
+) abi("C") -> None:
     pass
 ```
 
-## 示例
+:::note 在共享库中初始化运行时
+如果你将导出的函数编译到共享库中
+（`mojo build --emit shared-lib`）并从非 Mojo 宿主程序（例如 C 或 C++）调用它，则没有 Mojo `main()` 函数运行，因此 Mojo 运行时永远不会被初始化。在调用任何其他标准库函数之前，请调用
+[`initialize_runtime()`](/docs/std/runtime/initialize_runtime/)
+。有关详细信息，请参阅
+[从 C 或 C++ 调用 Mojo 共享库](/docs/tools/compilation/#call-a-mojo-shared-library-from-c-or-c)。
+:::
 
-### 导出共享库函数
-
-```mojo
-# mylib.mojo
-@export
-def add(a: Int, b: Int) -> Int:
-    return a + b
-
-@export
-def multiply(a: Int, b: Int) -> Int:
-    return a * b
-```
-
-### 与 C ABI 兼容
-
-```mojo
-@export
-def process_data(data: Pointer[Int], size: Int) -> Int:
-    var sum = 0
-    for i in range(size):
-        sum += data[i]
-    return sum
-```
-
-## 适用场景
-
-- 创建共享库
-- FFI（外部函数接口）
-- 插件系统
-- C 互操作
-
-## 与 `pub` 对比
-
-| 特性         | `pub`           | `@export`         |
-|--------------|-----------------|-------------------|
-| 可见性       | 模块内公开      | 二进制符号公开    |
-| 链接         | 可能被优化      | 保证导出          |
-| 用途         | Mojo 内部使用   | 外部调用          |
-
-## 注意事项
-
-- 导出的函数使用 C 调用约定
-- 函数签名应与 C 兼容
-- 避免导出内部实现细节
+要从 Python 调用 Mojo，请使用模块构建器注册函数。有关详细信息，请参阅
+[从 Python 调用 Mojo](/docs/manual/python/mojo-from-python/)。

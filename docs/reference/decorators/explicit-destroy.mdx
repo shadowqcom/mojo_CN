@@ -1,75 +1,90 @@
 ---
-title: '@explicit_destroy 装饰器'
-sidebar_label: '@explicit_destroy'
+title: '显式销毁'
+sidebar_label: '显式销毁'
 sidebar_position: 8
 description: >
-  @explicit_destroy 装饰器参考。要求显式销毁结构体实例。
+  阻止通过 `__deinit__()` 方法自动销毁，并要求通过命名的析构方法进行显式清理。
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+:::caution
+本页面此前介绍的是 `@explicit_destroy` 装饰器，该装饰器已不再是类型退出隐式销毁的方式。
+:::
 
-`@explicit_destroy` 装饰器要求结构体实例必须显式销毁。这用于需要精确控制资源释放时机的类型。
-
-## 语法
-
-```mojo
-@explicit_destroy
-struct TypeName:
-    ...
-```
-
-## 用法
+显式销毁阻止 ASAP 销毁在值最后一次使用时将其销毁。要启用显式销毁，请让类型遵循一个不可满足的 `Deinitable` 约束：
 
 ```mojo
-@explicit_destroy
-struct Resource:
-    var handle: Int
-
-    def __init__(out self, handle: Int):
-        self.handle = handle
-
-    def __del__(deinit self):
-        if self.handle != 0:
-            _release(self.handle)
+struct Example(Deinitable where False):
+    def cleanup(deinit self):
+        pass
 ```
 
-## 示例
+这会禁用通过 `__deinit__()` 方法进行的自动销毁，并要求通过命名的析构方法进行显式清理。使用此模式时，你必须调用一个命名的析构方法来消费该值。如果不调用，编译器会发出错误。
+
+当清理必须被刻意执行、可能失败并需要错误处理，或者你的类型提供多种有效方式来结束一个值的生命周期（例如保存到文件并关闭文件描述符，或者不保存直接退出）时，请使用显式销毁。
+
+## 隐式销毁与显式销毁
+
+Mojo 支持两种销毁模型。大多数类型依赖编译器管理的生命周期分析，而一些类型则选择显式控制以获得更强的清理保证。
+
+_隐式销毁_（默认）：当值不再有进一步使用时，编译器会自动调用 `__deinit__()`。清理由 Mojo 的生命周期分析触发，无需手动干预。你可以在你的类型中重写 `__deinit__()`，但编译器不会验证清理是否被有意执行。
+
+_显式销毁_：你有意调用命名的析构方法（例如 `cleanup()` 或 `save_and_close()`）。该遵循会禁用自动销毁，并由编译器强制执行显式消费。如果值离开作用域前未调用析构方法，将导致编译时错误。
+
+大多数类型使用隐式销毁。当清理可能失败、需要错误处理，或者从对值生命周期结束方式的刻意控制中受益时，显式销毁增加了一层安全性。
+
+## 基本用法
+
+要启用显式、编译器强制执行的销毁，请使用 `Deinitable where False` 标记类型。
+
+提供使用 `deinit self` 参数约定的命名析构方法：
 
 ```mojo
-@explicit_destroy
-struct FileHandle:
-    var fd: Int
+struct FileBuffer(Deinitable where False):
+    var path: String
+    var data: String
 
-    def __init__(out self, path: String) raises:
-        self.fd = _open(path)
+    def __init__(out self, path: String):
+        self.path = path
+        self.data = ""
 
-    def __del__(deinit self):
-        if self.fd >= 0:
-            _close(self.fd)
+    def write(mut self, content: String):
+        self.data += content
 
-def main():
-    var file = FileHandle("data.txt")
-    # 使用文件...
-    __del__(file)  # 显式销毁
+    def save_and_close(deinit self) raises:
+        write_to_disk(self.path, self.data)
 ```
 
-## 与自动销毁对比
+使用 `Deinitable where False` 声明类型要求你在作用域结束前添加对类型特定析构方法的刻意调用，或者将该值移出作用域以便稍后消费：
 
-| 特性         | 自动销毁           | `@explicit_destroy` |
-|--------------|--------------------|--------------------|
-| 销毁时机     | 作用域结束         | 显式调用           |
-| 内存安全     | 自动保证           | 需要手动管理       |
-| 资源控制     | 编译器决定         | 程序员控制         |
+```mojo
+def write_log(path: String, message: String) raises:
+    var buffer = FileBuffer(path)
+    buffer.write(message)
+    buffer^.save_and_close()  # Required before `buffer` leaves scope
+```
 
-## 适用场景
+如果省略此调用，编译器会发出错误。
 
-- 需要精确控制资源释放时机
-- 资源释放顺序重要
-- 与 C 库交互
-- 性能关键代码
+## 自定义错误信息
 
-## 注意事项
+为了改善显式销毁的编译器诊断，请在 `where` 约束中包含自定义错误信息：
 
-- 忘记显式销毁会导致资源泄漏
-- 必须定义 `__del__` 方法
-- 不适用于平凡类型
+```mojo
+struct CustomFileHandle(
+    Deinitable where(False, "Must call save_and_close() or discard()")
+):
+    # ... other implementation details ...
+
+    def save_and_close(deinit self) raises:
+        write_to_disk(self.path, self.data) # Store data, then end
+        self.close_descriptor()
+
+    def discard(deinit self):
+        pass  # Abandon without writing
+```
+
+## 相关内容
+
+- [值的死亡](/docs/manual/lifecycle/death/) - 关于值销毁和生命周期管理的完整介绍
+- [`AnyType`](/docs/std/builtin/anytype/AnyType/) - 所有类型的基础 trait
+- [`Deinitable`](/docs/std/builtin/anytype/Deinitable/) - 用于可自动析构类型的 trait

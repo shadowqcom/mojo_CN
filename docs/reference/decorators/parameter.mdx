@@ -1,86 +1,42 @@
 ---
-title: '@parameter 装饰器'
-sidebar_label: '@parameter'
+title: '@__parameter'
+sidebar_label: '@__parameter'
 sidebar_position: 13
-description: >
-  @parameter 装饰器参考。标记函数为参数函数。
+description: 声明一个旧版闭包（已弃用）。
+codeTitle: true
 ---
 
-{/*  VERIFIED: TokenKinds.def, ParserStmts.cpp  */}
+:::caution 已弃用
+`@__parameter` 装饰器已弃用，并将在未来版本中移除。请改用当前的[闭包](/docs/manual/functions/closures/)语法。先前的拼写 `@parameter` 仍被接受，但会发出弃用警告。
+:::
 
-`@parameter` 装饰器标记函数为参数函数。参数函数在编译时求值，用于编译时计算。
-
-## 语法
-
-```mojo
-@parameter
-def function_name(...):
-    ...
-```
-
-## 用法
+你可以在嵌套函数上添加 `@__parameter` 来创建一个旧版的捕获式闭包。这意味着你可以创建一个闭包函数，该函数捕获来自外部作用域的值（无论它们是变量还是参数），然后将该闭包作为参数使用。例如：
 
 ```mojo
-@parameter
-def factorial(n: Int) -> Int:
-    if n <= 1:
-        return 1
-    return n * factorial(n - 1)
+def use_closure[func: fn(Int) capturing [_] -> Int](num: Int) -> Int:
+    return func(num)
 
-def main():
-    comptime result = factorial(5)  # 编译时计算
-    print(result)  # 120
+def create_closure():
+    var x = 1
+
+    @__parameter
+    def add(i: Int) -> Int:
+        return x + i
+
+    var y = use_closure[add](2)
+    print(y)
+
+create_closure()
 ```
 
-## 示例
+```output
+3
+```
 
-### 编译时常量
+请注意函数类型中的 `[_]`：
 
 ```mojo
-@parameter
-def compute_size() -> Int:
-    return 1024 * 1024
-
-def main():
-    var buffer: Array[UInt8, compute_size()]
+def use_closure[func: fn(Int) capturing [_] -> Int](num: Int) -> Int:
 ```
 
-### 类型计算
-
-```mojo
-@parameter
-def select_type[use_float: Bool]() -> type:
-    if use_float:
-        return Float64
-    return Int64
-
-def main():
-    var x: select_type[True]() = 3.14
-```
-
-### 编译时断言
-
-```mojo
-@parameter
-def static_assert(condition: Bool, message: StringLiteral):
-    if not condition:
-        _compile_error(message)
-
-def main():
-    static_assert(size_of[Int]() == 8, "Expected 64-bit Int")
-```
-
-## 与运行时函数对比
-
-| 特性         | 参数函数         | 运行时函数       |
-|--------------|------------------|------------------|
-| 求值时机     | 编译时           | 运行时           |
-| 参数要求     | 编译时已知       | 任意             |
-| 性能         | 无运行时开销     | 有调用开销       |
-| 用途         | 编译时计算       | 运行时逻辑       |
-
-## 注意事项
-
-- 参数函数的参数必须是编译时已知的
-- 不能有副作用
-- 递归深度受编译器限制
+此 origin 指定符表示旧版闭包所捕获值的 origin 集合。这允许编译器正确延长这些值的生命周期。有关生命周期和 origin 的更多信息，请参阅[生命周期、origin 和引用](/docs/manual/values/lifetimes/)。

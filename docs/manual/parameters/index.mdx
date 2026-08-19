@@ -1,11 +1,14 @@
 ---
 title: "参数化"
-description: 创建和使用参数化结构体和函数。
+description: 创建和使用参数化结构体与函数。
 ---
 
-许多编程语言都提供编写泛型或多态代码的系统，这使您可以编写一次代码，并在编译时生成高效、专门的代码。
+{/* markdownlint-disable MD033 MD045 */}
+{/* FIXME: Add alt text to images */}
 
-Mojo 的编译时参数系统允许您定义可重用的代码。参数是结构体或函数的编译时输入。参数出现在结构体或函数名之后的方括号中。参数可以接受普通值，如 `Int` 或 `String`：
+许多编程语言都提供了编写参数化或多态代码的系统，这些系统让你只需编写一次代码，就能在编译时生成高效、专门的代码。
+
+Mojo 的编译时参数系统让你定义可重用的代码。参数（parameter）是结构体或函数的编译时输入。参数出现在结构体或函数名之后的方括号中。参数可以接受普通值，如 `Int` 或 `String`：
 
 ```mojo
 def multiplier[factor: Int](x: Int) -> Int:
@@ -14,32 +17,32 @@ def multiplier[factor: Int](x: Int) -> Int:
 
 def main():
     comptime times_ten = multiplier[10]
-    x10 = times_ten(3)
+    var x10 = times_ten(3)
 ```
 
-参数可以接受类型和值。当参数接受类型时，结果是类型泛型代码。当它接受值时，结果是值泛型代码。
+参数在编译时既可接受类型也可接受值。当参数接受类型时，结果是类型参数化代码；当参数接受值时，结果是值参数化代码。
 
 ```mojo no-test
 struct MyList[T: AnyType]:
-    # ... 类型泛型
+    # ... 类型参数化
 
 struct FixedBuffer[size: Int]:
-    # ... 值泛型
+    # ... 值参数化
 ```
 
 Mojo 的参数类似于 C++ 模板参数或 Rust 泛型参数。
 
-在 Mojo 中，"参数"始终意味着编译时值，而"参数"始终意味着运行时值。
+在 Mojo 中，"parameter"（参数）始终指编译时值，"argument"（参数）始终指运行时值。
 
-在大多数其他语言中，参数是声明的一部分，参数是您在调用点传递的值。Mojo 更改了"参数"的含义，专门指编译时值。
+在大多数其他语言中，parameter 是声明的一部分，而 argument 是你在调用点传递的值。Mojo 改变了 "parameter" 的含义，使其专门指编译时值。
 
-Mojo 在语法中使这种区别可见：使用 `[]` 表示参数，使用 `()` 表示参数。
+Mojo 在语法上让这种区别清晰可见：使用 `[]` 表示参数（parameter），使用 `()` 表示参数（argument）。
 
-除了参数化结构体和函数外，您还可以定义参数化的 `comptime` 值。
+除了对结构体和函数进行参数化外，你还可以定义参数化的 `comptime` 值。
 
 ## 参数化函数
 
-要定义*参数化函数*，在参数列表之前添加参数。每个参数的格式与参数完全相同：参数名，后跟冒号和类型。在以下示例中，函数有一个参数，`count`，类型为 `Int`。
+要定义*参数化函数*，在参数列表之前用方括号添加参数。每个参数的格式与参数完全相同：参数名，后跟冒号和类型。在以下示例中，函数有一个参数 `count`，类型为 `Int`。
 
 ```mojo
 def repeat[count: Int](msg: String):
@@ -47,10 +50,11 @@ def repeat[count: Int](msg: String):
         print(msg)
 ```
 
-这里显示的 [`comptime`](/docs/manual/metaprogramming/comptime-evaluation/#comptime-for)
-关键字导致 `for` 循环在编译时完全展开。`comptime for` 要求循环限制在编译时已知。由于 `count` 是参数，`range(count)` 可以在编译时计算。
+这里展示的
+[`comptime`](/docs/manual/metaprogramming/comptime-evaluation/#comptime-for)
+关键字使 `for` 循环在编译时完全展开。`comptime for` 要求循环边界在编译时已知。由于 `count` 是参数，`range(count)` 可以在编译时计算。
 
-调用参数化函数时，您为参数提供值，就像函数参数一样：
+调用参数化函数时，你为参数提供值，就像函数参数一样：
 
 ```mojo
 repeat[3]("Hello")
@@ -62,7 +66,7 @@ Hello
 Hello
 ```
 
-编译器在编译期间解析参数值，并为每个唯一的参数值创建 `repeat[]()` 函数的具体版本。在解析参数值并展开循环之后，`repeat[3]()` 函数大致相当于以下内容：
+编译器在编译期间解析参数值，并为每个唯一的参数值创建一个 `repeat[]()` 函数的具体版本。在解析参数值并展开循环之后，`repeat[3]()` 函数大致等价于：
 
 ```mojo no-test
 def repeat_3(msg: String):
@@ -73,7 +77,7 @@ def repeat_3(msg: String):
 
 :::note
 
-这不代表编译器实际生成的代码。当参数解析时，Mojo 代码已经转换为 [MLIR](https://mlir.llvm.org/) 中的中间表示。
+这并不代表编译器实际生成的代码。当参数被解析时，Mojo 代码已经被转换为 [MLIR](https://mlir.llvm.org/) 中的中间表示。
 
 :::
 
@@ -81,144 +85,182 @@ def repeat_3(msg: String):
 
 ### 参数上的重载
 
-函数和方法可以在其参数签名上重载。有关重载解析的信息，请参阅
+函数和方法可以在其参数签名上重载。关于重载解析的信息，请参阅
 [重载函数](/docs/manual/functions/#overloaded-functions)。
 
 ## 参数一览
 
-函数或结构体的参数出现在函数或结构体名之后的方括号中。参数总是需要类型注释。
+函数或结构体的参数出现在函数或结构体名之后的方括号中。参数总是需要类型注解。
 
-当您查看函数或结构体签名时，您可能会在参数列表中看到一些特殊字符，如 `/` 和 `*`。这里有一个示例：
+当你查看函数或结构体签名时，可能会在参数列表中看到一些特殊字符，例如 `/` 和 `*`。下面是一个示例：
 
 ```mojo
 def my_sort[
-    # 推断-仅参数
+    # infer-only parameters
     dtype: DType,
-    width: Int,
+    width: SIMDLength,
     //,
-    # 仅位置参数
+    # positional-only parameter
     values: SIMD[dtype, width],
     /,
-    # 位置或关键字参数
+    # positional-or-keyword parameter
     compare: def(Scalar[dtype], Scalar[dtype]) thin -> Int,
     *,
-    # 仅关键字参数
+    # keyword-only parameter
     reverse: Bool = False,
 ]() -> SIMD[dtype, width]:
 ```
 
-在这里，`compare` 是函数类型的参数。由于比较器是非捕获函数值，函数类型明确使用 `thin`。
+这里，`compare` 是函数类型的参数。由于比较器是一个非捕获的函数值，函数类型显式使用了 `thin`。
 
-以下是参数列表中特殊字符的快速概述：
+下面是参数列表中特殊字符的快速概述：
 
-- 双斜杠 (`//`)：在双斜杠之前声明的参数是[推断-仅参数](#infer-only-parameters)。
-- 斜杠 (`/`)：在斜杠之前声明的参数是仅位置参数。仅位置参数和仅关键字参数遵循[仅位置参数和仅关键字参数](/docs/manual/functions#positional-only-and-keyword-only-arguments)的相同规则。
-- 以星号开头的参数名，如 `*Types` 标识一个[可变参数](#variadic-parameters)（在上面的示例中未显示）。可变参数之后的任何参数都是仅关键字参数。
-- 星号 (`*`)：在没有可变参数的参数列表中，单独的星号表示后面的参数是仅关键字参数。
-- 等号 (`=`) 为[可选参数](#optional-parameters-and-keyword-parameters)引入默认值。
+- 双斜杠（`//`）：在双斜杠之前声明的参数是
+  [推断型参数（infer-only parameters）](#infer-only-parameters)。
+- 斜杠（`/`）：在斜杠之前声明的参数是仅位置参数（positional-only
+  parameter）。仅位置参数和仅关键字参数遵循与
+  [仅位置参数和仅关键字参数](/docs/manual/functions#positional-only-and-keyword-only-arguments)
+  相同的规则。
+- 以星号为前缀的参数名，例如 `*Types`，标识一个
+  [可变参数（variadic parameter）](#variadic-parameters)（上面的示例中未展示）。
+  可变参数之后的任何参数都是仅关键字参数。
+- 星号（`*`）：在没有可变参数的参数列表中，单独的星号表示后面的参数是仅关键字参数。
+- 等号（`=`）为
+  [可选参数（optional parameter）](#optional-parameters-and-keyword-parameters)
+  引入一个默认值。
 
-## 参数和泛型
+## 参数化声明
 
-泛型让函数可以跨多种类型工作，并让容器可以存储多种类型的值。例如，
-[`List`](/docs/std/collections/list/List/) 接受类型参数，因此 `List[Int]` 保存整数，`List[String]` 保存字符串。
+参数化让函数可以跨多种类型工作，让容器可以存储多种类型的值。例如，
+[`List`](/docs/std/collections/list/List/) 接受一个类型参数，所以
+`List[Int]` 存储整数，`List[String]` 存储字符串。
 
-在 Mojo 中，泛型使用编译时参数。在类型上参数化的函数是类型泛型。在值上参数化的函数是值泛型。两者都使用 `[]`。
+在 Mojo 中，参数化使用编译时元素。在类型上参数化的函数是类型参数化的。在值上参数化的函数是值参数化的。两者都使用 `[]`。
 
-此函数同时使用类型参数和值参数：
+下面这个函数同时使用了类型参数和值参数：
 
 ```mojo
 def repeat[
-    MsgType: Writable, // 推断-仅
+    MsgType: Writable, // infer-only
     count: Int
 ](msg: MsgType):
     comptime for _ in range(count):
         print(msg)
 
 def main():
-    repeat[2](42)  # 打印两行 42
+    repeat[2](42)  # prints 42 on two lines
 ```
 
-`MsgType` 是类型泛型。它接受任何 `Writable` 类型。`count` 是值泛型。它接受编译时整数。在一起，它们让您可以编写一个跨类型工作的函数，并为不同的重复计数专门化。
+`MsgType` 是类型参数化的。它接受任何 `Writable` 类型。`count` 是值参数化的。它接受一个编译时整数。它们一起让你编写一个跨类型工作、并针对不同重复次数进行特化的函数。
 
-`MsgType` 使用 `//` 将其标记为[推断-仅参数](#infer-only-parameters)。编译器从 `msg` 推断类型，因此您只需要显式传递 `count`。
+`MsgType` 使用 `//` 将其标记为
+[推断型参数](#infer-only-parameters)。编译器从 `msg` 推断类型，因此你只需显式传递 `count`。
 
-有关泛型的更多信息——特性边界、条件实现和值泛型——请参阅[泛型](/docs/manual/generics/)。
+关于参数化声明的更多信息，包括 trait 一致性、条件一致性和值参数化，请参阅
+[参数化声明](/docs/manual/generics/)。
 
 ## 参数化结构体
 
-您还可以向结构体添加参数。您可以使用参数化结构体来构建泛型集合。例如，一个泛型数组类型可能包含如下代码：
+你也可以为结构体添加参数。你可以使用参数化结构体来构建参数化集合。例如，一个参数化数组类型可能包含如下代码：
 
 ```mojo
-struct GenericArray[ElementType: Copyable & ImplicitlyDestructible]:
-    var data: UnsafePointer[Self.ElementType, MutExternalOrigin]
-    var size: Int
+from std.memory.alloc import alloc, dealloc, ThinAllocation, Layout
 
-    def __init__(out self, var *elements: Self.ElementType):
-        self.size = len(elements)
-        self.data = alloc[Self.ElementType](self.size)
-        for i in range(self.size):
-            (self.data + i).init_pointee_move(elements[i].copy())
+struct ParameterizedArray[T: Copyable & Deinitable](
+    Writable where conforms_to(T, Writable)
+):
+    var _data: ThinAllocation[Self.T]
+    var _size: Int
 
-    def __del__(deinit self):
-        for i in range(self.size):
-            (self.data + i).destroy_pointee()
-        self.data.free()
+    def __init__(out self, var *elements: Self.T):
+        self._size = len(elements)
+        self._data = alloc[Self.T]({count = self._size}).into_thin()
+        var ptr = self._data.unsafe_ptr()
+        for i in range(self._size):
+            ptr.unsafe_offset(i).unsafe_write(elements[i].copy())
 
-    def __getitem__(self, i: Int) raises -> ref[self] Self.ElementType:
-        if i < self.size:
-            return self.data[i]
+    def __init__(out self, *, count: Int, value: Self.T):
+        self._size = count
+        self._data = alloc[Self.T]({count = count}).into_thin()
+        var ptr = self._data.unsafe_ptr()
+        for i in range(self._size):
+            ptr.unsafe_offset(i).unsafe_write(copy=value)
+
+    def __deinit__(deinit self):
+        var ptr = self._data.unsafe_ptr()
+        for i in range(self._size):
+            ptr.unsafe_offset(i).unsafe_deinit_pointee()
+        dealloc(self._data^.unsafe_with_layout({count = self._size}))
+
+    def __getitem__(self, i: Int) raises -> ref[self] Self.T:
+        if i < self._size:
+            return self._data.unsafe_ptr().unsafe_origin_cast[
+                origin_of(self)
+            ]()[unsafe_offset=i]
         else:
             raise Error("Out of bounds")
+
+    def write_to(
+        self, mut writer: Some[Writer]
+    ) where conforms_to(Self.T, Writable):
+        writer.write("[")
+        var ptr = self._data.unsafe_ptr()
+        for i in range(self._size):
+            writer.write(ptr[unsafe_offset=i])
+            if i < self._size - 1:
+                writer.write(", ")
+        writer.write("]")
 ```
 
-此结构体有一个参数，`ElementType`，它是您想在数组中存储的数据类型的占位符，有时称为*类型参数*。`ElementType` 符合
-[`Copyable`](/docs/std/builtin/value/Copyable/) 特性，因此也符合 [`Movable`](/docs/std/builtin/value/Movable/) 特性。
+该结构体有一个参数 `T`，它是你想在数组中存储的数据类型的占位符，有时称为*类型参数*。`T` 遵循
+[`Copyable`](/docs/std/builtin/value/Copyable/) trait，因此也遵循
+[`Movable`](/docs/std/builtin/value/Movable/) trait。
 
-与参数化函数一样，使用参数化结构体时需要传入参数值。在这种情况下，当您创建 `GenericArray` 的实例时，您需要指定要存储的类型，如 `Int`，或 `Float64`。（这有点令人困惑，因为在这种情况下您传递的*参数值*是一个*类型*。这没关系：Mojo 类型是有效的编译时值。）
+与参数化函数一样，使用参数化结构体时需要传入参数值。在这种情况下，当你创建一个 `ParameterizedArray` 的实例时，你需要指定要存储的类型，例如
+`Int` 或 `Float64`。（这有点令人困惑，因为在这种情况下你传入的*参数值*是一个*类型*。这是可以的：Mojo 类型是一个有效的编译时值。）
 
-您会看到 `Self.ElementType` 在整个结构体中使用，通常在您看到类型名称的地方。例如，作为构造函数中 `elements` 的形式类型，以及 `__getitem__()` 方法的返回类型。
+你会看到 `Self.T` 在整个结构体中使用，通常你会在那里看到类型名。例如，作为初始化器中 `elements` 的形式类型，以及 `__getitem__()` 方法的返回类型。
 
-以下是使用 `GenericArray` 的示例：
+下面是使用 `ParameterizedArray` 的示例：
 
 ```mojo
-var array = GenericArray(1, 2, 3)
-for i in range(array.size):
-    end = ", " if i < array.size - 1 else "\n"
-    print(array[i], end=end)
+var array = ParameterizedArray(1, 2, 3)
+print(array)
 ```
 
 ```output
-1, 2, 3
+[1, 2, 3]
 ```
 
-参数化结构体可以使用 `Self` 类型来表示结构体的具体实例（即指定了其所有参数）。例如，您可以为 `GenericArray` 添加一个静态工厂方法，具有以下签名：
+参数化结构体可以使用 `Self` 类型来表示结构体的一个具体实例（即其所有参数都被指定）。例如，你可以为 `ParameterizedArray` 添加一个静态工厂方法，签名如下：
 
 ```mojo no-test
-struct GenericArray[ElementType: Copyable & ImplicitlyDestructible]:
+struct ParameterizedArray[ElementType: Copyable & Deinitable]:
     ...
 
     @staticmethod
-    def splat(count: Int, value: Self.ElementType) -> Self:
-        # 创建一个包含给定值的 count 个实例的新数组
+    def splat(count: Int, value: Self.T) -> Self:
+        # Create a new array with count instances of the given value
+        return Self(count=count, value=value)
 ```
 
-在这里，`Self` 相当于编写 `GenericArray[Self.ElementType]`。也就是说，您可以这样调用 `splat()` 方法：
+这里，`Self` 等价于写 `ParameterizedArray[Self.ElementType]`。也就是说，你可以这样调用 `splat()` 方法：
 
 ```mojo
-var array = GenericArray[Float64].splat(8, 0)
+var float_array = ParameterizedArray[Float64].splat(8, 0)
 ```
 
-该方法返回 `GenericArray[Float64]` 的实例。
+该方法返回一个 `ParameterizedArray[Float64]` 的实例。
 
 ### 引用结构体参数
 
-如前一节所示，您使用点语法引用结构体参数，就像结构体方法或字段一样（例如，`Self.ElementType`）。
+如前一节所示，你使用点语法引用结构体参数，就像引用结构体方法或字段一样（例如 `Self.T`）。
 
-此结构体参数访问在任何地方都有效，不仅是在结构体的方法内部。您可以将参数作为类型本身的属性访问：
+这种结构体参数访问在任何地方都有效，不仅限于结构体的方法内部。你可以将参数作为类型本身的属性访问：
 
 ```mojo
 def on_type():
-    print(SIMD[DType.float32, 2].size)  # 打印 2
+    print(SIMD[DType.float32, 2].length)  # prints 2
 ```
 
 或作为类型的*实例*的属性：
@@ -226,12 +268,12 @@ def on_type():
 ```mojo
 def on_instance():
     var x = SIMD[DType.int32, 2](4, 8)
-    print(x.dtype)  # 打印 int32
+    print(x.dtype)  # prints int32
 ```
 
 ### `comptime` 成员
 
-您还可以将 `comptime` 值定义为 `struct` 或 `trait` 声明的成员：
+你也可以将 `comptime` 值定义为 `struct` 或 `trait` 声明的成员：
 
 ```mojo
 struct Circle[radius: Float64]:
@@ -239,21 +281,24 @@ struct Circle[radius: Float64]:
     comptime circumference = 2 * Self.pi * Self.radius
 ```
 
-这些 `comptime` 成员有许多用途：
+这些 `comptime` 成员有多种用途：
 
-- 特定于类型的常量值。
-- 基于结构体参数计算的常量值。
-- 基于结构体参数的关联类型。
+- 特定于该类型的常量值。
+- 基于结构体参数计算得出的常量值。
+- 基于结构体参数的关联类型（associated type）。
 
-参数和 `comptime` 成员的区别在于，参数值由用户指定，而 `comptime` 成员表示常量值或从输入参数派生的值。
+参数和 `comptime` 成员的区别在于：参数值由用户指定，而 `comptime` 成员要么表示常量值，要么表示从输入参数派生的值。
 
-特性可以声明 `comptime` 成员，所有符合的结构体都必须定义它。
+必需值（required value）是一个没有初始化器的 `comptime` 成员。遵循类型必须为其提供一个值。当 trait 需要一个在不同遵循类型之间变化的编译时常量时，这非常有用。例如，一个 `Measurable` trait 可能需要一个 `unit` 字符串和一个 `always_positive` 布尔值来验证测量值。
 
-引用 `comptime` 成员的工作方式与引用结构体参数完全相同——您可以使用点语法引用成员（例如 `Self.IteratorType`）。
+常见的 trait 提供值包括常量（如种子）以及用于细化的 trait 组合。
+
+引用 `comptime` 成员与引用结构体参数一样。你可以使用点语法引用成员（例如
+`Self.IteratorType`）。
 
 #### `comptime` 成员作为枚举
 
-某些 Mojo 类型使用 `comptime` 成员来表示枚举。例如，以下代码定义了一个 `Sentiment` 类型，它为不同的情感值定义了 `comptime` 常量：
+一些 Mojo 类型使用 `comptime` 成员来表达枚举。例如，以下代码定义了一个 `Sentiment` 类型，它为不同的情感值定义了 `comptime` 常量：
 
 ```mojo
 @fieldwise_init
@@ -278,15 +323,15 @@ def is_happy(s: Sentiment):
         print("No. ☹️")
 ```
 
-此模式提供了类型安全的枚举。
+此模式提供了一个类型安全的枚举。
 
-[`DType`](/docs/std/builtin/dtype/DType/) 结构体使用此类 `comptime` 成员实现了简单的枚举。这允许客户端在参数表达式或运行时表达式中使用 `DType.float32` 等值。
+[`DType`](/docs/std/builtin/dtype/DType/) 结构体使用类似这样的 `comptime` 成员实现了一个简单的枚举。这允许客户端在参数表达式或运行时表达式中使用诸如 `DType.float32` 之类的值。
 
 #### `comptime` 成员作为关联类型
 
-关联类型是 `comptime` 成员的常见用例。例如，`List[T]` 结构体保存类型为 `T` 的值。列表的 `__iter__()` 方法返回一个返回类型为 `T` 的值的列表迭代器。`List` 使用 `comptime` 成员 `IteratorType` 来定义返回迭代器的类型。
+关联类型是 `comptime` 成员的一种常见用途。例如，一个 `List[T]` 结构体持有类型为 `T` 的值。该列表的 `__iter__()` 方法返回一个返回类型为 `T` 值的列表迭代器。`List` 使用 `comptime` 成员 `IteratorType` 来定义返回迭代器的类型。
 
-以下代码片段显示了 `List` 代码的一些简化版本，显示 `List` 及其关联的 `IteratorType`：
+下面的代码片段展示了 `List` 部分代码的简化版本，显示 `List` 及其关联的 `IteratorType`：
 
 ```mojo no-test
 @fieldwise_init
@@ -297,12 +342,12 @@ struct _ListIter[
     origin: Origin[mut],
 ](ImplicitlyCopyable, Iterable, Iterator):
 
-    comptime Element = Self.T  # Iterator 特性所需要求
+    comptime Element = Self.T  # Required by the Iterator trait
 
     var index: Int
     var src: Pointer[List[Self.Element], Self.origin]
 
-    # ... 实现已省略
+    # ... implementation omitted
 
 struct List[T: Copyable](
     Boolable, Copyable, Defaultable, Iterable, Sized
@@ -311,60 +356,61 @@ struct List[T: Copyable](
         iterable_mut: Bool, //, iterable_origin: Origin[iterable_mut]
     ]: Iterator = _ListIter[Self.T, iterable_origin]
 
-    # ... 代码已省略
+    # ... code omitted
 
     def __iter__(ref self) -> Self.IteratorType[origin_of(self)]:
         return {0, Pointer(to=self)}
 
-    # ... 代码已省略
+    # ... code omitted
 ```
 
-`IteratorType` 成员在起源上参数化，因此它可以表示可变和不可变迭代器。
+`IteratorType` 成员在 origin 上参数化，因此它可以表示可变和不可变两种迭代器。
 
 ### 结构体方法
 
-结构体的方法可以接受其自己的参数。例如，`SIMD.slice()` 方法接受一个 `size` 参数：
+结构体的方法可以接受自己的参数。例如，`SIMD.slice()` 方法接受一个 `size` 参数：
 
 ```mojo
 var m = SIMD[DType.int32, 4](1, 3, 5, 7)
 var n = m.slice[2]()
-print(n)  # 打印 [1, 3]
+print(n)  # prints [1, 3]
 ```
 
-结构体的生命周期方法（`__init__()` 和 `__del__()`）是此规则的例外——它们不能接受参数。
+结构体的生命周期方法（`__init__()` 和 `__deinit__()`）是此规则的例外——它们不能接受参数。
 
 ### 案例研究：SIMD 类型
 
-对于参数化类型的真实示例，让我们看看 Mojo 标准库中的 [`SIMD`](/docs/std/builtin/simd/SIMD/) 类型。
+作为参数化类型的真实示例，让我们看看 Mojo 标准库中的
+[`SIMD`](/docs/std/builtin/simd/SIMD/) 类型。
 
-[单指令，多数据（SIMD）](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data)
-是内置在许多现代 CPU、GPU 和自定义加速器中的并行处理技术。SIMD 允许您同时对多个数据执行单个操作。例如，如果您想获取数组中每个元素的平方根，您可以使用 SIMD 来并行化工作。
+[单指令多数据流（SIMD）](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data)
+是一种内置于许多现代 CPU、GPU 和定制加速器中的并行处理技术。SIMD 允许你同时对多个数据执行单个操作。例如，如果你想对数组中每个元素取平方根，可以使用 SIMD 来并行化这项工作。
 
-处理器使用在硬件中保存标量数据类型多个实例的低级向量寄存器来实现 SIMD。要使用这些处理器上的 SIMD 指令，数据必须整形为正确的 SIMD 宽度（数据类型）和长度（向量大小）。处理器可能支持 512 位或更长的 SIMD 向量，并支持从 8 位整数到 64 位浮点数的许多数据类型，因此为所有可能的 SIMD 变体定义是不切实际的。
+处理器在硬件中使用低级向量寄存器实现 SIMD，这些寄存器持有多个标量数据类型的实例。要使用这些处理器上的 SIMD 指令，数据必须被塑形为正确的 SIMD 宽度（数据类型）和长度（向量大小）。处理器可能支持 512 位或更长的 SIMD 向量，并支持从 8 位整数到 64 位浮点数的多种数据类型，因此预定义所有可能的 SIMD 变体并不实际。
 
-Mojo 的 [`SIMD`](/docs/std/builtin/simd/SIMD/) 类型（定义为结构体）通过其方法公开通用的 SIMD 操作，并将 SIMD 数据类型和大小值作为参数接受。这允许您直接将数据映射到任何硬件上的 SIMD 向量。
+Mojo 的 [`SIMD`](/docs/std/builtin/simd/SIMD/) 类型（定义为一个结构体）通过其方法暴露了通用的 SIMD 操作，并将 SIMD 数据类型和长度值作为参数接受。这允许你直接将数据映射到任何硬件上的 SIMD 向量。
 
-以下是 Mojo `SIMD` 类型定义的精简（非功能性）版本：
+下面是 Mojo `SIMD` 类型定义的一个精简（非功能性）版本：
 
 ```mojo no-test
-struct SIMD[dtype: DType, size: Int]:
-    var value: … # 这里有一些低级 MLIR 内容
+struct SIMD[dtype: DType, length: Int]:
+    var value: … # Some low-level MLIR stuff here
 
-    # 从标量创建新的 SIMD
+    # Create a new SIMD from a number of scalars
     def __init__(out self, *elems: SIMD[Self.dtype, 1]):  ...
 
-    # 用重复的标量值填充 SIMD。
+    # Fill a SIMD with a duplicated scalar value.
     @staticmethod
-    def splat(x: SIMD[Self.dtype, 1]) -> SIMD[Self.dtype, Self.size]: ...
+    def splat(x: SIMD[Self.dtype, 1]) -> SIMD[Self.dtype, Self.length]: ...
 
-    # 将 SIMD 的元素转换为不同的元素类型。
-    def cast[target: DType](self) -> SIMD[target, Self.size]: ...
+    # Cast the elements of the SIMD to a different elt type.
+    def cast[target: DType](self) -> SIMD[target, Self.length]: ...
 
-    # 支持许多标准运算符。
+    # Many standard operators are supported.
     def __add__(self, rhs: Self) -> Self: ...
 ```
 
-因此，您可以这样创建和使用 SIMD 向量：
+因此，你可以像这样创建和使用 SIMD 向量：
 
 ```mojo
 var vector = SIMD[DType.int16, 4](1, 2, 3, 4)
@@ -377,31 +423,32 @@ for i in range(4):
 1 4 9 16
 ```
 
-如您所见，应用于两个 `SIMD` 向量的简单算术运算符 `*` 在每个向量的对应元素上操作。
+如你所见，将像 `*` 这样的简单算术运算符应用于一对 `SIMD` 向量时，会在每个向量的对应元素上进行操作。
 
-使用参数定义每个 SIMD 变体非常适合代码重用，因为 `SIMD` 类型可以静态表达所有不同的向量变体，而不是要求语言预定义每个变体。
+用参数定义每个 SIMD 变体非常适合代码重用，因为 `SIMD` 类型可以静态地表达所有不同的向量变体，而不需要语言预定义每个变体。
 
-由于 `SIMD` 是一个参数化类型，其函数中的 `self` 参数携带那些参数——完整类型名称是 `SIMD[type, size]`。虽然写出它是有效的（如 `splat()` 的返回类型所示），但这可能很冗长，因此我们建议使用 `Self` 类型（来自
-[PEP673](https://peps.python.org/pep-0673/)），如 `__add__()` 示例所示。
+由于 `SIMD` 是一个参数化类型，其函数中的 `self` 参数携带这些参数——完整类型名是 `SIMD[dtype, length]`。虽然把它显式写出来是有效的（如 `splat()` 的返回类型所示），但这可能很冗长，因此我们建议使用 `Self` 类型（来自
+[PEP673](https://peps.python.org/pep-0673/)），正如 `__add__()` 示例所做的那样。
 
 ## 使用参数化类型和函数
 
-您可以通过向方括号中的参数传递值来使用参数化类型和函数。例如，对于上面的 `SIMD` 类型，`dtype` 指定数据类型，`size` 指定 SIMD 向量的长度（必须是 2 的幂）：
+你可以通过向方括号中的参数传递值来使用参数化类型和函数。例如，对于上面的 `SIMD` 类型，`dtype`
+指定数据类型，`length` 指定 SIMD 向量中元素的数量（必须是 2 的幂）：
 
 ```mojo
-# 创建一个包含 4 个浮点数的向量。
+# Make a vector of 4 floats.
 var small_vec = SIMD[DType.float32, 4](1.0, 2.0, 3.0, 4.0)
 
-# 创建一个包含 float16 格式 1.0 的大向量。
+# Make a big vector containing 1.0 in float16 format.
 var big_vec = SIMD[DType.float16, 32](1.0)
 
-# 执行一些数学运算并将元素转换为 float32。
+# Do some math and convert the elements to float32.
 var bigger_vec = (big_vec + big_vec).cast[DType.float32]()
 ```
 
-请注意，`cast()` 方法也需要一个参数来指定您想要的转换类型（上面的方法定义期望一个 `target` 参数值）。因此，就像 `SIMD` 结构体是泛型类型定义一样，`cast()` 方法是泛型方法定义。在编译时，编译器创建 `cast()` 方法的一个具体版本，其中目标参数绑定到 `DType.float32`。
+注意 `cast()` 方法也需要一个参数来指定你想要从转换得到的目标类型（上面的方法定义期望一个 `target` 参数值）。因此，正如 `SIMD` 结构体是一个参数化类型定义一样，`cast()` 方法是一个参数化方法定义。在编译时，编译器创建一个 `cast()` 方法的具体版本，其中 `target` 参数绑定到 `DType.float32`。
 
-上面的代码显示了对具体类型的使用（即，参数都绑定到已知值）。但参数的主要力量来自于定义参数化算法和类型（使用参数值的代码）的能力。例如，以下是如何使用 `Scalar` 定义一个与数据类型无关的参数化算法：
+上面的代码展示了对具体类型的使用（即所有参数都绑定到已知值）。但参数的主要威力来自于定义参数化算法和类型（使用参数值的代码）的能力。例如，下面演示如何使用 `Scalar` 定义一个与数据类型无关的参数化算法：
 
 ```mojo
 from std.math import sqrt
@@ -419,24 +466,23 @@ def main():
 0.154296875
 ```
 
-当您使用方括号编写类型表达式时，如 `List[Int]`，您必须绑定（指定值）该类型的所有参数。此规则有两个例外：
+当你使用方括号编写类型表达式时，例如 `List[Int]`，你必须绑定（指定值）该类型的所有参数。此规则有两个例外：
 
-- 您可以显式解绑一个或多个参数以创建[部分绑定或未绑定类型](#partially-bound-and-unbound-types)。
+- 你可以显式地不绑定一个或多个参数，以创建一个
+  [部分绑定或未绑定类型](#partially-bound-and-unbound-types)。
 
-- 如果 Mojo 可以从上下文推断它们，您可以省略参数。
+- 如果 Mojo 可以从上下文推断它们，你可以省略参数。
 
 ### 参数推断
 
-Mojo 编译器经常可以*推断*参数值，因此您并不总是需要指定它们。例如，在前一节中，我们这样调用参数化 `rsqrt()` 函数：
+Mojo 编译器通常可以*推断*参数值，因此你不必总是显式指定。例如，在前一节中，我们是这样调用参数化 `rsqrt()` 函数的：
 
 ```mojo
 var v = Scalar[DType.float16](42)
 print(rsqrt(v))
 ```
 
-编译器根据传递给它的 `v` 值的类型推断 `dt` 参数，就像您显式编写 `rsqrt[DType.float16](v)` 一样。图 1 显示了参数推断如何工作的心理模型。
-
-{/*   rumdl-disable MD033  */}
+编译器根据传入的 `v` 值的类型推断 `dt` 参数，就好像你显式写了 `rsqrt[DType.float16](v)` 一样。图 1 展示了参数推断工作原理的心智模型。
 
 <figure>
 
@@ -446,22 +492,21 @@ print(rsqrt(v))
 <figcaption><b>图 1.</b> 参数推断</figcaption>
 </figure>
 
-{/*   rumdl-enable MD033  */}
+参数推断可能看起来有点令人困惑：它看起来像是编译器在从运行时参数值推断编译时参数值。但实际上它是在从参数静态已知的*类型*推断参数。
 
-参数推断可能看起来有点令人困惑：它看起来像编译器正在从运行时参数值推断编译时参数值。但实际上，它是从参数的静态已知*类型*推断参数。
+:::note 推断失败
 
-:::note[推断失败]
-
-如果参数推断失败，编译器会报告错误，通常是"无法推断参数 'param_name'"。不幸的是，编译器有时也会错误地报告此错误，例如，当实际错误是类型不匹配时。在这些情况下，显式指定缺少的参数通常允许 Mojo 报告正确的错误。
+如果参数推断失败，编译器会报告错误，通常是 "failed
+to infer parameter 'param_name'"。遗憾的是，编译器有时也会错误地报告此错误，例如当实际错误是类型不匹配时。在这些情况下，显式指定缺失的参数通常能让 Mojo 报告正确的错误。
 
 :::
 
-Mojo 还可以从传递给构造函数或静态方法的参数推断结构体参数的值。
+Mojo 还可以根据传给初始化器或静态方法的参数推断结构体参数的值。
 
 例如，考虑以下结构体：
 
 ```mojo
-struct One[Type: Writable & Copyable & ImplicitlyDestructible]:
+struct One[Type: Writable & Copyable & Deinitable]:
     var value: Self.Type
 
     def __init__(out self, value: Self.Type):
@@ -469,16 +514,16 @@ struct One[Type: Writable & Copyable & ImplicitlyDestructible]:
 
 
 def use_one():
-    s1 = One(123)  # 等同于 One[Int](123)
-    s2 = One("Hello")  # 等同于 One[String]("Hello")
+    var s1 = One(123)  # equivalent to One[Int](123)
+    var s2 = One("Hello")  # equivalent to One[String]("Hello")
 ```
 
-请注意，您可以在不指定 `Type` 参数的情况下创建 `One` 的实例——Mojo 可以从 `value` 参数推断它。
+注意，你可以在不指定 `Type` 参数的情况下创建 `One` 的实例——Mojo 可以从 `value` 参数推断它。
 
-您还可以从传递给构造函数或静态方法的参数化类型推断参数：
+你也可以从传给初始化器或静态方法的参数化类型推断参数：
 
 ```mojo
-struct Two[Type: Writable & Copyable & ImplicitlyDestructible]:
+struct Two[Type: Writable & Copyable & Deinitable]:
     var val1: Self.Type
     var val2: Self.Type
 
@@ -493,34 +538,38 @@ struct Two[Type: Writable & Copyable & ImplicitlyDestructible]:
 
 
 def use_two() raises:
-    s3 = Two(One("infer"), One("me"))  # 打印：infer me
-    Two.fire(One(1), One(2))  # 打印：🔥 1 2
-    # Two.fire(One("mixed"), One(0))  # 错误：参数推断为两个不同的值
+    var s3 = Two(One("infer"), One("me"))  # prints: infer me
+    Two.fire(One(1), One(2))  # prints: 🔥 1 2
+    # Two.fire(One("mixed"), One(0)) 
+    # Error: parameter inferred to two different values
 ```
 
-`Two` 接受 `Type` 参数，其构造函数接受类型为 `One[Type]` 的值。在构造 `Two` 的实例时，您不需要指定 `Type` 参数，因为它可以从参数推断。
+`Two` 接受一个 `Type` 参数，其初始化器接受类型为 `One[Type]` 的值。在构造 `Two` 的实例时，你不需要指定 `Type` 参数，因为它可以从参数推断出来。
 
-同样，静态 `fire()` 方法接受类型为 `One[Type]` 的值，因此 Mojo 可以在编译时推断 `Type` 值。请注意，传递两个不同类型的 `One` 实例不起作用。
+类似地，静态 `fire()` 方法接受类型为 `One[Type]` 的值，因此 Mojo 可以在编译时推断出 `Type` 值。注意，传递两个不同类型的 `One` 实例是行不通的。
 
 :::note
 
-如果您熟悉 C++，您可能会将其识别为与类模板参数推导（CTAD）类似。
+如果你熟悉 C++，你可能会认出这类似于类模板参数推导（Class Template
+Argument Deduction，CTAD）。
 
 :::
 
 ## 参数声明
 
-当您在结构体或函数上声明参数时，您有许多与参数相同的选项——您可以定义带有默认值的可选参数；仅关键字参数；以及可变参数。
+当你在结构体或函数上声明参数时，你有许多与参数相同的选项——你可以定义带默认值的可选参数；仅关键字参数；以及可变参数。
 
-此外，您可以定义*推断-仅参数*，它提供了一种在参数化类型之间定义依赖项的灵活方式。
+此外，你可以定义*推断型参数（infer-only parameters）*，它提供了一种灵活的方式来定义参数化类型之间的依赖关系。
 
 ### 可选参数和关键字参数
 
-就像您可以在函数签名中指定[可选参数](/docs/manual/functions#optional-arguments)一样，您还可以通过为其提供默认值来定义可选*参数*。
+就像你可以在函数签名中指定
+[可选参数](/docs/manual/functions#optional-arguments)一样，你也可以通过给参数一个默认值来定义一个可选*参数*。
 
-您还可以通过关键字传递参数，就像您可以使用[关键字参数](/docs/manual/functions/#keyword-arguments)一样。对于具有多个可选参数的函数或结构体，使用关键字允许您只传递您想要指定的参数，无论它们在函数签名中的位置如何。
+你也可以通过关键字传递参数，就像你可以使用
+[关键字参数](/docs/manual/functions/#keyword-arguments)一样。对于一个有多个可选参数的函数或结构体，使用关键字让你可以只传递你想要指定的参数，无论它们在函数签名中的位置如何。
 
-例如，这是一个具有两个参数的函数，每个参数都有默认值：
+例如，下面是一个有两个参数的函数，每个参数都有默认值：
 
 ```mojo
 def speak[a: Int = 3, msg: String = "woof"]():
@@ -528,15 +577,16 @@ def speak[a: Int = 3, msg: String = "woof"]():
 
 
 def use_defaults():
-    speak()  # 打印 'woof 3'
-    speak[5]()  # 打印 'woof 5'
-    speak[7, "meow"]()  # 打印 'meow 7'
-    speak[msg="baaa"]()  # 打印 'baaa 3'
+    speak()  # prints 'woof 3'
+    speak[5]()  # prints 'woof 5'
+    speak[7, "meow"]()  # prints 'meow 7'
+    speak[msg="baaa"]()  # prints 'baaa 3'
 ```
 
-回想一下，当调用参数化函数时，Mojo 可以[推断参数值](#parameter-inference)。也就是说，它可以根据附加到参数的参数确定其参数值。如果参数化函数也有定义的默认参数值，那么推断的参数值优先。
+回想一下，当调用一个参数化函数时，Mojo 可以
+[推断参数值](#parameter-inference)。也就是说，它可以根据附加到参数上的参数来确定其参数值。如果参数化函数也定义了默认参数值，那么推断的参数值优先。
 
-例如，在以下代码中，我们更新参数化 `speak[]()` 函数以接受一个带有参数化类型的参数。虽然函数有一个 `a` 的默认参数值，但 Mojo 使用从 `bar` 参数推断的 `a` 参数值（如所写的，默认的 `a` 值永远不能使用，但这只是为了演示目的）：
+例如，在下面的代码中，我们更新参数化的 `speak[]()` 函数以接受一个具有参数化类型的参数。虽然该函数有一个为 `a` 定义的默认参数值，但 Mojo 使用从 `bar` 参数推断的 `a` 参数值（按所写的那样，默认的 `a` 值永远用不到，但这只是为了演示）：
 
 ```mojo
 @fieldwise_init
@@ -549,10 +599,10 @@ def speak[a: Int = 3, msg: String = "woof"](bar: Bar[a]):
 
 
 def use_inferred():
-    speak(Bar[9]())  # 打印 'woof 9'
+    speak(Bar[9]())  # prints 'woof 9'
 ```
 
-如上所述，您还可以在结构体中使用可选参数和关键字参数：
+如上所述，你也可以在结构体中使用可选参数和关键字参数：
 
 ```mojo
 struct KwParamStruct[greeting: String = "Hello", name: String = "🔥mojo🔥"]:
@@ -561,20 +611,22 @@ struct KwParamStruct[greeting: String = "Hello", name: String = "🔥mojo🔥"]:
 
 
 def use_kw_params():
-    var a = KwParamStruct[]()  # 打印 'Hello 🔥mojo🔥'
-    var b = KwParamStruct[name="World"]()  # 打印 'Hello World'
-    var c = KwParamStruct[greeting="Hola"]()  # 打印 'Hola 🔥mojo🔥'
+    var a = KwParamStruct[]()  # prints 'Hello 🔥mojo🔥'
+    var b = KwParamStruct[name="World"]()  # prints 'Hello World'
+    var c = KwParamStruct[greeting="Hola"]()  # prints 'Hola 🔥mojo🔥'
 ```
 
 :::note
 
-Mojo 支持仅位置参数和仅关键字参数，遵循[仅位置参数和仅关键字参数](/docs/manual/functions#positional-only-and-keyword-only-arguments)的相同规则。
+Mojo 支持仅位置参数和仅关键字参数，遵循与
+[仅位置参数和仅关键字参数](/docs/manual/functions#positional-only-and-keyword-only-arguments)
+相同的规则。
 
 :::
 
 ### 可变参数
 
-Mojo 还支持可变参数，类似于
+Mojo 也支持可变参数，类似于
 [可变参数](/docs/manual/functions/#variadic-arguments)：
 
 ```mojo
@@ -582,17 +634,17 @@ struct MyTensor[*dimensions: Int]:
     pass
 ```
 
-可变参数目前有一些可变参数没有的限制：
+可变参数目前有一些可变参数所没有的限制：
 
-- 可变参数必须是同质的——即所有值必须是相同类型。
+- 可变参数必须是同质的——即所有值必须是相同的类型。
 
-- 参数类型必须是可传递的。
+- 参数类型必须是寄存器可传递的（register-passable）。
 
-可变关键字参数（例如，`**kwparams`）尚不支持。
+可变关键字参数（例如 `**kwparams`）尚不支持。
 
-### 推断-仅参数
+### 推断型参数
 
-有时您需要声明参数依赖于其他参数的函数。由于签名是从左到右处理的，参数只能*依赖*参数列表中较早的参数。例如：
+有时你需要声明参数依赖于其他参数的函数。由于签名是从左到右处理的，一个参数只能*依赖*参数列表中较早出现的参数。例如：
 
 ```mojo no-test
 def dependent_type[dtype: DType, value: Scalar[dtype]]():
@@ -607,19 +659,19 @@ Value:  2.2000000000000002
 Value is floating-point:  True
 ```
 
-您不能反转 `dtype` 和 `value` 参数的位置，因为 `value` 依赖于 `dtype`。但是，由于 `dtype` 是必需参数，您不能将其从参数列表中省略，并让 Mojo 从 `value` 推断它：
+你不能交换 `dtype` 和 `value` 参数的位置，因为 `value` 依赖于 `dtype`。然而，由于 `dtype` 是一个必需参数，你不能把它从参数列表中省略，让 Mojo 从 `value` 推断它：
 
 ```mojo no-test
-dependent_type[Float64(2.2)]() # 错误！
+dependent_type[Float64(2.2)]() # Error!
 ```
 
-推断-仅参数是参数的一个特殊类别，它们**总是**从上下文推断或由关键字指定。推断-仅参数放在参数列表的**开头**，用 `//` 符号与其他参数分隔：
+推断型参数是一类特殊的参数，它们**总是**要么从上下文推断，要么通过关键字指定。推断型参数放在参数列表的**开头**，用 `//` 符号与其他参数分隔：
 
 ```mojo no-test
 def example[T: Copyable, //, list: List[T]]()
 ```
 
-将 `dtype` 转换为推断-仅参数解决了这个问题：
+将 `dtype` 转换为推断型参数解决了这个问题：
 
 ```mojo
 def dependent_type[dtype: DType, //, value: Scalar[dtype]]():
@@ -636,31 +688,34 @@ Value:  2.2000000000000002
 Value is floating-point:  True
 ```
 
-由于推断-仅参数是在参数列表的开头声明的，其他参数可以依赖于它们，并且编译器总是尝试从绑定参数或参数推断推断-仅值。
+由于推断型参数是在参数列表的开头声明的，其他参数可以依赖它们，并且编译器总是尝试从绑定的参数或参数中推断推断型值。
 
-有时有需要通过关键字指定推断-仅参数的情况。例如，[`Span`](/docs/std/memory/span/Span/) 类型在[起源](/docs/manual/values/lifetimes/)上参数化：
+有时通过关键字指定一个推断型参数会很有用。例如，
+[`Span`](/docs/std/collections/span/Span/) 类型在
+[origin](/docs/manual/values/lifetimes/) 上参数化：
 
 ```mojo no-test
 struct Span[mut: Bool, //, T: Copyable, origin: Origin[mut]]:
-    # ... 实现已省略
+    # ... implementation omitted
 ```
 
-在这里，`mut` 参数是推断-仅的。通常在您创建 `Span` 的实例时推断值。通过关键字绑定 `mut` 参数允许您定义一个需要可变起源的 `Span`。
+这里，`mut` 参数是推断型的。该值通常在你创建 `Span` 实例时被推断。通过关键字绑定 `mut` 参数让你可以定义一个需要可变 origin 的 `Span`。
 
 ```mojo
-def mutate_span(span: Span[mut=True, Byte, ...]):
+def mutate_span(span: Span[mut=True, Byte, _]):
     for i in range(0, len(span), 2):
         if i + 1 < len(span):
             span.swap_elements(i, i + 1)
 ```
 
-如果编译器无法推断推断-仅参数的值，并且未通过关键字指定，则编译失败。
+如果编译器无法推断出一个推断型参数的值，并且也未通过关键字指定它，则编译失败。
 
 ## 参数表达式就是 Mojo 代码
 
-参数表达式是任何在期望参数的地方出现的代码表达式（如 `a+b`）。参数表达式支持运算符和函数调用，就像运行时代码一样，并且所有参数类型都使用与运行时程序相同的类型系统（如 `Int` 和 `DType`）。
+参数表达式是指出现在期望参数位置的任何代码表达式（例如 `a+b`）。参数表达式支持运算符和函数调用，就像运行时代码一样，并且所有参数类型都使用与运行时程序相同的类型系统（例如 `Int` 和 `DType`）。
 
-由于参数表达式使用与运行时 Mojo 代码相同的语法和类型，您可以使用许多"依赖类型"特性。例如，您可能想定义一个连接两个 SIMD 向量的辅助函数：
+由于参数表达式使用与运行时 Mojo 代码相同的语法和类型，你可以使用许多
+["依赖类型"（dependent type）](https://en.wikipedia.org/wiki/Dependent_type) 特性。例如，你可能想定义一个辅助函数来拼接两个 SIMD 向量：
 
 ```mojo
 def concat[
@@ -678,11 +733,11 @@ def concat[
     return result
 ```
 
-请注意，结果长度是输入向量长度之和，简单的 `+` 操作表达了这一点。
+注意结果长度是输入向量长度之和，一个简单的 `+` 运算就表达了这一点。
 
 ### 强大的编译时编程
 
-虽然简单表达式很有用，但有时您想使用控制流编写命令式编译时逻辑。您甚至可以做编译时递归。例如，这是一个"树归约"算法示例，它递归地将向量中的所有元素求和到标量中：
+虽然简单表达式很有用，但有时你想编写带控制流的命令式编译时逻辑。你甚至可以做编译时递归。例如，下面是一个 "树形归约（tree reduction）" 算法示例，它递归地把一个向量的所有元素求和为一个标量：
 
 ```mojo
 def slice[
@@ -696,13 +751,13 @@ def slice[
 
 
 def reduce_add(x: SIMD) -> Int:
-    comptime if x.size == 1:
+    comptime if x.length == 1:
         return Int(x[0])
-    elif x.size == 2:
+    elif x.length == 2:
         return Int(x[0]) + Int(x[1])
 
-    # 提取顶部/底部部分，将它们相加，然后对元素求和。
-    comptime half_size = x.size // 2
+    # Extract the top/bottom halves, add them, sum the elements.
+    comptime half_size = x.length // 2
     var lhs = slice(x, 0)
     var rhs = slice(x, half_size)
     return reduce_add(lhs + rhs)
@@ -719,8 +774,9 @@ def main():
 Elements sum: 10
 ```
 
-这使用了 [`comptime if`](/docs/manual/metaprogramming/comptime-evaluation/#comptime-if)
-语句，这是一个在编译时运行的 `if` 语句。它要求其条件是有效的参数表达式，并确保只有 `if` 语句的活跃分支被编译到程序中。这与前面显示的 `comptime for` 循环的使用类似。
+这使用了
+[`comptime if`](/docs/manual/metaprogramming/comptime-evaluation/#comptime-if)
+语句，它是一个在编译时运行的 `if` 语句。它要求其条件是一个有效的参数表达式，并确保只有 `if` 语句的活动分支被编译进程序。这与前面展示的 `comptime for` 循环的用法类似。
 
 ## 参数化的 `comptime` 值
 
@@ -732,7 +788,7 @@ comptime AddOne[a: Int] : Int = a + 1
 comptime nine = AddOne[8]
 ```
 
-如前一个示例所示，参数化的 `comptime` 值有点像*仅编译时函数*。常规函数或方法也可以在编译时调用：
+正如前一个示例所示，参数化的 `comptime` 值有点像*仅编译时函数*。常规的函数或方法也可以在编译时被调用：
 
 ```mojo
 def add_one(a: Int) -> Int:
@@ -741,30 +797,31 @@ def add_one(a: Int) -> Int:
 comptime ten = add_one(9)
 ```
 
-函数和参数化的 `comptime` 值之间的主要区别在于，`comptime` 表达式的值可以是类型，而函数不能作为值返回类型。
+函数和参数化的 `comptime` 值之间的一个主要区别是：`comptime` 表达式的值可以是一个类型，而函数不能作为一个值返回类型。
 
 ```mojo no-test
-# 不起作用——不允许动态类型值
+# Does not work—-dynamic type values not permitted
 def int_type() -> AnyType:
     return Int
 
-# 有效
+# Works
 comptime IntType = Int
 ```
 
-由于 `comptime` 值可以是类型，您可以使用参数化的 `comptime` 值来表示新类型：
+由于 `comptime` 值可以是一个类型，你可以使用参数化的 `comptime` 值来表达新类型：
 
 ```mojo
 comptime TwoOfAKind[dt: DType] = SIMD[dt, 2]
-twoFloats = TwoOfAKind[DType.float32](1.0, 2.0)
+var twoFloats = TwoOfAKind[DType.float32](1.0, 2.0)
 
-comptime StringKeyDict[ValueType: Copyable & ImplicitlyDestructible] = Dict[
+comptime StringKeyDict[ValueType: Copyable & Deinitable] = Dict[
     String, ValueType
 ]
 var b: StringKeyDict[UInt8] = {"answer": 42}
 ```
 
-参数化的 `comptime` 声明支持与参数化结构体或函数相同的特性：推断-仅参数、仅关键字和可选参数、[自动参数化]，等等。
+参数化的 `comptime` 声明支持与参数化结构体或函数相同的特性：推断型参数、仅关键字和可选参数、
+[自动参数化](#automatic-parameterization)，等等。
 
 ```mojo
 comptime Floats[size: Int, half_width: Bool = False] = SIMD[
@@ -776,18 +833,19 @@ var half_floats = Floats[2, True](10.0, 12.0)
 
 ## 部分绑定和未绑定类型
 
-指定了其参数的参数化类型称为*完全绑定*。也就是说，其所有参数都绑定到值。如前所述，您只能实例化完全绑定类型（有时称为*具体类型*）。
+一个参数化类型如果其参数都被指定，就被称为*完全绑定（fully bound）*。也就是说，它的所有参数都绑定到值。如前所述，你只能实例化一个完全绑定类型（有时称为*具体类型（concrete type）*）。
 
-然而，在某些上下文中，参数化类型可以是*未绑定*或*部分绑定*的。例如，您可以使用 `comptime` 创建部分绑定类型的类型别名，以创建一个需要较少参数的新类型：
+然而，在某些上下文中，参数化类型可以是*未绑定（unbound）*或*部分绑定（partially bound）*的。例如，你可以使用 `comptime` 为部分绑定类型创建类型别名，以创建一个需要较少参数的新类型：
 
 ```mojo
 comptime StringKeyDict = Dict[String, _]
 var b: StringKeyDict[UInt8] = {"answer": 42}
 ```
 
-在这里，`StringKeyDict` 是一个接受 `String` 键的 `Dict` 的类型别名。参数列表中的下划线 `_` 表示第二个参数 `V`（值类型）未绑定。当您使用 `StringKeyDict` 时，您稍后指定 `V` 参数。
+这里，`StringKeyDict` 是一个接受 `String` 键的 `Dict` 的类型别名。参数列表中的下划线 `_` 表示第二个参数
+`V`（即值类型）未绑定。你在使用 `StringKeyDict` 时再指定 `V` 参数。
 
-当用作 `comptime` 值时，未绑定参数上的任何默认值都会保留，直到形成具体类型（例如，通过调用结构体的构造函数）：
+当作为 `comptime` 值使用时，未绑定参数上的任何默认值都会被保留，直到形成一个具体类型（例如，通过调用结构体的初始化器）：
 
 ```mojo
 @fieldwise_init
@@ -799,23 +857,23 @@ comptime UseDefault = HasDefault[10]
 ```
 
 ```mojo
-var instance1 = UseDefault()  # HasDefault[10, 0] 的实例
+var instance1 = UseDefault()  # instance of HasDefault[10, 0]
 ```
 
-在定义参数化 API 时，您可以使用部分绑定和未绑定类型来表达类型边界，使用更少的样板代码，这称为
+在定义参数化 API 时，你可以使用部分绑定和未绑定类型以更少的样板代码表达类型约束，这一特性称为
 [自动参数化](#automatic-parameterization)：
 
 ```mojo no-test
-# 标准声明——显式参数声明
+# standard declaration--explicit parameter declarations
 def take_simd[dtype: DType, size: Int](value: SIMD[dtype, size]): pass
 
-# 自动参数化声明
+# automatically parameterized declaration
 def take_floats(value: SIMD[_, _]): pass
 ```
 
-您可以通过几种方式指定部分绑定或未绑定类型：
+你可以通过几种方式指定部分绑定或未绑定类型：
 
-- 使用下划线 (`_`) 代替参数值显式解绑一个或多个参数：
+- 使用下划线（`_`）代替参数值，显式不绑定一个或多个参数：
 
   ```mojo
   comptime StringKeyDict = Dict[String, _]
@@ -823,13 +881,13 @@ def take_floats(value: SIMD[_, _]): pass
   def take_floats(floats: SIMD[DType.float32, _]): pass
   ```
 
-  编写此类类型表达式时，您必须绑定或显式解绑每个参数，除非 Mojo 可以从上下文推断参数。例如，这会产生错误：
+  当像这样编写类型表达式时，你必须绑定或显式不绑定每个参数，除非 Mojo 可以从上下文推断该参数。例如，这会产生一个错误：
 
   ```mojo
-  comptime Bad = Dict[String]  # 错误：'Dict' 无法推断参数 'V'
+  comptime Bad = Dict[String]  # error: 'Dict' failed to infer parameter 'V'
   ```
 
-- 使用省略号 (`...`) 在参数列表的末尾显式解绑任意数量的参数：
+- 使用省略号（`...`）在参数列表末尾显式不绑定任意数量的参数：
 
   ```mojo
   comptime PartiallyBound = SomeComplicatedType[String, ...]
@@ -838,9 +896,9 @@ def take_floats(value: SIMD[_, _]): pass
   def take_simd(v: SIMD[...]): pass
   ```
 
-  使用省略号会解绑列表中的任何剩余参数，包括关键字参数。
+  使用省略号会不绑定列表中所有剩余的参数，包括关键字参数。
 
-- 使用不带方括号的基本标识符来指定未绑定类型：
+- 使用不带方括号的裸标识符来指定一个未绑定类型：
 
   ```mojo
   comptime SomeAlias = SomeComplicatedType
@@ -848,40 +906,40 @@ def take_floats(value: SIMD[_, _]): pass
   def take_simd2(v: SIMD): pass
   ```
 
-  作为一种风格，`SIMD[...]` 或 `SIMD[_, _]` 通常比裸 `SIMD` 更好。前两个版本更明确，并为读者提供了视觉提示，表明他们正在查看一个参数化类型。
+  就风格而言，`SIMD[...]` 或 `SIMD[_, _]` 通常比裸 `SIMD` 更可取。前两者更明确，并为读者提供一个视觉提示，表明他们正在看一个参数化类型。
 
 ### 部分绑定类型与参数化的 `comptime` 值
 
-您可能会注意到，本节中的 `comptime` 示例与
-[参数化的 `comptime` 值](#parameterized-comptime-values)章节中的示例看起来相似。例如，您可以使用任一语法定义 `StringKeyDict` 别名：
+你可能会注意到本节中的 `comptime` 示例看起来类似于
+[参数化的 `comptime` 值](#parameterized-comptime-values) 一节中的示例。例如，你可以用两种语法中的任意一种定义 `StringKeyDict` 别名：
 
 ```mojo no-test
-# 部分绑定类型
+# partially-bound type
 comptime StringKeyDict = Dict[String, _]
-# 参数化的 comptime 值
+# parameterized comptime value
 comptime StringKeyDict[V] = Dict[String, V]
 ```
 
-对于简单的类型别名，您可以使用部分绑定类型或参数化的 `comptime` 值。对于更复杂的别名，参数化的 `comptime` 值为您提供了更大的灵活性。
+对于简单的类型别名，你可以使用部分绑定类型或参数化的 `comptime` 值。对于更复杂的别名，参数化的 `comptime` 值为你提供了更多的灵活性。
 
 ## 自动参数化
 
-编写高度参数化的 API 经常会产生冗长、重复的签名。例如，要定义一个接受任何类型 `SIMD` 值的函数，您可以编写：
+编写高度参数化的 API 通常会产生冗长、重复的签名。例如，要定义一个接受任何类型 `SIMD` 值的函数，你可以这样写：
 
 ```mojo no-test
-def take_simd[dtype: DType, size: Int, //](vec: SIMD[dtype, size]): 
+def take_simd[dtype: DType, size: Int, //](vec: SIMD[dtype, size]):
     pass
 ```
 
-此签名表示一个接受任何 `SIMD` 值的函数，推断其 `dtype` 和 `size` 参数。但这要做一件非常简单的事情需要很多代码。
+这个签名表示一个函数接受任何 `SIMD` 值，并推断其 `dtype` 和 `size` 参数。但要做一件相当简单的事情，这代码量有点多。
 
-为了使编写此类签名更容易，Mojo 支持"自动"参数化。您不需要在参数类型中显式命名每个参数，而是指定
+为了更容易地编写此类签名，Mojo 支持 "自动" 参数化。你不需要在参数类型中显式命名每个参数，而是指定一个
 [部分绑定或未绑定类型](#partially-bound-and-unbound-types)：
 
 ```mojo
 def take_simd(vec: SIMD[...]):
     print(vec.dtype)
-    print(vec.size)
+    print(vec.length)
 ```
 
 ```mojo
@@ -894,7 +952,7 @@ float64
 4
 ```
 
-在上面的示例中，`take_simd()` 函数是自动参数化的。`vec` 参数接受类型为 `SIMD[...]` 的值——一个未绑定的参数化类型。Mojo 将 `vec` 上的未绑定参数视为函数上的推断-仅参数。这大致相当于以下代码：
+在上面的示例中，`take_simd()` 函数是自动参数化的。`vec` 参数接受一个类型为 `SIMD[...]` 的值——一个未绑定的参数化类型。Mojo 把 `vec` 上的未绑定参数视为函数上的推断型参数。这大致等价于以下代码：
 
 ```mojo no-test
 def take_simd[t: DType, s: Int, //](vec: SIMD[t, s]):
@@ -902,61 +960,62 @@ def take_simd[t: DType, s: Int, //](vec: SIMD[t, s]):
     print(s)
 ```
 
-当您调用 `take_simd()` 时，您必须传递 `SIMD` 类型的具体实例——即所有参数都已指定的实例，如 `SIMD[DType.float64, 4]`。Mojo 编译器从输入参数[推断](#parameter-inference)参数值。
+当你调用 `take_simd()` 时，你必须传入一个 `SIMD` 类型的具体实例——即所有参数都被指定的实例，例如
+`SIMD[DType.float64, 4]`。Mojo 编译器从输入参数*推断*参数值。
 
-您还可以在部分绑定类型中使用自动参数化：
+你也可以在部分绑定类型上使用自动参数化：
 
 ```mojo no-test
 def take_floats(floats: SIMD[DType.float32, _]): pass
 ```
 
-手动参数化的签名和自动参数化的签名之间有两个重要区别：
+手动参数化的签名与自动参数化的签名之间有两个重要区别：
 
-- 使用手动参数化的函数，您可以通过名称访问参数（例如，前面的示例中的 `t` 和 `s`），这在自动参数化的函数中是不可能的。
+- 对于手动参数化的函数，你可以按名称访问参数（例如前一示例中的 `t` 和 `s`），而这在自动参数化的函数中不是一个选项。
 
-  但是，您始终可以使用点语法访问类型的参数和 `comptime` 成员——如在自动参数化示例中，使用 `vec.dtype` 和 `vec.size` 访问参数上的参数。
+  不过，你始终可以使用点语法访问类型的参数和 `comptime` 成员——正如在自动参数化示例中那样，使用 `vec.dtype` 和 `vec.length` 访问参数上的参数。
 
-- 使用手动参数化的函数，您可以直接传递参数值；自动参数化的函数没有此选项。未绑定参数总是被推断。
+- 对于手动参数化的函数，你可以直接传递参数值；这在自动参数化的函数中不是一个选项。未绑定参数总是被推断出来的。
 
-除了在函数的参数列表中使用自动参数化外，您还可以在函数、结构和参数化的 `comptime` 值的参数列表中使用它。
+除了在函数的参数列表中使用自动参数化外，你还可以在函数、结构体和参数化的 `comptime` 值的参数列表中使用它。
 
 ### 自动参数化的示例
 
-本节显示使用自动参数化的更多示例。
+本节展示更多使用自动参数化的示例。
 
 #### 参数的自动参数化
 
-您还可以在函数、结构体或参数化的 `comptime` 值的参数列表中利用自动参数化。例如：
+你也可以在函数、结构体或参数化的 `comptime` 值的参数列表中利用自动参数化。例如：
 
 ```mojo no-test
 def simd_param[value: SIMD[...]]():
     pass
 
-# 等价于：
+# Equivalent to:
 def simd_param[dtype: DType, size: Int, //, value: SIMD[dtype, size]]():
     pass
 ```
 
-以下是使用参数化的 `comptime` 值的另一个示例：
+下面是使用参数化的 `comptime` 值的另一个示例：
 
 ```mojo
 comptime SomeComptime[s: SIMD[...]] = SomeStruct[s]
 
-# 等价于：
+# Equivalent to:
 comptime SomeComptime2[dtype: DType, size: Int, //, S: SIMD[dtype, size]] = SomeStruct[S]
 ```
 
 #### 自动参数化和类型表达式
 
-如前一个示例所示，您可以使用点语法（`arg.param`）访问参数或参数值的参数。您还可以在签名内部使用此语法。
+如前面的示例所示，你可以使用点语法（`arg.param`）访问参数或参数值的参数。你也可以在签名内部使用此语法。
 
-例如，如果您希望您的函数接受两个类型和大小相同的 SIMD 向量，您可以编写如下代码：
+例如，如果你希望函数接受两个具有相同类型和大小的 SIMD 向量，可以这样编写代码：
 
 ```mojo
-def interleave(v1: SIMD[...], v2: type_of(v1)) -> SIMD[v1.dtype, v1.size * 2]:
-    var result = SIMD[v1.dtype, v1.size * 2]()
+def interleave(v1: SIMD[...], v2: type_of(v1)) -> SIMD[v1.dtype, v1.length * 2]:
+    var result = SIMD[v1.dtype, v1.length * 2]()
 
-    comptime for i in range(v1.size):
+    comptime for i in range(v1.length):
         result[i * 2] = v1[i]
         result[i * 2 + 1] = v2[i]
     return result
@@ -973,13 +1032,14 @@ print(c)
 [1, 0, 2, 0, 3, 0, 4, 0]
 ```
 
-如示例所示，如果您只想匹配参数的类型，可以使用魔法 `type_of(x)` 表达式。在这种情况下，它比编写等价的 `SIMD[v1.dtype, v1.size]` 更方便和紧凑。
+如示例所示，如果你只是想匹配一个参数的类型，你可以使用魔术表达式 `type_of(x)`。在这种情况下，它比写等价的 `SIMD[v1.dtype, v1.length]` 更方便、更紧凑。
 
 #### 使用部分绑定类型的自动参数化
 
-Mojo 还支持自动参数化：使用[部分绑定参数化类型](#partially-bound-and-unbound-types)（即，具有部分参数指定的类型）。
+Mojo 也支持使用
+[部分绑定参数化类型](#partially-bound-and-unbound-types)（即只有部分参数被指定的类型）的自动参数化。
 
-例如，假设您有一个具有三个参数的 `Fudge` 结构体：
+例如，假设你有一个带三个参数的 `Fudge` 结构体：
 
 ```mojo
 @fieldwise_init
@@ -987,53 +1047,49 @@ struct Fudge[sugar: Int, cream: Int, chocolate: Int = 7](Writable):
     pass
 ```
 
-您可以编写一个只接受一个绑定参数（它是*部分绑定*）的 `Fudge` 参数的函数：
+你可以编写一个只接受一个绑定参数（即*部分绑定*）的 `Fudge` 参数的函数：
 
 ```mojo
 def eat(f: Fudge[5, ...]):
-    print("Ate " + String(f))
+    print("Ate", f)
 ```
 
-`eat()` 函数接受第一个参数（`sugar`）绑定到值 5 的 `Fudge` 结构体。第二个和第三个参数 `cream` 和 `chocolate` 未绑定。
+`eat()` 函数接受一个 `Fudge` 结构体，其中第一个参数（`sugar`）绑定到值 5。第二个和第三个参数 `cream` 和 `chocolate` 未绑定。
 
-未绑定的 `cream` 和 `chocolate` 参数成为 `eat` 函数上的隐式参数。在实践中，这大致相当于编写：
+未绑定的 `cream` 和 `chocolate` 参数成为 `eat` 函数上的隐式参数。在实践中，这大致等价于写：
 
 ```mojo no-test
 def eat[cr: Int, ch: Int, //](f: Fudge[5, cr, ch]):
     print("Ate", String(f))
 ```
 
-在这两种情况下，您都可以通过传递具有绑定 `cream` 和 `chocolate` 参数的实例来调用函数：
+在两种情况下，你都可以通过传入一个绑定了 `cream` 和 `chocolate` 参数的实例来调用该函数：
 
 ```mojo
-eat(Fudge[5, 5, 7]())
-eat(Fudge[5, 8, 9]())
+eat(Fudge[5, 5, 7]())  # Ate Fudge (5,5,7)
+eat(Fudge[5, 8, 9]())  # Ate Fudge (5,8,9)
 ```
 
-```output
-Ate Fudge (5,5,7)
-Ate Fudge (5,8,9)
-```
-
-如果您尝试传递一个 `sugar` 值不为 5 的参数，编译将失败，因为它与参数类型不匹配：
+如果你试图传入一个 `sugar` 值不是 5 的参数，编译会失败，因为它与参数类型不匹配：
 
 ```mojo no-test
 eat(Fudge[12, 5, 7]())
-# 错误：对 'eat' 的无效调用：参数 #0 无法从 'Fudge[12, 5, 7]' 转换为 'Fudge[5, 5, 7]'
+# This fails because `eat()` expects `Fudge[5, 5, 7]`, but this value is
+# `Fudge[12, 5, 7]`.
 ```
 
-您还可以显式解绑单个参数。这为指定未绑定参数提供了更多自由。
+你也可以显式不绑定单个参数。这给了你在指定未绑定参数时更多的自由。
 
-例如，您可能想让用户指定 `sugar` 和 `chocolate` 的值，并让 `cream` 常量。为此，将每个未绑定参数值替换为单个下划线 (`_`)：
+例如，你可能想让用户指定 `sugar` 和 `chocolate` 的值，而让 `cream` 保持常量。为此，把每个未绑定的参数值替换为单个下划线（`_`）：
 
 ```mojo
 def devour(f: Fudge[_, 6, _]):
     print("Devoured", String(f))
 ```
 
-同样，未绑定参数（`sugar` 和 `chocolate`）作为函数上的隐式参数添加。
+同样，未绑定的参数（`sugar` 和 `chocolate`）作为函数上的隐式参数被添加。
 
-您还可以通过关键字解绑参数，或混合位置和关键字参数，因此以下函数大致相当于前一个函数：第一个参数 `sugar` 用下划线字符显式解绑。`chocolate` 参数使用关键字语法解绑 `chocolate=_`。而 `cream` 显式绑定到值 6：
+你也可以通过关键字不绑定参数，或混合位置参数和关键字参数，因此下面的函数大致等价于前一个函数：第一个参数 `sugar` 用下划线字符显式不绑定。`chocolate` 参数使用关键字语法 `chocolate=_` 不绑定。而 `cream` 显式绑定到值 6：
 
 ```mojo no-test
 def devour(f: Fudge[_, chocolate=_, cream=6]):
@@ -1052,21 +1108,21 @@ Devoured Fudge (3,6,9)
 Devoured Fudge (4,6,8)
 ```
 
-## 使用 `rebind()` 断言参数化类型相等
+## 用 `rebind()` 断言参数化类型相等
 
-Mojo 不像 C++ 那样在解析器中执行函数实例化的后果之一是，Mojo 无法总是弄清楚某些参数化类型是否相等，并抱怨无效的转换。这通常发生在静态调度模式中。例如，以下代码不会编译：
+Mojo 不像 C++ 那样在解析器中执行函数实例化，其后果之一是 Mojo 并不总能判断某些参数化类型是否相等，从而报告无效转换错误。这通常发生在静态分派模式中。例如，以下代码无法编译：
 
 ```mojo no-test
 def take_simd8(x: SIMD[DType.float32, 8]):
     pass
 
 
-def generic_simd[nelts: Int](x: SIMD[DType.float32, nelts]):
+def parameterized_simd[nelts: Int](x: SIMD[DType.float32, nelts]):
     comptime if nelts == 8:
         take_simd8(x)
 ```
 
-解析器会抱怨：
+解析器会报告：
 
 ```plaintext
 error: invalid call to 'take_simd8': argument #0 cannot be converted from
@@ -1075,22 +1131,25 @@ error: invalid call to 'take_simd8': argument #0 cannot be converted from
         ~~~~~~~~~~^~~
 ```
 
-这是因为解析器在实例化之前完全类型检查函数，并且 `x` 的类型仍然是 `SIMD[f32, nelts]`，而不是 `SIMD[f32, 8]`，尽管有静态条件。补救措施是使用 [`rebind()`](/docs/std/builtin/rebind/rebind/) 内置手动断言 `x` 的类型，它插入一个编译时断言，即输入和结果类型在详化后解析为相同类型：
+这是因为解析器在不实例化的情况下对函数进行完整的类型检查，而 `x` 的类型仍然是 `SIMD[f32, nelts]`，而不是 `SIMD[f32, 8]`，尽管有静态条件。补救办法是使用
+[`rebind()`](/docs/std/builtin/rebind/rebind/) 内置函数手动断言 `x` 的类型，它插入一个编译时断言：输入类型和结果类型在 elaboration 之后解析为同一类型：
 
 ```mojo
 def take_simd8(x: SIMD[DType.float32, 8]):
     pass
 
 
-def generic_simd[nelts: Int](x: SIMD[DType.float32, nelts]):
+def parameterized_simd[nelts: Int](x: SIMD[DType.float32, nelts]):
     comptime if nelts == 8:
         take_simd8(rebind[SIMD[DType.float32, 8]](x))
 ```
 
-编译器仍然检查类型是否匹配，但稍后在详化期间这样做。如果类型不匹配，编译失败。使用 `rebind()` 何时有一些相当简单的规则：
+编译器仍然会检查类型是否匹配，但会在稍后的 elaboration 期间进行。如果类型不匹配，编译失败。关于何时使用 `rebind()` 有相当简单的规则：
 
-- **是**在您知道两个参数化类型在详化后将完全相同时使用 `rebind()`。
-- **否**在任意数据类型之间使用 `rebind()` 进行转换。
+- **应当**在你确信两个参数化类型在 elaboration 之后会完全相同时使用 `rebind()`。
+- **不应当**使用 `rebind()` 在任意数据类型之间进行转换。
 
-`rebind()` 返回重新绑定值的引用。如果您需要转移重新绑定值或将其分配给变量，请使用
+`rebind()` 返回一个指向被重绑定值的引用。如果你需要转移被重绑定的值或将其赋给一个变量，请使用
 [`rebind_var()`](/docs/std/builtin/rebind/rebind_var/) 函数。
+
+{/* markdownlint-enable MD033 MD045 */}
